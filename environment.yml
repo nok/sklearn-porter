@@ -1,0 +1,20 @@
+name: sklearn.tree.export_pl
+dependencies:
+- blas=1.1=openblas
+- libgcc=4.8.5=1
+- numpy=1.11.0=py27_blas_openblas_200
+- openblas=0.2.18=1
+- openssl=1.0.2h=1
+- pip=8.1.2=py27_0
+- python=2.7.11=0
+- readline=6.2=2
+- scikit-learn=0.17.1=np111py27_blas_openblas_200
+- scipy=0.17.1=np111py27_blas_openblas_200
+- setuptools=23.0.0=py27_0
+- sqlite=3.13.0=1
+- tk=8.5.19=0
+- wheel=0.29.0=py27_0
+- zlib=1.2.8=3
+- pip:
+  - six==1.10.0
+
