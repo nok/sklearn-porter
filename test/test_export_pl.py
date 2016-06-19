@@ -51,6 +51,10 @@ class Test(TestCase):
         del self.clf
 
 
+    def test_data_type(self):
+        self.assertRaises(ValueError, export_pl, "")
+
+
     def test_random_features(self):
         preds_from_java, preds_from_py = [], []
 
