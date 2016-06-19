@@ -1,6 +1,26 @@
-import sklearn
-
 def export_pl(clf, method_name='predict'):
+    """Convert a learned decision tree model to a Java based equivalent.
+
+    Parameters
+    ----------
+    clf : sklearn.tree.tree.DecisionTreeClassifier
+        The learned decision tree model.
+
+    method_name : string, optional (default="predict")
+        The name of the created method.
+
+    See also
+    --------
+    sklearn.tree.tree.DecisionTreeClassifier
+
+    Returns
+    -------
+    source : string
+        The decision tree wrapped in a Java method.
+    """
+
+    import sklearn
+
     if type(clf) is not sklearn.tree.tree.DecisionTreeClassifier:
         raise ValueError('The data type is not an instance of sklearn.tree.tree.DecisionTreeClassifier')
     else:
