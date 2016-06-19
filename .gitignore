@@ -1,3 +1,7 @@
 .idea/
+
 *.pkl
 *.npy
+
+src/*.java
+src/*.class
