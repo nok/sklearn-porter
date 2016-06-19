@@ -1,4 +1,4 @@
-def export_pl(clf, namespace='predict', index=None):
+def export_pl(clf, method_name='predict'):
     n_features = clf.n_features_
     n_classes = clf.n_classes_
 
@@ -38,7 +38,7 @@ def export_pl(clf, namespace='predict', index=None):
         '    }} \n'
         '    return idx; \n'
         '}}'
-    ).format(str(namespace), n_classes, conditions)
+    ).format(str(method_name), n_classes, conditions)
 
     return source
 
