@@ -3,7 +3,7 @@ import subprocess
 from unittest import TestCase
 from sklearn.datasets import load_iris
 from sklearn import tree
-from src.Export import Export
+from nok.Export import Export
 
 
 class Test(TestCase):
