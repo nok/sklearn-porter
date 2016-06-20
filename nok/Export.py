@@ -71,8 +71,6 @@ class Export:
             return source
 
 def main():
-    # from sklearn.externals import joblib
-    # joblib.dump(clf, 'filename.pkl')
     import sys
     if len(sys.argv) == 3:
         input_file = str(sys.argv[1])
