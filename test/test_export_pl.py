@@ -56,7 +56,8 @@ class Test(TestCase):
 
 
     def test_random_features(self):
-        preds_from_java, preds_from_py = [], []
+        preds_from_java = []
+        preds_from_py = []
 
         # Creating random features:
         for features in range(150):
@@ -68,7 +69,8 @@ class Test(TestCase):
 
 
     def test_existing_features(self):
-        preds_from_java, preds_from_py = [], []
+        preds_from_java = []
+        preds_from_py = []
 
         # Getting existing features:
         for features in self.iris.data:
@@ -83,4 +85,7 @@ class Test(TestCase):
 
 
     def _make_prediction_in_java(self, features):
-        return int(subprocess.check_output(['java', self.tmp_fn] + [str(f).strip() for f in features]).strip())
+        execution = ['java', self.tmp_fn]
+        params = [str(f).strip() for f in features]
+        command = execution + params
+        return int(subprocess.check_output(command).strip())
