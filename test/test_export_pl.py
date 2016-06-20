@@ -3,7 +3,7 @@ import subprocess
 from unittest import TestCase
 from sklearn.datasets import load_iris
 from sklearn import tree
-from src.export_pl import export_pl
+from src.Export import Export
 
 
 class Test(TestCase):
@@ -19,7 +19,7 @@ class Test(TestCase):
 
         # Porting to Java:
         self.tmp_fn = 'Tmp'
-        tree_src = export_pl(self.clf)
+        tree_src = Export.predict(self.clf)
         with open(self.tmp_fn + '.java', 'w') as file:
             java_src = ('class {0} {{ \n'
                         '    public static {1} \n'
@@ -52,7 +52,7 @@ class Test(TestCase):
 
 
     def test_data_type(self):
-        self.assertRaises(ValueError, export_pl, "")
+        self.assertRaises(ValueError, Export.predict, "")
 
 
     def test_random_features(self):
