@@ -1,4 +1,4 @@
-# DecisionTree(s) Porting
+# DecisionTree Porting
 
 Static methods to port learned decision tree models to a low-level programming language like C or Java. It's recommended for limited embedded systems and critical applications where performance matters most.
 
