@@ -53,7 +53,7 @@ class Export:
                 clf.tree_.value, features, 0, 1)
 
             source = (
-                'int {0} (float[] atts) {{ \n'
+                'public static int {0} (float[] atts) {{ \n'
                 '    int n_classes = {1}; \n'
                 '    int[] classes = new int[n_classes]; \n'
                 '    {2} \n\n'
@@ -80,7 +80,7 @@ def main():
             with open(output_file, 'w') as file:
                 clf = joblib.load(input_file)
                 java_src = ('class {0} {{ \n'
-                            '    public static {1} \n'
+                            '    {1} \n'
                             '    public static void main(String[] args) {{ \n'
                             '        if (args.length == {2}) {{ \n'
                             '            float[] atts = new float[args.length]; \n'

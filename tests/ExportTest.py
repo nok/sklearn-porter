@@ -87,7 +87,7 @@ class ExportTest(TestCase):
         tree_src = Export.predict(self.clf)
         with open(self.tmp_fn + '.java', 'w') as file:
             java_src = ('class {0} {{ \n'
-                        '    public static {1} \n'
+                        '    {1} \n'
                         '    public static void main(String[] args) {{ \n'
                         '        if (args.length == {2}) {{ \n'
                         '            float[] atts = new float[args.length]; \n'
