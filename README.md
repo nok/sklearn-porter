@@ -6,6 +6,10 @@ Static methods to port learned decision tree models to a low-level programming l
 
 ## Different variants
 
+Either you can port a single [sklearn.tree.DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html) or a [sklearn.ensemble.AdaBoostClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) based on a set of truncated decision trees.
+
+## Target implementations
+
 - [sklearn.tree.DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)
 	- predict()
 	- ~~predict_proba()~~
