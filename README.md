@@ -28,7 +28,7 @@ Either you can port a single [sklearn.tree.DecisionTreeClassifier](http://scikit
 
 In this example we extend the [official user guide example](http://scikit-learn.org/stable/modules/tree.html#classification):
 
-```
+```python
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
 
@@ -44,7 +44,7 @@ print(tree)
 
 The resulted output matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model:
 
-```
+```java
 public static int predict(float[] atts) {
     int n_classes = 3;
     int[] classes = new int[n_classes];
@@ -116,7 +116,7 @@ public static int predict(float[] atts) {
 
 Alternatively we can save the model on the file system:
 
-```
+```python
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
 from sklearn.externals import joblib
@@ -129,7 +129,7 @@ joblib.dump(clf, 'model.pkl')
 ```
 After that we can port the saved model on the command line:
 
-```
+```sh
 python Export.py model.pkl Model.java
 ```
 
