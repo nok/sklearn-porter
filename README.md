@@ -1,26 +1,21 @@
-# DecisionTree Porting
+# Model Porting
 
-Static methods to port learned decision tree models to a low-level programming language like C or Java. It's recommended for limited embedded systems and critical applications where performance matters most.
+Library to port trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like C or Java. It's recommended for limited embedded systems and critical applications where performance matters most.
 
-**Note: This project is still under active development.**
 
-## Different variants
+## Target classification models
 
-Either you can port a single [sklearn.tree.DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html) or a [sklearn.ensemble.AdaBoostClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) based on a set of pruned decision trees.
-
-## Target implementations
+Either you can port a single [DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html) or a [AdaBoostClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) based on a set of pruned decision trees.
 
 - [sklearn.tree.DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)
-	- predict()
-	- ~~predict_proba()~~
-- ~~[sklearn.ensemble.AdaBoostClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)~~
-	- ~~predict()~~
-	- ~~predict_proba()~~
+- [sklearn.ensemble.AdaBoostClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
+- ... and more to be defined.
+
 
 ## Target programming languages
 
 - Java
-- ~~C~~
+- C
 
 ## Usage
 
@@ -139,7 +134,7 @@ python Export.py model.pkl Model.java
 Install the [environment modules](environment.yml) by executing the bash script [environment.sh](environment.sh) or typing `conda env create -f environment.yml`.
 
 
-## Unit Testing
+## Unit testing
 
 Run the [tests](tests) by executing the bash script [tests.sh](tests.sh) or typing `python -m unittest discover -p '*Test.py'`.
 
