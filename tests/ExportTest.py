@@ -9,7 +9,6 @@ from nok.Export import Export
 
 
 class ExportTest(TestCase):
-    # python -m unittest discover -p '*Test.py' -v
 
 
     def setUp(self):
