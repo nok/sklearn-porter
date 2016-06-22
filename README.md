@@ -141,7 +141,7 @@ Install the [environment modules](environment.yml) by executing the bash script 
 
 ## Unit Testing
 
-Run the [tests](tests) by executing the bash script [test.sh](test.sh) or typing `python -m unittest discover -p '*Test.py'`.
+Run the [tests](tests) by executing the bash script [tests.sh](tests.sh) or typing `python -m unittest discover -p '*Test.py'`.
 
 
 ## Questions?
