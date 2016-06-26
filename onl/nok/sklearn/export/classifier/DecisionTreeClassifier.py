@@ -10,21 +10,18 @@ class DecisionTreeClassifier():
         ]
 
     @staticmethod
-    def export(model, method):
-        # TODO: Add method check
-        # if not DecisionTreeClassifier._is_supported_method(method):
-        #     return
-        return DecisionTreeClassifier.predict(model)
+    def export(model, method, class_name="Tmp"):
+        return DecisionTreeClassifier.predict(model, class_name=class_name)
 
     @staticmethod
     def _is_supported_method(method):
         support = method in DecisionTreeClassifier._get_supported_methods()
         if not support:
-            raise ValueError('The classifier does not support the method.')
+            raise ValueError('The classifier does not support the given method.')
         return support
 
     @staticmethod
-    def predict(model):
+    def predict(model, class_name="Tmp"):
         n_features = model.n_features_
         n_classes = model.n_classes_
         method_name = 'predict'
@@ -52,7 +49,7 @@ class DecisionTreeClassifier():
             model.tree_.threshold,
             model.tree_.value, features, 0, 1)
 
-        source = (
+        source_tree = (
             'public static int {0} (float[] atts) {{ \n'
             '    int n_classes = {1}; \n'
             '    int[] classes = new int[n_classes]; \n'
@@ -68,4 +65,18 @@ class DecisionTreeClassifier():
             '}}'
         ).format(str(method_name), n_classes, conditions)
 
-        return source
+        source_main = (
+            'class {0} {{ \n'
+            '    {1} \n'
+            '    public static void main(String[] args) {{ \n'
+            '        if (args.length == {2}) {{ \n'
+            '            float[] atts = new float[args.length]; \n'
+            '            for (int i = 0; i < args.length; i++) {{ \n'
+            '                atts[i] = Float.parseFloat(args[i]); \n'
+            '            }} \n'
+            '            System.out.println({0}.predict(atts)); \n'
+            '        }} \n'
+            '    }} \n'
+            '}}').format(class_name, source_tree, model.n_features_)
+
+        return source_main

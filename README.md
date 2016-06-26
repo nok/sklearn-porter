@@ -2,20 +2,29 @@
 
 Library to port trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like C or Java. It's recommended for limited embedded systems and critical applications where performance matters most.
 
+**Please note that this project is under active development.**
 
-## Target classification models
 
-Either you can port a single [DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html) or a [AdaBoostClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) based on a set of pruned decision trees.
+## Target output algorithms
+
+- Classification
+- ~~Regression~~
+
+
+## Target models
+
+Either you can port a single [DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html) or a [~~AdaBoostClassifier~~](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) based on a set of pruned decision trees.
 
 - [sklearn.tree.DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)
-- [sklearn.ensemble.AdaBoostClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
+- [~~sklearn.ensemble.AdaBoostClassifier~~](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
 - ... and more to be defined.
 
 
 ## Target programming languages
 
 - Java
-- C
+- ~~C~~
+
 
 ## Usage
 

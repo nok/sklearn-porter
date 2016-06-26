@@ -1,10 +1,8 @@
-import inspect
 import random
 import subprocess
 from unittest import TestCase
 from sklearn.datasets import load_iris
 from sklearn import tree
-from sklearn.externals import joblib
 
 from onl.nok.sklearn.export.classifier.DecisionTreeClassifier import DecisionTreeClassifier
 

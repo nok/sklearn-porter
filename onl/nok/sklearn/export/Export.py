@@ -2,52 +2,87 @@ import sklearn
 
 
 class Export:
+    """Base class for model or prediction porting."""
 
     @staticmethod
-    def export(model, method='predict'):
-        if not Export._is_supported_clf(model):
+    def export(model, method='predict', class_name=None, with_env=False):
+        """Export the prediction of a trained model in the syntax of a specific programming language.
+
+        Parameters
+        ----------
+        :param model : Model object
+            An instance of a trained model (e.g. DecisionTreeClassifier()).
+
+        :param method : String (default='predict')
+            The name of the prediction method.
+        """
+
+        model_type = Export._is_convertible_model(model)
+        if not model_type:
             return
-        name = type(model).__name__
-        path = 'onl.nok.sklearn.export.classifier' + '.' + name
-        class_ = getattr(__import__(path, fromlist=[name]), name)
-        return class_.export(model, method)
+        model_name = type(model).__name__
+        path = 'onl.nok.sklearn.export.' + model_type + '.' + model_name
+        class_ = getattr(__import__(path, fromlist=[model_name]), model_name)
+        return class_.export(model, method, with_env=with_env)
 
     @staticmethod
-    def _get_all_supported_clf():
+    def _get_convertible_classifiers():
+        '''Get a list of convertible classifiers.'''
         return [
             sklearn.tree.tree.DecisionTreeClassifier
         ]
 
     @staticmethod
-    def _is_supported_clf(clf):
-        support = any(isinstance(clf, e) for e in Export._get_all_supported_clf())
-        if not support:
-            raise ValueError('The classifier is not an instance of the supported classifiers.')
-        return support
+    def _get_convertible_regressors():
+        '''Get a list of all convertible regressors.'''
+        return []
 
+    @staticmethod
+    def _is_convertible_model(model):
+        """Check whether the model is a convertible classifier or regressor.
+
+        Parameters
+        ----------
+        :param model : Model object
+            An instance of a trained model (e.g. DecisionTreeClassifier()).
+
+        See also
+        --------
+        onl.nok.sklearn.export.classifier.*, onl.nok.sklearn.export.regressor.*
+        """
+
+        classifiers = Export._get_convertible_classifiers()
+        is_convertible_clf = any(isinstance(model, e) for e in classifiers)
+        if is_convertible_clf:
+            return 'classifier'
+
+        regressors = Export._get_convertible_regressors()
+        is_convertible_rgs = any(isinstance(model, e) for e in regressors)
+        if is_convertible_rgs:
+            return 'regressors'
+
+        if not is_convertible_clf and not is_convertible_rgs:
+            raise ValueError('The model is not an instance of a supported classifier or regressor.')
+        return False
 
 def main():
     import sys
+    import os
+
     if len(sys.argv) == 3:
-        input_file = str(sys.argv[1])
-        output_file = str(sys.argv[2])
-        if input_file.endswith('.pkl') and output_file.endswith('.java'):
+        is_valid_input_file = lambda f: str(f).endswith('.pkl') and os.path.isfile(str(f))
+        is_valid_output_file = lambda f: str(f).endswith('.java') or str(f).endswith('.c')
+
+        if is_valid_input_file(sys.argv[1]) and is_valid_output_file(sys.argv[2]):
+            input_file = str(sys.argv[1])
+            output_file = str(sys.argv[2])
+
             from sklearn.externals import joblib
             with open(output_file, 'w') as file:
-                clf = joblib.load(input_file)
-                java_src = ('class {0} {{ \n'
-                            '    {1} \n'
-                            '    public static void main(String[] args) {{ \n'
-                            '        if (args.length == {2}) {{ \n'
-                            '            float[] atts = new float[args.length]; \n'
-                            '            for (int i = 0; i < args.length; i++) {{ \n'
-                            '                atts[i] = Float.parseFloat(args[i]); \n'
-                            '            }} \n'
-                            '            System.out.println({0}.predict(atts)); \n'
-                            '        }} \n'
-                            '    }} \n'
-                            '}}').format(output_file.split('.')[0].title(), Export.export(clf), clf.n_features_)
-                file.write(java_src)
+                model = joblib.load(input_file)
+
+                class_name = output_file.split('.')[-2].lower().title()
+                file.write(Export.export(model, class_name=class_name, with_env=True))
 
 if __name__ == '__main__':
     main()
