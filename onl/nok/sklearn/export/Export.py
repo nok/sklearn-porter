@@ -5,7 +5,7 @@ class Export:
     """Base class for model or prediction porting."""
 
     @staticmethod
-    def export(model, method='predict', class_name=None, with_env=False):
+    def export(model, method_name='predict', class_name='Tmp'):
         """Export the prediction of a trained model in the syntax of a specific programming language.
 
         Parameters
@@ -13,8 +13,11 @@ class Export:
         :param model : Model object
             An instance of a trained model (e.g. DecisionTreeClassifier()).
 
-        :param method : String (default='predict')
+        :param method_name : String (default='predict')
             The name of the prediction method.
+
+        :param class_name : String (default='Tmp')
+            The name of the environment class.
         """
 
         model_type = Export._is_convertible_model(model)
@@ -23,7 +26,7 @@ class Export:
         model_name = type(model).__name__
         path = 'onl.nok.sklearn.export.' + model_type + '.' + model_name
         class_ = getattr(__import__(path, fromlist=[model_name]), model_name)
-        return class_.export(model, method, with_env=with_env)
+        return class_.export(model, method_name=method_name, class_name=class_name)
 
     @staticmethod
     def _get_convertible_classifiers():
@@ -80,9 +83,8 @@ def main():
             from sklearn.externals import joblib
             with open(output_file, 'w') as file:
                 model = joblib.load(input_file)
-
                 class_name = output_file.split('.')[-2].lower().title()
-                file.write(Export.export(model, class_name=class_name, with_env=True))
+                file.write(Export.export(model, class_name=class_name))
 
 if __name__ == '__main__':
     main()

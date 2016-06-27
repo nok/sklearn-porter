@@ -1,7 +1,7 @@
-# from onl.nok.sklearn.export.classifier.Classifier import Classifier
+from onl.nok.sklearn.export.classifier.Classifier import Classifier
 
 
-class DecisionTreeClassifier():
+class DecisionTreeClassifier(Classifier):
 
     @staticmethod
     def _get_supported_methods():
@@ -10,21 +10,24 @@ class DecisionTreeClassifier():
         ]
 
     @staticmethod
-    def export(model, method, class_name="Tmp"):
-        return DecisionTreeClassifier.predict(model, class_name=class_name)
+    def export(model, method_name='predict', class_name="Tmp"):
+        if DecisionTreeClassifier._is_supported_method(method_name):
+            if method_name == 'predict':
+                return DecisionTreeClassifier.predict(model, class_name=class_name)
+        return ''
 
     @staticmethod
-    def _is_supported_method(method):
-        support = method in DecisionTreeClassifier._get_supported_methods()
+    def _is_supported_method(method_name):
+        support = method_name in DecisionTreeClassifier._get_supported_methods()
         if not support:
             raise ValueError('The classifier does not support the given method.')
         return support
 
     @staticmethod
-    def predict(model, class_name="Tmp"):
+    def predict(model, class_name='Tmp'):
+        method_name = 'predict'
         n_features = model.n_features_
         n_classes = model.n_classes_
-        method_name = 'predict'
 
         def _recurse(left, right, threshold, value, features, node, depth):
             out = ''
@@ -77,6 +80,6 @@ class DecisionTreeClassifier():
             '            System.out.println({0}.predict(atts)); \n'
             '        }} \n'
             '    }} \n'
-            '}}').format(class_name, source_tree, model.n_features_)
+            '}}').format(class_name, source_tree, n_features)
 
         return source_main

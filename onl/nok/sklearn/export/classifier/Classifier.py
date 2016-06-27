@@ -1,5 +1,5 @@
 class Classifier:
 
     @staticmethod
-    def export(model, method, with_env=False):
+    def export(model, method_name='predict', class_name='Tmp'):
         pass
