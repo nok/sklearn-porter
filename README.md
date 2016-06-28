@@ -157,7 +157,6 @@ Install the [environment modules](environment.yml) by executing the bash script 
 ```sh
 conda env create -f environment.yml
 ```
-github
 
 ## Unit testing
 
