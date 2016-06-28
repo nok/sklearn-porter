@@ -3,25 +3,30 @@ from onl.nok.sklearn.export.classifier.Classifier import Classifier
 
 class DecisionTreeClassifier(Classifier):
 
+
     @staticmethod
     def _get_supported_methods():
         return [
             'predict'
         ]
 
-    @staticmethod
-    def export(model, method_name='predict', class_name="Tmp"):
-        if DecisionTreeClassifier._is_supported_method(method_name):
-            if method_name == 'predict':
-                return DecisionTreeClassifier.predict(model, class_name=class_name)
-        return ''
 
     @staticmethod
-    def _is_supported_method(method_name):
+    def export(model, method_name='predict', class_name="Tmp"):
+        if DecisionTreeClassifier.is_supported_method(method_name):
+            if method_name == 'predict':
+                return DecisionTreeClassifier.predict(model, class_name=class_name)
+        # TODO: Raise general error exception
+        return False
+
+
+    @staticmethod
+    def is_supported_method(method_name):
         support = method_name in DecisionTreeClassifier._get_supported_methods()
         if not support:
             raise ValueError('The classifier does not support the given method.')
         return support
+
 
     @staticmethod
     def predict(model, class_name='Tmp'):

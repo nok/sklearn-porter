@@ -26,7 +26,8 @@ class ExportTest(TestCase):
     def _create_java_files(self):
         # Porting to Java:
         with open(self.tmp_fn + '.java', 'w') as file:
-            file.write(Export.export(self.clf, method_name='predict', class_name=self.tmp_fn))
+            exporter = Export()
+            file.write(exporter.export(self.clf, method_name='predict', class_name=self.tmp_fn))
         # Compiling Java test class:
         subprocess.call(['javac', self.tmp_fn + '.java'])
 
@@ -39,32 +40,32 @@ class ExportTest(TestCase):
         self.assertRaises(ValueError, Export.export, "")
 
 
-    # def test_command_execution(self):
-    #     self._create_java_files()
-    #
-    #     joblib.dump(self.clf, self.tmp_fn + '.pkl')
-    #     python_file = str(inspect.getfile(Export)).split(".")[0] + '.py'
-    #
-    #     subprocess.call(['python', python_file, 'Tmp.pkl', 'Tmp.java'])
-    #     subprocess.call(['javac', self.tmp_fn + '.java'])
-    #
-    #     preds_from_java = []
-    #     preds_from_py = []
-    #
-    #     # Creating random features:
-    #     for features in range(150):
-    #         features = [random.uniform(0., 10.) for f in range(self.n_features)]
-    #         preds_from_java.append(self._make_prediction_in_java(features))
-    #         preds_from_py.append(self._make_prediction_in_py(features))
-    #
-    #     subprocess.call(['rm', self.tmp_fn + '.pkl'])
-    #     subprocess.call(['rm', self.tmp_fn + '.pkl_01.npy'])
-    #     subprocess.call(['rm', self.tmp_fn + '.pkl_02.npy'])
-    #     subprocess.call(['rm', self.tmp_fn + '.pkl_03.npy'])
-    #     subprocess.call(['rm', self.tmp_fn + '.pkl_04.npy'])
-    #
-    #     self._remove_java_files()
-    #     self.assertEqual(preds_from_py, preds_from_java)
+    def test_command_execution(self):
+        self._create_java_files()
+
+        joblib.dump(self.clf, self.tmp_fn + '.pkl')
+        python_file = str(inspect.getfile(Export)).split(".")[0] + '.py'
+
+        subprocess.call(['python', python_file, 'Tmp.pkl', 'Tmp.java'])
+        subprocess.call(['javac', self.tmp_fn + '.java'])
+
+        preds_from_java = []
+        preds_from_py = []
+
+        # Creating random features:
+        for features in range(150):
+            features = [random.uniform(0., 10.) for f in range(self.n_features)]
+            preds_from_java.append(self._make_prediction_in_java(features))
+            preds_from_py.append(self._make_prediction_in_py(features))
+
+        subprocess.call(['rm', self.tmp_fn + '.pkl'])
+        subprocess.call(['rm', self.tmp_fn + '.pkl_01.npy'])
+        subprocess.call(['rm', self.tmp_fn + '.pkl_02.npy'])
+        subprocess.call(['rm', self.tmp_fn + '.pkl_03.npy'])
+        subprocess.call(['rm', self.tmp_fn + '.pkl_04.npy'])
+
+        self._remove_java_files()
+        self.assertEqual(preds_from_py, preds_from_java)
 
 
     def _make_prediction_in_py(self, features):
