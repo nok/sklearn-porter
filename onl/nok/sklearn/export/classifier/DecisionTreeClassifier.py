@@ -31,6 +31,15 @@ class DecisionTreeClassifier(Classifier):
     @staticmethod
     def predict(model, class_name='Tmp'):
         method_name = 'predict'
+        # TODO: Refactor to a basic class to use the 'self' keyword
+        str_method = DecisionTreeClassifier._create_method(model, method_name)
+        str_class = DecisionTreeClassifier._create_class(model, class_name)
+        return str_class.format(str_method)
+
+
+    @staticmethod
+    def _create_method(model, method_name):
+        method_name = str(method_name)
         n_features = model.n_features_
         n_classes = model.n_classes_
 
@@ -57,8 +66,8 @@ class DecisionTreeClassifier(Classifier):
             model.tree_.threshold,
             model.tree_.value, features, 0, 1)
 
-        source_tree = (
-            'public static int {0} (float[] atts) {{ \n'
+        out = (
+            'public static int {0}(float[] atts) {{ \n'
             '    int n_classes = {1}; \n'
             '    int[] classes = new int[n_classes]; \n'
             '    {2} \n\n'
@@ -71,20 +80,24 @@ class DecisionTreeClassifier(Classifier):
             '    }} \n'
             '    return idx; \n'
             '}}'
-        ).format(str(method_name), n_classes, conditions)
+        ).format(method_name, n_classes, conditions)  # -> {0}, {1}, {2}
+        return str(out)
 
-        source_main = (
-            'class {0} {{ \n'
-            '    {1} \n'
-            '    public static void main(String[] args) {{ \n'
-            '        if (args.length == {2}) {{ \n'
+
+    @staticmethod
+    def _create_class(model, class_name):
+        n_features = model.n_features_
+        out = (
+            'class {0} {{{{ \n'
+            '    {{0}} \n'
+            '    public static void main(String[] args) {{{{ \n'
+            '        if (args.length == {1}) {{{{ \n'
             '            float[] atts = new float[args.length]; \n'
-            '            for (int i = 0; i < args.length; i++) {{ \n'
+            '            for (int i = 0; i < args.length; i++) {{{{ \n'
             '                atts[i] = Float.parseFloat(args[i]); \n'
-            '            }} \n'
+            '            }}}} \n'
             '            System.out.println({0}.predict(atts)); \n'
-            '        }} \n'
-            '    }} \n'
-            '}}').format(class_name, source_tree, n_features)
-
-        return source_main
+            '        }}}} \n'
+            '    }}}} \n'
+            '}}}}').format(class_name, n_features)  # -> {0}, {1}
+        return str(out)
