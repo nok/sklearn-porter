@@ -5,10 +5,18 @@ class DecisionTreeClassifier(Classifier):
 
 
     @staticmethod
-    def _get_supported_methods():
+    def get_supported_methods():
         return [
             'predict'
         ]
+
+
+    @staticmethod
+    def is_supported_method(method_name):
+        support = method_name in DecisionTreeClassifier.get_supported_methods()
+        if not support:
+            raise ValueError('The classifier does not support the given method.')
+        return support
 
 
     @staticmethod
@@ -18,14 +26,6 @@ class DecisionTreeClassifier(Classifier):
                 return DecisionTreeClassifier.predict(model, class_name=class_name)
         # TODO: Raise general error exception
         return False
-
-
-    @staticmethod
-    def is_supported_method(method_name):
-        support = method_name in DecisionTreeClassifier._get_supported_methods()
-        if not support:
-            raise ValueError('The classifier does not support the given method.')
-        return support
 
 
     @staticmethod

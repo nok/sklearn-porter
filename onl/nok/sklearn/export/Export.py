@@ -42,7 +42,9 @@ class Export:
     def get_convertible_classifiers():
         '''Get a list of convertible classifiers.'''
         return [
-            sklearn.tree.tree.DecisionTreeClassifier
+            sklearn.tree.tree.DecisionTreeClassifier,
+            # TODO: Add AdaBoostClassifier
+            # sklearn.ensemble.weight_boosting.AdaBoostClassifier
         ]
 
 
