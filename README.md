@@ -24,6 +24,7 @@ Either you can port a single [DecisionTreeClassifier](http://scikit-learn.org/st
 
 - Java
 - ~~C~~
+- ~~JavaScript~~
 
 
 ## Usage
