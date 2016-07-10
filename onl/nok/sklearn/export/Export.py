@@ -1,6 +1,3 @@
-import sklearn
-
-
 class Export:
     """Base class for model or prediction porting."""
 
@@ -41,10 +38,11 @@ class Export:
     @staticmethod
     def get_convertible_classifiers():
         '''Get a list of convertible classifiers.'''
+        import sklearn
+        from sklearn.ensemble import weight_boosting
         return [
             sklearn.tree.tree.DecisionTreeClassifier,
-            # TODO: Add AdaBoostClassifier
-            # sklearn.ensemble.weight_boosting.AdaBoostClassifier
+            weight_boosting.AdaBoostClassifier
         ]
 
 
@@ -69,12 +67,12 @@ class Export:
         """
 
         classifiers = Export.get_convertible_classifiers()
-        is_convertible_clf = any(isinstance(model, e) for e in classifiers)
+        is_convertible_clf = type(model) in classifiers
         if is_convertible_clf:
             return 'classifier'
 
         regressors = Export.get_convertible_regressors()
-        is_convertible_rgs = any(isinstance(model, e) for e in regressors)
+        is_convertible_rgs = type(model) in regressors
         if is_convertible_rgs:
             return 'regressors'
 

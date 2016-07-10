@@ -13,11 +13,10 @@ Library to port trained [scikit-learn](https://github.com/scikit-learn/scikit-le
 
 ## Target models
 
-Either you can port a single [DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html) or a [~~AdaBoostClassifier~~](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) based on a set of pruned decision trees.
+Either you can port a single [DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html) or a [AdaBoostClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) based on a set of pruned decision trees.
 
 - [sklearn.tree.DecisionTreeClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html)
-- [~~sklearn.ensemble.AdaBoostClassifier~~](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
-- ... and more to be defined.
+- [sklearn.ensemble.AdaBoostClassifier](http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
 
 
 ## Target programming languages
@@ -29,7 +28,9 @@ Either you can port a single [DecisionTreeClassifier](http://scikit-learn.org/st
 
 ## Usage
 
-### Package
+### sklearn.tree.DecisionTreeClassifier
+
+#### Package
 
 In this example we extend the [official user guide example](http://scikit-learn.org/stable/modules/tree.html#classification):
 
@@ -129,7 +130,7 @@ class Tmp {
 }
 ```
 
-### CLI
+#### CLI
 
 Alternatively we can save the model on the file system:
 
@@ -148,6 +149,28 @@ After that we can port the dumped model on the command line:
 
 ```sh
 python Export.py model.pkl Model.java
+```
+
+### sklearn.ensemble.AdaBoostClassifier
+
+#### Package
+
+In this example we use multiple decision trees:
+
+```python
+from sklearn.datasets import load_iris
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+
+from onl.nok.sklearn.export.Export import Export
+
+iris = load_iris()
+base_estimator = DecisionTreeClassifier(max_depth=4)
+clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100, random_state=1)
+clf.fit(iris.data, iris.target)
+
+trees = Export.export(clf)
+print(trees)
 ```
 
 
