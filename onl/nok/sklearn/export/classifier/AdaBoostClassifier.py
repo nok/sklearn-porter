@@ -25,7 +25,6 @@ class AdaBoostClassifier(Classifier):
 
     @staticmethod
     def export(model, method_name='predict', class_name="Tmp"):
-        print("Ada.export()")
         if AdaBoostClassifier.is_supported_method(method_name):
             if method_name == 'predict':
                 return AdaBoostClassifier.predict(model, class_name=class_name)
@@ -34,10 +33,9 @@ class AdaBoostClassifier(Classifier):
 
     @staticmethod
     def predict(model, class_name='Tmp'):
-        print("Ada.predict()")
         method_name = 'predict'
 
-        if model.algorithm not in ('SAMME', 'SAMME.R'):
+        if model.algorithm not in ('SAMME.R'):
             # raise ValueError("algorithm %s is not supported" % model.algorithm)
             return False
 
@@ -83,7 +81,7 @@ class AdaBoostClassifier(Classifier):
             out = ''
             indent = '\n' + '    ' * depth
             if threshold[node] != -2.:
-                out += indent + 'if (atts[{0}] <= {1:.6f}f) {{'.format(features[node], threshold[node])
+                out += indent + 'if (atts[{0}] <= {1:.10f}f) {{'.format(features[node], threshold[node])
                 if left[node] != -1.:
                     out += _recurse(left, right, threshold, value, features, left[node], depth + 1)
                 out += indent + '} else {'
@@ -92,7 +90,7 @@ class AdaBoostClassifier(Classifier):
                 out += indent + '}'
             else:
                 out += ';'.join(
-                    [indent + 'classes[{0}] = {1:.6f}f'.format(i, v) for i, v in enumerate(value[node][0])]) + ';'
+                    [indent + 'classes[{0}] = {1:.10f}f'.format(i, v) for i, v in enumerate(value[node][0])]) + ';'
             return out
 
         features = [[str(idx) for idx in range(n_features)][i] for i in model.tree_.feature]
@@ -116,29 +114,28 @@ class AdaBoostClassifier(Classifier):
 
     @staticmethod
     def _create_method(model, method_name, str_trees, n_estimators):
-        print("Ada._create_method()")
         n_classes = model.n_classes_
         out = (
             'public static int {0}(float[] atts) {{ \n'
             '    int n_estimators = {1}; \n'
+            '    int n_classes = {2}; \n'
             '    float[][] preds = new float[n_estimators][]; \n'
-            '    {2} \n'
-            '    int n_classes = {3}; \n'
+            '    {3} \n'
             '    float[] classes = new float[n_classes]; \n'
-            '    for (int i = 1; i < n_estimators; i++) {{ \n'
+            '    for (int i = 0; i < n_estimators; i++) {{ \n'
             '        for (int j = 0; j < n_classes; j++) {{ \n'
             '            classes[j] += preds[i][j]; \n'
             '        }} \n'
             '    }} \n\n'
             '    int idx = 0; \n'
-            '    float val = classes[0]; \n'
-            '    for (int i = 1; i < n_classes; i++) {{ \n'
+            '    float val = 0.f; \n'
+            '    for (int i = 0; i < n_classes; i++) {{ \n'
             '        if (classes[i] > val) {{ \n'
             '            idx = i; \n'
             '        }} \n'
             '    }} \n'
             '    return idx; \n'
-            '}}').format(method_name, n_estimators, str_trees, n_classes)
+            '}}').format(method_name, n_estimators, n_classes, str_trees)
         return str(out)
 
 
