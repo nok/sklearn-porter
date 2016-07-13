@@ -35,7 +35,7 @@ class DecisionTreeClassifierTest(TestCase):
             preds_from_py.append(self._make_prediction_in_py(features))
 
         self._remove_java_files()
-        self.assertEqual(preds_from_py, preds_from_java)
+        self.assertListEqual(preds_from_py, preds_from_java)
 
 
     def test_existing_features(self):
@@ -50,7 +50,7 @@ class DecisionTreeClassifierTest(TestCase):
             preds_from_py.append(self._make_prediction_in_py(features))
 
         self._remove_java_files()
-        self.assertEqual(preds_from_py, preds_from_java)
+        self.assertListEqual(preds_from_py, preds_from_java)
 
 
     def _create_java_files(self):
