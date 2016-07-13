@@ -42,7 +42,7 @@ class Export:
         from sklearn.ensemble import weight_boosting
         return [
             sklearn.tree.tree.DecisionTreeClassifier,
-            weight_boosting.AdaBoostClassifier
+            sklearn.ensemble.AdaBoostClassifier
         ]
 
 
