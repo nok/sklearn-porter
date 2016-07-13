@@ -2,7 +2,7 @@ import random
 import subprocess
 from unittest import TestCase
 from sklearn.datasets import load_iris
-from sklearn import tree
+from sklearn.tree import DecisionTreeClassifier as DT
 
 from onl.nok.sklearn.export.classifier.DecisionTreeClassifier import DecisionTreeClassifier
 
@@ -14,7 +14,7 @@ class DecisionTreeClassifierTest(TestCase):
         self.tmp_fn = 'Tmp'
         self.iris = load_iris()
         self.n_features = len(self.iris.data[0])
-        self.clf = tree.DecisionTreeClassifier(random_state=0)
+        self.clf = DT(random_state=0)
         self.clf.fit(self.iris.data, self.iris.target)
 
 
