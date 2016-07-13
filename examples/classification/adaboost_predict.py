@@ -5,14 +5,16 @@ from sklearn.tree import DecisionTreeClassifier
 from onl.nok.sklearn.export.Export import Export
 
 iris = load_iris()
-base_estimator = DecisionTreeClassifier(max_depth=4)
-clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100, random_state=1)
+base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
+clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100, random_state=0)
 clf.fit(iris.data, iris.target)
+
+clf.predict([[5.7, 2.8, 4.1, 1.3]])
 
 # Cheese!
 
 trees = Export.export(clf)
-print(trees)
+# print(trees)
 
 # class Tmp {
 #     public static float[] predict_000(float[] atts) {
