@@ -1,8 +1,5 @@
-import numpy as np
 import sklearn
-
 from onl.nok.sklearn.export.classifier.Classifier import Classifier
-from onl.nok.sklearn.export.classifier.DecisionTreeClassifier import DecisionTreeClassifier
 
 
 class AdaBoostClassifier(Classifier):
@@ -81,7 +78,7 @@ class AdaBoostClassifier(Classifier):
             out = ''
             indent = '\n' + '    ' * depth
             if threshold[node] != -2.:
-                out += indent + 'if (atts[{0}] <= {1:.10f}f) {{'.format(features[node], threshold[node])
+                out += indent + 'if (atts[{0}] <= {1:.16}f) {{'.format(features[node], threshold[node])
                 if left[node] != -1.:
                     out += _recurse(left, right, threshold, value, features, left[node], depth + 1)
                 out += indent + '} else {'
@@ -90,7 +87,7 @@ class AdaBoostClassifier(Classifier):
                 out += indent + '}'
             else:
                 out += ';'.join(
-                    [indent + 'classes[{0}] = {1:.10f}f'.format(i, v) for i, v in enumerate(value[node][0])]) + ';'
+                    [indent + 'classes[{0}] = {1:.16}f'.format(i, v) for i, v in enumerate(value[node][0])]) + ';'
             return out
 
         features = [[str(idx) for idx in range(n_features)][i] for i in model.tree_.feature]

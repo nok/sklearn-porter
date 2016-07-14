@@ -76,6 +76,7 @@ class DecisionTreeClassifier(Classifier):
             '    for (int i = 1; i < n_classes; i++) {{ \n'
             '        if (classes[i] > val) {{ \n'
             '            idx = i; \n'
+            '            val = classes[i]; \n'
             '        }} \n'
             '    }} \n'
             '    return idx; \n'
