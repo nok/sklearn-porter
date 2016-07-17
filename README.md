@@ -1,3 +1,7 @@
+[![Build Status](https://img.shields.io/travis/nok/scikit-learn-model-porting/master.svg)](https://travis-ci.org/nok/scikit-learn-model-porting) [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/nok/scikit-learn-model-porting/master/LICENSE.txt)
+
+---
+
 # Model Porting
 
 Library to port trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like C or Java. It's recommended for limited embedded systems and critical applications where performance matters most.
