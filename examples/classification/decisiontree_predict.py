@@ -13,11 +13,11 @@ tree = Export.export(clf)
 print(tree)
 
 # class Tmp {
-#     public static int predict (float[] atts) {
+#     public static int predict(float[] atts) {
 #         int n_classes = 3;
 #         int[] classes = new int[n_classes];
 #
-#         if (atts[3] <= 0.800000f) {
+#         if (atts[2] <= 2.450000f) {
 #             classes[0] = 50;
 #             classes[1] = 0;
 #             classes[2] = 0;
@@ -74,10 +74,12 @@ print(tree)
 #         for (int i = 1; i < n_classes; i++) {
 #             if (classes[i] > val) {
 #                 idx = i;
+#                 val = classes[i];
 #             }
 #         }
 #         return idx;
 #     }
+#
 #     public static void main(String[] args) {
 #         if (args.length == 4) {
 #             float[] atts = new float[args.length];
