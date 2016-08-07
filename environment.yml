@@ -1,4 +1,4 @@
-name: sklearn.tree.model.export
+name: sklearn-porting
 dependencies:
 - libgcc=4.8.5=1
 - mkl=11.3.3=0
