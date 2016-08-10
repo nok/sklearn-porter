@@ -1,16 +1,16 @@
 import inspect
 import random
 import subprocess
-from unittest import TestCase
+import unittest
 
 from sklearn.datasets import load_iris
 from sklearn.externals import joblib
 from sklearn.tree import tree
 
-from onl.nok.sklearn.export.Export import Export
+from onl.nok.sklearn.export import export
 
 
-class ExportTest(TestCase):
+class ExportTest(unittest.TestCase):
 
     def setUp(self):
         self.tmp_fn = 'Tmp'
@@ -20,14 +20,13 @@ class ExportTest(TestCase):
         self.clf.fit(self.iris.data, self.iris.target)
 
     def tearDown(self):
-        del self.clf
+        self.clf = None
 
 
     def _create_java_files(self):
         # Porting to Java:
         with open(self.tmp_fn + '.java', 'w') as file:
-            exporter = Export()
-            file.write(exporter.export(self.clf, method_name='predict', class_name=self.tmp_fn))
+            file.write(export(self.clf, method_name='predict', class_name=self.tmp_fn))
         # Compiling Java test class:
         subprocess.call(['javac', self.tmp_fn + '.java'])
 
@@ -37,14 +36,14 @@ class ExportTest(TestCase):
 
 
     def test_data_type(self):
-        self.assertRaises(ValueError, Export.export, "")
+        self.assertRaises(ValueError, export, "")
 
 
     def test_command_execution(self):
         self._create_java_files()
 
         joblib.dump(self.clf, self.tmp_fn + '.pkl')
-        python_file = str(inspect.getfile(Export)).split(".")[0] + '.py'
+        python_file = str(inspect.getfile(export)).split(".")[0] + '.py'
 
         subprocess.call(['python', python_file, 'Tmp.pkl', 'Tmp.java'])
         subprocess.call(['javac', self.tmp_fn + '.java'])

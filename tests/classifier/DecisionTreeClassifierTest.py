@@ -1,13 +1,14 @@
 import random
 import subprocess
-from unittest import TestCase
+
+import unittest
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier as DT
 
-from onl.nok.sklearn.export.classifier.DecisionTreeClassifier import DecisionTreeClassifier
+from onl.nok.sklearn.classifier.DecisionTreeClassifier import DecisionTreeClassifier
 
 
-class DecisionTreeClassifierTest(TestCase):
+class DecisionTreeClassifierTest(unittest.TestCase):
 
 
     def setUp(self):
@@ -19,7 +20,7 @@ class DecisionTreeClassifierTest(TestCase):
 
 
     def tearDown(self):
-        del self.clf
+        self.clf = None
 
 
     def test_random_features(self):

@@ -1,15 +1,15 @@
 import random
 import subprocess
 import unittest
-from unittest import TestCase
+
 from sklearn.datasets import load_iris
 from sklearn.ensemble import AdaBoostClassifier as ADA
 from sklearn.tree import DecisionTreeClassifier as DT
 
-from onl.nok.sklearn.export.classifier.AdaBoostClassifier import AdaBoostClassifier
+from onl.nok.sklearn.classifier.AdaBoostClassifier import AdaBoostClassifier
 
 
-class AdaBoostClassifierTest(TestCase):
+class AdaBoostClassifierTest(unittest.TestCase):
 
 
     def setUp(self):
@@ -22,7 +22,7 @@ class AdaBoostClassifierTest(TestCase):
 
 
     def tearDown(self):
-        del self.clf
+        self.clf = None
 
     @unittest.expectedFailure
     def test_random_features(self):

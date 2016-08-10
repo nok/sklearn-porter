@@ -1,4 +1,4 @@
-from onl.nok.sklearn.export.classifier.Classifier import Classifier
+from onl.nok.sklearn.classifier.Classifier import Classifier
 
 
 class DecisionTreeClassifier(Classifier):

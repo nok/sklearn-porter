@@ -2,7 +2,7 @@ from sklearn.datasets import load_iris
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from onl.nok.sklearn.export.Export import Export
+from onl.nok.sklearn.export import export
 
 iris = load_iris()
 base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
@@ -11,7 +11,7 @@ clf.fit(iris.data, iris.target)
 
 # Cheese!
 
-trees = Export.export(clf)
+trees = export(clf)
 print(trees)
 
 # class Tmp {
