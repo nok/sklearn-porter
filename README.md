@@ -42,13 +42,13 @@ In this example we extend the [official user guide example](http://scikit-learn.
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
 
-from onl.nok.sklearn.export.Export import Export
+from onl.nok.sklearn.export import export
 
 iris = load_iris()
 clf = tree.DecisionTreeClassifier()
 clf.fit(iris.data, iris.target)
 
-tree = Export.export(clf)
+tree = export(clf)
 print(tree)
 ```
 
@@ -167,14 +167,15 @@ from sklearn.datasets import load_iris
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from onl.nok.sklearn.export.Export import Export
+from onl.nok.sklearn.export import export
 
 iris = load_iris()
 base_estimator = DecisionTreeClassifier(max_depth=4)
 clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100)
 clf.fit(iris.data, iris.target)
 
-trees = Export.export(clf)
+trees = export(clf)
+
 print(trees)
 ```
 
