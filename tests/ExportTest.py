@@ -45,7 +45,7 @@ class ExportTest(unittest.TestCase):
         joblib.dump(self.clf, self.tmp_fn + '.pkl')
         python_file = str(inspect.getfile(export)).split(".")[0] + '.py'
 
-        subprocess.call(['python', python_file, 'Tmp.pkl', 'Tmp.java'])
+        subprocess.call(['python', python_file, 'Tmp.pkl', '--output', 'Tmp.java'])
         subprocess.call(['javac', self.tmp_fn + '.java'])
 
         preds_from_java = []

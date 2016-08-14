@@ -1,8 +1,11 @@
-def export(model, method_name='predict', class_name='Tmp'):
+def export(model, to="java", method_name='predict', class_name='Tmp'):
     """Export the prediction of a trained model in the syntax of a specific programming language.
 
     Parameters
     ----------
+    :param to : String (default='java')
+        The required syntax (e.g. 'java', 'c' or 'js' (or 'javascript')).
+
     :param model : Model object
         An instance of a trained model (e.g. DecisionTreeClassifier()).
 
@@ -75,24 +78,41 @@ def is_convertible_model(model):
 
 
 def main():
-    import sys
+    import argparse
+    import os
 
-    # TODO: In general add more error exceptions
-    if len(sys.argv) == 3:
-        import os
+    parser = argparse.ArgumentParser(
+        description='Port trained scikit-learn models to a low-level programming language.',
+        epilog='More details on https://github.com/nok/scikit-learn-model-porting')
+    parser.add_argument(
+        'FILE',
+        help='set the classifier in pickle format')
+    parser.add_argument(
+        '--to',
+        choices=['c', 'java', 'js'],
+        default='java',
+        required=False,
+        help='set target programming language')
+    parser.add_argument(
+        '--output',
+        type=str,
+        required=False,
+        help='set the output path')
 
-        is_valid_input_file = lambda f: str(f).endswith('.pkl') and os.path.isfile(str(f))
-        is_valid_output_file = lambda f: str(f).endswith('.java') or str(f).endswith('.c')
+    args = vars(parser.parse_args())
 
-        if is_valid_input_file(sys.argv[1]) and is_valid_output_file(sys.argv[2]):
-            input_file = str(sys.argv[1])
-            output_file = str(sys.argv[2])
+    is_valid_input_file = lambda f: str(f).endswith('.pkl') and os.path.isfile(str(f))
+    if is_valid_input_file(args['FILE']):
+        input_fn = str(args['FILE'])
+        output_fn = input_fn.split('.')[-2] + '.' + str(args['to'])
+        if str(args['output']).endswith(('.c', '.java', '.js')):
+            output_fn = str(args['output'])
 
-            from sklearn.externals import joblib
-            with open(output_file, 'w') as file:
-                model = joblib.load(input_file)
-                class_name = output_file.split('.')[-2].lower().title()
-                file.write(export(model, class_name=class_name))
+        from sklearn.externals import joblib
+        with open(output_fn, 'w') as file:
+            model = joblib.load(input_fn)
+            class_name = output_fn.split('.')[-2].lower().title()
+            file.write(export(model, class_name=class_name))
 
 
 if __name__ == '__main__':
