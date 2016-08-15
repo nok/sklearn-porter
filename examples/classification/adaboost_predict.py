@@ -2,7 +2,7 @@ from sklearn.datasets import load_iris
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from onl.nok.sklearn.export import export
+from onl.nok.sklearn import export
 
 iris = load_iris()
 base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)

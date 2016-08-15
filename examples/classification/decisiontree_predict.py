@@ -1,7 +1,7 @@
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
 
-from onl.nok.sklearn.export import export
+from onl.nok.sklearn import export
 
 iris = load_iris()
 clf = tree.DecisionTreeClassifier()
