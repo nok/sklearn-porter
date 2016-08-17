@@ -1,4 +1,5 @@
 import sklearn
+
 from onl.nok.sklearn.classifier.Classifier import Classifier
 
 
@@ -21,7 +22,7 @@ class AdaBoostClassifier(Classifier):
 
 
     @staticmethod
-    def export(model, method_name='predict', class_name="Tmp"):
+    def port(model, method_name='predict', class_name="Tmp"):
         if AdaBoostClassifier.is_supported_method(method_name):
             if method_name == 'predict':
                 return AdaBoostClassifier.predict(model, class_name=class_name)

@@ -20,7 +20,7 @@ class DecisionTreeClassifier(Classifier):
 
 
     @staticmethod
-    def export(model, method_name='predict', class_name="Tmp"):
+    def port(model, method_name='predict', class_name="Tmp"):
         if DecisionTreeClassifier.is_supported_method(method_name):
             if method_name == 'predict':
                 return DecisionTreeClassifier.predict(model, class_name=class_name)

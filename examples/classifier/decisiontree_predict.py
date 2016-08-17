@@ -1,7 +1,7 @@
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
 
-from onl.nok.sklearn import export
+from onl.nok.sklearn.Porter import port
 
 iris = load_iris()
 clf = tree.DecisionTreeClassifier()
@@ -9,7 +9,7 @@ clf.fit(iris.data, iris.target)
 
 # Cheese!
 
-tree = export(clf)
+tree = port(clf)
 print(tree)
 
 # class Tmp {
