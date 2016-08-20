@@ -1,7 +1,7 @@
 
 # sklearn-porter
 
-[![Build Status](https://img.shields.io/travis/nok/scikit-learn-model-porting/master.svg)](https://travis-ci.org/nok/scikit-learn-model-porting)
+[![Build Status](https://img.shields.io/travis/nok/sklearn-porter/master.svg)](https://travis-ci.org/nok/sklearn-porter)
 [![Join the chat at https://gitter.im/nok/sklearn-porter](https://badges.gitter.im/nok/sklearn-porter.svg)](https://gitter.im/nok/sklearn-porter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/nok/scikit-learn-model-porting/master/LICENSE.txt)
 
