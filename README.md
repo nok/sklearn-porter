@@ -17,22 +17,22 @@ The following matrix shows the portable classifier models:
 <table>
     <tbody>
         <tr>
-            <td></td>
-            <td style="text-align: center; width: 25%;"><strong>C</strong></td>
-            <td style="text-align: center; width: 25%;"><strong>Java</strong></td>
-            <td style="text-align: center; width: 25%;"><strong>JavaScript</strong></td>
+            <td width="40%"></td>
+            <td align="center" width="20%"><strong>C</strong></td>
+            <td align="center" width="20%"><strong>Java</strong></td>
+            <td align="center" width="20%"><strong>JavaScript</strong></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">DecisionTreeClassifier</a></td>
-            <td style="text-align: center;"></td>
-            <td style="text-align: center;">X</td>
-            <td style="text-align: center;"></td>
+            <td align="center"></td>
+            <td align="center">X</td>
+            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">AdaBoostClassifier</a></td>
-            <td style="text-align: center;"></td>
-            <td style="text-align: center;">X</td>
-            <td style="text-align: center;"></td>
+            <td align="center"></td>
+            <td align="center">X</td>
+            <td align="center"></td>
         </tr>
     </tbody>
 </table>
