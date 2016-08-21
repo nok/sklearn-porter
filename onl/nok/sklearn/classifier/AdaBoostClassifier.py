@@ -33,17 +33,17 @@ class AdaBoostClassifier(Classifier):
     def predict(model, class_name='Tmp'):
         method_name = 'predict'
 
+        # Check the used algorithm type:
         if model.algorithm not in ('SAMME.R'):
-            # raise ValueError("algorithm %s is not supported" % model.algorithm)
-            return False
+            raise ValueError('The classifier does not support the given algorithm %s.', model.algorithm)
 
         # Check type of base estimators:
         if not isinstance(model.base_estimator, sklearn.tree.tree.DecisionTreeClassifier):
-            return False
+            raise ValueError('The classifier does not support the given base estimator %s.', model.base_estimator)
 
         # Check number of base estimators:
         if not model.n_estimators > 0:
-            return False
+            raise ValueError('The classifier has not any base estimators.')
 
         # TODO: Use local variables
         # n_features = model.estimators_[0].n_features_
