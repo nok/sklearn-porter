@@ -119,16 +119,23 @@ def main():
 
     is_valid_input_file = lambda f: str(f).endswith('.pkl') and os.path.isfile(str(f))
     if is_valid_input_file(args['FILE']):
-        input_fn = str(args['FILE'])
-        output_fn = input_fn.split('.')[-2] + '.' + str(args['to'])
+
+        # Target programming language:
+        lang = str(args['to']) if str(args['to']) is not '' else 'java'
+
+        # Input and output filename:
+        inn = str(args['FILE'])
+        out = inn.split('.')[-2] + '.' + lang
+
         if str(args['output']).endswith(('.c', '.java', '.js')):
-            output_fn = str(args['output'])
+            out = str(args['output'])
+            lang = out.split('.')[-1].lower()
 
         from sklearn.externals import joblib
-        with open(output_fn, 'w') as file:
-            model = joblib.load(input_fn)
-            class_name = output_fn.split('.')[-2].lower().title()
-            file.write(port(model, class_name=class_name))
+        with open(out, 'w') as file:
+            model = joblib.load(inn)
+            class_name = out.split('.')[-2].lower().title()
+            file.write(port(model, to=lang, class_name=class_name))
 
 
 if __name__ == '__main__':
