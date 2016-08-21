@@ -16,25 +16,42 @@ def port(model, to="java", method_name='predict', class_name='Tmp'):
         The name of the environment class.
     """
 
-    model_type = is_convertible_model(model)
-    if not model_type:
-        return
-
-    model_name = type(model).__name__
-    model_path = '.'.join(['onl.nok.sklearn', model_type, model_name])
+    md_type, md_name = get_model_data(model)
+    md_path = '.'.join(['onl.nok.sklearn', md_type, md_name])
 
     import os
     import sys
     sys.path.append(os.getcwd())
 
-    module = __import__(model_path, globals(), locals(), [model_name], -1)
-    model_klass = getattr(module, model_name)
-    model_method = getattr(model_klass, 'port')
-    return model_method(model, method_name=method_name, class_name=class_name)
+    module = __import__(md_path, globals(), locals(), [md_name], -1)
+    md_class = getattr(module, md_name)
+    md_method = getattr(md_class, 'port')
+    return md_method(model, method_name=method_name, class_name=class_name)
+
+
+def get_model_data(model):
+    """Get data of the assigned model.
+
+    Parameters
+    ----------
+    :param model : Model object
+        An instance of a trained model (e.g. DecisionTreeClassifier()).
+
+    :return md_type : String ['regressor', 'classifier']
+        The model type.
+
+    :return md_name : String
+        The name of the used algorithm.
+    """
+
+    md_type = is_convertible_model(model)
+    md_name = type(model).__name__
+    return md_type, md_name
 
 
 def get_convertible_classifiers():
     '''Get a list of convertible classifiers.'''
+
     import sklearn
     from sklearn.ensemble import weight_boosting
     return [
@@ -46,7 +63,6 @@ def get_convertible_classifiers():
 def get_convertible_regressors():
     '''Get a list of all convertible regressors.'''
     return []
-
 
 
 def is_convertible_model(model):
