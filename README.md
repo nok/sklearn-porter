@@ -88,7 +88,13 @@ joblib.dump(clf, 'model.pkl')
 Then you can port the model by typing the following command:
 
 ```sh
-python port.py model.pkl Model.java
+python Porter.py Model.java model.pkl
+```
+
+All options can be shown by running:
+
+```sh
+python Porter.py -h
 ```
 
 

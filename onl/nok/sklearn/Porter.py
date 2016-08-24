@@ -1,4 +1,15 @@
-def port(model, to="java", method_name='predict', class_name='Tmp'):
+import os
+import argparse
+
+import sklearn
+from sklearn.ensemble import weight_boosting
+
+from classifier.Classifier import Classifier
+from classifier.DecisionTreeClassifier import DecisionTreeClassifier
+from classifier.AdaBoostClassifier import AdaBoostClassifier
+
+
+def port(model, language="java", method_name='predict', class_name='Tmp'):
     """Port a trained model in the syntax of a specific programming language.
 
     Parameters
@@ -17,16 +28,12 @@ def port(model, to="java", method_name='predict', class_name='Tmp'):
     """
 
     md_type, md_name = get_model_data(model)
-    md_path = '.'.join(['onl.nok.sklearn', md_type, md_name])
+    md_path = '.'.join([md_type, md_name])
 
-    import os
-    import sys
-    sys.path.append(os.getcwd())
-
-    module = __import__(md_path, globals(), locals(), [md_name], -1)
-    md_class = getattr(module, md_name)
-    md_method = getattr(md_class, 'port')
-    return md_method(model, method_name=method_name, class_name=class_name)
+    md_mod = __import__(md_path, globals(), locals(), [md_name], -1)
+    klass = getattr(md_mod, md_name)
+    instance = klass(language=language, method_name=method_name, class_name=class_name)
+    return instance.port(model)
 
 
 def get_model_data(model):
@@ -49,18 +56,16 @@ def get_model_data(model):
     return md_type, md_name
 
 
-def get_convertible_classifiers():
+def get_classifiers():
     '''Get a list of convertible classifiers.'''
 
-    import sklearn
-    from sklearn.ensemble import weight_boosting
     return [
         sklearn.tree.tree.DecisionTreeClassifier,
         sklearn.ensemble.AdaBoostClassifier
     ]
 
 
-def get_convertible_regressors():
+def get_regressors():
     '''Get a list of all convertible regressors.'''
     return []
 
@@ -78,25 +83,16 @@ def is_convertible_model(model):
     onl.nok.sklearn.classifier.*, onl.nok.sklearn.regressor.*
     """
 
-    classifiers = get_convertible_classifiers()
-    is_convertible_clf = type(model) in classifiers
-    if is_convertible_clf:
+    if type(model) in get_classifiers():
         return 'classifier'
 
-    regressors = get_convertible_regressors()
-    is_convertible_rgs = type(model) in regressors
-    if is_convertible_rgs:
+    if type(model) in get_regressors():
         return 'regressors'
 
-    if not is_convertible_clf and not is_convertible_rgs:
-        raise ValueError('The model is not an instance of a supported classifier or regressor.')
-    return False
+    raise ValueError('The model is not an instance of a supported classifier or regressor.')
 
 
 def main():
-    import argparse
-    import os
-
     parser = argparse.ArgumentParser(
         description='Port trained scikit-learn models to a low-level programming language.',
         epilog='More details on https://github.com/nok/sklearn-porter')
@@ -117,8 +113,8 @@ def main():
 
     args = vars(parser.parse_args())
 
-    is_valid_input_file = lambda f: str(f).endswith('.pkl') and os.path.isfile(str(f))
-    if is_valid_input_file(args['FILE']):
+    input_file = str(args['FILE'])
+    if input_file.endswith('.pkl') and os.path.isfile(input_file):
 
         # Target programming language:
         lang = str(args['to']) if str(args['to']) is not '' else 'java'
@@ -134,9 +130,9 @@ def main():
         from sklearn.externals import joblib
         with open(out, 'w') as file:
             model = joblib.load(inn)
-            class_name = out.split('.')[-2].lower().title()
-            file.write(port(model, to=lang, class_name=class_name))
+            # class_name = out.split('.')[-2].lower().title()
+            file.write(port(model))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

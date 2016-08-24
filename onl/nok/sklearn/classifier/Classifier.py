@@ -1,17 +1,10 @@
-# TODO: Refactor to an abstract class
-class Classifier:
 
 
-    @staticmethod
-    def get_supported_methods():
-        pass
+class Classifier(object):
+    def __init__(self, language='java', method_name='predict', class_name='Tmp'):
+        self.language = language
+        self.method_name = method_name
+        self.class_name = class_name
 
-
-    @staticmethod
-    def is_supported_method(method_name):
-        pass
-
-
-    @staticmethod
-    def port(model, method_name='predict', class_name='Tmp'):
-        pass
+    def port(self, model):
+        self.model = model
