@@ -20,7 +20,7 @@ install:
   - conda config --add channels conda-forge
   - conda update -q conda
   - conda info -a
-  - conda env create -q -n sklearn.tree.model.export python=$TRAVIS_PYTHON_VERSION -f environment.yml
-  - source activate sklearn.tree.model.export
+  - conda env create -q -n sklearn-porter python=$TRAVIS_PYTHON_VERSION -f environment.yml
+  - source activate sklearn-porter
 script:
   - python -m unittest discover -p '*Test.py'
