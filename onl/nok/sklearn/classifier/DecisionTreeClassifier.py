@@ -2,6 +2,12 @@ from Classifier import Classifier
 
 
 class DecisionTreeClassifier(Classifier):
+    """
+    See also
+    --------
+    sklearn.tree.DecisionTreeClassifier
+    """
+
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
         super(self.__class__, self).__init__(language, method_name, class_name)
         if method_name not in ['predict']:
@@ -9,47 +15,91 @@ class DecisionTreeClassifier(Classifier):
             raise ValueError(msg)
 
     def port(self, model):
-        if self.method_name == 'predict':
-            return self.predict(model)
+        """Port a trained model in the syntax of a specific programming language.
 
-    def predict(self, model):
-        str_method = DecisionTreeClassifier._create_method(model, 'predict')
-        str_class = DecisionTreeClassifier._create_class(model, self.class_name)
-        return str_class.format(str_method)
+        Parameters
+        ----------
+        :param model : scikit-learn model object
+            An instance of a trained model (e.g. DecisionTreeClassifier).
+        """
+        super(self.__class__, self).port(model)
+        self.n_features = model.n_features_
+        self.n_classes = model.n_classes_
+        if self.method_name == 'predict':
+            return self.predict()
+
+    def predict(self):
+        """Translate the predict method.
+
+        Returns
+        -------
+        :return: out : string
+            The ported predict method.
+        """
+        str_method = self.create_method()
+        str_class = self.create_class()
+        out = str_class.format(str_method)
+        return out
 
     @staticmethod
-    def _create_method(model, method_name):
-        method_name = str(method_name)
-        n_features = model.n_features_
-        n_classes = model.n_classes_
+    def parse(L, R, T, value, features, node, depth):
+        """Parse and port the model data.
 
+        Parameters
+        ----------
+        :param L : object
+            The left children node.
+        :param R : object
+            The left children node.
+        :param T : object
+            The decision threshold.
+        :param value : object
+            The label or class.
+        :param features : object
+            The feature values.
+        :param node : int
+            The current node.
+        :param depth : int
+            The tree depth.
+
+        Returns
+        -------
+        :return : string
+            The ported single tree as function or method.
+        """
+        out = ''
+        indent = '\n' + '    ' * depth
         # @formatter:off
-        def _recurse(left, right, threshold, value, features, node, depth):
-            out = ''
-            indent = '\n' + '    ' * depth
-            if threshold[node] != -2.:
-                out += indent + 'if (atts[{0}] <= {1:.6f}f) {{'.format(features[node], threshold[node])
-                if left[node] != -1.:
-                    out += _recurse(left, right, threshold, value, features, left[node], depth + 1)
-                out += indent + '} else {'
-                if right[node] != -1.:
-                    out += _recurse(left, right, threshold, value, features, right[node], depth + 1)
-                out += indent + '}'
-            else:
-                out += ';'.join(
-                    [indent + 'classes[{0}] = {1}'.format(i, int(v)) for i, v in enumerate(value[node][0])]) + ';'
-            return out
+        if T[node] != -2.:
+            out += indent + 'if (atts[{0}] <= {1:.6f}f) {{'.format(features[node], T[node])
+            if L[node] != -1.:
+                out += DecisionTreeClassifier.parse(L, R, T, value, features, L[node], depth + 1)
+            out += indent + '} else {'
+            if R[node] != -1.:
+                out += DecisionTreeClassifier.parse(L, R, T, value, features, R[node], depth + 1)
+            out += indent + '}'
+        else:
+            for idx, val in enumerate(value[node][0]):
+                classes = [indent + 'classes[{0}] = {1}'.format(idx, int(val))]
+                out += ';'.join(classes) + ';'
         # @formatter:on
+        return out
 
-        features = [[str(idx) for idx in range(n_features)][i] for i in model.tree_.feature]
-        conditions = _recurse(
-            model.tree_.children_left,
-            model.tree_.children_right,
-            model.tree_.threshold,
-            model.tree_.value, features, 0, 1)
+    def create_method(self):
+        """Build the model method.
 
-        # @formatter:off
+        Returns
+        -------
+        :return out : string
+            The built method as string.
+        """
+        features = [[str(idx) for idx in range(self.n_features)][i] for i in self.model.tree_.feature]
+        conditions = DecisionTreeClassifier.parse(self.model.tree_.children_left,
+                                                  self.model.tree_.children_right,
+                                                  self.model.tree_.threshold,
+                                                  self.model.tree_.value, features, 0, 1)
         out = (
+            # @formatter:off
             'public static int {0}(float[] atts) {{ \n'
             '    int n_classes = {1}; \n'
             '    int[] classes = new int[n_classes]; \n'
@@ -64,14 +114,20 @@ class DecisionTreeClassifier(Classifier):
             '    }} \n'
             '    return idx; \n'
             '}}'
-        ).format(method_name, n_classes, conditions)  # -> {0}, {1}, {2}
-        # @formatter:on
-        return str(out)
+            # @formatter:on
+        ).format(self.method_name, self.n_classes, conditions)  # -> {0}, {1}, {2}
+        return out
 
-    @staticmethod
-    def _create_class(model, class_name):
-        n_features = model.n_features_
+    def create_class(self):
+        """Build the model class.
+
+        Returns
+        -------
+        :return out : string
+            The built class as string.
+        """
         out = (
+            # @formatter:off
             'class {0} {{{{ \n'
             '    {{0}} \n'
             '    public static void main(String[] args) {{{{ \n'
@@ -83,5 +139,7 @@ class DecisionTreeClassifier(Classifier):
             '            System.out.println({0}.predict(atts)); \n'
             '        }}}} \n'
             '    }}}} \n'
-            '}}}}').format(class_name, n_features)  # -> {0}, {1}
-        return str(out)
+            '}}}}'
+            # @formatter:on
+        ).format(self.class_name, self.n_features)  # -> {0}, {1}
+        return out
