@@ -14,22 +14,25 @@ def port(model, language="java", method_name='predict', class_name='Tmp'):
 
     Parameters
     ----------
-    :param to : String (default='java')
-        The required syntax (e.g. 'java', 'c' or 'js' (or 'javascript')).
+    :param model : scikit-learn model object
+        An instance of a trained model (e.g. DecisionTreeClassifier).
 
-    :param model : Model object
-        An instance of a trained model (e.g. DecisionTreeClassifier()).
+    :param language : string (default='java')
+        The required syntax ['java', 'c', 'js'].
 
-    :param method_name : String (default='predict')
+    :param method_name : string (default='predict')
         The name of the prediction method.
 
-    :param class_name : String (default='Tmp')
+    :param class_name : string (default='Tmp')
         The name of the environment class.
-    """
 
+    Returns
+    -------
+    :return: string
+        The ported model as string.
+    """
     md_type, md_name = get_model_data(model)
     md_path = '.'.join([md_type, md_name])
-
     md_mod = __import__(md_path, globals(), locals(), [md_name], -1)
     klass = getattr(md_mod, md_name)
     instance = klass(language=language, method_name=method_name, class_name=class_name)
@@ -41,16 +44,17 @@ def get_model_data(model):
 
     Parameters
     ----------
-    :param model : Model object
+    :param model : scikit-learn model object
         An instance of a trained model (e.g. DecisionTreeClassifier()).
 
-    :return md_type : String ['regressor', 'classifier']
+    Returns
+    -------
+    :return md_type : string ['regressor', 'classifier']
         The model type.
 
-    :return md_name : String
+    :return md_name : string
         The name of the used algorithm.
     """
-
     md_type = is_convertible_model(model)
     md_name = type(model).__name__
     return md_type, md_name
@@ -58,7 +62,6 @@ def get_model_data(model):
 
 def get_classifiers():
     '''Get a list of convertible classifiers.'''
-
     return [
         sklearn.tree.tree.DecisionTreeClassifier,
         sklearn.ensemble.AdaBoostClassifier
@@ -75,20 +78,17 @@ def is_convertible_model(model):
 
     Parameters
     ----------
-    :param model : Model object
+    :param model : scikit-learn model object
         An instance of a trained model (e.g. DecisionTreeClassifier()).
 
     See also
     --------
     onl.nok.sklearn.classifier.*, onl.nok.sklearn.regressor.*
     """
-
     if type(model) in get_classifiers():
         return 'classifier'
-
     if type(model) in get_regressors():
         return 'regressors'
-
     raise ValueError('The model is not an instance of a supported classifier or regressor.')
 
 
