@@ -1,4 +1,4 @@
-name: sklearn-porting
+name: sklearn-porter
 dependencies:
 - libgcc=4.8.5=1
 - mkl=11.3.3=0
@@ -16,4 +16,3 @@ dependencies:
 - zlib=1.2.8=3
 - pip:
   - six==1.10.0
-
