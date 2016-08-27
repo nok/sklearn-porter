@@ -26,7 +26,7 @@ The following matrix shows the portable classifier models:
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">DecisionTreeClassifier</a></td>
             <td align="center"></td>
             <td align="center">X</td>
-            <td align="center"></td>
+            <td align="center">X</td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">AdaBoostClassifier</a></td>
