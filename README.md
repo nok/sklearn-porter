@@ -32,7 +32,7 @@ The following matrix shows the portable classifier models:
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">AdaBoostClassifier</a></td>
             <td align="center"></td>
             <td align="center">X</td>
-            <td align="center"></td>
+            <td align="center">X</td>
         </tr>
     </tbody>
 </table>
@@ -63,6 +63,8 @@ clf = tree.DecisionTreeClassifier()
 clf.fit(iris.data, iris.target)
 
 tree = port(clf)
+# tree = port(clf, language='java')
+# tree = port(clf, language='js')
 print(tree)
 ```
 

@@ -6,6 +6,8 @@ class DecisionTreeClassifier(Classifier):
     See also
     --------
     sklearn.tree.DecisionTreeClassifier
+
+    http://scikit-learn.org/0.17/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
@@ -14,22 +16,26 @@ class DecisionTreeClassifier(Classifier):
             msg = 'The classifier does not support the given method.'
             raise ValueError(msg)
 
+
     def port(self, model):
-        """Port a trained model in the syntax of a specific programming language.
+        """Port a trained model to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param model : scikit-learn model object
-            An instance of a trained model (e.g. DecisionTreeClassifier).
+        :param model : DecisionTreeClassifier
+            An instance of a trained DecisionTreeClassifier classifier.
         """
         super(self.__class__, self).port(model)
+
         self.n_features = model.n_features_
         self.n_classes = model.n_classes_
+
         if self.method_name == 'predict':
             return self.predict()
 
+
     def predict(self):
-        """Translate the predict method.
+        """Port the predict method.
 
         Returns
         -------
@@ -41,8 +47,9 @@ class DecisionTreeClassifier(Classifier):
         out = str_class.format(str_method)
         return out
 
-    def create_tree(self, L, R, T, value, features, node, depth):
-        """Parse and port the model tree.
+
+    def parse_tree(self, L, R, T, value, features, node, depth):
+        """Parse and port a single tree model.
 
         Parameters
         ----------
@@ -68,25 +75,53 @@ class DecisionTreeClassifier(Classifier):
         """
         out = ''
         indent = '\n' + '    ' * depth
-        # @formatter:off
         if T[node] != -2.:
             template = {
-                'java': ('if (atts[{0}] <= {1:.6f}f) {{'),
-                'js': ('if (atts[{0}] <= {1:.6f}) {{')
+                # @formatter:off
+                'java': ('if (atts[{0}] <= {1:.16}f) {{'),
+                'js': ('if (atts[{0}] <= {1:.16}) {{')
+                # @formatter:on
             }
             out += indent + template[self.language].format(features[node], T[node])
             if L[node] != -1.:
-                out += self.create_tree(L, R, T, value, features, L[node], depth + 1)
+                out += self.parse_tree(L, R, T, value, features, L[node], depth + 1)
             out += indent + '} else {'
             if R[node] != -1.:
-                out += self.create_tree(L, R, T, value, features, R[node], depth + 1)
+                out += self.parse_tree(L, R, T, value, features, R[node], depth + 1)
             out += indent + '}'
         else:
+            classes = []
+            template = {
+                # @formatter:off
+                'java': (indent + 'classes[{0}] = {1}'),
+                'js': (indent + 'classes[{0}] = {1}')
+                # @formatter:on
+            }
             for idx, val in enumerate(value[node][0]):
-                classes = [indent + 'classes[{0}] = {1}'.format(idx, int(val))]
-                out += ';'.join(classes) + ';'
-        # @formatter:on
+                classes.append(template[self.language].format(idx, int(val)))
+            out += ';'.join(classes) + ';'
         return out
+
+
+    def create_tree(self):
+        """Parse and build the tree branches.
+
+        Returns
+        -------
+        :return out : string
+            The tree branches as string.
+        """
+        feature_indices = []
+        for idx in self.model.tree_.feature:
+            feature_indices.append([str(jdx) for jdx in range(self.n_features)][idx])
+        tree_branches = self.parse_tree(
+            self.model.tree_.children_left,
+            self.model.tree_.children_right,
+            self.model.tree_.threshold,
+            self.model.tree_.value,
+            feature_indices, 0, 1)
+        return tree_branches
+
 
     def create_method(self):
         """Build the model method or function.
@@ -96,16 +131,7 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built method as string.
         """
-        feature_indices = []
-        for i in self.model.tree_.feature:
-            feature_indices.append([str(j) for j in range(self.n_features)][i])
-
-        conditions = self.create_tree(
-            self.model.tree_.children_left,
-            self.model.tree_.children_right,
-            self.model.tree_.threshold,
-            self.model.tree_.value, feature_indices, 0, 1)
-
+        tree_branches = self.create_tree()
         template = {
             'java': (
                 # @formatter:off
@@ -147,8 +173,9 @@ class DecisionTreeClassifier(Classifier):
             self.method_name,
             self.n_features,
             self.n_classes,
-            conditions)
+            tree_branches)
         return out
+
 
     def create_class(self):
         """Build the model class.

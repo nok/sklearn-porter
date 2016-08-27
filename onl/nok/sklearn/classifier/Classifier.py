@@ -7,6 +7,7 @@ class Classifier(object):
         self.method_name = method_name
         self.class_name = class_name
 
+
     def port(self, model):
         """Port a trained model in the syntax of a specific programming language.
 
