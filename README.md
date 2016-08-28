@@ -17,22 +17,32 @@ The following matrix shows the portable classifier models:
 <table>
     <tbody>
         <tr>
-            <td width="40%"></td>
-            <td align="center" width="20%"><strong>C</strong></td>
-            <td align="center" width="20%"><strong>Java</strong></td>
-            <td align="center" width="20%"><strong>JavaScript</strong></td>
+            <td width="32%"></td>
+            <td align="center" width="17%"><strong>Example</strong></td>
+            <td align="center" width="17%"><strong>C</strong></td>
+            <td align="center" width="17%"><strong>Java</strong></td>
+            <td align="center" width="17%"><strong>JavaScript</strong></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">DecisionTreeClassifier</a></td>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.tree.DecisionTreeClassifier.html">DecisionTreeClassifier</a></td>
+            <td align="center"><a href="blob/master/examples/classifier/decisiontree_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
             <td align="center">X</td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">AdaBoostClassifier</a></td>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">AdaBoostClassifier</a></td>
+            <td align="center"><a href="blob/master/examples/classifier/adaboost_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
             <td align="center">X</td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.LinearSVC.html">LinearSVC</a></td>
+            <td align="center"><a href="blob/master/examples/classifier/linear_svc_predict.py">X</a></td>
+            <td align="center"></td>
+            <td align="center">X</td>
+            <td align="center"></td>
         </tr>
     </tbody>
 </table>
@@ -50,7 +60,7 @@ Either you use the porter in your application as [imported module](#module) or y
 
 ### Module
 
-This example shows how to port the [official user guide example](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
+This example shows how you can port the decision tree model from the [official user guide](http://scikit-learn.org/0.17/modules/tree.html#classification) to the programming language Java:
 
 ```python
 from sklearn.tree import tree
@@ -62,18 +72,17 @@ iris = load_iris()
 clf = tree.DecisionTreeClassifier()
 clf.fit(iris.data, iris.target)
 
+# Here we port the model:
 tree = port(clf)
-# tree = port(clf, language='java')
-# tree = port(clf, language='js')
 print(tree)
 ```
 
-The [resulted output](examples/classifier/decisiontree_predict.py) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
+The [result](examples/classifier/decisiontree_predict.py) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
 
 
 ### CLI
 
-This examples shows how you can port a model from the command line. First of all you have to store the model in pickle format:
+This examples shows how you can port a model from the command line. First of all you have to store the model to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
 
 ```python
 from sklearn.tree import tree
@@ -87,13 +96,13 @@ clf.fit(iris.data, iris.target)
 joblib.dump(clf, 'model.pkl')
 ```
 
-Then you can port the model by typing the following command:
+Then you can port the model by using the following command:
 
 ```sh
 python Porter.py --output Model.java model.pkl
 ```
 
-All options can be shown by running:
+The following command shows all options:
 
 ```sh
 python Porter.py -h
@@ -102,7 +111,7 @@ python Porter.py -h
 
 ## Environment
 
-Install the [environment modules](environment.yml) by executing the bash script [environment.sh](environment.sh) or by typing:
+Install the [environment modules](environment.yml) by executing the bash script [environment.sh](environment.sh) or type:
 
 ```sh
 conda config --add channels conda-forge
@@ -112,7 +121,7 @@ source activate sklearn-porter
 
 ## Unit Testing
 
-Run the [tests](tests) by executing the bash script [tests.sh](tests.sh) or by typing:
+Run the [tests](tests) by executing the bash script [tests.sh](tests.sh) or type:
 
 ```sh
 python -m unittest discover -vp '*Test.py'
@@ -126,4 +135,4 @@ Don't be shy and feel free to contact me on [Twitter](https://twitter.com/darius
 
 ## License
 
-The library is Open Source Software released under the [license](LICENSE.txt).
+The library is Open Source Software released under the [MIT](LICENSE.txt) license.

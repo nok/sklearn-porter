@@ -7,6 +7,7 @@ from sklearn.ensemble import weight_boosting
 from classifier.Classifier import Classifier
 from classifier.DecisionTreeClassifier import DecisionTreeClassifier
 from classifier.AdaBoostClassifier import AdaBoostClassifier
+from classifier.LinearSVC import LinearSVC
 
 
 def port(model, language="java", method_name='predict', class_name='Tmp'):
@@ -64,7 +65,8 @@ def get_classifiers():
     '''Get a list of convertible classifiers.'''
     return [
         sklearn.tree.tree.DecisionTreeClassifier,
-        sklearn.ensemble.AdaBoostClassifier
+        sklearn.ensemble.AdaBoostClassifier,
+        sklearn.svm.classes.LinearSVC
     ]
 
 
