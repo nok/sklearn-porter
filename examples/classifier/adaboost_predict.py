@@ -11,7 +11,7 @@ clf.fit(iris.data, iris.target)
 
 # Cheese!
 
-trees = port(clf, language='js')
+trees = port(clf)
 print(trees)
 
 # class Tmp {
