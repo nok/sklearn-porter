@@ -13,11 +13,13 @@ class AdaBoostClassifier(Classifier):
     http://scikit-learn.org/0.17/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
     """
 
+    SUPPORT = {
+        'predict': ['java', 'js']
+    }
+
+
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
         super(self.__class__, self).__init__(language, method_name, class_name)
-        if method_name not in ['predict']:
-            msg = 'The classifier does not support the given method.'
-            raise ValueError(msg)
 
 
     def port(self, model):

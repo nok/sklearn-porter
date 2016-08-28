@@ -26,6 +26,12 @@ class PorterTest(unittest.TestCase):
     def tearDown(self):
         self.clf = None
 
+    def test_porter_param_method(self):
+        self.assertRaises(AttributeError, lambda: port(self.clf, method_name="random"))
+
+    def test_porter_param_language(self):
+        self.assertRaises(AttributeError, lambda: port(self.clf, method_name="predict", language="random"))
+
     def _create_java_files(self):
         # rm -rf temp
         subprocess.call(['rm', '-rf', 'temp'])
