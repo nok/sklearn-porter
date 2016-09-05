@@ -8,6 +8,7 @@ from classifier.Classifier import Classifier
 from classifier.DecisionTreeClassifier import DecisionTreeClassifier
 from classifier.AdaBoostClassifier import AdaBoostClassifier
 from classifier.LinearSVC import LinearSVC
+from classifier.SVC import SVC
 
 
 def port(model, language="java", method_name='predict', class_name='Tmp'):
@@ -66,7 +67,8 @@ def get_classifiers():
     return [
         sklearn.tree.tree.DecisionTreeClassifier,
         sklearn.ensemble.AdaBoostClassifier,
-        sklearn.svm.classes.LinearSVC
+        sklearn.svm.classes.LinearSVC,
+        sklearn.svm.classes.SVC
     ]
 
 
