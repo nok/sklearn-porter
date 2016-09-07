@@ -1,5 +1,4 @@
 import sklearn
-import copy
 
 from Classifier import Classifier
 
@@ -53,10 +52,10 @@ class AdaBoostClassifier(Classifier):
         self.weights = []
         self.n_estimators = 0
         for idx in range(self.model.n_estimators):
-            weight = float(self.model.estimator_weights_[idx])
+            weight = self.model.estimator_weights_[idx]
             if weight > 0:
-                self.models.append(copy.deepcopy(self.model.estimators_[idx]))
-                self.weights.append(copy.deepcopy(self.model.estimator_weights_[idx]))
+                self.models.append(self.model.estimators_[idx])
+                self.weights.append(self.model.estimator_weights_[idx])
                 self.n_estimators += 1
                 self.n_features = self.model.estimators_[idx].n_features_
 
@@ -105,15 +104,17 @@ class AdaBoostClassifier(Classifier):
         """
         out = ''
         indent = '\n' + '    ' * depth
-        # @formatter:off
+
         if T[node] != -2.:
+
+            # @formatter:off
             template = {
-                # @formatter:off
-                'java': ('if (atts[{0}] <= {1:.16}f) {{'),
-                'js': ('if (atts[{0}] <= {1:.16}) {{')
-                # @formatter:on
+                'java': ('if (atts[{0}] <= {1}) {{'),
+                'js': ('if (atts[{0}] <= {1}) {{')
             }
-            out += indent + template[self.language].format(features[node], T[node])
+            # @formatter:on
+
+            out += indent + template[self.language].format(features[node], repr(T[node]))
             if L[node] != -1.:
                 out += self.parse_tree(L, R, T, value, features, L[node], depth + 1)
             out += indent + '} else {'
@@ -122,14 +123,16 @@ class AdaBoostClassifier(Classifier):
             out += indent + '}'
         else:
             classes = []
+
+            # @formatter:off
             template = {
-                # @formatter:off
-                'java': (indent + 'classes[{0}] = {1:.16}f'),
-                'js': (indent + 'classes[{0}] = {1:.16}')
-                # @formatter:on
+                'java': (indent + 'classes[{0}] = {1}'),
+                'js': (indent + 'classes[{0}] = {1}')
             }
+            # @formatter:on
+
             for idx, val in enumerate(value[node][0]):
-                classes.append(template[self.language].format(idx, val))
+                classes.append(template[self.language].format(idx, repr(val)))
             out += ';'.join(classes) + ';'
         return out
 
@@ -160,26 +163,24 @@ class AdaBoostClassifier(Classifier):
             model.tree_.value,
             feature_indices, 0, 1)
 
+        # @formatter:off
         template = {
             'java': (
-                # @formatter:off
-                'public static float[] {1}_{0}(float[] atts) {{ \n'
-                '    float[] classes = new float[{2}];'
+                'public static double[] {1}_{0}(float[] atts) {{ \n'
+                '    double[] classes = new double[{2}];'
                 '    {3} \n\n'
                 '    return classes; \n'
                 '}}'
-                # @formatter:on
             ),
             'js': (
-                # @formatter:off
                 'var {1}_{0} = function(atts) {{ \n'
                 '    var classes = new Array({2});'
                 '    {3} \n\n'
                 '    return classes; \n'
                 '}};'
-                # @formatter:on
             )
         }
+        # @formatter:on
 
         out = template[self.language].format(
             str(model_index),
@@ -199,20 +200,18 @@ class AdaBoostClassifier(Classifier):
         """
         # Generate method or function names:
         fn_names = []
+
+        # @formatter:off
         template = {
             'java': (
-                # @formatter:off
-                # preds[0] = Tmp.predict_0(atts);
                 'preds[{0}] = {1}.{2}(atts);'
-                # @formatter:on
             ),
             'js': (
-                # @formatter:off
-                # preds[0] = predict_0(atts);
                 'preds[{0}] = {2}(atts);'
-                # @formatter:on
             )
         }
+        # @formatter:on
+
         suffix = ("_{0:0" + str(len(str(self.n_estimators))) + "d}")
         for idx, model in enumerate(self.models):
             fn_name = self.method_name + suffix.format(idx)
@@ -225,48 +224,48 @@ class AdaBoostClassifier(Classifier):
             tree = self.create_tree(idx, model)
             fns.append(tree)
 
+        # @formatter:off
         template = {
             'java': (
-                # @formatter:off
                 '{0}'
                 'public static int {1}(float[] atts) {{ \n'
                 '    int n_estimators = {2}; \n'
                 '    int n_classes = {3}; \n\n'
-                '    float[][] preds = new float[n_estimators][]; \n'
+                '    double[][] preds = new double[n_estimators][]; \n'
                 '    {4} \n\n'
                 '    int i, j; \n'
-                '    float normalizer, sum; \n'
+                '    double normalizer, sum; \n'
                 '    for (i = 0; i < n_estimators; i++) {{ \n'
-                '        normalizer = 0.f; \n'
+                '        normalizer = 0.; \n'
                 '        for (j = 0; j < n_classes; j++) {{ \n'
                 '            normalizer += preds[i][j]; \n'
                 '        }} \n'
-                '        if (normalizer == 0.f) {{ \n'
-                '            normalizer = 1.0f; \n'
+                '        if (normalizer == 0.) {{ \n'
+                '            normalizer = 1.; \n'
                 '        }} \n'
                 '        for (j = 0; j < n_classes; j++) {{ \n'
                 '            preds[i][j] = preds[i][j] / normalizer; \n'
-                '            if (preds[i][j] < 0.000000000000000222044604925f) {{ \n'
-                '                preds[i][j] = 0.000000000000000222044604925f; \n'
+                '            if (preds[i][j] < Double.MIN_VALUE) {{ \n'
+                '                preds[i][j] = Double.MIN_VALUE; \n'
                 '            }} \n'
-                '            preds[i][j] = (float) Math.log(preds[i][j]); \n'
+                '            preds[i][j] = Math.log(preds[i][j]); \n'
                 '        }} \n'
-                '        sum = 0.0f; \n'
+                '        sum = 0.; \n'
                 '        for (j = 0; j < n_classes; j++) {{ \n'
                 '            sum += preds[i][j]; \n'
                 '        }} \n'
                 '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            preds[i][j] = (n_classes - 1) * (preds[i][j] - (1.f / n_classes) * sum); \n'
+                '            preds[i][j] = (n_classes - 1) * (preds[i][j] - (1. / n_classes) * sum); \n'
                 '        }} \n'
                 '    }} \n'
-                '    float[] classes = new float[n_classes]; \n'
+                '    double[] classes = new double[n_classes]; \n'
                 '    for (i = 0; i < n_estimators; i++) {{ \n'
                 '        for (j = 0; j < n_classes; j++) {{ \n'
                 '            classes[j] += preds[i][j]; \n'
                 '        }} \n'
                 '    }} \n'
                 '    int idx = 0; \n'
-                '    float val = Float.NEGATIVE_INFINITY; \n'
+                '    double val = Double.NEGATIVE_INFINITY; \n'
                 '    for (i = 0; i < n_classes; i++) {{ \n'
                 '        if (classes[i] > val) {{ \n'
                 '            idx = i; \n'
@@ -275,10 +274,8 @@ class AdaBoostClassifier(Classifier):
                 '    }} \n'
                 '    return idx; \n'
                 '}}'
-                # @formatter:on
             ),
             'js': (
-                # @formatter:off
                 '{0} \n'
                 'var {1} = function(atts) {{ \n'
                 '    var n_estimators = {2}, \n'
@@ -329,9 +326,10 @@ class AdaBoostClassifier(Classifier):
                 '    }} \n'
                 '    return idx; \n'
                 '}};'
-                # @formatter:on
             )
         }
+        # @formatter:on
+
         # Merge generated content:
         out = template[self.language].format(
             '\n'.join(fns),
@@ -350,9 +348,9 @@ class AdaBoostClassifier(Classifier):
         :return out : string
             The built class as string.
         """
+        # @formatter:off
         template = {
             'java': (
-                # @formatter:off
                 'class {0} {{{{ \n'
                 '    {{0}} \n'
                 '    public static void main(String[] args) {{{{ \n'
@@ -365,14 +363,11 @@ class AdaBoostClassifier(Classifier):
                 '        }}}} \n'
                 '    }}}} \n'
                 '}}}}'
-                # @formatter:on
             ),
-            'js': (
-                # @formatter:off
-                '{{0}}'
-                # @formatter:on
-            )
+            'js': ('{{0}}')
         }
+        # @formatter:off
+
         out = template[self.language].format(
             self.class_name,
             self.method_name,

@@ -46,7 +46,7 @@ class AdaBoostClassifierTest(unittest.TestCase):
         for i, el in enumerate(preds_from_py):
             if (preds_from_py[i] != preds_from_java[i]):
                 errors += 1
-        print('Rounding precision error rate: %f %%' % (float(errors) / 150.0 * 100.0))
+        print('Rounding precision error: %f %%' % (float(errors) / 150.0 * 100.0))
 
         self._remove_java_files()
         self.assertTrue(errors < 15)
