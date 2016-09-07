@@ -30,7 +30,7 @@ class SVC(Classifier):
 
         params = model.get_params()
         # Check kernel type:
-        if params['kernel'] != 'linear' and params['kernel'] != 'rbf':
+        if params['kernel'] not in ['linear', 'rbf', 'poly']:
             msg = 'The kernel type is not supported.'
             raise ValueError(msg)
         # Check rbf gamma value:
@@ -125,6 +125,29 @@ class SVC(Classifier):
             # @formatter:on
             out += '\n' + template[self.language].format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']))
+
+        if self.params['kernel'] == 'poly':
+            # @formatter:off
+            template = {
+                'java': (
+                    'double[] kernels = new double[{0}]; \n'
+                    'double kernel; \n'
+                    'for (int i=0; i<{0}; i++) {{ \n'
+                    '    kernel = 0.; \n'
+                    '    for (int j=0; j<{1}; j++) {{ \n'
+                    '        kernel += svs[i][j] * atts[j]; \n'
+                    # '        kernel += Math.pow(svs[i][j] - atts[j], 2); \n'
+                    '    }} \n'
+                    '    kernels[i] = Math.pow(({2} * kernel) + {3}, {4}); \n'
+                    '}} \n'
+                )
+            }
+            # @formatter:on
+            out += '\n' + template[self.language].format(
+                len(self.svs), self.n_svs,
+                repr(self.params['gamma']),
+                repr(self.params['coef0']),
+                repr(self.params['degree']))
 
         if self.params['kernel'] == 'linear':
             # @formatter:off
