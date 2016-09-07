@@ -7,3 +7,5 @@
 src/*.java
 src/*.class
 
+examples/tests
+examples/tests/*

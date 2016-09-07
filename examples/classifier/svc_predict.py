@@ -3,203 +3,93 @@ from sklearn.datasets import load_iris
 
 from onl.nok.sklearn.Porter import port
 
-import numpy as np
-import math
-
 iris = load_iris()
 clf = svm.SVC(C=1., gamma=0.001, kernel='rbf', random_state=0)
 clf.fit(iris.data, iris.target)
 
-print(type(clf))
-
 # Cheese!
 
-# print(clf.get_params())
-
-# poly:
-# k (x, y) = (gamma * x*y = coef0) ^ degree
-
-# print('gamma', clf.gamma)
-# print('coef', clf.coef0)
-# print('degree', clf.degree)
-
-# rbf:
-# k (x, y) = exp( -gamma * || x-y || ^ 2 )
-# if gamma > 0
-
-
-# I've only implemented the linear and rbf kernels
-def kernel(params, sv, X):
-    if params['kernel'] == 'linear':
-        gh = []
-        for vi in sv:
-            gh.append(np.dot(vi, X))
-        return gh
-    elif params['kernel'] == 'rbf':
-        gh = []
-        for vi in sv:
-            # print vi, X, np.dot(vi - X, vi - X)
-            # exit()
-            r = np.math.exp(-params['gamma'] * np.dot(vi - X, vi - X))
-            gh.append(r)
-        return gh
-
-
-# This replicates clf.decision_function(X)
-def decision_function(params, sv, nv, a, b, X):
-    # calculate the kernels
-    k = kernel(params, sv, X)
-
-    # print k
-
-    # define the start and end index for support vectors for each class
-    start = [sum(nv[:i]) for i in range(len(nv))]
-    # print start
-
-    end = [start[i] + nv[i] for i in range(len(nv))]
-    # print end
-
-    # calculate: sum(a_p * k(x_p, x)) between every 2 classes
-    c = [sum(a[i][p] * k[p] for p in range(start[j], end[j])) + sum(a[j-1][p] * k[p] for p in range(start[i], end[i])) for i in range(len(nv)) for j in range(i+1, len(nv))]
-
-    # add the intercept
-    return [sum(x) for x in zip(c, b)]
-
-
-# This replicates clf.predict(X)
-def predict(params, sv, nv, a, b, cs, X):
-    ''' params = model parameters
-        sv = support vectors
-        nv = # of support vectors per class
-        a  = dual coefficients
-        b  = intercepts
-        cs = list of class names
-        X  = feature to predict
-    '''
-    decision = decision_function(params, sv, nv, a, b, X)
-    votes = [(i if decision[p] > 0 else j) for p,(i,j) in enumerate((i,j) for i in range(len(cs)) for j in range(i+1,len(cs)))]
-    # print('votes', votes)
-
-    return cs[max(set(votes), key=votes.count)]
-
-# ------------------------------------------------------------
-
-# Compare with the builtin predict
-print(clf.predict(np.array([[-9., 2., 0.5, 1.]])))
-
-X = np.array([-9., 2., 0.5, 1.])
-
-# Get parameters from model
-params = clf.get_params()
-print(params)
-
-sv = clf.support_vectors_
-nv = clf.n_support_
-a = clf.dual_coef_
-b = clf._intercept_
-cs = clf.classes_
-
-# Use the functions to predict
-print(predict(params, sv, nv, a, b, cs, X))
-
-# ------------------------------------------------------------
-
-# Get parameters from model
-params = clf.get_params()
-
-sv = clf.support_vectors_  # sv = support vectors
-nv = clf.n_support_  # n support vectors per class
-a = clf.dual_coef_  # dual coefficients
-b = clf._intercept_  # intercepts
-cs = clf.classes_  # list of class names
-X = np.array([-9., 2., 0.5, 1.])  # features
-
-print ("------------------------------------")
-
-# calculate the kernels
-kernels = []
-if params['kernel'] is 'rbf':
-    # print(sv[0])
-    # print(nv)
-    # exit()
-    for vectors in sv:
-        o_k = 0.0
-        for idx in range(len(vectors)):
-            delta = vectors[idx] - X[idx]
-            o_k += delta * delta
-        o_k = math.exp(-params['gamma'] * o_k)
-        kernels.append(o_k)
-# if params['kernel'] is 'linear':
-#     for vectors in sv:
-#         o_k = 0.0
-#         for idx in range(len(vectors)):
-#             o_k += vectors[idx] * X[idx]
-#         kernels.append(o_k)
-
-# print(kernels)
-
-# define the start and end index for support vectors for each class
-starts = []
-for i in range(len(nv)):
-    if i != 0:
-        start = 0
-        for j in range(i):
-            start += nv[j]
-        starts.append(start)
-    else:
-        starts.append(0)
-print(starts)
-ends = []
-for i in range(len(nv)):
-    ends.append(nv[i] + starts[i])
-print(ends)
-
-# TODO: Continue here:
-
-# calculate: sum(a_p * k(x_p, x)) between every 2 classes
-c = []
-for i in range(len(nv)):
-    for j in range(i + 1, len(nv)):
-        o_a = 0.0
-        for p in range(starts[j], ends[j]):
-            o_a += a[i][p] * kernels[p]
-        o_b = 0.0
-        for p in range(starts[i], ends[i]):
-            o_b += a[j - 1][p] * kernels[p]
-        c.append(o_a + o_b)
-
-# add the intercept
-for i in range(len(c)):
-    c[i] += b[i]
-
-votes = []
-for i in range(len(cs)):
-    for j in range(i + 1, len(cs)):
-        if c[i] > 0:
-            votes.append(i)
-        else:
-            votes.append(j)
-        # tmp.append([i, j])
-        # votess.append(tmp[i][0] if c[i] > 0 else tmp[i][1])
-
-classes = {}
-for i in range(len(votes)):
-    if votes[i] in classes:
-        classes[votes[i]] += 1
-    else:
-        classes[votes[i]] = 1
-
-print('classes', classes)
-
-class_idx = -1
-counter = -1
-for count in classes:
-    if classes[count] > counter:
-        counter = classes[count]
-        class_idx = count
-
-print(cs[class_idx])
-
-print ("------------------------------------")
-
 print(port(clf))
+
+# class Tmp {
+#     public static int predict(float[] atts) {
+#         double[][] svs = {{5.1, 3.5, 1.4, 0.2}, {4.9, 3.0, 1.4, 0.2}, {4.7, 3.2, 1.3, 0.2}, {4.6, 3.1, 1.5, 0.2}, {5.0, 3.6, 1.4, 0.2}, {5.4, 3.9, 1.7, 0.4}, {4.6, 3.4, 1.4, 0.3}, {5.0, 3.4, 1.5, 0.2}, {4.4, 2.9, 1.4, 0.2}, {4.9, 3.1, 1.5, 0.1}, {5.4, 3.7, 1.5, 0.2}, {4.8, 3.4, 1.6, 0.2}, {4.8, 3.0, 1.4, 0.1}, {4.3, 3.0, 1.1, 0.1}, {5.8, 4.0, 1.2, 0.2}, {5.7, 4.4, 1.5, 0.4}, {5.4, 3.9, 1.3, 0.4}, {5.1, 3.5, 1.4, 0.3}, {5.7, 3.8, 1.7, 0.3}, {5.1, 3.8, 1.5, 0.3}, {5.4, 3.4, 1.7, 0.2}, {5.1, 3.7, 1.5, 0.4}, {4.6, 3.6, 1.0, 0.2}, {5.1, 3.3, 1.7, 0.5}, {4.8, 3.4, 1.9, 0.2}, {5.0, 3.0, 1.6, 0.2}, {5.0, 3.4, 1.6, 0.4}, {5.2, 3.5, 1.5, 0.2}, {5.2, 3.4, 1.4, 0.2}, {4.7, 3.2, 1.6, 0.2}, {4.8, 3.1, 1.6, 0.2}, {5.4, 3.4, 1.5, 0.4}, {5.2, 4.1, 1.5, 0.1}, {5.5, 4.2, 1.4, 0.2}, {4.9, 3.1, 1.5, 0.1}, {5.0, 3.2, 1.2, 0.2}, {5.5, 3.5, 1.3, 0.2}, {4.9, 3.1, 1.5, 0.1}, {4.4, 3.0, 1.3, 0.2}, {5.1, 3.4, 1.5, 0.2}, {5.0, 3.5, 1.3, 0.3}, {4.5, 2.3, 1.3, 0.3}, {4.4, 3.2, 1.3, 0.2}, {5.0, 3.5, 1.6, 0.6}, {5.1, 3.8, 1.9, 0.4}, {4.8, 3.0, 1.4, 0.3}, {5.1, 3.8, 1.6, 0.2}, {4.6, 3.2, 1.4, 0.2}, {5.3, 3.7, 1.5, 0.2}, {5.0, 3.3, 1.4, 0.2}, {7.0, 3.2, 4.7, 1.4}, {6.4, 3.2, 4.5, 1.5}, {6.9, 3.1, 4.9, 1.5}, {5.5, 2.3, 4.0, 1.3}, {6.5, 2.8, 4.6, 1.5}, {5.7, 2.8, 4.5, 1.3}, {6.3, 3.3, 4.7, 1.6}, {4.9, 2.4, 3.3, 1.0}, {6.6, 2.9, 4.6, 1.3}, {5.2, 2.7, 3.9, 1.4}, {5.0, 2.0, 3.5, 1.0}, {5.9, 3.0, 4.2, 1.5}, {6.0, 2.2, 4.0, 1.0}, {6.1, 2.9, 4.7, 1.4}, {5.6, 2.9, 3.6, 1.3}, {6.7, 3.1, 4.4, 1.4}, {5.6, 3.0, 4.5, 1.5}, {5.8, 2.7, 4.1, 1.0}, {6.2, 2.2, 4.5, 1.5}, {5.6, 2.5, 3.9, 1.1}, {5.9, 3.2, 4.8, 1.8}, {6.1, 2.8, 4.0, 1.3}, {6.3, 2.5, 4.9, 1.5}, {6.1, 2.8, 4.7, 1.2}, {6.4, 2.9, 4.3, 1.3}, {6.6, 3.0, 4.4, 1.4}, {6.8, 2.8, 4.8, 1.4}, {6.7, 3.0, 5.0, 1.7}, {6.0, 2.9, 4.5, 1.5}, {5.7, 2.6, 3.5, 1.0}, {5.5, 2.4, 3.8, 1.1}, {5.5, 2.4, 3.7, 1.0}, {5.8, 2.7, 3.9, 1.2}, {6.0, 2.7, 5.1, 1.6}, {5.4, 3.0, 4.5, 1.5}, {6.0, 3.4, 4.5, 1.6}, {6.7, 3.1, 4.7, 1.5}, {6.3, 2.3, 4.4, 1.3}, {5.6, 3.0, 4.1, 1.3}, {5.5, 2.5, 4.0, 1.3}, {5.5, 2.6, 4.4, 1.2}, {6.1, 3.0, 4.6, 1.4}, {5.8, 2.6, 4.0, 1.2}, {5.0, 2.3, 3.3, 1.0}, {5.6, 2.7, 4.2, 1.3}, {5.7, 3.0, 4.2, 1.2}, {5.7, 2.9, 4.2, 1.3}, {6.2, 2.9, 4.3, 1.3}, {5.1, 2.5, 3.0, 1.1}, {5.7, 2.8, 4.1, 1.3}, {6.3, 3.3, 6.0, 2.5}, {5.8, 2.7, 5.1, 1.9}, {7.1, 3.0, 5.9, 2.1}, {6.3, 2.9, 5.6, 1.8}, {6.5, 3.0, 5.8, 2.2}, {7.6, 3.0, 6.6, 2.1}, {4.9, 2.5, 4.5, 1.7}, {7.3, 2.9, 6.3, 1.8}, {6.7, 2.5, 5.8, 1.8}, {7.2, 3.6, 6.1, 2.5}, {6.5, 3.2, 5.1, 2.0}, {6.4, 2.7, 5.3, 1.9}, {6.8, 3.0, 5.5, 2.1}, {5.7, 2.5, 5.0, 2.0}, {5.8, 2.8, 5.1, 2.4}, {6.4, 3.2, 5.3, 2.3}, {6.5, 3.0, 5.5, 1.8}, {7.7, 3.8, 6.7, 2.2}, {7.7, 2.6, 6.9, 2.3}, {6.0, 2.2, 5.0, 1.5}, {6.9, 3.2, 5.7, 2.3}, {5.6, 2.8, 4.9, 2.0}, {7.7, 2.8, 6.7, 2.0}, {6.3, 2.7, 4.9, 1.8}, {6.7, 3.3, 5.7, 2.1}, {7.2, 3.2, 6.0, 1.8}, {6.2, 2.8, 4.8, 1.8}, {6.1, 3.0, 4.9, 1.8}, {6.4, 2.8, 5.6, 2.1}, {7.2, 3.0, 5.8, 1.6}, {7.4, 2.8, 6.1, 1.9}, {7.9, 3.8, 6.4, 2.0}, {6.4, 2.8, 5.6, 2.2}, {6.3, 2.8, 5.1, 1.5}, {6.1, 2.6, 5.6, 1.4}, {7.7, 3.0, 6.1, 2.3}, {6.3, 3.4, 5.6, 2.4}, {6.4, 3.1, 5.5, 1.8}, {6.0, 3.0, 4.8, 1.8}, {6.9, 3.1, 5.4, 2.1}, {6.7, 3.1, 5.6, 2.4}, {6.9, 3.1, 5.1, 2.3}, {5.8, 2.7, 5.1, 1.9}, {6.8, 3.2, 5.9, 2.3}, {6.7, 3.3, 5.7, 2.5}, {6.7, 3.0, 5.2, 2.3}, {6.3, 2.5, 5.0, 1.9}, {6.5, 3.0, 5.2, 2.0}, {6.2, 3.4, 5.4, 2.3}, {5.9, 3.0, 5.1, 1.8}};
+#         double[][] coeffs = {{1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -0.0, -1.0, -0.0, -1.0, -0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -0.0, -0.0, -1.0, -1.0, -1.0, -0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -0.0, -0.0, -1.0, -1.0, -1.0, -0.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0}, {1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0, -1.0}};
+#         double[] inters = {0.043376922607421875, 0.11445245146751404, -0.0031709671020507812};
+#         int[] classes = {0, 1, 2};
+#
+#         double[] kernels = new double[150];
+#         double kernel;
+#         for (int i = 0; i < 150; i++) {
+#             kernel = 0.;
+#             for (int j = 0; j < 4; j++) {
+#                 kernel += Math.pow(svs[i][j] - atts[j], 2);
+#             }
+#             kernels[i] = Math.exp(-0.001 * kernel);
+#         }
+#
+#         int[] n_svs = {50, 50, 50};
+#         int[] starts = new int[3];
+#         for (int i = 0; i < 3; i++) {
+#             if (i != 0) {
+#                 int start = 0;
+#                 for (int j = 0; j < i; j++) {
+#                     start += n_svs[j];
+#                 }
+#                 starts[i] = start;
+#             } else {
+#                 starts[0] = 0;
+#             }
+#         }
+#
+#         int[] ends = new int[3];
+#         for (int i = 0; i < 3; i++) {
+#             ends[i] = n_svs[i] + starts[i];
+#         }
+#
+#         double[] decisions = new double[3];
+#         for (int i = 0, d = 0, l = 3; i < l; i++) {
+#             for (int j = i + 1; j < l; j++) {
+#                 double tmp1 = 0., tmp2 = 0.;
+#                 for (int k = starts[j]; k < ends[j]; k++) {
+#                     tmp1 += kernels[k] * coeffs[i][k];
+#                 }
+#                 for (int k = starts[i]; k < ends[i]; k++) {
+#                     tmp2 += kernels[k] * coeffs[j - 1][k];
+#                 }
+#                 decisions[d] = tmp1 + tmp2 + inters[d++];
+#             }
+#         }
+#
+#         int[] votes = new int[3];
+#         for (int i = 0, d = 0, l = 3; i < l; i++) {
+#             for (int j = i + 1; j < l; j++) {
+#                 votes[d] = decisions[d++] > 0 ? i : j;
+#             }
+#         }
+#
+#         int[] amounts = new int[3];
+#         for (int i = 0, l = 3; i < l; i++) {
+#             amounts[votes[i]] += 1;
+#         }
+#
+#         int class_val = -1, class_idx = -1;
+#         for (int i = 0, l = 3; i < l; i++) {
+#             if (amounts[i] > class_val) {
+#                 class_val = amounts[i];
+#                 class_idx = i;
+#             }
+#         }
+#         return classes[class_idx];
+#     }
+#
+#     public static void main(String[] args) {
+#         if (args.length == 4) {
+#             float[] atts = new float[args.length];
+#             for (int i = 0, l = args.length; i < l; i++) {
+#                 atts[i] = Float.parseFloat(args[i]);
+#             }
+#             System.out.println(Tmp.predict(atts));
+#         }
+#     }
+# }

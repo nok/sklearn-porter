@@ -17,11 +17,25 @@ The following matrix shows the portable classifier models:
 <table>
     <tbody>
         <tr>
-            <td width="32%"></td>
-            <td align="center" width="17%"><strong>Example</strong></td>
+            <td width="32%"><strong>Classifier</strong></td>
+            <td align="center" width="17%"><strong>Example(s)</strong></td>
             <td align="center" width="17%"><strong>C</strong></td>
             <td align="center" width="17%"><strong>Java</strong></td>
             <td align="center" width="17%"><strong>JavaScript</strong></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html">SVC</a> (supported kernels: rbf, linear)</td>
+            <td align="center"><a href="examples/classifier/svc_predict.py">X</a></td>
+            <td align="center"></td>
+            <td align="center">X</td>
+            <td align="center"></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.LinearSVC.html">LinearSVC</a></td>
+            <td align="center"><a href="examples/classifier/linear_svc_predict.py">X</a></td>
+            <td align="center"></td>
+            <td align="center">X</td>
+            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.tree.DecisionTreeClassifier.html">DecisionTreeClassifier</a></td>
@@ -36,13 +50,6 @@ The following matrix shows the portable classifier models:
             <td align="center"></td>
             <td align="center">X</td>
             <td align="center">X</td>
-        </tr>
-        <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.LinearSVC.html">LinearSVC</a></td>
-            <td align="center"><a href="examples/classifier/linear_svc_predict.py">X</a></td>
-            <td align="center"></td>
-            <td align="center">X</td>
-            <td align="center"></td>
         </tr>
     </tbody>
 </table>

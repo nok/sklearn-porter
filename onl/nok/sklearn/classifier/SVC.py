@@ -40,8 +40,9 @@ class SVC(Classifier):
         self.params = params
 
         self.svs = model.support_vectors_
-        self.n_svs = model.n_support_
-        self.n_vs = len(model.support_vectors_[0])
+        self.n_svs = len(model.support_vectors_[0])
+        self.svs_rows = model.n_support_
+        self.n_svs_rows = len(model.n_support_)
         self.coeffs = model.dual_coef_
         self.inters = model._intercept_
         self.classes = model.classes_
@@ -59,12 +60,10 @@ class SVC(Classifier):
         :return: out : string
             The ported predict method.
         """
-        # str_class = self.create_class()
+        str_class = self.create_class()
         str_method = self.create_method()
-        return str_method
-
-        # out = str_class.format(str_method)
-        # return out
+        out = str_class.format(str_method)
+        return out
 
 
     def create_method(self):
@@ -77,157 +76,171 @@ class SVC(Classifier):
         """
 
         out = ''
-        if self.language is 'java':
 
-            # Support vectors:
-            vectors = []
-            for vidx, vector in enumerate(self.svs):
-                _vectors = ['{0}f'.format(v.astype('|S32')) for v in vector]
-                _vectors = '{{ {0} }}'.format(', '.join(_vectors))
-                vectors.append(_vectors)
-            vectors = 'float[][] svs = {{ {0} }};'.format(', '.join(vectors))
-            out += vectors
+        # Support vectors:
+        vectors = []
+        for vidx, vector in enumerate(self.svs):
+            _vectors = ['{0}'.format(v.astype('|S')) for v in vector]
+            # _vectors = ['{0}'.format(repr(v)) for v in vector]
+            _vectors = '{{ {0} }}'.format(', '.join(_vectors))
+            vectors.append(_vectors)
+        vectors = 'double[][] svs = {{ {0} }};'.format(', '.join(vectors))
+        out += vectors
 
-            # Kernels:
-            if self.params['kernel'] is 'rbf':
-                template = {
-                    'java': (
-                        'float[] kernels = new float[{0}]; \n'
-                        'float kernel; \n'
-                        'for (int i=0; i<{0}; i++) {{ \n'
-                        '    kernel = 0.0f; \n'
-                        '    for (int j=0; j<{1}; j++) {{ \n'
-                        '        float delta = svs[i][j] - atts[j]; \n'
-                        '        kernel += delta * delta; \n'
-                        '    }} \n'
-                        '    kernels[i] = Math.exp(-{2}f * kernel); \n'
-                        '}} \n'
-                    )
-                }
-                out += '\n' + template[self.language].format(
-                    len(self.svs), self.n_vs, self.params['gamma'])
+        # Coefficients:
+        coeffs = []
+        for cidx, coeff in enumerate(self.coeffs):
+            _coeffs = ['{0}'.format(c.astype('|S')) for c in coeff]
+            # _coeffs = ['{0}'.format(repr(c)) for c in coeff]
+            _coeffs = '{{ {0} }}'.format(', '.join(_coeffs))
+            coeffs.append(_coeffs)
+        out += '\n' + 'double[][] coeffs = {{ {0} }};'.format(', '.join(coeffs))
 
-                n_svs = ['{0}'.format(v.astype('|S32')) for v in self.n_svs]
-                out += '\n' + 'int[] n_svs = {{ {0} }};'.format(', '.join(n_svs))
+        # Interceptions:
+        # inters = ['{0}'.format(i.astype('|S')) for i in self.inters]
+        inters = ['{0}'.format(repr(i)) for i in self.inters]
+        out += '\n' + 'double[] inters = {{ {0} }};'.format(', '.join(inters))
 
-                template = {
-                    'java': (
-                        'int[] starts = new int[{0}]; \n'
-                        'for (int i=0; i<{0}; i++) {{ \n'
-                        '    if (i!=0) {{ \n'
-                        '        int start = 0;\n'
-                        '        for (int j=0; j<i; j++) {{ \n'
-                        '            start += n_svs[j]; \n'
-                        '        }} \n'
-                        '        starts[i] = start; \n'
-                        '    }} else {{ \n'
-                        '        starts[0] = 0; \n'
-                        '    }} \n'
-                        '}} \n'
-                    )
-                }
-                out += '\n' + template[self.language].format(len(self.n_svs))
+        # Classes:
+        classes = ['{0}'.format(c.astype('|S')) for c in self.classes]
+        # classes = ['{0}'.format(repr(c)) for c in self.classes]
+        out += '\n' + 'int[] classes = {{ {0} }};'.format(', '.join(classes)) + '\n'
 
-                template = {
-                    'java': (
-                        'int[] ends = new int[{0}]; \n'
-                        'for (int i=0; i<{0}; i++) {{ \n'
-                        '    ends[i] = n_svs[i] + starts[i]; \n'
-                        '}} \n'
-                    )
-                }
-                out += '\n' + template[self.language].format(len(self.n_svs))
+        # Kernels:
+        if self.params['kernel'] == 'rbf':
+            # @formatter:off
+            template = {
+                'java': (
+                    'double[] kernels = new double[{0}]; \n'
+                    'double kernel; \n'
+                    'for (int i=0; i<{0}; i++) {{ \n'
+                    '    kernel = 0.; \n'
+                    '    for (int j=0; j<{1}; j++) {{ \n'
+                    '        kernel += Math.pow(svs[i][j] - atts[j], 2); \n'
+                    '    }} \n'
+                    '    kernels[i] = Math.exp(-{2} * kernel); \n'
+                    '}} \n'
+                )
+            }
+            # @formatter:on
+            out += '\n' + template[self.language].format(
+                len(self.svs), self.n_svs, repr(self.params['gamma']))
 
-                # template = {
-                #     'java': (
-                #         'float[] c = new float[{0}]; \n'
-                #         'for (int i=0; i<{0}; i++) {{ \n'
-                #         '    for (int j=1; j<{0}; j++) {{ \n'
-                #         '        float a, b; \n'
-                #         '        for (int j=0; j<{1}; j++) {{ \n'
-                #         '            float delta = svs[i][j] - atts[j]; \n'
-                #         '            kernel += delta * delta; \n'
-                #         '        }} \n'
-                #         '        kernels[i] = Math.exp(-{2}f * kernel); \n'
-                #         '    }} \n'
-                #         '}} \n'
-                #     )
-                # }
+        if self.params['kernel'] == 'linear':
+            # @formatter:off
+            template = {
+                'java': (
+                    'double[] kernels = new double[{0}]; \n'
+                    'double kernel; \n'
+                    'for (int i=0; i<{0}; i++) {{ \n'
+                    '    kernel = 0.; \n'
+                    '    for (int j=0; j<{1}; j++) {{ \n'
+                    '        kernel += svs[i][j] * atts[j]; \n'
+                    '    }} \n'
+                    '    kernels[i] = kernel; \n'
+                    '}} \n'
+                )
+            }
+            # @formatter:on
+            out += '\n' + template[self.language].format(
+                len(self.svs), self.n_svs)
 
-                # c = []
-                # for i in range(len(nv)):
-                #     for j in range(i + 1, len(nv)):
-                #         o_a = 0.0
-                #         for p in range(starts[j], ends[j]):
-                #             o_a += a[i][p] * kernels[p]
-                #         o_b = 0.0
-                #         for p in range(starts[i], ends[i]):
-                #             o_b += a[j - 1][p] * kernels[p]
-                #         c.append(o_a + o_b)
+        n_svs = ['{0}'.format(v.astype('|S')) for v in self.svs_rows]
+        # n_svs = ['{0}'.format(repr(v)) for v in self.svs_rows]
+        out += '\n' + 'int[] n_svs = {{ {0} }};'.format(', '.join(n_svs))
 
-                # starts = []
-                # for i in range(len(nv)):
-                #     if i != 0:
-                #         start = 0
-                #         for j in range(i):
-                #             start += nv[j]
-                #         starts.append(start)
-                #     else:
-                #         starts.append(0)
-                # print(starts)
-                # ends = []
-                # for i in range(len(nv)):
-                #     ends.append(nv[i] + starts[i])
-                # print(ends)
+        # @formatter:off
+        template = {
+            'java': (
+                'int[] starts = new int[{0}]; \n'
+                'for (int i=0; i<{0}; i++) {{ \n'
+                '    if (i!=0) {{ \n'
+                '        int start = 0;\n'
+                '        for (int j=0; j<i; j++) {{ \n'
+                '            start += n_svs[j]; \n'
+                '        }} \n'
+                '        starts[i] = start; \n'
+                '    }} else {{ \n'
+                '        starts[0] = 0; \n'
+                '    }} \n'
+                '}} \n'
+            )
+        }
+        # @formatter:on
+        out += '\n' + template[self.language].format(self.n_svs_rows)
 
-            # Coefficients:
-            # coefs = []
-            # for idx, coef in enumerate(self.svs):
-            #     _coefs = ['{0}f'.format(str(c)) for c in coef]
-            #     _vector = '{{ {0} }}'.format(', '.join(_coefs))
-            #     coefs.append(_coefs)
-            # coefs = 'float[][] coefs = {{ {0} }};'.format(', '.join(coefs))
-            #
-            # # Interceptions:
-            # inters = ['{0}f'.format(str(interc)) for interc in self.model.intercept_]
-            # inters = 'float[] inters = {{ {0} }};'.format(', '.join(inters))
-        #
-        # template = {
-        #     'java': (
-        #         # @formatter:off
-        #         'public static int {0}(float[] atts) {{ \n'
-        #         '    if (atts.length != {1}) {{ return -1; }} \n'
-        #         '    {3} \n'
-        #         '    {4} \n'
-        #         '    float[] classes = new float[{2}]; \n'
-        #         '    for (int i = 0; i < {2}; i++) {{ \n'
-        #         '        float prob = 0.0f; \n'
-        #         '        for (int j = 0; j < {1}; j++) {{ \n'
-        #         '            prob += coefs[i][j] * atts[j]; \n'
-        #         '        }} \n'
-        #         '        classes[i] = prob + inters[i]; \n'
-        #         '    }} \n'
-        #         '    int idx = 0; \n'
-        #         '    float val = classes[0]; \n'
-        #         '    for (int i = 1; i < {2}; i++) {{ \n'
-        #         '        if (classes[i] > val) {{ \n'
-        #         '            idx = i; \n'
-        #         '            val = classes[i]; \n'
-        #         '        }} \n'
-        #         '    }} \n'
-        #         '    return idx; \n'
-        #         '}}'
-        #         # @formatter:on
-        #     )
-        # }
-        #
-        # out = template[self.language].format(
-        #     self.method_name,
-        #     self.n_features,
-        #     self.n_classes,
-        #     coefs,
-        #     inters)
-        #
+        # @formatter:off
+        template = {
+            'java': (
+                'int[] ends = new int[{0}]; \n'
+                'for (int i=0; i<{0}; i++) {{ \n'
+                '    ends[i] = n_svs[i] + starts[i]; \n'
+                '}} \n'
+            )
+        }
+        # @formatter:on
+        out += '\n' + template[self.language].format(self.n_svs_rows)
+
+        # @formatter:off
+        template = {
+            'java': (
+                'double[] decisions = new double[{0}]; \n'
+                'for (int i = 0, d = 0, l = {0}; i < l; i++) {{ \n'
+                '    for (int j = i + 1; j < l; j++) {{ \n'
+                '        double tmp1 = 0., tmp2 = 0.; \n'
+                '        for (int k = starts[j]; k < ends[j]; k++) {{ \n'
+                '           tmp1 += kernels[k] * coeffs[i][k]; \n'
+                '        }} \n'
+                '        for (int k = starts[i]; k < ends[i]; k++) {{ \n'
+                '            tmp2 += kernels[k] * coeffs[j - 1][k]; \n'
+                '        }} \n'
+                '        decisions[d] = tmp1 + tmp2 + inters[d++]; \n'
+                '    }} \n'
+                '}} \n'
+            )
+        }
+        # @formatter:on
+        out += '\n' + template[self.language].format(self.n_svs_rows)
+
+        # @formatter:off
+        template = {
+            'java': (
+                'int[] votes = new int[{0}]; \n'
+                'for (int i = 0, d = 0, l = {0}; i < l; i++) {{ \n'
+                '    for (int j = i + 1; j < l; j++) {{ \n'
+                '        votes[d] = decisions[d++] > 0 ? i : j; \n'
+                '    }} \n'
+                '}} \n'
+                '\n'
+                'int[] amounts = new int[{0}]; \n'
+                'for (int i = 0, l = {0}; i < l; i++) {{ \n'
+                '    amounts[votes[i]] += 1; \n'
+                '}} \n'
+                '\n'
+                'int class_val = -1, class_idx = -1; \n'
+                'for (int i = 0, l = {0}; i < l; i++) {{ \n'
+                '    if (amounts[i] > class_val) {{ \n'
+                '        class_val = amounts[i]; \n'
+                '        class_idx = i; \n'
+                '    }} \n'
+                '}} \n'
+                'return classes[class_idx]; \n'
+            )
+        }
+        # @formatter:on
+        out += '\n' + template[self.language].format(self.n_classes)
+
+        # @formatter:off
+        template = {
+            'java': (
+                'public static int {0}(float[] atts) {{ \n'
+                '    {1}'
+                '}}'
+            )
+        }
+        # @formatter:on
+        out = template[self.language].format(self.method_name, out)
+
         return out
 
 
@@ -239,9 +252,9 @@ class SVC(Classifier):
         :return out : string
             The built class as string.
         """
+        # @formatter:off
         template = {
             'java': (
-                # @formatter:off
                 'class {0} {{{{ \n'
                 '    {{0}} \n'
                 '    public static void main(String[] args) {{{{ \n'
@@ -254,12 +267,12 @@ class SVC(Classifier):
                 '        }}}} \n'
                 '    }}}} \n'
                 '}}}}'
-                # @formatter:on
             )
         }
+        # @formatter:on
 
         out = template[self.language].format(
             self.class_name,
-            self.n_features)
+            self.n_svs)
 
         return out
