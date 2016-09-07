@@ -14,7 +14,7 @@ class SVCTest(unittest.TestCase):
         self.tmp_fn = 'Tmp'
         self.iris = load_iris()
         self.n_features = len(self.iris.data[0])
-        self.clf = SVM(C=1., kernel='poly', gamma=0.001, random_state=0)
+        self.clf = SVM(C=1., kernel='rbf', gamma=0.001, random_state=0)
         self.clf.fit(self.iris.data, self.iris.target)
 
     def tearDown(self):

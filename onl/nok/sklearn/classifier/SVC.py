@@ -30,7 +30,7 @@ class SVC(Classifier):
 
         params = model.get_params()
         # Check kernel type:
-        if params['kernel'] not in ['linear', 'rbf', 'poly']:
+        if params['kernel'] not in ['linear', 'rbf', 'poly', 'sigmoid']:
             msg = 'The kernel type is not supported.'
             raise ValueError(msg)
         # Check rbf gamma value:
@@ -108,6 +108,7 @@ class SVC(Classifier):
 
         # Kernels:
         if self.params['kernel'] == 'rbf':
+            # exp(-y|x-x'|^2)
             # @formatter:off
             template = {
                 'java': (
@@ -127,6 +128,7 @@ class SVC(Classifier):
                 len(self.svs), self.n_svs, repr(self.params['gamma']))
 
         if self.params['kernel'] == 'poly':
+            # (y<x,x'>+r)^d
             # @formatter:off
             template = {
                 'java': (
@@ -136,7 +138,6 @@ class SVC(Classifier):
                     '    kernel = 0.; \n'
                     '    for (int j=0; j<{1}; j++) {{ \n'
                     '        kernel += svs[i][j] * atts[j]; \n'
-                    # '        kernel += Math.pow(svs[i][j] - atts[j], 2); \n'
                     '    }} \n'
                     '    kernels[i] = Math.pow(({2} * kernel) + {3}, {4}); \n'
                     '}} \n'
@@ -149,7 +150,31 @@ class SVC(Classifier):
                 repr(self.params['coef0']),
                 repr(self.params['degree']))
 
+        if self.params['kernel'] == 'sigmoid':
+            # tanh(y<x,x'>+r)
+            # @formatter:off
+            template = {
+                'java': (
+                    'double[] kernels = new double[{0}]; \n'
+                    'double kernel; \n'
+                    'for (int i=0; i<{0}; i++) {{ \n'
+                    '    kernel = 0.; \n'
+                    '    for (int j=0; j<{1}; j++) {{ \n'
+                    '        kernel += svs[i][j] * atts[j]; \n'
+                    '    }} \n'
+                    '    kernels[i] = Math.tanh(({2} * kernel) + {3}); \n'
+                    '}} \n'
+                )
+            }
+            # @formatter:on
+            out += '\n' + template[self.language].format(
+                len(self.svs), self.n_svs,
+                repr(self.params['gamma']),
+                repr(self.params['coef0']),
+                repr(self.params['degree']))
+
         if self.params['kernel'] == 'linear':
+            # <x,x'>
             # @formatter:off
             template = {
                 'java': (

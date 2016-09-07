@@ -24,7 +24,7 @@ The following matrix shows the portable classifier models:
             <td align="center" width="17%"><strong>JavaScript</strong></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html">SVC</a> (linear, poly, rbf)</td>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html">SVC</a></td>
             <td align="center"><a href="examples/classifier/svc_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
