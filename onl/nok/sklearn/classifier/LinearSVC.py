@@ -11,7 +11,7 @@ class LinearSVC(Classifier):
     """
 
     SUPPORT = {
-        'predict': ['java']
+        'predict': ['java', 'js']
     }
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
@@ -59,23 +59,35 @@ class LinearSVC(Classifier):
         """
         coefs, inters = '', ''
 
-        if self.language is 'java':
+        # Coefficients:
+        coefs = []
+        template = {'java': ('{0}f'), 'js': ('{0}')}
+        for idx, coef in enumerate(self.model.coef_):
+            _coefs = [template[self.language].format(repr(c)) for c in coef]
+            _coefs = '[{0}]'.format(','.join(_coefs))
+            coefs.append(_coefs)
+        # @formatter:off
+        template = {
+            'java': ('float[][] coefs = {{{0}}};'),
+            'js': ('var coefs = [{0}];')
+        }
+        # @formatter:on
+        coefs = template[self.language].format(','.join(coefs))
 
-            # Coefficients:
-            coefs = []
-            for idx, coef in enumerate(self.model.coef_):
-                _coefs = ['{0}f'.format(str(c)) for c in coef]
-                _coefs = '{{ {0} }}'.format(', '.join(_coefs))
-                coefs.append(_coefs)
-            coefs = 'float[][] coefs = {{ {0} }};'.format(', '.join(coefs))
+        # Interceptions:
+        template = {'java': ('{0}f'), 'js': ('{0}')}
+        inters = [template[self.language].format(repr(i)) for i in self.model.intercept_]
+        # @formatter:off
+        template = {
+            'java': ('float[] inters = {{{0}}};'),
+            'js': ('var inters = [{0}];')
+        }
+        # @formatter:on
+        inters = template[self.language].format(', '.join(inters))
 
-            # Interceptions:
-            inters = ['{0}f'.format(str(interc)) for interc in self.model.intercept_]
-            inters = 'float[] inters = {{ {0} }};'.format(', '.join(inters))
-
+        # @formatter:off
         template = {
             'java': (
-                # @formatter:off
                 'public static int {0}(float[] atts) {{ \n'
                 '    if (atts.length != {1}) {{ return -1; }} \n'
                 '    {3} \n'
@@ -98,9 +110,32 @@ class LinearSVC(Classifier):
                 '    }} \n'
                 '    return idx; \n'
                 '}}'
-                # @formatter:on
+            ),
+            'js': (
+                'var {0} = function(atts) {{ \n'
+                '    if (atts.length != {1}) {{ return -1; }}; \n'
+                '    var classes = new Array({2}); \n'
+                '    {3} \n'
+                '    {4} \n'
+                '    for (var i = 0; i < {2}; i++) {{ \n'
+                '        var prob = 0.; \n'
+                '        for (var j = 0; j < {1}; j++) {{ \n'
+                '            prob += coefs[i][j] * atts[j]; \n'
+                '        }} \n'
+                '        classes[i] = prob + inters[i]; \n'
+                '    }} \n'
+                '    var idx = 0, val = classes[0]; \n'
+                '    for (var i = 1; i < {2}; i++) {{ \n'
+                '        if (classes[i] > val) {{ \n'
+                '            idx = i; \n'
+                '            val = classes[i]; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return idx; \n'
+                '}};'
             )
         }
+        # @formatter:on
 
         out = template[self.language].format(
             self.method_name,
@@ -120,9 +155,9 @@ class LinearSVC(Classifier):
         :return out : string
             The built class as string.
         """
+        # @formatter:off
         template = {
             'java': (
-                # @formatter:off
                 'class {0} {{{{ \n'
                 '    {{0}} \n'
                 '    public static void main(String[] args) {{{{ \n'
@@ -135,9 +170,10 @@ class LinearSVC(Classifier):
                 '        }}}} \n'
                 '    }}}} \n'
                 '}}}}'
-                # @formatter:on
-            )
+            ),
+            'js': ('{{0}}')
         }
+        # @formatter:on
 
         out = template[self.language].format(
             self.class_name,
