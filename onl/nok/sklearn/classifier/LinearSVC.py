@@ -59,10 +59,11 @@ class LinearSVC(Classifier):
         """
         # Coefficients:
         coefs = []
-        template = {'java': ('{0}f'), 'js': ('{0}')}
         for idx, coef in enumerate(self.model.coef_):
+            template = {'java': ('{0}f'), 'js': ('{0}')}
             _coefs = [template[self.language].format(repr(c)) for c in coef]
-            _coefs = '[{0}]'.format(','.join(_coefs))
+            template = {'java': ('{{{0}}}'), 'js': ('[{0}]')}
+            _coefs = template[self.language].format(','.join(_coefs))
             coefs.append(_coefs)
         # @formatter:off
         template = {
