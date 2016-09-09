@@ -57,8 +57,6 @@ class LinearSVC(Classifier):
         :return out : string
             The built method as string.
         """
-        coefs, inters = '', ''
-
         # Coefficients:
         coefs = []
         template = {'java': ('{0}f'), 'js': ('{0}')}
@@ -85,6 +83,7 @@ class LinearSVC(Classifier):
         # @formatter:on
         inters = template[self.language].format(', '.join(inters))
 
+        # Prediction method / function:
         # @formatter:off
         template = {
             'java': (
