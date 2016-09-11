@@ -33,7 +33,7 @@ The following matrix shows the portable classifier models:
         <tr>
             <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.LinearSVC.html">LinearSVC</a></td>
             <td align="center"><a href="examples/classifier/linear_svc_predict.py">X</a></td>
-            <td align="center"></td>
+            <td align="center">X</td>
             <td align="center">X</td>
             <td align="center">X</td>
         </tr>
