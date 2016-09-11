@@ -11,7 +11,7 @@ class LinearSVC(Classifier):
     """
 
     SUPPORT = {
-        'predict': ['java', 'js']
+        'predict': ['c', 'java', 'js']
     }
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
@@ -60,33 +60,59 @@ class LinearSVC(Classifier):
         # Coefficients:
         coefs = []
         for idx, coef in enumerate(self.model.coef_):
-            template = {'java': ('{0}'), 'js': ('{0}')}
+            template = {'c': ('{0}'), 'java': ('{0}'), 'js': ('{0}')}
             _coefs = [template[self.language].format(repr(c)) for c in coef]
-            template = {'java': ('{{{0}}}'), 'js': ('[{0}]')}
+            template = {'c': ('{{{0}}}'), 'java': ('{{{0}}}'), 'js': ('[{0}]')}
             _coefs = template[self.language].format(', '.join(_coefs))
             coefs.append(_coefs)
         # @formatter:off
         template = {
+            'c': ('double coefs[{1}][{2}] = {{{0}}};'),
             'java': ('double[][] coefs = {{{0}}};'),
             'js': ('var coefs = [{0}];')
         }
         # @formatter:on
-        coefs = template[self.language].format(','.join(coefs))
+        coefs = template[self.language].format(
+            ', '.join(coefs),
+            self.n_classes,
+            self.n_features)
 
         # Interceptions:
-        template = {'java': ('{0}'), 'js': ('{0}')}
+        template = {'c': ('{0}'), 'java': ('{0}'), 'js': ('{0}')}
         inters = [template[self.language].format(repr(i)) for i in self.model.intercept_]
         # @formatter:off
         template = {
+            'c': ('double inters[{1}] = {{{0}}};'),
             'java': ('double[] inters = {{{0}}};'),
             'js': ('var inters = [{0}];')
         }
         # @formatter:on
-        inters = template[self.language].format(', '.join(inters))
+        inters = template[self.language].format(
+            ', '.join(inters),
+            self.n_classes)
 
         # Prediction method / function:
         # @formatter:off
         template = {
+            'c': (
+                'int predict (float atts[4]) {{ \n'
+                '    {3} \n'
+                '    {4} \n'
+                '    double class_val = -INFINITY; \n'
+                '    int class_idx = -1; \n'
+                '    for (int i = 0; i < {2}; i++) {{ \n'
+                '        double prob = 0.; \n'
+                '        for (int j = 0; j < {1}; j++) {{ \n'
+                '            prob += coefs[i][j] * atts[j]; \n'
+                '        }} \n'
+                '        if (prob + inters[i] > class_val) {{ \n'
+                '            class_val = prob + inters[i]; \n'
+                '            class_idx = i; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return class_idx; \n'
+                '}} \n'
+            ),
             'java': (
                 'public static int {0}(float[] atts) {{ \n'
                 '    if (atts.length != {1}) {{ return -1; }} \n'
@@ -150,6 +176,16 @@ class LinearSVC(Classifier):
         """
         # @formatter:off
         template = {
+            'c': (
+                '#include <stdio.h> \n'
+                '#include <math.h> \n\n'
+                '{{0}} \n'
+                'int main(int argc, const char * argv[]) {{{{ \n'
+                '    float test[{1}] = {{{{1.f, 2.f, 3.f, 4.f}}}}; \n'
+                '    printf("Result: %d\\n", predict(test)); \n'
+                '    return 0; \n'
+                '}}}}'
+            ),
             'java': (
                 'class {0} {{{{ \n'
                 '    {{0}} \n'
