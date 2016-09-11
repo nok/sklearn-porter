@@ -60,25 +60,25 @@ class LinearSVC(Classifier):
         # Coefficients:
         coefs = []
         for idx, coef in enumerate(self.model.coef_):
-            template = {'java': ('{0}f'), 'js': ('{0}')}
+            template = {'java': ('{0}'), 'js': ('{0}')}
             _coefs = [template[self.language].format(repr(c)) for c in coef]
             template = {'java': ('{{{0}}}'), 'js': ('[{0}]')}
-            _coefs = template[self.language].format(','.join(_coefs))
+            _coefs = template[self.language].format(', '.join(_coefs))
             coefs.append(_coefs)
         # @formatter:off
         template = {
-            'java': ('float[][] coefs = {{{0}}};'),
+            'java': ('double[][] coefs = {{{0}}};'),
             'js': ('var coefs = [{0}];')
         }
         # @formatter:on
         coefs = template[self.language].format(','.join(coefs))
 
         # Interceptions:
-        template = {'java': ('{0}f'), 'js': ('{0}')}
+        template = {'java': ('{0}'), 'js': ('{0}')}
         inters = [template[self.language].format(repr(i)) for i in self.model.intercept_]
         # @formatter:off
         template = {
-            'java': ('float[] inters = {{{0}}};'),
+            'java': ('double[] inters = {{{0}}};'),
             'js': ('var inters = [{0}];')
         }
         # @formatter:on
@@ -92,46 +92,39 @@ class LinearSVC(Classifier):
                 '    if (atts.length != {1}) {{ return -1; }} \n'
                 '    {3} \n'
                 '    {4} \n'
-                '    float[] classes = new float[{2}]; \n'
+                '    int class_idx = -1; \n'
+                '    double class_val = Double.NEGATIVE_INFINITY; \n'
                 '    for (int i = 0; i < {2}; i++) {{ \n'
-                '        float prob = 0.0f; \n'
+                '        double prob = 0.; \n'
                 '        for (int j = 0; j < {1}; j++) {{ \n'
                 '            prob += coefs[i][j] * atts[j]; \n'
                 '        }} \n'
-                '        classes[i] = prob + inters[i]; \n'
+                '        if (prob + inters[i] > class_val) {{ \n'
+                '            class_val = prob + inters[i]; \n'
+                '            class_idx = i; \n'
+                '        }}'
                 '    }} \n'
-                '    int idx = 0; \n'
-                '    float val = classes[0]; \n'
-                '    for (int i = 1; i < {2}; i++) {{ \n'
-                '        if (classes[i] > val) {{ \n'
-                '            idx = i; \n'
-                '            val = classes[i]; \n'
-                '        }} \n'
-                '    }} \n'
-                '    return idx; \n'
+                '    return class_idx; \n'
                 '}}'
             ),
             'js': (
                 'var {0} = function(atts) {{ \n'
                 '    if (atts.length != {1}) {{ return -1; }}; \n'
-                '    var classes = new Array({2}); \n'
                 '    {3} \n'
                 '    {4} \n'
+                '    var class_idx = -1; \n'
+                '    var class_val = Number.NEGATIVE_INFINITY; \n'
                 '    for (var i = 0; i < {2}; i++) {{ \n'
                 '        var prob = 0.; \n'
                 '        for (var j = 0; j < {1}; j++) {{ \n'
                 '            prob += coefs[i][j] * atts[j]; \n'
                 '        }} \n'
-                '        classes[i] = prob + inters[i]; \n'
+                '        if (prob + inters[i] > class_val) {{ \n'
+                '            class_val = prob + inters[i]; \n'
+                '            class_idx = i; \n'
+                '        }}'
                 '    }} \n'
-                '    var idx = 0, val = classes[0]; \n'
-                '    for (var i = 1; i < {2}; i++) {{ \n'
-                '        if (classes[i] > val) {{ \n'
-                '            idx = i; \n'
-                '            val = classes[i]; \n'
-                '        }} \n'
-                '    }} \n'
-                '    return idx; \n'
+                '    return class_idx; \n'
                 '}};'
             )
         }

@@ -13,28 +13,22 @@ print(port(clf))
 
 # class Tmp {
 #     public static int predict(float[] atts) {
-#         if (atts.length != 4) {
-#             return -1;
-#         }
-#         float[][] coefs = {{0.18424209458473811f, 0.45123000025163923f, -0.80794587716737576f, -0.45071660033253858f}, {0.052877455748516447f, -0.89214995228605254f, 0.40398084459610972f, -0.9376821661447452f}, {-0.85070784319293802f, -0.98670214922204336f, 1.381010448739191f, 1.8654095662423917f}};
-#         float[] inters = {0.10956266406702335f, 1.6636707776739579f, -1.7096109416521363f};
-#         float[] classes = new float[3];
+#         if (atts.length != 4) { return -1; }
+#         double[][] coefs = {{0.18424209458473811, 0.45123000025163923, -0.80794587716737576, -0.45071660033253858}, {0.052877455748516447, -0.89214995228605254, 0.40398084459610972, -0.9376821661447452}, {-0.85070784319293802, -0.98670214922204336, 1.381010448739191, 1.8654095662423917}};
+#         double[] inters = {0.10956266406702335, 1.6636707776739579, -1.7096109416521363};
+#         int class_idx = -1;
+#         double class_val = Double.NEGATIVE_INFINITY;
 #         for (int i = 0; i < 3; i++) {
-#             float prob = 0.0f;
+#             double prob = 0.;
 #             for (int j = 0; j < 4; j++) {
 #                 prob += coefs[i][j] * atts[j];
 #             }
-#             classes[i] = prob + inters[i];
-#         }
-#         int idx = 0;
-#         float val = classes[0];
-#         for (int i = 1; i < 3; i++) {
-#             if (classes[i] > val) {
-#                 idx = i;
-#                 val = classes[i];
+#             if (prob + inters[i] > class_val) {
+#                 class_val = prob + inters[i];
+#                 class_idx = i;
 #             }
 #         }
-#         return idx;
+#         return class_idx;
 #     }
 #
 #     public static void main(String[] args) {
@@ -47,4 +41,3 @@ print(port(clf))
 #         }
 #     }
 # }
-
