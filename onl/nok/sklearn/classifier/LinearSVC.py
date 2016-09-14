@@ -14,8 +14,133 @@ class LinearSVC(Classifier):
         'predict': ['c', 'java', 'js']
     }
 
+    # @formatter:off
+    TEMPLATE = {
+        'c': {
+            'type': ('{0}'),
+            'arr': ('{{{0}}}'),
+            'arr[]': ('double {name}[{n}] = {{{values}}};'),
+            'arr[][]': ('double {name}[{n}][{m}] = {{{values}}};'),
+            'method': (
+                'int {name} (float atts[{n_features}]) {{ \n'
+                '    {coefficients} \n'
+                '    {intercepts} \n'
+                '    double class_val = -INFINITY; \n'
+                '    int class_idx = -1; \n'
+                '    for (int i = 0; i < {n_classes}; i++) {{ \n'
+                '        double prob = 0.; \n'
+                '        for (int j = 0; j < {n_features}; j++) {{ \n'
+                '            prob += coefs[i][j] * atts[j]; \n'
+                '        }} \n'
+                '        if (prob + inters[i] > class_val) {{ \n'
+                '            class_val = prob + inters[i]; \n'
+                '            class_idx = i; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return class_idx; \n'
+                '}}'
+            ),
+            'class': (
+                '#include <stdio.h> \n'
+                '#include <math.h> \n\n'
+                '{method} \n\n'
+                'int main(int argc, const char * argv[]) {{ \n'
+                '    float test[{n_features}] = {{1.f, 2.f, 3.f, 4.f}}; \n'
+                '    printf("Result: %d\\n", {method_name}(test)); \n'
+                '    return 0; \n'
+                '}}'
+            )
+        },
+        'java': {
+            'type': ('{0}'),
+            'arr': ('{{{0}}}'),
+            'arr[]': ('double[] {name} = {{{values}}};'),
+            'arr[][]': ('double[][] {name} = {{{values}}};'),
+            'method': (
+                '{i}public static int {name}(float[] atts) {{ \n'
+                '{i}    if (atts.length != {n_features}) {{ return -1; }} \n'
+                '{i}    {coefficients} \n'
+                '{i}    {intercepts} \n'
+                '{i}    int class_idx = -1; \n'
+                '{i}    double class_val = Double.NEGATIVE_INFINITY; \n'
+                '{i}    for (int i = 0; i < {n_classes}; i++) {{ \n'
+                '{i}        double prob = 0.; \n'
+                '{i}        for (int j = 0; j < {n_features}; j++) {{ \n'
+                '{i}            prob += coefs[i][j] * atts[j]; \n'
+                '{i}        }} \n'
+                '{i}        if (prob + inters[i] > class_val) {{ \n'
+                '{i}            class_val = prob + inters[i]; \n'
+                '{i}            class_idx = i; \n'
+                '{i}        }} \n'
+                '{i}    }} \n'
+                '{i}    return class_idx; \n'
+                '{i}}}'
+            ),
+            'class': (
+                'class {class_name} {{ \n'
+                '{method} \n'
+                '{i}public static void main(String[] args) {{ \n'
+                '{i}    if (args.length == {n_features}) {{ \n'
+                '{i}        float[] atts = new float[args.length]; \n'
+                '{i}        for (int i = 0, l = args.length; i < l; i++) {{ \n'
+                '{i}            atts[i] = Float.parseFloat(args[i]); \n'
+                '{i}        }} \n'
+                '{i}        System.out.println({class_name}.{method_name}(atts)); \n'
+                '{i}    }} \n'
+                '{i}}} \n'
+                '}}'
+            )
+        },
+        'js': {
+            'type': ('{0}'),
+            'arr': ('[{0}]'),
+            'arr[]': ('var {name} = [{values}];'),
+            'arr[][]': ('var {name} = [{values}];'),
+            'method': (
+                'var {name} = function(atts) {{ \n'
+                '    if (atts.length != {n_features}) {{ return -1; }}; \n'
+                '    {coefficients} \n'
+                '    {intercepts} \n'
+                '    var class_idx = -1, \n'
+                '        class_val = Number.NEGATIVE_INFINITY, \n'
+                '        prob = 0.; \n'
+                '    for (var i = 0; i < {n_classes}; i++) {{ \n'
+                '        prob = 0.; \n'
+                '        for (var j = 0; j < {n_features}; j++) {{ \n'
+                '            prob += coefs[i][j] * atts[j]; \n'
+                '        }} \n'
+                '        if (prob + inters[i] > class_val) {{ \n'
+                '            class_val = prob + inters[i]; \n'
+                '            class_idx = i; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return class_idx; \n'
+                '}};'
+            ),
+            'class': ('{method}')
+        }
+    }
+    # @formatter:on
+
+
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
         super(self.__class__, self).__init__(language, method_name, class_name)
+
+
+    def temp(self, template_name):
+        """Get specific of chosen programming language.
+
+        Parameters
+        ----------
+        :param template_name : string
+            The name of the template.
+
+        Returns
+        -------
+        :return : string
+            The template string.
+        """
+        return self.TEMPLATE[self.language][template_name]
 
 
     def port(self, model):
@@ -43,10 +168,7 @@ class LinearSVC(Classifier):
         :return: out : string
             The ported predict method.
         """
-        str_class = self.create_class()
-        str_method = self.create_method()
-        out = str_class.format(str_method)
-        return out
+        return self.create_class(self.create_method())
 
 
     def create_method(self):
@@ -57,116 +179,38 @@ class LinearSVC(Classifier):
         :return out : string
             The built method as string.
         """
+
         # Coefficients:
         coefs = []
         for idx, coef in enumerate(self.model.coef_):
-            template = {'c': ('{0}'), 'java': ('{0}'), 'js': ('{0}')}
-            _coefs = [template[self.language].format(repr(c)) for c in coef]
-            template = {'c': ('{{{0}}}'), 'java': ('{{{0}}}'), 'js': ('[{0}]')}
-            _coefs = template[self.language].format(', '.join(_coefs))
-            coefs.append(_coefs)
-        # @formatter:off
-        template = {
-            'c': ('double coefs[{1}][{2}] = {{{0}}};'),
-            'java': ('double[][] coefs = {{{0}}};'),
-            'js': ('var coefs = [{0}];')
-        }
-        # @formatter:on
-        coefs = template[self.language].format(
-            ', '.join(coefs),
-            self.n_classes,
-            self.n_features)
+            tmp = [self.temp('type').format(repr(c)) for c in coef]
+            tmp = self.temp('arr').format(', '.join(tmp))
+            coefs.append(tmp)
+        coefs = ', '.join(coefs)
+        coefs = self.temp('arr[][]').format(
+            name='coefs',
+            values=coefs,
+            n=self.n_classes,
+            m=self.n_features)
 
-        # Interceptions:
-        template = {'c': ('{0}'), 'java': ('{0}'), 'js': ('{0}')}
-        inters = [template[self.language].format(repr(i)) for i in self.model.intercept_]
-        # @formatter:off
-        template = {
-            'c': ('double inters[{1}] = {{{0}}};'),
-            'java': ('double[] inters = {{{0}}};'),
-            'js': ('var inters = [{0}];')
-        }
-        # @formatter:on
-        inters = template[self.language].format(
-            ', '.join(inters),
-            self.n_classes)
+        # Intercepts:
+        inters = [self.temp('type').format(repr(i)) for i in self.model.intercept_]
+        inters = ', '.join(inters)
+        inters = self.temp('arr[]').format(
+            name='inters',
+            values=inters,
+            n=self.n_classes)
 
-        # Prediction method / function:
-        # @formatter:off
-        template = {
-            'c': (
-                'int predict (float atts[4]) {{ \n'
-                '    {3} \n'
-                '    {4} \n'
-                '    double class_val = -INFINITY; \n'
-                '    int class_idx = -1; \n'
-                '    for (int i = 0; i < {2}; i++) {{ \n'
-                '        double prob = 0.; \n'
-                '        for (int j = 0; j < {1}; j++) {{ \n'
-                '            prob += coefs[i][j] * atts[j]; \n'
-                '        }} \n'
-                '        if (prob + inters[i] > class_val) {{ \n'
-                '            class_val = prob + inters[i]; \n'
-                '            class_idx = i; \n'
-                '        }} \n'
-                '    }} \n'
-                '    return class_idx; \n'
-                '}} \n'
-            ),
-            'java': (
-                'public static int {0}(float[] atts) {{ \n'
-                '    if (atts.length != {1}) {{ return -1; }} \n'
-                '    {3} \n'
-                '    {4} \n'
-                '    int class_idx = -1; \n'
-                '    double class_val = Double.NEGATIVE_INFINITY; \n'
-                '    for (int i = 0; i < {2}; i++) {{ \n'
-                '        double prob = 0.; \n'
-                '        for (int j = 0; j < {1}; j++) {{ \n'
-                '            prob += coefs[i][j] * atts[j]; \n'
-                '        }} \n'
-                '        if (prob + inters[i] > class_val) {{ \n'
-                '            class_val = prob + inters[i]; \n'
-                '            class_idx = i; \n'
-                '        }}'
-                '    }} \n'
-                '    return class_idx; \n'
-                '}}'
-            ),
-            'js': (
-                'var {0} = function(atts) {{ \n'
-                '    if (atts.length != {1}) {{ return -1; }}; \n'
-                '    {3} \n'
-                '    {4} \n'
-                '    var class_idx = -1; \n'
-                '    var class_val = Number.NEGATIVE_INFINITY; \n'
-                '    for (var i = 0; i < {2}; i++) {{ \n'
-                '        var prob = 0.; \n'
-                '        for (var j = 0; j < {1}; j++) {{ \n'
-                '            prob += coefs[i][j] * atts[j]; \n'
-                '        }} \n'
-                '        if (prob + inters[i] > class_val) {{ \n'
-                '            class_val = prob + inters[i]; \n'
-                '            class_idx = i; \n'
-                '        }}'
-                '    }} \n'
-                '    return class_idx; \n'
-                '}};'
-            )
-        }
-        # @formatter:on
-
-        out = template[self.language].format(
-            self.method_name,
-            self.n_features,
-            self.n_classes,
-            coefs,
-            inters)
-
-        return out
+        return self.temp('method').format(
+            name=self.method_name,
+            n_features=self.n_features,
+            n_classes=self.n_classes,
+            coefficients=coefs,
+            intercepts=inters,
+            i='    ')
 
 
-    def create_class(self):
+    def create_class(self, method):
         """Build the model class.
 
         Returns
@@ -174,38 +218,9 @@ class LinearSVC(Classifier):
         :return out : string
             The built class as string.
         """
-        # @formatter:off
-        template = {
-            'c': (
-                '#include <stdio.h> \n'
-                '#include <math.h> \n\n'
-                '{{0}} \n'
-                'int main(int argc, const char * argv[]) {{{{ \n'
-                '    float test[{1}] = {{{{1.f, 2.f, 3.f, 4.f}}}}; \n'
-                '    printf("Result: %d\\n", predict(test)); \n'
-                '    return 0; \n'
-                '}}}}'
-            ),
-            'java': (
-                'class {0} {{{{ \n'
-                '    {{0}} \n'
-                '    public static void main(String[] args) {{{{ \n'
-                '        if (args.length == {1}) {{{{ \n'
-                '            float[] atts = new float[args.length]; \n'
-                '            for (int i = 0, l = args.length; i < l; i++) {{{{ \n'
-                '                atts[i] = Float.parseFloat(args[i]); \n'
-                '            }}}} \n'
-                '            System.out.println({0}.predict(atts)); \n'
-                '        }}}} \n'
-                '    }}}} \n'
-                '}}}}'
-            ),
-            'js': ('{{0}}')
-        }
-        # @formatter:on
-
-        out = template[self.language].format(
-            self.class_name,
-            self.n_features)
-
-        return out
+        return self.temp('class').format(
+            class_name=self.class_name,
+            method_name=self.method_name,
+            method=method,
+            n_features=self.n_features,
+            i='    ')

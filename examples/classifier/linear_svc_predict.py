@@ -30,7 +30,6 @@ print(port(clf))
 #         }
 #         return class_idx;
 #     }
-#
 #     public static void main(String[] args) {
 #         if (args.length == 4) {
 #             float[] atts = new float[args.length];
