@@ -62,7 +62,7 @@ class PorterTest(unittest.TestCase):
         python_file = str(inspect.getfile(port)).split(".")[0] + '.py'
 
         # python <Porter.py> Tmp.pkl
-        cmd = ['python', python_file, self.tmp_fn + '.pkl']
+        cmd = ['python', python_file, '-m', self.tmp_fn + '.pkl']
         subprocess.call(cmd, cwd='temp')
 
         equal = filecmp.cmp('temp/' + self.tmp_fn + '.java', 'temp/' + self.tmp_fn + '_2.java')

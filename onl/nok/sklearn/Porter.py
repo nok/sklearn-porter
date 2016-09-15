@@ -98,33 +98,34 @@ def is_convertible_model(model):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Port trained scikit-learn models to a low-level programming language.',
-        epilog='More details on https://github.com/nok/sklearn-porter')
+        description='Transpile trained scikit-learn models to a low-level programming language.',
+        epilog='More details on: https://github.com/nok/sklearn-porter')
     parser.add_argument(
-        'FILE',
-        help='set the classifier in pickle format')
+        '--model', '-m',
+        required=True,
+        help='Set the path of the model in pickle (.pkl) format.')
     parser.add_argument(
-        '--to',
+        '--language', '-l',
         choices=['c', 'java', 'js'],
         default='java',
         required=False,
-        help='set target programming language')
+        help='Set the target programming language.')
     parser.add_argument(
-        '--output',
+        '--output', '-o',
         type=str,
         required=False,
-        help='set the output path')
+        help='Set the output path of the transpiled model.')
 
     args = vars(parser.parse_args())
 
-    input_file = str(args['FILE'])
+    input_file = str(args['model'])
     if input_file.endswith('.pkl') and os.path.isfile(input_file):
 
         # Target programming language:
-        lang = str(args['to']) if str(args['to']) is not '' else 'java'
+        lang = str(args['language']) if str(args['language']) is not '' else 'java'
 
         # Input and output filename:
-        inn = str(args['FILE'])
+        inn = str(args['model'])
         out = inn.split('.')[-2] + '.' + lang
 
         if str(args['output']).endswith(('.c', '.java', '.js')):

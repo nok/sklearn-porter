@@ -5,7 +5,7 @@
 [![Join the chat at https://gitter.im/nok/sklearn-porter](https://badges.gitter.im/nok/sklearn-porter.svg)](https://gitter.im/nok/sklearn-porter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/nok/scikit-learn-model-porting/master/LICENSE.txt)
 
-Module to port trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like C, Java or JavaScript. It's recommended for limited embedded systems and critical applications where performance matters most.
+Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like C, Java or JavaScript. It's recommended for limited embedded systems and critical applications where performance matters most.
 
 
 ## Target Algorithm Models
@@ -24,29 +24,29 @@ The following matrix shows the portable classifier models:
             <td align="center" width="17%"><strong>JavaScript</strong></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html">SVC</a></td>
-            <td align="center"><a href="examples/classifier/svc_predict.py">X</a></td>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
+            <td align="center"><a href="examples/classifier/SVC/java_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
             <td align="center"></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.LinearSVC.html">LinearSVC</a></td>
-            <td align="center"><a href="examples/classifier/linear_svc_predict.py">X</a></td>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/java_predict.py">X</a></td>
             <td align="center">X</td>
             <td align="center">X</td>
             <td align="center">X</td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.tree.DecisionTreeClassifier.html">DecisionTreeClassifier</a></td>
-            <td align="center"><a href="examples/classifier/decisiontree_predict.py">X</a></td>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
             <td align="center">X</td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">AdaBoostClassifier</a></td>
-            <td align="center"><a href="examples/classifier/adaboost_predict.py">X</a></td>
+            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
             <td align="center">X</td>
@@ -106,13 +106,21 @@ joblib.dump(clf, 'model.pkl')
 Then you can port the model by using the following command:
 
 ```sh
-python Porter.py --output Model.java model.pkl
+python onl/nok/sklearn/Porter.py --model <pickle_model_path> --output <output_file_path> [--language {c,java,js}]
 ```
 
-The following command shows all options:
+Here are some examples:
 
 ```sh
-python Porter.py -h
+python onl/nok/sklearn/Porter.py --model examples/cli/model.pkl --output examples/cli/Model.java --language java
+python onl/nok/sklearn/Porter.py -m examples/cli/model.pkl -o examples/cli/Model.java -l java
+```
+
+For further help you can display all options:
+
+```sh
+python onl/nok/sklearn/Porter.py --help
+python onl/nok/sklearn/Porter.py -h
 ```
 
 
@@ -128,7 +136,7 @@ source activate sklearn-porter
 
 ## Unit Testing
 
-Run the [tests](tests) by executing the bash script [tests.sh](tests.sh) or type:
+Run all [tests](tests) by executing the bash script [tests.sh](tests.sh) or type:
 
 ```sh
 python -m unittest discover -vp '*Test.py'
@@ -142,4 +150,4 @@ Don't be shy and feel free to contact me on [Twitter](https://twitter.com/darius
 
 ## License
 
-The library is Open Source Software released under the [MIT](LICENSE.txt) license.
+The library is Open Source Software released under the [MIT](license.txt) license.
