@@ -3,6 +3,7 @@
 class Classifier(object):
 
     SUPPORT = {}
+    TEMPLATE = {}
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
         self.language = language
@@ -16,6 +17,22 @@ class Classifier(object):
             if self.language not in self.__class__.SUPPORT[method_name]:
                 msg = 'The given programming language is not supported for the given method.'
                 raise AttributeError(msg)
+
+
+    def temp(self, template_name):
+        """Get specific template of chosen programming language.
+
+        Parameters
+        ----------
+        :param template_name : string
+            The name of the template.
+
+        Returns
+        -------
+        :return : string
+            The template string.
+        """
+        return self.TEMPLATE[self.language][template_name]
 
 
     def port(self, model):

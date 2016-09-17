@@ -127,22 +127,6 @@ class LinearSVC(Classifier):
         super(self.__class__, self).__init__(language, method_name, class_name)
 
 
-    def temp(self, template_name):
-        """Get specific of chosen programming language.
-
-        Parameters
-        ----------
-        :param template_name : string
-            The name of the template.
-
-        Returns
-        -------
-        :return : string
-            The template string.
-        """
-        return self.TEMPLATE[self.language][template_name]
-
-
     def port(self, model):
         """Port a trained model to the syntax of a chosen programming language.
 
