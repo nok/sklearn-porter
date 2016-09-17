@@ -14,6 +14,71 @@ class DecisionTreeClassifier(Classifier):
         'predict': ['java', 'js']
     }
 
+    # @formatter:off
+    TEMPLATE = {
+        'java': {
+            'if':       ('{0}if (atts[{1}] <= {2}) {{'),
+            'else':     ('{0}}} else {{'),
+            'endif':    ('{0}}}'),
+            'arr':      ('{0}classes[{1}] = {2}'),
+            'join':     ('; '),
+            'method': (
+                'public static int {method_name}(float[] atts) {{ \n'
+                '    if (atts.length != {n_features}) {{ return -1; }}; \n'
+                '    int[] classes = new int[{n_classes}];'
+                '    {branches} \n'
+                '    int class_idx = 0; \n'
+                '    int class_val = classes[0]; \n'
+                '    for (int i = 1; i < {n_classes}; i++) {{ \n'
+                '        if (classes[i] > class_val) {{ \n'
+                '            class_idx = i; \n'
+                '            class_val = classes[i]; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return class_idx; \n'
+                '}}'
+            ),
+            'class': (
+                'class {class_name} {{ \n'
+                '    {method} \n'
+                '    public static void main(String[] args) {{ \n'
+                '        if (args.length == {n_features}) {{ \n'
+                '            float[] atts = new float[args.length]; \n'
+                '            for (int i = 0, l = args.length; i < l; i++) {{ \n'
+                '                atts[i] = Float.parseFloat(args[i]); \n'
+                '            }} \n'
+                '            System.out.println({class_name}.{method_name}(atts)); \n'
+                '        }} \n'
+                '    }} \n'
+                '}}'
+            )
+        },
+        'js': {
+            'if':       ('{0}if (atts[{1}] <= {2}) {{'),
+            'else':     ('{0}}} else {{'),
+            'endif':    ('{0}}}'),
+            'arr':      ('{0}classes[{1}] = {2}'),
+            'join':     ('; '),
+            'method': (
+                'var {method_name} = function(atts) {{ \n'
+                '    if (atts.length != {n_features}) {{ return -1; }}; \n'
+                '    var classes = new Array({n_classes});'
+                '    {branches} \n'
+                '    var class_idx = 0, class_val = classes[0]; \n'
+                '    for (var i = 1; i < {n_classes}; i++) {{ \n'
+                '        if (classes[i] > class_val) {{ \n'
+                '            class_idx = i; \n'
+                '            class_val = classes[i]; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return class_idx; \n'
+                '}};'
+            ),
+            'class': ('{method}')
+        }
+    }
+    # @formatter:on
+
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
         super(self.__class__, self).__init__(language, method_name, class_name)
@@ -28,10 +93,8 @@ class DecisionTreeClassifier(Classifier):
             An instance of a trained DecisionTreeClassifier classifier.
         """
         super(self.__class__, self).port(model)
-
         self.n_features = model.n_features_
         self.n_classes = model.n_classes_
-
         if self.method_name == 'predict':
             return self.predict()
 
@@ -44,13 +107,10 @@ class DecisionTreeClassifier(Classifier):
         :return: out : string
             The ported predict method.
         """
-        str_class = self.create_class()
-        str_method = self.create_method()
-        out = str_class.format(str_method)
-        return out
+        return self.create_class(self.create_method())
 
 
-    def parse_tree(self, L, R, T, value, features, node, depth):
+    def create_branches(self, L, R, T, value, features, node, depth):
         """Parse and port a single tree model.
 
         Parameters
@@ -75,34 +135,22 @@ class DecisionTreeClassifier(Classifier):
         :return : string
             The ported single tree as function or method.
         """
-        out = ''
-        indent = '\n' + '    ' * depth
+        str = ''
+        ind = '\n' + '    ' * depth
         if T[node] != -2.:
-            template = {
-                # @formatter:off
-                'java': ('if (atts[{0}] <= {1:.16}f) {{'),
-                'js': ('if (atts[{0}] <= {1:.16}) {{')
-                # @formatter:on
-            }
-            out += indent + template[self.language].format(features[node], T[node])
+            str += self.temp('if').format(ind, features[node], repr(T[node]))
             if L[node] != -1.:
-                out += self.parse_tree(L, R, T, value, features, L[node], depth + 1)
-            out += indent + '} else {'
+                str += self.create_branches(L, R, T, value, features, L[node], depth+1)
+            str += self.temp('else').format(ind)
             if R[node] != -1.:
-                out += self.parse_tree(L, R, T, value, features, R[node], depth + 1)
-            out += indent + '}'
+                str += self.create_branches(L, R, T, value, features, R[node], depth+1)
+            str += self.temp('endif').format(ind)
         else:
             classes = []
-            template = {
-                # @formatter:off
-                'java': (indent + 'classes[{0}] = {1}'),
-                'js': (indent + 'classes[{0}] = {1}')
-                # @formatter:on
-            }
-            for idx, val in enumerate(value[node][0]):
-                classes.append(template[self.language].format(idx, int(val)))
-            out += ';'.join(classes) + ';'
-        return out
+            for class_idx, rate in enumerate(value[node][0]):
+                classes.append(self.temp('arr').format(ind, class_idx, int(rate)))
+            str += self.temp('join').join(classes) + self.temp('join')
+        return str
 
 
     def create_tree(self):
@@ -116,13 +164,12 @@ class DecisionTreeClassifier(Classifier):
         feature_indices = []
         for idx in self.model.tree_.feature:
             feature_indices.append([str(jdx) for jdx in range(self.n_features)][idx])
-        tree_branches = self.parse_tree(
+        return self.create_branches(
             self.model.tree_.children_left,
             self.model.tree_.children_right,
             self.model.tree_.threshold,
             self.model.tree_.value,
             feature_indices, 0, 1)
-        return tree_branches
 
 
     def create_method(self):
@@ -133,53 +180,14 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built method as string.
         """
-        tree_branches = self.create_tree()
-        template = {
-            'java': (
-                # @formatter:off
-                'public static int {0}(float[] atts) {{ \n'
-                '    if (atts.length != {1}) {{ return -1; }}; \n\n'
-                '    int[] classes = new int[{2}]; \n'
-                '    {3} \n\n'
-                '    int idx = 0; \n'
-                '    int val = classes[0]; \n'
-                '    for (int i = 1; i < {2}; i++) {{ \n'
-                '        if (classes[i] > val) {{ \n'
-                '            idx = i; \n'
-                '            val = classes[i]; \n'
-                '        }} \n'
-                '    }} \n'
-                '    return idx; \n'
-                '}}'
-                # @formatter:on
-            ),
-            'js': (
-                # @formatter:off
-                'var {0} = function(atts) {{ \n'
-                '    if (atts.length != {1}) {{ return -1; }}; \n'
-                '    var classes = new Array({2}); \n'
-                '    {3} \n\n'
-                '    var idx = 0, val = classes[0]; \n'
-                '    for (var i = 1; i < {2}; i++) {{ \n'
-                '        if (classes[i] > val) {{ \n'
-                '            idx = i; \n'
-                '            val = classes[i]; \n'
-                '        }} \n'
-                '    }} \n'
-                '    return idx; \n'
-                '}};'
-                # @formatter:on
-            )
-        }
-        out = template[self.language].format(
-            self.method_name,
-            self.n_features,
-            self.n_classes,
-            tree_branches)
-        return out
+        return self.temp('method').format(
+            method_name=self.method_name,
+            n_features=self.n_features,
+            n_classes=self.n_classes,
+            branches=self.create_tree())
 
 
-    def create_class(self):
+    def create_class(self, method):
         """Build the model class.
 
         Returns
@@ -187,27 +195,8 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        template = {
-            'java': (
-                # @formatter:off
-                'class {0} {{{{ \n'
-                '    {{0}} \n'
-                '    public static void main(String[] args) {{{{ \n'
-                '        if (args.length == {1}) {{{{ \n'
-                '            float[] atts = new float[args.length]; \n'
-                '            for (int i = 0, l = args.length; i < l; i++) {{{{ \n'
-                '                atts[i] = Float.parseFloat(args[i]); \n'
-                '            }}}} \n'
-                '            System.out.println({0}.predict(atts)); \n'
-                '        }}}} \n'
-                '    }}}} \n'
-                '}}}}'
-                # @formatter:on
-            ),
-            # Just insert the single function:
-            'js': ('{{0}}')
-        }
-        out = template[self.language].format(
-            self.class_name,
-            self.n_features)
-        return out
+        return self.temp('class').format(
+            class_name=self.class_name,
+            method_name=self.method_name,
+            n_features=self.n_features,
+            method=method)
