@@ -10,6 +10,8 @@ from onl.nok.sklearn.classifier.DecisionTreeClassifier import DecisionTreeClassi
 
 class DecisionTreeClassifierTest(unittest.TestCase):
 
+    TESTS = 50
+
     def setUp(self):
         self.tmp_fn = 'Tmp'
         self.iris = load_iris()
@@ -26,7 +28,7 @@ class DecisionTreeClassifierTest(unittest.TestCase):
         preds_from_py = []
 
         # Creating random features:
-        for features in range(150):
+        for features in range(self.TESTS):
             features = [random.uniform(0., 10.) for f in range(self.n_features)]
             preds_from_java.append(self._make_prediction_in_java(features))
             preds_from_py.append(self._make_prediction_in_py(features))

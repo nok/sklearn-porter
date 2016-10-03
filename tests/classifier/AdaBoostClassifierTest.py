@@ -11,6 +11,8 @@ from onl.nok.sklearn.classifier.AdaBoostClassifier import AdaBoostClassifier
 
 class AdaBoostClassifierTest(unittest.TestCase):
 
+    TESTS = 50
+
     def setUp(self):
         self.tmp_fn = 'Tmp'
         self.iris = load_iris()
@@ -29,7 +31,7 @@ class AdaBoostClassifierTest(unittest.TestCase):
         preds_from_py = []
 
         # Creating random features:
-        for features in range(150):
+        for features in range(self.TESTS):
             features = [random.uniform(0., 10.) for f in range(self.n_features)]
             preds_from_java.append(self._make_prediction_in_java(features))
             preds_from_py.append(self._make_prediction_in_py(features))
@@ -46,7 +48,7 @@ class AdaBoostClassifierTest(unittest.TestCase):
         for i, el in enumerate(preds_from_py):
             if (preds_from_py[i] != preds_from_java[i]):
                 errors += 1
-        print('Rounding precision error: %f %%' % (float(errors) / 150.0 * 100.0))
+        print('Rounding precision error: %f %%' % (float(errors) / float(self.TESTS) * 100.0))
 
         self._remove_java_files()
         self.assertTrue(errors < 15)
