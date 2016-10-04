@@ -19,12 +19,12 @@ class Classifier(object):
                 raise AttributeError(msg)
 
 
-    def temp(self, template_name):
+    def temp(self, name, detail=None):
         """Get specific template of chosen programming language.
 
         Parameters
         ----------
-        :param template_name : string
+        :param name : string
             The name of the template.
 
         Returns
@@ -32,7 +32,7 @@ class Classifier(object):
         :return : string
             The template string.
         """
-        return self.TEMPLATE[self.language][template_name]
+        return self.TEMPLATE[self.language][name] if detail is None else self.TEMPLATE[self.language][name][detail]
 
 
     def port(self, model):
