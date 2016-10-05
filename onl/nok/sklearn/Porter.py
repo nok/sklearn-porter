@@ -3,6 +3,7 @@ import argparse
 
 import sklearn
 from sklearn.ensemble import weight_boosting
+from sklearn import svm
 
 from classifier.Classifier import Classifier
 from classifier.DecisionTreeClassifier import DecisionTreeClassifier
