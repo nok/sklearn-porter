@@ -1,6 +1,7 @@
 import random
 import subprocess
 import unittest
+import numpy as np
 
 from sklearn.datasets import load_iris
 from sklearn.svm.classes import LinearSVC as SVM
@@ -10,7 +11,7 @@ from onl.nok.sklearn.classifier.LinearSVC import LinearSVC
 
 class LinearSVCTest(unittest.TestCase):
 
-    TESTS = 50
+    TESTS = 150
 
     def setUp(self):
         self.tmp_fn = 'Tmp'
@@ -28,8 +29,10 @@ class LinearSVCTest(unittest.TestCase):
         preds_from_py = []
 
         # Creating random features:
+        min_vals = np.amin(self.iris.data, axis=0)
+        max_vals = np.amax(self.iris.data, axis=0)
         for features in range(self.TESTS):
-            features = [random.uniform(0., 10.) for f in range(self.n_features)]
+            features = [random.uniform(min_vals[f], max_vals[f]) for f in range(self.n_features)]
             preds_from_java.append(self._make_prediction_in_java(features))
             preds_from_py.append(self._make_prediction_in_py(features))
 

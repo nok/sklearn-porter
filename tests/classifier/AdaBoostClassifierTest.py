@@ -1,6 +1,7 @@
 import random
 import subprocess
 import unittest
+import numpy as np
 
 from sklearn.datasets import load_iris
 from sklearn.ensemble import AdaBoostClassifier as ADA
@@ -11,7 +12,7 @@ from onl.nok.sklearn.classifier.AdaBoostClassifier import AdaBoostClassifier
 
 class AdaBoostClassifierTest(unittest.TestCase):
 
-    TESTS = 50
+    TESTS = 150
 
     def setUp(self):
         self.tmp_fn = 'Tmp'
@@ -31,8 +32,10 @@ class AdaBoostClassifierTest(unittest.TestCase):
         preds_from_py = []
 
         # Creating random features:
+        min_vals = np.amin(self.iris.data, axis=0)
+        max_vals = np.amax(self.iris.data, axis=0)
         for features in range(self.TESTS):
-            features = [random.uniform(0., 10.) for f in range(self.n_features)]
+            features = [random.uniform(min_vals[f], max_vals[f]) for f in range(self.n_features)]
             preds_from_java.append(self._make_prediction_in_java(features))
             preds_from_py.append(self._make_prediction_in_py(features))
 
@@ -44,14 +47,15 @@ class AdaBoostClassifierTest(unittest.TestCase):
         #         preds_from_java[i],
         #         str(preds_from_py[i] == preds_from_java[i])))
 
-        errors = 0
-        for i, el in enumerate(preds_from_py):
-            if (preds_from_py[i] != preds_from_java[i]):
-                errors += 1
-        print('Rounding precision error: %f %%' % (float(errors) / float(self.TESTS) * 100.0))
+        # errors = 0
+        # for i, el in enumerate(preds_from_py):
+        #     if (preds_from_py[i] != preds_from_java[i]):
+        #         errors += 1
+        # print('Rounding precision error: %f %%' % (float(errors) / float(self.TESTS) * 100.0))
 
         self._remove_java_files()
-        self.assertTrue(errors < 15)
+        # self.assertTrue(errors < 15)
+        self.assertListEqual(preds_from_py, preds_from_java)
 
     def test_existing_features(self):
         self._create_java_files()
