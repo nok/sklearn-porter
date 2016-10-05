@@ -7,6 +7,7 @@ import filecmp
 from sklearn.datasets import load_iris
 from sklearn.externals import joblib
 from sklearn.tree import tree
+from sklearn import svm
 
 from onl.nok.sklearn.Porter import port
 
