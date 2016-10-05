@@ -15,6 +15,5 @@ dependencies:
 - wheel=0.29.0=py27_0
 - zlib=1.2.8=3
 - pip:
-  - pyportmidi==0.0.7
   - six==1.10.0
   - tbb==0.1
