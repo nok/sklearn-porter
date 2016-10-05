@@ -7,7 +7,7 @@ class DecisionTreeClassifier(Classifier):
     --------
     sklearn.tree.DecisionTreeClassifier
 
-    http://scikit-learn.org/0.17/modules/generated/sklearn.tree.DecisionTreeClassifier.html
+    http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
 
     SUPPORT = {

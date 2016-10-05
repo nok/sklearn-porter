@@ -1,8 +1,5 @@
 import inspect
-import os
-import os.path
 import random
-import time
 import subprocess
 import unittest
 import filecmp

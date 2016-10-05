@@ -67,8 +67,8 @@ def get_classifiers():
     return [
         sklearn.tree.tree.DecisionTreeClassifier,
         sklearn.ensemble.AdaBoostClassifier,
-        sklearn.svm.classes.LinearSVC,
-        sklearn.svm.classes.SVC
+        sklearn.svm.LinearSVC,
+        sklearn.svm.SVC
     ]
 
 
@@ -130,7 +130,7 @@ def main():
 
         if str(args['output']).endswith(('.c', '.java', '.js')):
             out = str(args['output'])
-            lang = out.split('.')[-1].lower()
+            # lang = out.split('.')[-1].lower()
 
         from sklearn.externals import joblib
         with open(out, 'w') as file:

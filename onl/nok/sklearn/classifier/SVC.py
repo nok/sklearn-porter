@@ -7,7 +7,7 @@ class SVC(Classifier):
     --------
     sklearn.svm.SVC
 
-    http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html
+    http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html
     """
 
     SUPPORT = {
