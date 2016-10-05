@@ -1,8 +1,5 @@
 import inspect
-import os
-import os.path
 import random
-import time
 import subprocess
 import unittest
 import filecmp
@@ -10,6 +7,7 @@ import filecmp
 from sklearn.datasets import load_iris
 from sklearn.externals import joblib
 from sklearn.tree import tree
+from sklearn import svm
 
 from onl.nok.sklearn.Porter import port
 

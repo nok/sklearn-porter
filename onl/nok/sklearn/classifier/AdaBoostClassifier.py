@@ -9,7 +9,7 @@ class AdaBoostClassifier(Classifier):
     --------
     sklearn.ensemble.AdaBoostClassifier
 
-    http://scikit-learn.org/0.17/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
+    http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
     """
 
     SUPPORT = {

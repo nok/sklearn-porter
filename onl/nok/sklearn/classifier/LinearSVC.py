@@ -7,7 +7,7 @@ class LinearSVC(Classifier):
     --------
     sklearn.svm.LinearSVC
 
-    http://scikit-learn.org/0.17/modules/generated/sklearn.svm.LinearSVC.html
+    http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html
     """
 
     SUPPORT = {

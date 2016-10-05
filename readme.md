@@ -24,28 +24,28 @@ The following matrix shows the portable classifier models:
             <td align="center" width="17%"><strong>JavaScript</strong></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
+            <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
             <td align="center"><a href="examples/classifier/SVC/java_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
             <td align="center"></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
+            <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/java_predict.py">X</a></td>
             <td align="center">X</td>
             <td align="center">X</td>
             <td align="center">X</td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
+            <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
             <td align="center">X</td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/0.17/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
+            <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
             <td align="center"><a href="examples/classifier/AdaBoostClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
