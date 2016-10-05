@@ -16,4 +16,3 @@ dependencies:
 - zlib=1.2.8=3
 - pip:
   - six==1.10.0
-  - tbb==0.1
