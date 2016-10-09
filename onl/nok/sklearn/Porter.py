@@ -8,6 +8,7 @@ from sklearn import svm
 from classifier.Classifier import Classifier
 from classifier.DecisionTreeClassifier import DecisionTreeClassifier
 from classifier.AdaBoostClassifier import AdaBoostClassifier
+from classifier.RandomForestClassifier import RandomForestClassifier
 from classifier.LinearSVC import LinearSVC
 from classifier.SVC import SVC
 
@@ -68,6 +69,7 @@ def get_classifiers():
     return [
         sklearn.tree.tree.DecisionTreeClassifier,
         sklearn.ensemble.AdaBoostClassifier,
+        sklearn.ensemble.RandomForestClassifier,
         sklearn.svm.LinearSVC,
         sklearn.svm.SVC
     ]
