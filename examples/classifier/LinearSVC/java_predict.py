@@ -5,9 +5,6 @@ from onl.nok.sklearn.Porter import port
 
 iris = load_iris()
 clf = svm.LinearSVC(C=1., random_state=0)
-
-print(type(clf))
-
 clf.fit(iris.data, iris.target)
 
 # Cheese!
