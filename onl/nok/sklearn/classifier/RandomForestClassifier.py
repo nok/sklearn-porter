@@ -12,7 +12,7 @@ class RandomForestClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html
     """
 
-    SUPPORT = {'predict': ['java']}
+    SUPPORT = {'predict': ['java', 'js']}
 
     # @formatter:off
     TEMPLATE = {
@@ -71,6 +71,50 @@ class RandomForestClassifier(Classifier):
                 '    }} \n'
                 '}}'
             )
+        },
+        'js': {
+            'if':       ('{0}if (atts[{1}] <= {2}) {{'),
+            'else':     ('{0}}} else {{'),
+            'endif':    ('{0}}}'),
+            'arr':      ('{0}classes[{1}] = {2}'),
+            'join':     ('; '),
+            'single_method': (
+                'var {1}_{0} = function(atts) {{ \n'
+                '    var i = 0, classes = new Array({2});'
+                '    {3} \n'
+                '    var class_idx = 0, class_val = classes[0]; \n'
+                '    for (i = 1; i < {2}; i++) {{ \n'
+                '        if (classes[i] > class_val) {{ \n'
+                '            class_idx = i; \n'
+                '            class_val = classes[i]; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return class_idx; \n'
+                '}};'
+            ),
+            'method_calls': (
+                'classes[{2}(atts)]++;'
+            ),
+            'method': (
+                '{0} \n'
+                'var {1} = function(atts) {{ \n'
+                '    var i = 0, n_classes = {3}; \n'
+                '    var classes = new Array(n_classes); \n'
+                '    for (i = 0; i < n_classes; i++) {{ \n'
+                '        classes[i] = 0; \n'
+                '    }} \n\n'
+                '    {4} \n\n'
+                '    var class_idx = 0, class_val = classes[0]; \n'
+                '    for (i = 1; i < n_classes; i++) {{ \n'
+                '        if (classes[i] > class_val) {{ \n'
+                '            class_idx = i; \n'
+                '            class_val = classes[i]; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return class_idx; \n'
+                '}}'
+            ),
+            'class': ('{2}')
         }
     }
     # @formatter:on
