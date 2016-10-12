@@ -12,9 +12,7 @@ class AdaBoostClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
     """
 
-    SUPPORT = {
-        'predict': ['java', 'js']
-    }
+    SUPPORT = {'predict': ['java', 'js']}
 
     # @formatter:off
     TEMPLATE = {
@@ -173,7 +171,7 @@ class AdaBoostClassifier(Classifier):
 
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
-        super(self.__class__, self).__init__(language, method_name, class_name)
+        super(AdaBoostClassifier, self).__init__(language, method_name, class_name)
 
 
     def port(self, model):

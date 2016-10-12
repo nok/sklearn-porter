@@ -12,9 +12,7 @@ class RandomForestClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html
     """
 
-    SUPPORT = {
-        'predict': ['java']
-    }
+    SUPPORT = {'predict': ['java']}
 
     # @formatter:off
     TEMPLATE = {
