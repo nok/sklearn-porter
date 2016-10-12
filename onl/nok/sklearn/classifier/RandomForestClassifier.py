@@ -3,13 +3,13 @@ import sklearn
 from Classifier import Classifier
 
 
-class AdaBoostClassifier(Classifier):
+class RandomForestClassifier(Classifier):
     """
     See also
     --------
-    sklearn.ensemble.AdaBoostClassifier
+    sklearn.ensemble.RandomForestClassifier
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
+    http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html
     """
 
     SUPPORT = {'predict': ['java', 'js']}
@@ -23,62 +23,38 @@ class AdaBoostClassifier(Classifier):
             'arr':      ('{0}classes[{1}] = {2}'),
             'join':     ('; '),
             'single_method': (
-                'public static double[] {1}_{0}(float[] atts) {{ \n'
-                '    double[] classes = new double[{2}];'
-                '    {3} \n\n'
-                '    return classes; \n'
+                'public static int {1}_{0}(float[] atts) {{ \n'
+                '    int[] classes = new int[{2}];'
+                '    {3} \n'
+                '    int class_idx = 0; \n'
+                '    int class_val = classes[0]; \n'
+                '    for (int i = 1; i < {2}; i++) {{ \n'
+                '        if (classes[i] > class_val) {{ \n'
+                '            class_idx = i; \n'
+                '            class_val = classes[i]; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return class_idx; \n'
                 '}}'
             ),
             'method_calls': (
-                'preds[{0}] = {1}.{2}(atts);'
+                'classes[{1}.{2}(atts)]++;'
             ),
             'method': (
-                '{0}'
+                '{0} \n'
                 'public static int {1}(float[] atts) {{ \n'
-                '    int n_estimators = {2}; \n'
                 '    int n_classes = {3}; \n\n'
-                '    double[][] preds = new double[n_estimators][]; \n'
+                '    int[] classes = new int[n_classes]; \n'
                 '    {4} \n\n'
-                '    int i, j; \n'
-                '    double normalizer, sum; \n'
-                '    for (i = 0; i < n_estimators; i++) {{ \n'
-                '        normalizer = 0.; \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            normalizer += preds[i][j]; \n'
-                '        }} \n'
-                '        if (normalizer == 0.) {{ \n'
-                '            normalizer = 1.; \n'
-                '        }} \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            preds[i][j] = preds[i][j] / normalizer; \n'
-                '            if (preds[i][j] < 2.2250738585072014e-308) {{ \n'
-                '                preds[i][j] = 2.2250738585072014e-308; \n'
-                '            }} \n'
-                '            preds[i][j] = Math.log(preds[i][j]); \n'
-                '        }} \n'
-                '        sum = 0.; \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            sum += preds[i][j]; \n'
-                '        }} \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            preds[i][j] = (n_classes - 1) * (preds[i][j] - (1. / n_classes) * sum); \n'
+                '    int class_idx = 0; \n'
+                '    int class_val = classes[0]; \n'
+                '    for (int i = 1; i < n_classes; i++) {{ \n'
+                '        if (classes[i] > class_val) {{ \n'
+                '            class_idx = i; \n'
+                '            class_val = classes[i]; \n'
                 '        }} \n'
                 '    }} \n'
-                '    double[] classes = new double[n_classes]; \n'
-                '    for (i = 0; i < n_estimators; i++) {{ \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            classes[j] += preds[i][j]; \n'
-                '        }} \n'
-                '    }} \n'
-                '    int idx = 0; \n'
-                '    double val = Double.NEGATIVE_INFINITY; \n'
-                '    for (i = 0; i < n_classes; i++) {{ \n'
-                '        if (classes[i] > val) {{ \n'
-                '            idx = i; \n'
-                '            val = classes[i]; \n'
-                '        }} \n'
-                '    }} \n'
-                '    return idx; \n'
+                '    return class_idx; \n'
                 '}}'
             ),
             'class': (
@@ -104,65 +80,39 @@ class AdaBoostClassifier(Classifier):
             'join':     ('; '),
             'single_method': (
                 'var {1}_{0} = function(atts) {{ \n'
-                '    var classes = new Array({2});'
-                '    {3} \n\n'
-                '    return classes; \n'
+                '    var i = 0, classes = new Array({2});'
+                '    {3} \n'
+                '    var class_idx = 0, class_val = classes[0]; \n'
+                '    for (i = 1; i < {2}; i++) {{ \n'
+                '        if (classes[i] > class_val) {{ \n'
+                '            class_idx = i; \n'
+                '            class_val = classes[i]; \n'
+                '        }} \n'
+                '    }} \n'
+                '    return class_idx; \n'
                 '}};'
             ),
             'method_calls': (
-                'preds[{0}] = {2}(atts);'
+                'classes[{2}(atts)]++;'
             ),
             'method': (
                 '{0} \n'
                 'var {1} = function(atts) {{ \n'
-                '    var n_estimators = {2}, \n'
-                '        preds = new Array(n_estimators), \n'
-                '        n_classes = {3}, \n'
-                '        classes = new Array(n_classes), \n'
-                '        normalizer, sum, idx, val, \n'
-                '        i, j; \n\n'
+                '    var i = 0, n_classes = {3}; \n'
+                '    var classes = new Array(n_classes); \n'
+                '    for (i = 0; i < n_classes; i++) {{ \n'
+                '        classes[i] = 0; \n'
+                '    }} \n\n'
                 '    {4} \n\n'
-                '    for (i = 0; i < n_estimators; i++) {{ \n'
-                '        normalizer = 0.; \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            normalizer += preds[i][j]; \n'
-                '        }} \n'
-                '        if (normalizer == 0.) {{ \n'
-                '            normalizer = 1.0; \n'
-                '        }} \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            preds[i][j] = preds[i][j] / normalizer; \n'
-                '            if (preds[i][j] < 2.2250738585072014e-308) {{ \n'
-                '                preds[i][j] = 2.2250738585072014e-308; \n'
-                '            }} \n'
-                '            preds[i][j] = Math.log(preds[i][j]); \n'
-                '        }} \n'
-                '        sum = 0.0; \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            sum += preds[i][j]; \n'
-                '        }} \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            preds[i][j] = (n_classes - 1) * (preds[i][j] - (1. / n_classes) * sum); \n'
+                '    var class_idx = 0, class_val = classes[0]; \n'
+                '    for (i = 1; i < n_classes; i++) {{ \n'
+                '        if (classes[i] > class_val) {{ \n'
+                '            class_idx = i; \n'
+                '            class_val = classes[i]; \n'
                 '        }} \n'
                 '    }} \n'
-                '    for (i = 0; i < n_classes; i++) {{ \n'
-                '        classes[i] = 0.0; \n'
-                '    }} \n'
-                '    for (i = 0; i < n_estimators; i++) {{ \n'
-                '        for (j = 0; j < n_classes; j++) {{ \n'
-                '            classes[j] += preds[i][j]; \n'
-                '        }} \n'
-                '    }} \n'
-                '    idx = -1; \n'
-                '    val = Number.NEGATIVE_INFINITY; \n'
-                '    for (i = 0; i < n_classes; i++) {{ \n'
-                '        if (classes[i] > val) {{ \n'
-                '            idx = i; \n'
-                '            val = classes[i]; \n'
-                '        }} \n'
-                '    }} \n'
-                '    return idx; \n'
-                '}};'
+                '    return class_idx; \n'
+                '}}'
             ),
             'class': ('{2}')
         }
@@ -171,7 +121,7 @@ class AdaBoostClassifier(Classifier):
 
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
-        super(AdaBoostClassifier, self).__init__(language, method_name, class_name)
+        super(RandomForestClassifier, self).__init__(language, method_name, class_name)
 
 
     def port(self, model):
@@ -182,11 +132,6 @@ class AdaBoostClassifier(Classifier):
         :param model : AdaBoostClassifier
             An instance of a trained AdaBoostClassifier model.
         """
-
-        # Check the used algorithm type:
-        if model.algorithm not in ('SAMME.R'):
-            msg = "The classifier doesn't support the given algorithm %s."
-            raise ValueError(msg, model.algorithm)
 
         # Check type of base estimators:
         if not isinstance(model.base_estimator, sklearn.tree.tree.DecisionTreeClassifier):
@@ -200,17 +145,12 @@ class AdaBoostClassifier(Classifier):
 
         self.model = model
         self.n_classes = model.n_classes_
-
         self.models = []
-        self.weights = []
         self.n_estimators = 0
         for idx in range(self.model.n_estimators):
-            weight = self.model.estimator_weights_[idx]
-            if weight > 0:
-                self.models.append(self.model.estimators_[idx])
-                self.weights.append(self.model.estimator_weights_[idx])
-                self.n_estimators += 1
-                self.n_features = self.model.estimators_[idx].n_features_
+            self.models.append(self.model.estimators_[idx])
+            self.n_estimators += 1
+            self.n_features = self.model.estimators_[idx].n_features_
 
         if self.method_name == 'predict':
             return self.predict()
@@ -265,7 +205,7 @@ class AdaBoostClassifier(Classifier):
         else:
             classes = []
             for class_idx, val in enumerate(value[node][0]):
-                classes.append(self.temp('arr').format(ind, class_idx, repr(val)))
+                classes.append(self.temp('arr').format(ind, class_idx, int(val)))
             str += self.temp('join').join(classes) + self.temp('join')
         return str
 
@@ -296,8 +236,11 @@ class AdaBoostClassifier(Classifier):
             model.tree_.value,
             feature_indices, 0, 1)
 
+        suffix = ("{0:0" + str(len(str(self.n_estimators - 1))) + "d}")
+        model_index = suffix.format(int(model_index))
+
         return self.temp('single_method').format(
-            str(model_index),
+            model_index,
             self.method_name,
             self.n_classes,
             tree_branches)
@@ -313,7 +256,7 @@ class AdaBoostClassifier(Classifier):
         """
         # Generate method or function names:
         fn_names = []
-        suffix = ("_{0:0" + str(len(str(self.n_estimators))) + "d}")
+        suffix = ("_{0:0" + str(len(str(self.n_estimators - 1))) + "d}")
         for idx, model in enumerate(self.models):
             fn_name = self.method_name + suffix.format(idx)
             fn_name = self.temp('method_calls').format(idx, self.class_name, fn_name)

@@ -45,11 +45,25 @@ The following matrix shows the portable classifier models:
             <td align="center">X</td>
         </tr>
         <tr>
+            <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/java_predict.py">X</a></td>
+            <td align="center"></td>
+            <td align="center">X</td>
+            <td align="center"></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java_predict.py">X</a></td>
+            <td align="center"></td>
+            <td align="center">X</td>
+            <td align="center"></td>
+        </tr>
+        <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
             <td align="center"><a href="examples/classifier/AdaBoostClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
             <td align="center">X</td>
-            <td align="center">X</td>
+            <td align="center"></td>
         </tr>
     </tbody>
 </table>

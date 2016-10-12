@@ -10,9 +10,7 @@ class SVC(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html
     """
 
-    SUPPORT = {
-        'predict': ['java']
-    }
+    SUPPORT = {'predict': ['java']}
 
     # @formatter:off
     TEMPLATE = {
@@ -158,7 +156,7 @@ class SVC(Classifier):
 
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
-        super(self.__class__, self).__init__(language, method_name, class_name)
+        super(SVC, self).__init__(language, method_name, class_name)
 
 
     def port(self, model):
