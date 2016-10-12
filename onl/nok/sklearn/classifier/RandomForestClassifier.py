@@ -79,7 +79,7 @@ class RandomForestClassifier(Classifier):
 
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
-        super(self.__class__, self).__init__(language, method_name, class_name)
+        super(RandomForestClassifier, self).__init__(language, method_name, class_name)
 
 
     def port(self, model):
