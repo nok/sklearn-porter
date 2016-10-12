@@ -9,8 +9,7 @@ clf.fit(iris.data, iris.target)
 
 # Cheese!
 
-tree = port(clf)
-print(tree)
+print(port(clf))
 
 # class Tmp {
 #     public static int predict(float[] atts) {

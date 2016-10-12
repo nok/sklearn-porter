@@ -4,13 +4,12 @@ import unittest
 import numpy as np
 
 from sklearn.datasets import load_iris
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import ExtraTreesClassifier
 
-from onl.nok.sklearn.classifier.AdaBoostClassifier import AdaBoostClassifier as Porter
+from onl.nok.sklearn.classifier.ExtraTreesClassifier import ExtraTreesClassifier as Porter
 
 
-class AdaBoostClassifierTest(unittest.TestCase):
+class ExtraTreesClassifierTest(unittest.TestCase):
 
     N_TESTS = 150
 
@@ -18,10 +17,7 @@ class AdaBoostClassifierTest(unittest.TestCase):
         self.tmp_fn = 'Tmp'
         self.iris = load_iris()
         self.n_features = len(self.iris.data[0])
-        base_estimator = DecisionTreeClassifier(max_depth=4,
-                                                random_state=0)
-        self.clf = AdaBoostClassifier(base_estimator=base_estimator,
-                                      n_estimators=100, random_state=0)
+        self.clf = ExtraTreesClassifier(random_state=0)
         self.clf.fit(self.iris.data, self.iris.target)
         self.porter = Porter()
 

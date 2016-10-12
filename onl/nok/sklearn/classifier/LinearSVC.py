@@ -10,9 +10,7 @@ class LinearSVC(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html
     """
 
-    SUPPORT = {
-        'predict': ['c', 'java', 'js']
-    }
+    SUPPORT = {'predict': ['c', 'java', 'js']}
 
     # @formatter:off
     TEMPLATE = {
@@ -124,7 +122,7 @@ class LinearSVC(Classifier):
 
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
-        super(self.__class__, self).__init__(language, method_name, class_name)
+        super(LinearSVC, self).__init__(language, method_name, class_name)
 
 
     def port(self, model):

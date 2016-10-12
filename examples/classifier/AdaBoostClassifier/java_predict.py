@@ -11,8 +11,7 @@ clf.fit(iris.data, iris.target)
 
 # Cheese!
 
-trees = port(clf)
-print(trees)
+print(port(clf))
 
 # class Tmp {
 #     public static float[] predict_000(float[] atts) {

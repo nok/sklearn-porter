@@ -10,9 +10,7 @@ class DecisionTreeClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
 
-    SUPPORT = {
-        'predict': ['java', 'js']
-    }
+    SUPPORT = {'predict': ['java', 'js']}
 
     # @formatter:off
     TEMPLATE = {
@@ -81,7 +79,7 @@ class DecisionTreeClassifier(Classifier):
 
 
     def __init__(self, language='java', method_name='predict', class_name='Tmp'):
-        super(self.__class__, self).__init__(language, method_name, class_name)
+        super(DecisionTreeClassifier, self).__init__(language, method_name, class_name)
 
 
     def port(self, model):
