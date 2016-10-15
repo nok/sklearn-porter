@@ -40,7 +40,8 @@ def port(model, language="java", method_name='predict', class_name='Tmp'):
     md_path = '.'.join([md_type, md_name])
     md_mod = __import__(md_path, globals(), locals(), [md_name], -1)
     klass = getattr(md_mod, md_name)
-    instance = klass(language=language, method_name=method_name, class_name=class_name)
+    instance = klass(language=language, method_name=method_name,
+                     class_name=class_name)
     return instance.port(model)
 
 
@@ -98,12 +99,14 @@ def is_convertible_model(model):
         return 'classifier'
     if type(model) in get_regressors():
         return 'regressors'
-    raise ValueError('The model is not an instance of a supported classifier or regressor.')
+    raise ValueError(('The model is not an instance of '
+                      'a supported classifier or regressor.'))
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Transpile trained scikit-learn models to a low-level programming language.',
+        description=('Transpile trained scikit-learn models '
+                     'to a low-level programming language.'),
         epilog='More details on: https://github.com/nok/sklearn-porter')
     parser.add_argument(
         '--model', '-m',
@@ -123,23 +126,26 @@ def main():
 
     args = vars(parser.parse_args())
 
-    input_file = str(args['model'])
-    if input_file.endswith('.pkl') and os.path.isfile(input_file):
+    input = str(args['model'])
+    if input.endswith('.pkl') and os.path.isfile(input):
 
         # Target programming language:
-        lang = str(args['language']) if str(args['language']) is not '' else 'java'
+        lang = str(args['language'])
+        lang = lang if lang is not '' else 'java'
 
-        # Input and output filename:
-        inn = str(args['model'])
-        out = inn.split('.')[-2] + '.' + lang
+        # Input model:
+        model = str(args['model'])
 
+        # Output model:
+        output = model.split('.')[-2]
+        output += '.' + lang
         if str(args['output']).endswith(('.c', '.java', '.js')):
-            out = str(args['output'])
+            output = str(args['output'])
             # lang = out.split('.')[-1].lower()
 
         from sklearn.externals import joblib
-        with open(out, 'w') as file:
-            model = joblib.load(inn)
+        with open(output, 'w') as file:
+            model = joblib.load(model)
             # class_name = out.split('.')[-2].lower().title()
             file.write(port(model))
 

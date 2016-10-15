@@ -121,7 +121,8 @@ class LinearSVC(Classifier):
     # @formatter:on
 
 
-    def __init__(self, language='java', method_name='predict', class_name='Tmp'):
+    def __init__(self, language='java', method_name='predict',
+                 class_name='Tmp'):
         super(LinearSVC, self).__init__(language, method_name, class_name)
 
 
@@ -169,27 +170,21 @@ class LinearSVC(Classifier):
             tmp = self.temp('arr').format(', '.join(tmp))
             coefs.append(tmp)
         coefs = ', '.join(coefs)
-        coefs = self.temp('arr[][]').format(
-            name='coefs',
-            values=coefs,
-            n=self.n_classes,
-            m=self.n_features)
+        coefs = self.temp('arr[][]').format(name='coefs', values=coefs,
+                                            n=self.n_classes, m=self.n_features)
 
         # Intercepts:
-        inters = [self.temp('type').format(repr(i)) for i in self.model.intercept_]
+        inters = self.model.intercept_
+        inters = [self.temp('type').format(repr(i)) for i in inters]
         inters = ', '.join(inters)
-        inters = self.temp('arr[]').format(
-            name='inters',
-            values=inters,
-            n=self.n_classes)
+        inters = self.temp('arr[]').format(name='inters', values=inters,
+                                           n=self.n_classes)
 
-        return self.temp('method').format(
-            name=self.method_name,
-            n_features=self.n_features,
-            n_classes=self.n_classes,
-            coefficients=coefs,
-            intercepts=inters,
-            i='    ')
+        return self.temp('method').format(name=self.method_name,
+                                          n_features=self.n_features,
+                                          n_classes=self.n_classes,
+                                          coefficients=coefs,
+                                          intercepts=inters, i='    ')
 
 
     def create_class(self, method):
@@ -200,9 +195,7 @@ class LinearSVC(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            class_name=self.class_name,
-            method_name=self.method_name,
-            method=method,
-            n_features=self.n_features,
-            i='    ')
+        return self.temp('class').format(class_name=self.class_name,
+                                         method_name=self.method_name,
+                                         method=method,
+                                         n_features=self.n_features, i='    ')

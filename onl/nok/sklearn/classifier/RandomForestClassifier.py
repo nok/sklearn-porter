@@ -120,8 +120,10 @@ class RandomForestClassifier(Classifier):
     # @formatter:on
 
 
-    def __init__(self, language='java', method_name='predict', class_name='Tmp'):
-        super(RandomForestClassifier, self).__init__(language, method_name, class_name)
+    def __init__(self, language='java', method_name='predict',
+                 class_name='Tmp'):
+        super(RandomForestClassifier, self).__init__(language, method_name,
+                                                     class_name)
 
 
     def port(self, model):
@@ -134,7 +136,8 @@ class RandomForestClassifier(Classifier):
         """
 
         # Check type of base estimators:
-        if not isinstance(model.base_estimator, sklearn.tree.tree.DecisionTreeClassifier):
+        if not isinstance(model.base_estimator,
+                          sklearn.tree.tree.DecisionTreeClassifier):
             msg = "The classifier doesn't support the given base estimator %s."
             raise ValueError(msg, model.base_estimator)
 
@@ -193,19 +196,21 @@ class RandomForestClassifier(Classifier):
             The ported structure of the tree model.
         """
         str = ''
-        ind = '\n' + '    ' * depth
+        indent = '\n' + '    ' * depth
         if T[node] != -2.:
-            str += self.temp('if').format(ind, features[node], repr(T[node]))
+            str += self.temp('if').format(indent, features[node], repr(T[node]))
             if L[node] != -1.:
-                str += self.create_branches(L, R, T, value, features, L[node], depth + 1)
-            str += self.temp('else').format(ind)
+                str += self.create_branches(L, R, T, value, features, L[node],
+                                            depth + 1)
+            str += self.temp('else').format(indent)
             if R[node] != -1.:
-                str += self.create_branches(L, R, T, value, features, R[node], depth + 1)
-            str += self.temp('endif').format(ind)
+                str += self.create_branches(L, R, T, value, features, R[node],
+                                            depth + 1)
+            str += self.temp('endif').format(indent)
         else:
             classes = []
-            for class_idx, val in enumerate(value[node][0]):
-                classes.append(self.temp('arr').format(ind, class_idx, int(val)))
+            for i, val in enumerate(value[node][0]):
+                classes.append(self.temp('arr').format(indent, i, int(val)))
             str += self.temp('join').join(classes) + self.temp('join')
         return str
 
@@ -225,25 +230,20 @@ class RandomForestClassifier(Classifier):
         :return : string
             The created method.
         """
-        feature_indices = []
-        for idx in model.tree_.feature:
-            feature_indices.append([str(jdx) for jdx in range(model.n_features_)][idx])
+        indices = []
+        for i in model.tree_.feature:
+            indices.append([str(j) for j in range(model.n_features_)][i])
 
-        tree_branches = self.create_branches(
-            model.tree_.children_left,
-            model.tree_.children_right,
-            model.tree_.threshold,
-            model.tree_.value,
-            feature_indices, 0, 1)
+        tree_branches = self.create_branches(model.tree_.children_left,
+                                             model.tree_.children_right,
+                                             model.tree_.threshold,
+                                             model.tree_.value, indices, 0, 1)
 
         suffix = ("{0:0" + str(len(str(self.n_estimators - 1))) + "d}")
         model_index = suffix.format(int(model_index))
 
-        return self.temp('single_method').format(
-            model_index,
-            self.method_name,
-            self.n_classes,
-            tree_branches)
+        return self.temp('single_method').format(model_index, self.method_name,
+                                                 self.n_classes, tree_branches)
 
 
     def create_method(self):
@@ -257,24 +257,26 @@ class RandomForestClassifier(Classifier):
         # Generate method or function names:
         fn_names = []
         suffix = ("_{0:0" + str(len(str(self.n_estimators - 1))) + "d}")
-        for idx, model in enumerate(self.models):
-            fn_name = self.method_name + suffix.format(idx)
-            fn_name = self.temp('method_calls').format(idx, self.class_name, fn_name)
+        for i, model in enumerate(self.models):
+            fn_name = self.method_name + suffix.format(i)
+            fn_name = self.temp('method_calls').format(i, self.class_name,
+                                                       fn_name)
             fn_names.append(fn_name)
 
         # Generate related trees:
         fns = []
-        for idx, model in enumerate(self.models):
-            tree = self.create_single_method(idx, model)
+        for i, model in enumerate(self.models):
+            tree = self.create_single_method(i, model)
             fns.append(tree)
 
+        # TODO: Add indentation:
+        fns = '\n'.join(fns)
+        fn_names = '\n'.join(fn_names)
+
         # Merge generated content:
-        return self.temp('method').format(
-            '\n'.join(fns),
-            self.method_name,
-            self.n_estimators,
-            self.n_classes,
-            '\n'.join(fn_names))
+        return self.temp('method').format(fns, self.method_name,
+                                          self.n_estimators, self.n_classes,
+                                          fn_names)
 
 
     def create_class(self, method):
@@ -285,8 +287,5 @@ class RandomForestClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            self.class_name,
-            self.method_name,
-            method,
-            self.n_features)
+        return self.temp('class').format(self.class_name, self.method_name,
+                                         method, self.n_features)

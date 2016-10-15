@@ -170,8 +170,10 @@ class AdaBoostClassifier(Classifier):
     # @formatter:on
 
 
-    def __init__(self, language='java', method_name='predict', class_name='Tmp'):
-        super(AdaBoostClassifier, self).__init__(language, method_name, class_name)
+    def __init__(self, language='java', method_name='predict',
+                 class_name='Tmp'):
+        super(AdaBoostClassifier, self).__init__(language, method_name,
+                                                 class_name)
 
 
     def port(self, model):
@@ -189,7 +191,8 @@ class AdaBoostClassifier(Classifier):
             raise ValueError(msg, model.algorithm)
 
         # Check type of base estimators:
-        if not isinstance(model.base_estimator, sklearn.tree.tree.DecisionTreeClassifier):
+        if not isinstance(model.base_estimator,
+                          sklearn.tree.tree.DecisionTreeClassifier):
             msg = "The classifier doesn't support the given base estimator %s."
             raise ValueError(msg, model.base_estimator)
 
@@ -257,15 +260,17 @@ class AdaBoostClassifier(Classifier):
         if T[node] != -2.:
             str += self.temp('if').format(ind, features[node], repr(T[node]))
             if L[node] != -1.:
-                str += self.create_branches(L, R, T, value, features, L[node], depth + 1)
+                str += self.create_branches(L, R, T, value, features, L[node],
+                                            depth + 1)
             str += self.temp('else').format(ind)
             if R[node] != -1.:
-                str += self.create_branches(L, R, T, value, features, R[node], depth + 1)
+                str += self.create_branches(L, R, T, value, features, R[node],
+                                            depth + 1)
             str += self.temp('endif').format(ind)
         else:
             classes = []
-            for class_idx, val in enumerate(value[node][0]):
-                classes.append(self.temp('arr').format(ind, class_idx, repr(val)))
+            for i, val in enumerate(value[node][0]):
+                classes.append(self.temp('arr').format(ind, i, repr(val)))
             str += self.temp('join').join(classes) + self.temp('join')
         return str
 
@@ -286,21 +291,19 @@ class AdaBoostClassifier(Classifier):
             The created method.
         """
         feature_indices = []
-        for idx in model.tree_.feature:
-            feature_indices.append([str(jdx) for jdx in range(model.n_features_)][idx])
+        for i in model.tree_.feature:
+            n_features = model.n_features_
+            feature_indices.append([str(j) for j in range(n_features)][i])
 
-        tree_branches = self.create_branches(
-            model.tree_.children_left,
-            model.tree_.children_right,
-            model.tree_.threshold,
-            model.tree_.value,
-            feature_indices, 0, 1)
+        tree_branches = self.create_branches(model.tree_.children_left,
+                                             model.tree_.children_right,
+                                             model.tree_.threshold,
+                                             model.tree_.value,
+                                             feature_indices, 0, 1)
 
-        return self.temp('single_method').format(
-            str(model_index),
-            self.method_name,
-            self.n_classes,
-            tree_branches)
+        return self.temp('single_method').format(str(model_index),
+                                                 self.method_name,
+                                                 self.n_classes, tree_branches)
 
 
     def create_method(self):
@@ -315,8 +318,9 @@ class AdaBoostClassifier(Classifier):
         fn_names = []
         suffix = ("_{0:0" + str(len(str(self.n_estimators))) + "d}")
         for idx, model in enumerate(self.models):
+            cl_name = self.class_name
             fn_name = self.method_name + suffix.format(idx)
-            fn_name = self.temp('method_calls').format(idx, self.class_name, fn_name)
+            fn_name = self.temp('method_calls').format(idx, cl_name, fn_name)
             fn_names.append(fn_name)
 
         # Generate related trees:
@@ -325,13 +329,13 @@ class AdaBoostClassifier(Classifier):
             tree = self.create_single_method(idx, model)
             fns.append(tree)
 
+        fns = '\n'.join(fns)
+        fn_names = '\n'.join(fn_names)
+
         # Merge generated content:
-        return self.temp('method').format(
-            '\n'.join(fns),
-            self.method_name,
-            self.n_estimators,
-            self.n_classes,
-            '\n'.join(fn_names))
+        return self.temp('method').format(fns, self.method_name,
+                                          self.n_estimators, self.n_classes,
+                                          fn_names)
 
 
     def create_class(self, method):
@@ -342,8 +346,5 @@ class AdaBoostClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            self.class_name,
-            self.method_name,
-            method,
-            self.n_features)
+        return self.temp('class').format(self.class_name, self.method_name,
+                                         method, self.n_features)

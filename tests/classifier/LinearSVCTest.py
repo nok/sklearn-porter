@@ -6,7 +6,8 @@ import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.svm.classes import LinearSVC
 
-from onl.nok.sklearn.classifier.LinearSVC import LinearSVC as Porter
+from onl.nok.sklearn.classifier.LinearSVC \
+    import LinearSVC as Porter
 
 
 class LinearSVCTest(unittest.TestCase):
@@ -20,63 +21,60 @@ class LinearSVCTest(unittest.TestCase):
         self.clf = LinearSVC(C=1., random_state=0)
         self.clf.fit(self.iris.data, self.iris.target)
         self.porter = Porter()
+        self.create_java_files()
 
     def tearDown(self):
+        self.remove_java_files()
         self.clf = None
 
     def test_random_features(self):
-        self._create_java_files()
-        preds_from_java = []
-        preds_from_py = []
-
         # Creating random features:
+        java_preds, py_preds = [], []
         min_vals = np.amin(self.iris.data, axis=0)
         max_vals = np.amax(self.iris.data, axis=0)
-        for features in range(self.N_TESTS):
-            features = [random.uniform(min_vals[f], max_vals[f]) for f in range(self.n_features)]
-            preds_from_java.append(self._make_prediction_in_java(features))
-            preds_from_py.append(self._make_prediction_in_py(features))
-
-        self._remove_java_files()
-        self.assertListEqual(preds_from_py, preds_from_java)
+        for n in range(self.N_TESTS):
+            X = [random.uniform(min_vals[f], max_vals[f])
+                 for f in range(self.n_features)]
+            java_preds.append(self.make_pred_in_java(X))
+            py_preds.append(self.make_pred_in_py(X))
+        self.assertListEqual(py_preds, java_preds)
 
     def test_existing_features(self):
-        self._create_java_files()
-        preds_from_java = []
-        preds_from_py = []
+        # Get existing features:
+        java_preds, py_preds = [], []
+        for X in self.iris.data:
+            java_preds.append(self.make_pred_in_java(X))
+            py_preds.append(self.make_pred_in_py(X))
+        self.assertListEqual(java_preds, py_preds)
 
-        # Getting existing features:
-        for features in self.iris.data:
-            preds_from_java.append(self._make_prediction_in_java(features))
-            preds_from_py.append(self._make_prediction_in_py(features))
+    def create_java_files(self):
+        self.remove_java_files()
 
-        self._remove_java_files()
-        self.assertListEqual(preds_from_py, preds_from_java)
-
-    def _create_java_files(self):
-        # rm -rf temp
-        subp.call(['rm', '-rf', 'temp'])
-        # mkdir temp
+        # Create the temporary test dictionary:
+        # -> mkdir temp
         subp.call(['mkdir', 'temp'])
 
-        with open('temp/' + self.tmp_fn + '.java', 'w') as file:
-            main_src = self.porter.port(self.clf)
-            file.write(main_src)
+        # Save transpiled model:
+        path = 'temp/' + self.tmp_fn + '.java'
+        with open(path, 'w') as file:
+            file.write(self.porter.port(self.clf))
 
-        # javac temp/Tmp.java
+        # Compile model:
+        # -> javac temp/Tmp.java
         subp.call(['javac', 'temp/' + self.tmp_fn + '.java'])
 
-    def _remove_java_files(self):
-        # rm -rf temp
+    def remove_java_files(self):
+        # Remove the temporary test directory:
+        # -> rm -rf temp
         subp.call(['rm', '-rf', 'temp'])
 
-    def _make_prediction_in_py(self, features):
+    def make_pred_in_py(self, features):
         return int(self.clf.predict([features])[0])
 
-    def _make_prediction_in_java(self, features):
+    def make_pred_in_java(self, features):
+        # -> java -classpath temp <temp_filename> <features>
         cmd = ['java', '-classpath', 'temp', self.tmp_fn]
-        params = [str(f).strip() for f in features]
-        cmd += params
-        prediction = subp.check_output(cmd, stderr=subp.STDOUT)
-        return int(prediction)
-
+        args = [str(f).strip() for f in features]
+        cmd += args
+        pred = subp.check_output(cmd, stderr=subp.STDOUT)
+        return int(pred)

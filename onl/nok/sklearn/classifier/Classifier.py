@@ -5,7 +5,8 @@ class Classifier(object):
     SUPPORT = {}
     TEMPLATE = {}
 
-    def __init__(self, language='java', method_name='predict', class_name='Tmp'):
+    def __init__(self, language='java', method_name='predict',
+                 class_name='Tmp'):
         self.language = language
         self.method_name = method_name
         self.class_name = class_name
@@ -15,7 +16,8 @@ class Classifier(object):
             raise AttributeError(msg)
         else:
             if self.language not in self.__class__.SUPPORT[method_name]:
-                msg = 'The given programming language is not supported for the given method.'
+                msg = ('The given programming language is '
+                       'not supported for the given method.')
                 raise AttributeError(msg)
 
 
@@ -32,6 +34,7 @@ class Classifier(object):
         :return : string
             The template string.
         """
+        # TODO: Refactor depth handling
         return self.TEMPLATE[self.language][name] if detail is None else self.TEMPLATE[self.language][name][detail]
 
 

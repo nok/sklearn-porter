@@ -78,8 +78,10 @@ class DecisionTreeClassifier(Classifier):
     # @formatter:on
 
 
-    def __init__(self, language='java', method_name='predict', class_name='Tmp'):
-        super(DecisionTreeClassifier, self).__init__(language, method_name, class_name)
+    def __init__(self, language='java', method_name='predict',
+                 class_name='Tmp'):
+        super(DecisionTreeClassifier, self).__init__(language, method_name,
+                                                     class_name)
 
 
     def port(self, model):
@@ -138,15 +140,17 @@ class DecisionTreeClassifier(Classifier):
         if T[node] != -2.:
             str += self.temp('if').format(ind, features[node], repr(T[node]))
             if L[node] != -1.:
-                str += self.create_branches(L, R, T, value, features, L[node], depth+1)
+                str += self.create_branches(L, R, T, value, features, L[node],
+                                            depth + 1)
             str += self.temp('else').format(ind)
             if R[node] != -1.:
-                str += self.create_branches(L, R, T, value, features, R[node], depth+1)
+                str += self.create_branches(L, R, T, value, features, R[node],
+                                            depth + 1)
             str += self.temp('endif').format(ind)
         else:
             classes = []
-            for class_idx, rate in enumerate(value[node][0]):
-                classes.append(self.temp('arr').format(ind, class_idx, int(rate)))
+            for i, rate in enumerate(value[node][0]):
+                classes.append(self.temp('arr').format(ind, i, int(rate)))
             str += self.temp('join').join(classes) + self.temp('join')
         return str
 
@@ -160,14 +164,13 @@ class DecisionTreeClassifier(Classifier):
             The tree branches as string.
         """
         feature_indices = []
-        for idx in self.model.tree_.feature:
-            feature_indices.append([str(jdx) for jdx in range(self.n_features)][idx])
-        return self.create_branches(
-            self.model.tree_.children_left,
-            self.model.tree_.children_right,
-            self.model.tree_.threshold,
-            self.model.tree_.value,
-            feature_indices, 0, 1)
+        for i in self.model.tree_.feature:
+            feature_indices.append([str(j) for j in range(self.n_features)][i])
+        return self.create_branches(self.model.tree_.children_left,
+                                    self.model.tree_.children_right,
+                                    self.model.tree_.threshold,
+                                    self.model.tree_.value, feature_indices,
+                                    0, 1)
 
 
     def create_method(self):
@@ -178,11 +181,10 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built method as string.
         """
-        return self.temp('method').format(
-            method_name=self.method_name,
-            n_features=self.n_features,
-            n_classes=self.n_classes,
-            branches=self.create_tree())
+        return self.temp('method').format(method_name=self.method_name,
+                                          n_features=self.n_features,
+                                          n_classes=self.n_classes,
+                                          branches=self.create_tree())
 
 
     def create_class(self, method):
@@ -193,8 +195,7 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            class_name=self.class_name,
-            method_name=self.method_name,
-            n_features=self.n_features,
-            method=method)
+        return self.temp('class').format(class_name=self.class_name,
+                                         method_name=self.method_name,
+                                         n_features=self.n_features,
+                                         method=method)

@@ -155,7 +155,8 @@ class SVC(Classifier):
     # @formatter:on
 
 
-    def __init__(self, language='java', method_name='predict', class_name='Tmp'):
+    def __init__(self, language='java', method_name='predict',
+                 class_name='Tmp'):
         super(SVC, self).__init__(language, method_name, class_name)
 
 
@@ -171,12 +172,14 @@ class SVC(Classifier):
 
         params = model.get_params()
         # Check kernel type:
-        if params['kernel'] not in ['linear', 'rbf', 'poly', 'sigmoid']:
+        kernels = ['linear', 'rbf', 'poly', 'sigmoid']
+        if params['kernel'] not in kernels:
             msg = 'The kernel type is not supported.'
             raise ValueError(msg)
         # Check rbf gamma value:
         if params['kernel'] == 'rbf' and params['gamma'] == 'auto':
-            msg = 'The classifier gamma value have to be set (currently it is \'auto\').'
+            msg = ('The classifier gamma value have to '
+                   'be set (currently it is \'auto\').')
             raise ValueError(msg)
         self.params = params
 
@@ -221,10 +224,8 @@ class SVC(Classifier):
             _vectors = self.temp('arr').format(', '.join(_vectors))
             vectors.append(_vectors)
         vectors = ', '.join(vectors)
-        str += self.temp('arr[][]').format(
-            type='double',
-            name='svs',
-            values=vectors)
+        str += self.temp('arr[][]').format(type='double', name='svs',
+                                           values=vectors)
 
         # Coefficients:
         coeffs = []
@@ -233,26 +234,20 @@ class SVC(Classifier):
             _coeffs = self.temp('arr').format(', '.join(_coeffs))
             coeffs.append(_coeffs)
         coeffs = ', '.join(coeffs)
-        str += self.temp('arr[][]').format(
-            type='double',
-            name='coeffs',
-            values=coeffs)
+        str += self.temp('arr[][]').format(type='double', name='coeffs',
+                                           values=coeffs)
 
         # Interceptions:
         inters = [self.temp('type').format(repr(i)) for i in self.inters]
         inters = ', '.join(inters)
-        str += self.temp('arr[]').format(
-            type='double',
-            name='inters',
-            values=inters)
+        str += self.temp('arr[]').format(type='double', name='inters',
+                                         values=inters)
 
         # Classes:
         classes = [self.temp('type').format(repr(c)) for c in self.classes]
         classes = ', '.join(classes)
-        str += self.temp('arr[]').format(
-            type='int',
-            name='classes',
-            values=classes)
+        str += self.temp('arr[]').format(type='int', name='classes',
+                                         values=classes)
 
         # Kernels:
         if self.params['kernel'] == 'rbf':
@@ -261,30 +256,22 @@ class SVC(Classifier):
 
         if self.params['kernel'] == 'poly':
             str += self.temp('kernel', 'poly').format(
-                len(self.svs), self.n_svs,
-                repr(self.params['gamma']),
-                repr(self.params['coef0']),
-                repr(self.params['degree']))
+                len(self.svs), self.n_svs, repr(self.params['gamma']),
+                repr(self.params['coef0']), repr(self.params['degree']))
 
         if self.params['kernel'] == 'sigmoid':
             str += self.temp('kernel', 'sigmoid').format(
-                len(self.svs), self.n_svs,
-                repr(self.params['gamma']),
-                repr(self.params['coef0']),
-                repr(self.params['degree']))
+                len(self.svs), self.n_svs, repr(self.params['gamma']),
+                repr(self.params['coef0']), repr(self.params['degree']))
 
         if self.params['kernel'] == 'linear':
             str += self.temp('kernel', 'linear').format(
-                len(self.svs),
-                self.n_svs)
+                len(self.svs), self.n_svs)
 
         # Decicion:
         n_svs = [self.temp('type').format(repr(v)) for v in self.svs_rows]
         n_svs = ', '.join(n_svs)
-        str += self.temp('arr[]').format(
-            type='int',
-            name='n_svs',
-            values=n_svs)
+        str += self.temp('arr[]').format(type='int', name='n_svs', values=n_svs)
 
         str += self.temp('starts').format(self.n_svs_rows)
         str += self.temp('ends').format(self.n_svs_rows)
@@ -303,8 +290,5 @@ class SVC(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            self.class_name,
-            self.method_name,
-            method,
-            self.n_svs)
+        return self.temp('class').format(self.class_name, self.method_name,
+                                         method, self.n_svs)
