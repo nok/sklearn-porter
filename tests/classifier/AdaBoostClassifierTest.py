@@ -19,8 +19,7 @@ class AdaBoostClassifierTest(unittest.TestCase):
         self.tmp_fn = 'Tmp'
         self.iris = load_iris()
         self.n_features = len(self.iris.data[0])
-        base_estimator = DecisionTreeClassifier(max_depth=4,
-                                                random_state=0)
+        base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
         self.clf = AdaBoostClassifier(base_estimator=base_estimator,
                                       n_estimators=100, random_state=0)
         self.clf.fit(self.iris.data, self.iris.target)

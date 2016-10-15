@@ -155,8 +155,8 @@ class SVC(Classifier):
     # @formatter:on
 
 
-    def __init__(self, language='java', method_name='predict',
-                 class_name='Tmp'):
+    def __init__(
+            self, language='java', method_name='predict', class_name='Tmp'):
         super(SVC, self).__init__(language, method_name, class_name)
 
 
@@ -224,8 +224,8 @@ class SVC(Classifier):
             _vectors = self.temp('arr').format(', '.join(_vectors))
             vectors.append(_vectors)
         vectors = ', '.join(vectors)
-        str += self.temp('arr[][]').format(type='double', name='svs',
-                                           values=vectors)
+        str += self.temp('arr[][]').format(
+            type='double', name='svs', values=vectors)
 
         # Coefficients:
         coeffs = []
@@ -234,20 +234,20 @@ class SVC(Classifier):
             _coeffs = self.temp('arr').format(', '.join(_coeffs))
             coeffs.append(_coeffs)
         coeffs = ', '.join(coeffs)
-        str += self.temp('arr[][]').format(type='double', name='coeffs',
-                                           values=coeffs)
+        str += self.temp('arr[][]').format(
+            type='double', name='coeffs', values=coeffs)
 
         # Interceptions:
         inters = [self.temp('type').format(repr(i)) for i in self.inters]
         inters = ', '.join(inters)
-        str += self.temp('arr[]').format(type='double', name='inters',
-                                         values=inters)
+        str += self.temp('arr[]').format(
+            type='double', name='inters', values=inters)
 
         # Classes:
         classes = [self.temp('type').format(repr(c)) for c in self.classes]
         classes = ', '.join(classes)
-        str += self.temp('arr[]').format(type='int', name='classes',
-                                         values=classes)
+        str += self.temp('arr[]').format(
+            type='int', name='classes', values=classes)
 
         # Kernels:
         if self.params['kernel'] == 'rbf':
@@ -290,5 +290,5 @@ class SVC(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(self.class_name, self.method_name,
-                                         method, self.n_svs)
+        return self.temp('class').format(
+            self.class_name, self.method_name, method, self.n_svs)

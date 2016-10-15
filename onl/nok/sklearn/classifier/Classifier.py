@@ -5,8 +5,8 @@ class Classifier(object):
     SUPPORT = {}
     TEMPLATE = {}
 
-    def __init__(self, language='java', method_name='predict',
-                 class_name='Tmp'):
+    def __init__(
+            self, language='java', method_name='predict', class_name='Tmp'):
         self.language = language
         self.method_name = method_name
         self.class_name = class_name
