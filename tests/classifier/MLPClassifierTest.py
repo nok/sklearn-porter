@@ -27,7 +27,7 @@ class MLPClassifierTest(unittest.TestCase):
             self.X, self.y, test_size=0.4, random_state=5)
 
         self.clf = MLPClassifier(
-            hidden_layer_sizes=50, max_iter=500, alpha=1e-4, solver='sgd',
+            hidden_layer_sizes=(50,100), max_iter=500, alpha=1e-4, solver='sgd',
             tol=1e-4, random_state=1, learning_rate_init=.1)
 
         self.clf.fit(self.X_train, self.y_train)
