@@ -65,6 +65,13 @@ The following matrix shows the portable classifier models:
             <td align="center">X</td>
             <td align="center">X</td>
         </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/java_predict.py">X</a></td>
+            <td align="center"></td>
+            <td align="center">X</td>
+            <td align="center"></td>
+        </tr>
     </tbody>
 </table>
 
