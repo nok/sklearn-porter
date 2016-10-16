@@ -4,6 +4,7 @@ import argparse
 import sklearn
 from sklearn.ensemble import weight_boosting
 from sklearn import svm
+from sklearn import neural_network
 
 from classifier.Classifier import Classifier
 from classifier.DecisionTreeClassifier import DecisionTreeClassifier
@@ -69,6 +70,7 @@ def get_model_data(model):
 def get_classifiers():
     '''Get a list of convertible classifiers.'''
     return [
+        sklearn.neural_network.multilayer_perceptron.MLPClassifier,
         sklearn.tree.tree.DecisionTreeClassifier,
         sklearn.ensemble.AdaBoostClassifier,
         sklearn.ensemble.RandomForestClassifier,
