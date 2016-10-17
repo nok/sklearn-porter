@@ -23,12 +23,14 @@ class MLPClassifierTest(unittest.TestCase):
         self.y = shuffle(self.y, random_state=0)
         self.n_features = len(self.X[0])
 
-        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(
+        self.X_train, self.X_test, \
+        self.y_train, self.y_test = train_test_split(
             self.X, self.y, test_size=0.4, random_state=5)
 
         self.clf = MLPClassifier(
-            hidden_layer_sizes=(50,100), max_iter=500, alpha=1e-4, solver='sgd',
-            tol=1e-4, random_state=1, learning_rate_init=.1)
+            activation='relu', hidden_layer_sizes=50, max_iter=500,
+            alpha=1e-4, solver='sgd', tol=1e-4, random_state=1,
+            learning_rate_init=.1)
 
         self.clf.fit(self.X_train, self.y_train)
 
@@ -45,10 +47,10 @@ class MLPClassifierTest(unittest.TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_TESTS):
-            X = [random.uniform(min_vals[f], max_vals[f])
+            x = [random.uniform(min_vals[f], max_vals[f])
                  for f in range(self.n_features)]
-            java_preds.append(self.make_pred_in_java(X))
-            py_preds.append(self.make_pred_in_py(X))
+            java_preds.append(self.make_pred_in_java(x))
+            py_preds.append(self.make_pred_in_py(x))
         self.assertListEqual(py_preds, java_preds)
 
     def test_existing_features(self):

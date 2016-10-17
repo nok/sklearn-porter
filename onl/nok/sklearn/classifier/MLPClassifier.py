@@ -59,14 +59,25 @@ class {class_name} {{
         return Math.max(0, v);
     }}
 
-    public static double[] hidden_activation(double[] v) {{
-        for (int i = 0, l = v.length; i < l; i++) {{
-            v[i] = Tmp.activation_relu(v[i]);
-        }}
+    public static double activation_tanh(double v) {{
+        return Math.tanh(v);
+    }}
+
+    public static double activation_identity(double v) {{
         return v;
     }}
 
-    public static double[] output_activation(double[] v) {{
+    // public static double activation_logistic(double v) {{
+    //    return 1. / (1. + Math.exp(-v));
+    // }}
+    // public static double[] activation_logistic(double[] v) {{
+    //     for (int i = 0, l = v.length; i < l; i++) {{
+    //         v[i] = {class_name}.activation_logistic(v[i]);
+    //     }}
+    //     return v;
+    // }}
+
+    public static double[] activation_softmax(double[] v) {{
         double max = Double.NEGATIVE_INFINITY;
         for (double x : v) {{
             if (x > max) {{
@@ -84,6 +95,17 @@ class {class_name} {{
             v[i] /= sum;
         }}
         return v;
+    }}
+
+    public static double[] hidden_activation(double[] v) {{
+        for (int i = 0, l = v.length; i < l; i++) {{
+            v[i] = {class_name}.activation_{hidden_activation}(v[i]);
+        }}
+        return v;
+    }}
+
+    public static double[] output_activation(double[] v) {{
+        return {class_name}.activation_{final_activation}(v);
     }}
 
     {method}
@@ -109,6 +131,18 @@ class {class_name} {{
         super(MLPClassifier, self).__init__(language, method_name, class_name)
 
 
+    @property
+    def hidden_activation_functions(self):
+        '''Get a list of supported activation functions of the hidden layers.'''
+        return ['relu', 'identity', 'tanh']  # 'logistic' failed tests
+
+
+    @property
+    def final_activation_functions(self):
+        '''Get a list of supported activation functions of the output layer.'''
+        return ['softmax']  # 'logistic' failed tests
+
+
     def port(self, model):
         """Port a trained model to the syntax of a chosen programming language.
 
@@ -118,6 +152,18 @@ class {class_name} {{
             An instance of a trained MLPClassifier classifier.
         """
         super(self.__class__, self).port(model)
+
+        # Activation function ('identity', 'logistic', 'tanh' or 'relu'):
+        self.hidden_activation = self.model.activation
+        if self.hidden_activation not in self.hidden_activation_functions:
+            raise ValueError(('The activation function \'%s\' of the model '
+                              'is not supported.') % self.hidden_activation)
+
+        # Output activation function ('softmax' or 'logistic'):
+        self.final_activation = self.model.out_activation_
+        if self.final_activation not in self.final_activation_functions:
+            raise ValueError(('The activation function \'%s\' of the model '
+                              'is not supported.') % self.final_activation)
 
         self.n_layers = self.model.n_layers_
         self.n_hidden_layers = self.model.n_layers_ - 2
@@ -132,12 +178,6 @@ class {class_name} {{
 
         self.layer_units = \
             [self.n_inputs] + self.hidden_layer_sizes + [self.model.n_outputs_]
-
-        # Activation function ('identity', 'logistic', 'tanh' or 'relu'):
-        self.hidden_activation = self.model.activation
-
-        # Output activation function ('softmax' or 'logistic'):
-        self.final_activation = self.model.out_activation_
 
         # Weights:
         self.coefficients = self.model.coefs_
@@ -206,4 +246,6 @@ class {class_name} {{
         """
         return self.temp('class').format(
             class_name=self.class_name, method_name=self.method_name,
-            method=method, n_features=self.n_inputs)
+            method=method, n_features=self.n_inputs,
+            hidden_activation=self.hidden_activation,
+            final_activation=self.final_activation)
