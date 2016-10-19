@@ -17,6 +17,7 @@ class MLPClassifier(Classifier):
         'java': {
             'type': ('{0}'),
             'arr': ('{{{0}}}'),
+            'new_arr': ('new double[{0}]'),
             'arr[]': ('double[] {name} = {{{values}}};'),
             'arr[][]': ('double[][] {name} = {{{values}}};'),
             'arr[][][]': ('double[][][] {name} = {{{values}}};'),
@@ -208,27 +209,31 @@ class {class_name} {{
         :return out : string
             The built method as string.
         """
-
         # Activations:
-        ac = ['new double[%d]' % (int(layer)) for layer in self.layer_units[1:]]
-        ac = 'double[][] activations = {atts, %s};' % (', '.join(ac))
+        ac = [self.temp('new_arr').format((str(int(layer))))
+              for layer in self.layer_units[1:]]
+        ac = ', '.join(['atts'] + ac)
+        ac = self.temp('arr[][]').format(name='activations', values=ac)
 
         # Coefficients (weights):
         coefs = []
         for layer in self.coefficients:
             layer_weights = []
             for weights in layer:
-                weights = [repr(w) for w in weights]
-                layer_weights.append('{%s}' % (', '.join(weights)))
-            coefs.append('{%s}' % (', '.join(layer_weights)))
-        coefs = 'double[][][] coefficients = {%s};' % (', '.join(coefs))
+                weights = ', '.join([repr(w) for w in weights])
+                layer_weights.append(self.temp('arr').format(weights))
+            layer_weights = ', '.join(layer_weights)
+            coefs.append(self.temp('arr').format(layer_weights))
+        coefs = ', '.join(coefs)
+        coefs = self.temp('arr[][][]').format(name='coefficients', values=coefs)
 
         # Intercepts (biases):
         inters = []
         for layer in self.intercepts:
-            inter = [repr(b) for b in layer]
-            inters.append('{%s}' % (', '.join(inter)))
-        inters = 'double[][] intercepts = {%s};' % (', '.join(inters))
+            inter = ', '.join([repr(b) for b in layer])
+            inters.append(self.temp('arr').format(inter))
+        inters = ', '.join(inters)
+        inters = self.temp('arr[][]').format(name='intercepts', values=inters)
 
         return self.temp('method').format(
             class_name=self.class_name, method_name=self.method_name,
