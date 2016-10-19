@@ -251,21 +251,21 @@ class SVC(Classifier):
 
         # Kernels:
         if self.params['kernel'] == 'rbf':
-            str += self.temp('kernel', 'rbf').format(
+            str += self.temp('kernel.rbf').format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']))
 
         if self.params['kernel'] == 'poly':
-            str += self.temp('kernel', 'poly').format(
+            str += self.temp('kernel.poly').format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']),
                 repr(self.params['coef0']), repr(self.params['degree']))
 
         if self.params['kernel'] == 'sigmoid':
-            str += self.temp('kernel', 'sigmoid').format(
+            str += self.temp('kernel.sigmoid').format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']),
                 repr(self.params['coef0']), repr(self.params['degree']))
 
         if self.params['kernel'] == 'linear':
-            str += self.temp('kernel', 'linear').format(
+            str += self.temp('kernel.linear').format(
                 len(self.svs), self.n_svs)
 
         # Decicion:

@@ -21,7 +21,7 @@ class Classifier(object):
                 raise AttributeError(msg)
 
 
-    def temp(self, name, detail=None):
+    def temp(self, name, templates=None):
         """Get specific template of chosen programming language.
 
         Parameters
@@ -34,8 +34,19 @@ class Classifier(object):
         :return : string
             The template string.
         """
-        # TODO: Refactor depth handling
-        return self.TEMPLATE[self.language][name] if detail is None else self.TEMPLATE[self.language][name][detail]
+        if templates is None:
+            templates = self.TEMPLATE.get(self.language)
+        keys = name.split('.')
+        key = keys.pop(0)
+        template = templates.get(key, None)
+        if template is not None:
+            if type(template) is str:
+                return template
+            else:
+                keys = '.'.join(keys)
+                return self.temp(keys, template)
+        else:
+            raise AttributeError('Template not found')
 
 
     def port(self, model):
