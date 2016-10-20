@@ -37,7 +37,7 @@ class Classifier(object):
         if templates is None:
             templates = self.TEMPLATE.get(self.language)
         keys = name.split('.')
-        key = keys.pop(0)
+        key = keys.pop(0).lower()
         template = templates.get(key, None)
         if template is not None:
             if type(template) is str:
