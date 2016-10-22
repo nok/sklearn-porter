@@ -12,7 +12,8 @@ class Classifier(object):
         self.class_name = class_name
 
         if method_name not in self.__class__.SUPPORT:
-            msg = 'The given method is not supported by the chosen classifier.'
+            msg = ('The given method is not supported '
+                   'by the chosen classifier.')
             raise AttributeError(msg)
         else:
             if self.language not in self.__class__.SUPPORT[method_name]:

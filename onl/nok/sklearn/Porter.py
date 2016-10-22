@@ -62,12 +62,12 @@ def get_model_data(model):
     :return md_name : string
         The name of the used algorithm.
     """
-    md_type = is_convertible_model(model)
+    md_type = is_transpilable(model)
     md_name = type(model).__name__
     return md_type, md_name
 
 
-def get_classifiers():
+def supported_classifiers():
     '''Get a list of convertible classifiers.'''
     return [
         sklearn.neural_network.multilayer_perceptron.MLPClassifier,
@@ -80,12 +80,12 @@ def get_classifiers():
     ]
 
 
-def get_regressors():
+def supported_regressors():
     '''Get a list of all convertible regressors.'''
     return []
 
 
-def is_convertible_model(model):
+def is_transpilable(model):
     """Check whether the model is a convertible classifier or regressor.
 
     Parameters
@@ -97,9 +97,9 @@ def is_convertible_model(model):
     --------
     onl.nok.sklearn.classifier.*, onl.nok.sklearn.regressor.*
     """
-    if type(model) in get_classifiers():
+    if type(model) in supported_classifiers():
         return 'classifier'
-    if type(model) in get_regressors():
+    if type(model) in supported_regressors():
         return 'regressors'
     raise ValueError(('The model is not an instance of '
                       'a supported classifier or regressor.'))
