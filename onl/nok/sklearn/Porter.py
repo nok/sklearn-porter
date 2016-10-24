@@ -7,16 +7,19 @@ from sklearn import svm
 from sklearn import neural_network
 
 from classifier.Classifier import Classifier
-from classifier.DecisionTreeClassifier import DecisionTreeClassifier
+
 from classifier.AdaBoostClassifier import AdaBoostClassifier
-from classifier.RandomForestClassifier import RandomForestClassifier
+from classifier.DecisionTreeClassifier import DecisionTreeClassifier
 from classifier.ExtraTreesClassifier import ExtraTreesClassifier
+from classifier.RandomForestClassifier import RandomForestClassifier
+from classifier.MLPClassifier import MLPClassifier
 from classifier.LinearSVC import LinearSVC
 from classifier.SVC import SVC
 
 
 def port(model, language="java", method_name='predict', class_name='Tmp'):
-    """Port a trained model in the syntax of a specific programming language.
+    """
+    Port a trained model in the syntax of a specific programming language.
 
     Parameters
     ----------
@@ -47,7 +50,8 @@ def port(model, language="java", method_name='predict', class_name='Tmp'):
 
 
 def get_model_data(model):
-    """Get data of the assigned model.
+    """
+    Get data of the assigned model.
 
     Parameters
     ----------
@@ -68,7 +72,7 @@ def get_model_data(model):
 
 
 def supported_classifiers():
-    '''Get a list of convertible classifiers.'''
+    """Get a list of convertible classifiers."""
     return [
         sklearn.neural_network.multilayer_perceptron.MLPClassifier,
         sklearn.tree.tree.DecisionTreeClassifier,
@@ -81,12 +85,13 @@ def supported_classifiers():
 
 
 def supported_regressors():
-    '''Get a list of all convertible regressors.'''
+    """Get a list of all convertible regressors."""
     return []
 
 
 def is_transpilable(model):
-    """Check whether the model is a convertible classifier or regressor.
+    """
+    Check whether the model is a convertible classifier or regressor.
 
     Parameters
     ----------

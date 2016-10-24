@@ -5,7 +5,7 @@
 [![Join the chat at https://gitter.im/nok/sklearn-porter](https://badges.gitter.im/nok/sklearn-porter.svg)](https://gitter.im/nok/sklearn-porter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/nok/scikit-learn-model-porting/master/LICENSE.txt)
 
-Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like C, Java or JavaScript. It's recommended for limited embedded systems and critical applications where performance matters most.
+Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like C, Java, JavaScript, Go or Swift. It's recommended for limited embedded systems and critical applications where performance matters most.
 
 
 ## Target Algorithm Models
@@ -17,68 +17,71 @@ The following matrix shows the portable classifier models:
 <table>
     <tbody>
         <tr>
-            <td width="32%"><strong>Classifier</strong></td>
-            <td align="center" width="17%"><strong>Example(s)</strong></td>
-            <td align="center" width="17%"><strong>C</strong></td>
-            <td align="center" width="17%"><strong>Java</strong></td>
-            <td align="center" width="17%"><strong>JavaScript</strong></td>
+            <td width="35%"><strong>Classifier</strong></td>
+            <td align="center" width="13%"><strong>C</strong></td>
+            <td align="center" width="13%"><strong>Java</strong></td>
+            <td align="center" width="13%"><strong>JavaScript</strong></td>
+            <td align="center" width="13%"><strong>Go</strong></td>
+            <td align="center" width="13%"><strong>Swift</strong></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
-            <td align="center"><a href="examples/classifier/SVC/java_predict.py">X</a></td>
             <td align="center"></td>
-            <td align="center">X</td>
+            <td align="center"><a href="examples/classifier/SVC/java/example.py">X</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/java_predict.py">X</a></td>
             <td align="center">X</td>
+            <td align="center"><a href="examples/classifier/LinearSVC/java/example.py">X</a></td>
             <td align="center">X</td>
-            <td align="center">X</td>
+            <td align="center"></td>
+            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/example.py">X</a></td>
             <td align="center">X</td>
-            <td align="center">X</td>
+            <td align="center"></td>
+            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></td>
-            <td align="center"><a href="examples/classifier/RandomForestClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/java/example.py">X</a></td>
             <td align="center">X</td>
-            <td align="center">X</td>
+            <td align="center"></td>
+            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
-            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/example.py">X</a></td>
             <td align="center">X</td>
-            <td align="center">X</td>
+            <td align="center"></td>
+            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
-            <td align="center">X</td>
-            <td align="center">X</td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/example.py">X</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/example.py">X</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
-            <td align="center"><a href="examples/classifier/MLPClassifier/java_predict.py">X</a></td>
             <td align="center"></td>
-            <td align="center">X</td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/java/example.py">X</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
             <td align="center"></td>
         </tr>
     </tbody>
 </table>
-
-<!--
-### ~~Regression~~
-The following matrix shows the portable regression models:
--->
 
 
 ## Usage
@@ -96,13 +99,13 @@ from sklearn.datasets import load_iris
 
 from onl.nok.sklearn.Porter import port
 
+# Load data and train a classifier:
 iris = load_iris()
 clf = tree.DecisionTreeClassifier()
 clf.fit(iris.data, iris.target)
 
-# Here we port the model:
-tree = port(clf)
-print(tree)
+# Port the model:
+print(port(clf))
 ```
 
 The [result](examples/classifier/decisiontree_predict.py) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.

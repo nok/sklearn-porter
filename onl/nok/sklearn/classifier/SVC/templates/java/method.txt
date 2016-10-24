@@ -1,0 +1,3 @@
+public static int {0}(float[] atts) {{
+    {1}
+}}
