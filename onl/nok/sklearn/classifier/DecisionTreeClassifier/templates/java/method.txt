@@ -2,7 +2,7 @@ public static int {method_name}(float[] atts) {{
     if (atts.length != {n_features}) {{ return -1; }}
     int[] classes = new int[{n_classes}];
 
-    {branches}
+{branches}
 
     int class_idx = 0;
     int class_val = classes[0];

@@ -190,21 +190,25 @@ class AdaBoostClassifier(Classifier):
         for idx, model in enumerate(self.models):
             cl_name = self.class_name
             fn_name = self.method_name + suffix.format(idx)
-            fn_name = self.temp('method_calls', indentation=8).format(idx, cl_name, fn_name)
+            fn_name = self.temp('method_calls', indentation=4).format(
+                idx, cl_name, fn_name)
             fn_names.append(fn_name)
 
         # Generate related trees:
         fns = []
         for idx, model in enumerate(self.models):
             tree = self.create_single_method(idx, model)
+            # tree = self.indent(tree, indentation=4)
             fns.append(tree)
 
         fns = '\n'.join(fns)
         fn_names = '\n'.join(fn_names)
 
         # Merge generated content:
-        return self.temp('method').format(
+        method = self.temp('method').format(
             fns, self.method_name, self.n_estimators, self.n_classes, fn_names)
+        method = self.indent(method, indentation=4)
+        return method
 
 
     def create_class(self, method):

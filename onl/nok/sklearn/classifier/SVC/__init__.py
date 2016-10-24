@@ -119,7 +119,7 @@ class SVC(Classifier):
         classes = [self.temp('type').format(repr(c)) for c in self.classes]
         classes = ', '.join(classes)
         str += self.temp('arr[]').format(
-            type='int', name='classes', values=classes)
+            type='int', name='classes', values=classes) + '\n'
 
         # Kernels:
         if self.params['kernel'] == 'rbf':
@@ -151,7 +151,9 @@ class SVC(Classifier):
         str += self.temp('decicions').format(self.n_svs_rows)
         str += self.temp('classes').format(self.n_classes)
 
-        return self.temp('method').format(self.method_name, str)
+        str = self.indent(str, indentation=8)
+
+        return self.temp('method', indentation=4).format(self.method_name, str)
 
 
     def create_class(self, method):

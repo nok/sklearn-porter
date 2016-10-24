@@ -3,4 +3,3 @@ public static double[] {1}_{0}(float[] atts) {{
 {3}
     return classes;
 }}
-

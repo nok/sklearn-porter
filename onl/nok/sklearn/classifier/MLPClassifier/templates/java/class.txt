@@ -53,7 +53,7 @@ class {class_name} {{
         return {class_name}.activation_{final_activation}(v);
     }}
 
-    {method}
+{method}
 
     public static void main(String[] args) {{
         if (args.length == {n_features}) {{

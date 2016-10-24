@@ -1,4 +1,5 @@
-\\ tanh(y<x,x'>+r)
+
+// tanh(y<x,x'>+r)
 double[] kernels = new double[{0}];
 double kernel;
 for (int i=0; i<{0}; i++) {{

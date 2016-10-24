@@ -2,7 +2,7 @@
 public static int {1}(float[] atts) {{
     int n_classes = {3};
     int[] classes = new int[n_classes];
-    {4}
+{4}
     int class_idx = 0;
     int class_val = classes[0];
     for (int i = 1; i < n_classes; i++) {{

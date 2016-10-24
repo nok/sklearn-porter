@@ -142,9 +142,10 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built method as string.
         """
-        return self.temp('method').format(
+        branches = self.indent(self.create_tree(), indentation=4)
+        return self.temp('method', indentation=4).format(
             method_name=self.method_name, n_features=self.n_features,
-            n_classes=self.n_classes, branches=self.create_tree())
+            n_classes=self.n_classes, branches=branches)
 
 
     def create_class(self, method):

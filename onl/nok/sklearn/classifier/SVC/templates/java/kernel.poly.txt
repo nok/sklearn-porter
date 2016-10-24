@@ -1,4 +1,5 @@
-\\ (y<x,x'>+r)^d
+
+// (y<x,x'>+r)^d
 double[] kernels = new double[{0}];
 double kernel;
 for (int i=0; i<{0}; i++) {{

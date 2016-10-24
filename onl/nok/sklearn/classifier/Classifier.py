@@ -53,7 +53,8 @@ class Classifier(object):
         # Multiple lines:
         indented_lines = []
         for idx, line in enumerate(lines):
-            indented_lines.append(indentation * ' ' + line)
+            line = indentation * ' ' + line
+            indented_lines.append(line)
         indented_text = '\n'.join(indented_lines)
         return indented_text
 

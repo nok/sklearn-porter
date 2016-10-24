@@ -1,5 +1,4 @@
 class {class_name} {{
-
 {method}
 
     public static void main(String[] args) {{

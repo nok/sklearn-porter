@@ -156,11 +156,12 @@ class RandomForestClassifier(Classifier):
         tree_branches = self.create_branches(
             model.tree_.children_left, model.tree_.children_right,
             model.tree_.threshold, model.tree_.value, indices, 0, 1)
+        tree_branches = self.indent(tree_branches, indentation=4)
 
         suffix = ("{0:0" + str(len(str(self.n_estimators - 1))) + "d}")
         model_index = suffix.format(int(model_index))
 
-        return self.temp('single_method').format(
+        return self.temp('single_method', indentation=4).format(
             model_index, self.method_name, self.n_classes, tree_branches)
 
 
@@ -178,7 +179,7 @@ class RandomForestClassifier(Classifier):
         suffix = ("_{0:0" + str(len(str(self.n_estimators - 1))) + "d}")
         for i, model in enumerate(self.models):
             fn_name = self.method_name + suffix.format(i)
-            fn_name = self.temp('method_calls').format(
+            fn_name = self.temp('method_calls', indentation=8).format(
                 i, self.class_name, fn_name)
             fn_names.append(fn_name)
 
@@ -193,7 +194,7 @@ class RandomForestClassifier(Classifier):
         fn_names = '\n'.join(fn_names)
 
         # Merge generated content:
-        return self.temp('method').format(
+        return self.temp('method', indentation=4).format(
             fns, self.method_name, self.n_estimators, self.n_classes, fn_names)
 
 
