@@ -1,4 +1,4 @@
-from ..Classifier import Classifier
+from .. import Classifier
 
 
 class MLPClassifier(Classifier):

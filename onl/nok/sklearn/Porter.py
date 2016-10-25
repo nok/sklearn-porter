@@ -6,7 +6,7 @@ from sklearn.ensemble import weight_boosting
 from sklearn import svm
 from sklearn import neural_network
 
-from classifier.Classifier import Classifier
+from classifier import Classifier
 
 from classifier.AdaBoostClassifier import AdaBoostClassifier
 from classifier.DecisionTreeClassifier import DecisionTreeClassifier

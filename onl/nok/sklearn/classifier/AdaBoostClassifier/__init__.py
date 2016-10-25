@@ -1,6 +1,6 @@
 import sklearn
 
-from ..Classifier import Classifier
+from .. import Classifier
 
 
 class AdaBoostClassifier(Classifier):
