@@ -111,36 +111,37 @@ class MLPClassifier(Classifier):
         :return out : string
             The built method as string.
         """
+
         # Activations:
-        ac = [self.temp('new_arr').format((str(int(layer))))
-              for layer in self.layer_units[1:]]
-        ac = ', '.join(['atts'] + ac)
-        ac = self.temp('arr[][]').format(name='activations', values=ac)
+        activations = list(self._get_activations())
+        activations = ', '.join(['atts'] + activations)
+        activations = self.temp('arr[][]').format(
+            name='activations', values=activations)
 
         # Coefficients (weights):
-        coefs = []
+        coefficients = []
         for layer in self.coefficients:
             layer_weights = []
             for weights in layer:
                 weights = ', '.join([repr(w) for w in weights])
                 layer_weights.append(self.temp('arr').format(weights))
             layer_weights = ', '.join(layer_weights)
-            coefs.append(self.temp('arr').format(layer_weights))
-        coefs = ', '.join(coefs)
-        coefs = self.temp('arr[][][]').format(name='coefficients', values=coefs)
+            coefficients.append(self.temp('arr').format(layer_weights))
+        coefficients = ', '.join(coefficients)
+        coefficients = self.temp('arr[][][]').format(
+            name='coefficients', values=coefficients)
 
         # Intercepts (biases):
-        inters = []
-        for layer in self.intercepts:
-            inter = ', '.join([repr(b) for b in layer])
-            inters.append(self.temp('arr').format(inter))
-        inters = ', '.join(inters)
-        inters = self.temp('arr[][]').format(name='intercepts', values=inters)
+        intercepts = list(self._get_intercepts())
+        intercepts = ', '.join(intercepts)
+        intercepts = self.temp('arr[][]').format(
+            name='intercepts', values=intercepts)
 
         return self.temp('method').format(
             class_name=self.class_name, method_name=self.method_name,
             n_features=self.n_inputs, n_classes=self.n_outputs,
-            activations=ac, coefficients=coefs, intercepts=inters)
+            activations=activations, coefficients=coefficients,
+            intercepts=intercepts)
 
 
     def create_class(self, method):
@@ -157,3 +158,21 @@ class MLPClassifier(Classifier):
             method=method, n_features=self.n_inputs,
             hidden_activation=self.hidden_activation,
             final_activation=self.final_activation)
+
+
+    def _get_intercepts(self):
+        """
+        Concatenate all intercepts of the classifier.
+        """
+        for layer in self.intercepts:
+            inter = ', '.join([repr(b) for b in layer])
+            yield self.temp('arr').format(inter)
+
+
+    def _get_activations(self):
+        """
+        Concatenate the layers sizes of the classifier except the input layer.
+        """
+        for layer in self.layer_units[1:]:
+            yield self.temp('new_arr').format((str(int(layer))))
+
