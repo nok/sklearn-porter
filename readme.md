@@ -5,7 +5,7 @@
 [![Join the chat at https://gitter.im/nok/sklearn-porter](https://badges.gitter.im/nok/sklearn-porter.svg)](https://gitter.im/nok/sklearn-porter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/nok/scikit-learn-model-porting/master/LICENSE.txt)
 
-Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like C, Java, JavaScript, Go or Swift. It's recommended for limited embedded systems and critical applications where performance matters most.
+Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like [C](https://en.wikipedia.org/wiki/C_(programming_language)), [Java](https://en.wikipedia.org/wiki/Java_(programming_language)), [JavaScript](https://en.wikipedia.org/wiki/JavaScript), [Go](https://en.wikipedia.org/wiki/Go_(programming_language)) or [Swift](https://en.wikipedia.org/wiki/Swift_(programming_language)). It's recommended for limited embedded systems and critical applications where performance matters most.
 
 
 ## Target Algorithm Models
