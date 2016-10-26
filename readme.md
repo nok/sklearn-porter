@@ -12,7 +12,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
 
 ### Classification
 
-The following matrix shows the portable classifier models:
+The following matrix shows the portable classifiers:
 
 <table>
     <tbody>
@@ -91,7 +91,7 @@ Either you use the porter in your application as [imported module](#module) or y
 
 ### Module
 
-This example shows how you can port the decision tree model from the [official user guide](http://scikit-learn.org/0.17/modules/tree.html#classification) to the programming language Java:
+This example shows how you can port the decision tree model from the [official user guide](http://scikit-learn.org/stable/modules/tree.html#classification) to the programming language Java:
 
 ```python
 from sklearn.tree import tree
@@ -105,7 +105,7 @@ clf = tree.DecisionTreeClassifier()
 clf.fit(iris.data, iris.target)
 
 # Port the model:
-print(port(clf))
+print(port(clf)) 
 ```
 
 The [result](examples/classifier/decisiontree_predict.py) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
@@ -127,13 +127,13 @@ clf.fit(iris.data, iris.target)
 joblib.dump(clf, 'model.pkl')
 ```
 
-Then you can port the model by using the following command:
+After that you can port the model by using the following command:
 
 ```sh
 python onl/nok/sklearn/Porter.py --model <pickle_model_path> --output <output_file_path> [--language {c,java,js}]
 ```
 
-Here are some examples:
+Here you see some real examples:
 
 ```sh
 python onl/nok/sklearn/Porter.py --model examples/cli/model.pkl --output examples/cli/Model.java --language java
