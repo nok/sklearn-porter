@@ -27,7 +27,7 @@ The following matrix shows the portable classifiers:
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/SVC/java/example.py">X</a></td>
+            <td align="center"><a href="examples/classifier/SVC/java/example.py#L12">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -35,15 +35,15 @@ The following matrix shows the portable classifiers:
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
             <td align="center">X</td>
-            <td align="center"><a href="examples/classifier/LinearSVC/java/example.py">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/java/example.py#L12">X</a></td>
             <td align="center">X</td>
-            <td align="center"><a href="examples/classifier/LinearSVC/go/example.py">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/go/example.py#L12">X</a></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/example.py">X</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/example.py#L12">X</a></td>
             <td align="center">X</td>
             <td align="center"></td>
             <td align="center"></td>
@@ -51,7 +51,7 @@ The following matrix shows the portable classifiers:
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/RandomForestClassifier/java/example.py">X</a></td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/java/example.py#L13">X</a></td>
             <td align="center">X</td>
             <td align="center"></td>
             <td align="center"></td>
@@ -59,7 +59,7 @@ The following matrix shows the portable classifiers:
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/example.py">X</a></td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/example.py#L12">X</a></td>
             <td align="center">X</td>
             <td align="center"></td>
             <td align="center"></td>
@@ -67,15 +67,15 @@ The following matrix shows the portable classifiers:
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/example.py">X</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/example.py">X</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/example.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/example.py#L15">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/MLPClassifier/java/example.py">X</a></td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/java/example.py#L25">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
