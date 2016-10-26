@@ -1,0 +1,14 @@
+package main
+
+import (
+	"fmt"
+	"math"
+)
+
+{method}
+
+func main() {{
+	// atts := []float64{{ /* values */ }}
+	// classIdx := predict(atts)
+	// fmt.Println(classIdx)
+}}

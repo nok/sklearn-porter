@@ -37,7 +37,7 @@ The following matrix shows the portable classifier models:
             <td align="center">X</td>
             <td align="center"><a href="examples/classifier/LinearSVC/java/example.py">X</a></td>
             <td align="center">X</td>
-            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/go/example.py">X</a></td>
             <td align="center"></td>
         </tr>
         <tr>
@@ -155,7 +155,6 @@ Install the [environment modules](environment.yml) by executing the bash script 
 ```sh
 conda config --add channels conda-forge
 conda env create -n sklearn-porter python=2 -f environment.yml
-source activate sklearn-porter
 ```
 
 ## Unit Testing
@@ -163,7 +162,9 @@ source activate sklearn-porter
 Run all [tests](tests) by executing the bash script [tests.sh](tests.sh) or type:
 
 ```sh
+source activate sklearn-porter
 python -m unittest discover -vp '*Test.py'
+source deactivate
 ```
 
 

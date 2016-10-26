@@ -10,7 +10,7 @@ class LinearSVC(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html
     """
 
-    SUPPORT = {'predict': ['c', 'java', 'js']}
+    SUPPORT = {'predict': ['c', 'go', 'java', 'js']}
 
     # @formatter:off
     TEMPLATE = {
@@ -19,19 +19,29 @@ class LinearSVC(Classifier):
             'arr':      ('{{{0}}}'),
             'arr[]':    ('double {name}[{n}] = {{{values}}};'),
             'arr[][]':  ('double {name}[{n}][{m}] = {{{values}}};'),
+            'indent':   ('    '),
+        },
+        'go': {
+            'type':     ('{0}'),
+            'arr':      ('{{{0}}}'),
+            'arr[]':    ('{name} := []float64{{{values}}}'),
+            'arr[][]':  ('{name} := [][]float64{{{values}}}'),
+            'indent':   ('\t'),
         },
         'java': {
             'type':     ('{0}'),
             'arr':      ('{{{0}}}'),
             'arr[]':    ('double[] {name} = {{{values}}};'),
             'arr[][]':  ('double[][] {name} = {{{values}}};'),
+            'indent':   ('    '),
         },
         'js': {
             'type':     ('{0}'),
             'arr':      ('[{0}]'),
             'arr[]':    ('var {name} = [{values}];'),
             'arr[][]':  ('var {name} = [{values}];'),
-            'class':    ('{method}')
+            'indent':   ('    '),
+            'class':    ('{method}'),
         }
     }
     # @formatter:on
@@ -99,7 +109,7 @@ class LinearSVC(Classifier):
         inters = self.temp('arr[]').format(
             name='inters', values=inters, n=self.n_classes)
 
-        return self.temp('method', indentation=4).format(
+        return self.temp('method', indentation=1).format(
             name=self.method_name, n_features=self.n_features,
             n_classes=self.n_classes, coefficients=coefs,
             intercepts=inters)

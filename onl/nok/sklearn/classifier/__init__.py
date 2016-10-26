@@ -46,14 +46,17 @@ class Classifier(object):
         """
         lines = text.splitlines()
 
+        # TODO: Refactor the indentation type:
+        space = self.TEMPLATE.get(self.language).get('indent', ' ')
+
         # Single line:
         if len(lines) == 1:
-            return indentation * ' ' + text.strip()
+            return indentation * space + text.strip()
 
         # Multiple lines:
         indented_lines = []
         for idx, line in enumerate(lines):
-            line = indentation * ' ' + line
+            line = indentation * space + line
             indented_lines.append(line)
         indented_text = '\n'.join(indented_lines)
         return indented_text
