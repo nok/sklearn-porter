@@ -4,18 +4,22 @@ import argparse
 import sklearn
 from sklearn.ensemble import weight_boosting
 from sklearn import svm
+from sklearn import neural_network
 
-from classifier.Classifier import Classifier
-from classifier.DecisionTreeClassifier import DecisionTreeClassifier
+from classifier import Classifier
+
 from classifier.AdaBoostClassifier import AdaBoostClassifier
-from classifier.RandomForestClassifier import RandomForestClassifier
+from classifier.DecisionTreeClassifier import DecisionTreeClassifier
 from classifier.ExtraTreesClassifier import ExtraTreesClassifier
+from classifier.RandomForestClassifier import RandomForestClassifier
+from classifier.MLPClassifier import MLPClassifier
 from classifier.LinearSVC import LinearSVC
 from classifier.SVC import SVC
 
 
 def port(model, language="java", method_name='predict', class_name='Tmp'):
-    """Port a trained model in the syntax of a specific programming language.
+    """
+    Port a trained model in the syntax of a specific programming language.
 
     Parameters
     ----------
@@ -40,12 +44,14 @@ def port(model, language="java", method_name='predict', class_name='Tmp'):
     md_path = '.'.join([md_type, md_name])
     md_mod = __import__(md_path, globals(), locals(), [md_name], -1)
     klass = getattr(md_mod, md_name)
-    instance = klass(language=language, method_name=method_name, class_name=class_name)
+    instance = klass(language=language, method_name=method_name,
+                     class_name=class_name)
     return instance.port(model)
 
 
 def get_model_data(model):
-    """Get data of the assigned model.
+    """
+    Get data of the assigned model.
 
     Parameters
     ----------
@@ -60,14 +66,15 @@ def get_model_data(model):
     :return md_name : string
         The name of the used algorithm.
     """
-    md_type = is_convertible_model(model)
+    md_type = is_transpilable(model)
     md_name = type(model).__name__
     return md_type, md_name
 
 
-def get_classifiers():
-    '''Get a list of convertible classifiers.'''
+def supported_classifiers():
+    """Get a list of convertible classifiers."""
     return [
+        sklearn.neural_network.multilayer_perceptron.MLPClassifier,
         sklearn.tree.tree.DecisionTreeClassifier,
         sklearn.ensemble.AdaBoostClassifier,
         sklearn.ensemble.RandomForestClassifier,
@@ -77,13 +84,14 @@ def get_classifiers():
     ]
 
 
-def get_regressors():
-    '''Get a list of all convertible regressors.'''
+def supported_regressors():
+    """Get a list of all convertible regressors."""
     return []
 
 
-def is_convertible_model(model):
-    """Check whether the model is a convertible classifier or regressor.
+def is_transpilable(model):
+    """
+    Check whether the model is a convertible classifier or regressor.
 
     Parameters
     ----------
@@ -94,16 +102,18 @@ def is_convertible_model(model):
     --------
     onl.nok.sklearn.classifier.*, onl.nok.sklearn.regressor.*
     """
-    if type(model) in get_classifiers():
+    if type(model) in supported_classifiers():
         return 'classifier'
-    if type(model) in get_regressors():
+    if type(model) in supported_regressors():
         return 'regressors'
-    raise ValueError('The model is not an instance of a supported classifier or regressor.')
+    raise ValueError(('The model is not an instance of '
+                      'a supported classifier or regressor.'))
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Transpile trained scikit-learn models to a low-level programming language.',
+        description=('Transpile trained scikit-learn models '
+                     'to a low-level programming language.'),
         epilog='More details on: https://github.com/nok/sklearn-porter')
     parser.add_argument(
         '--model', '-m',
@@ -123,23 +133,26 @@ def main():
 
     args = vars(parser.parse_args())
 
-    input_file = str(args['model'])
-    if input_file.endswith('.pkl') and os.path.isfile(input_file):
+    input = str(args['model'])
+    if input.endswith('.pkl') and os.path.isfile(input):
 
         # Target programming language:
-        lang = str(args['language']) if str(args['language']) is not '' else 'java'
+        lang = str(args['language'])
+        lang = lang if lang is not '' else 'java'
 
-        # Input and output filename:
-        inn = str(args['model'])
-        out = inn.split('.')[-2] + '.' + lang
+        # Input model:
+        model = str(args['model'])
 
+        # Output model:
+        output = model.split('.')[-2]
+        output += '.' + lang
         if str(args['output']).endswith(('.c', '.java', '.js')):
-            out = str(args['output'])
+            output = str(args['output'])
             # lang = out.split('.')[-1].lower()
 
         from sklearn.externals import joblib
-        with open(out, 'w') as file:
-            model = joblib.load(inn)
+        with open(output, 'w') as file:
+            model = joblib.load(model)
             # class_name = out.split('.')[-2].lower().title()
             file.write(port(model))
 

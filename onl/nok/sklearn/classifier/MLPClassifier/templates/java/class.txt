@@ -1,0 +1,67 @@
+class {class_name} {{
+
+    public static double activation_relu(double v) {{
+        return Math.max(0, v);
+    }}
+
+    public static double activation_tanh(double v) {{
+        return Math.tanh(v);
+    }}
+
+    public static double activation_identity(double v) {{
+        return v;
+    }}
+
+    // public static double activation_logistic(double v) {{
+    //    return 1. / (1. + Math.exp(-v));
+    // }}
+    // public static double[] activation_logistic(double[] v) {{
+    //     for (int i = 0, l = v.length; i < l; i++) {{
+    //         v[i] = {class_name}.activation_logistic(v[i]);
+    //     }}
+    //     return v;
+    // }}
+
+    public static double[] activation_softmax(double[] v) {{
+        double max = Double.NEGATIVE_INFINITY;
+        for (double x : v) {{
+            if (x > max) {{
+                max = x;
+            }}
+        }}
+        for (int i = 0, l = v.length; i < l; i++) {{
+            v[i] = Math.exp(v[i] - max);
+        }}
+        double sum = 0.0;
+        for (double x : v) {{
+            sum += x;
+        }}
+        for (int i = 0, l = v.length; i < l; i++) {{
+            v[i] /= sum;
+        }}
+        return v;
+    }}
+
+    public static double[] hidden_activation(double[] v) {{
+        for (int i = 0, l = v.length; i < l; i++) {{
+            v[i] = {class_name}.activation_{hidden_activation}(v[i]);
+        }}
+        return v;
+    }}
+
+    public static double[] output_activation(double[] v) {{
+        return {class_name}.activation_{final_activation}(v);
+    }}
+
+{method}
+
+    public static void main(String[] args) {{
+        if (args.length == {n_features}) {{
+            double[] atts = new double[args.length];
+            for (int i = 0, l = args.length; i < l; i++) {{
+                atts[i] = Double.parseDouble(args[i]);
+            }}
+            System.out.println({class_name}.{method_name}(atts));
+        }}
+    }}
+}}

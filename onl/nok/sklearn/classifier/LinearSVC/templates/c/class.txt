@@ -1,0 +1,10 @@
+#include <stdio.h>
+#include <math.h>
+
+{method}
+
+int main(int argc, const char * argv[]) {{
+    float test[{n_features}] = {{1.f, 2.f, 3.f, 4.f}};
+    printf("Result: %d\\n", {method_name}(test));
+    return 0;
+}}

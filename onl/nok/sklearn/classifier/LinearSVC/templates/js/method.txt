@@ -1,0 +1,21 @@
+var {name} = function(atts) {{
+    if (atts.length != {n_features}) {{ return -1; }};
+
+    {coefficients}
+    {intercepts}
+
+    var class_idx = -1,
+        class_val = Number.NEGATIVE_INFINITY,
+        prob = 0.;
+    for (var i = 0; i < {n_classes}; i++) {{
+        prob = 0.;
+        for (var j = 0; j < {n_features}; j++) {{
+            prob += coefs[i][j] * atts[j];
+        }}
+        if (prob + inters[i] > class_val) {{
+            class_val = prob + inters[i];
+            class_idx = i;
+        }}
+    }}
+    return class_idx;
+}};

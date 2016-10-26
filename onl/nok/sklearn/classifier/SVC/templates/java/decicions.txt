@@ -1,0 +1,14 @@
+
+double[] decisions = new double[{0}];
+for (int i = 0, d = 0, l = {0}; i < l; i++) {{
+    for (int j = i + 1; j < l; j++) {{
+        double tmp1 = 0., tmp2 = 0.;
+        for (int k = starts[j]; k < ends[j]; k++) {{
+           tmp1 += kernels[k] * coeffs[i][k];
+        }}
+        for (int k = starts[i]; k < ends[i]; k++) {{
+            tmp2 += kernels[k] * coeffs[j - 1][k];
+        }}
+        decisions[d] = tmp1 + tmp2 + inters[d++];
+    }}
+}}

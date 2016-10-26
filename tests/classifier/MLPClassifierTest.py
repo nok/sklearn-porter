@@ -3,22 +3,37 @@ import subprocess as subp
 import unittest
 import numpy as np
 
+from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_iris
-from sklearn.svm.classes import SVC
+from sklearn.utils import shuffle
+from sklearn.neural_network.multilayer_perceptron import MLPClassifier
 
-from onl.nok.sklearn.classifier.SVC import SVC as Porter
+from onl.nok.sklearn.classifier.MLPClassifier \
+    import MLPClassifier as Porter
 
 
-class SVCTest(unittest.TestCase):
+class MLPClassifierTest(unittest.TestCase):
 
     N_TESTS = 150
 
     def setUp(self):
         self.tmp_fn = 'Tmp'
-        self.iris = load_iris()
-        self.n_features = len(self.iris.data[0])
-        self.clf = SVC(C=1., kernel='rbf', gamma=0.001, random_state=0)
-        self.clf.fit(self.iris.data, self.iris.target)
+        self.X, self.y = load_iris(return_X_y=True)
+        self.X = shuffle(self.X, random_state=0)
+        self.y = shuffle(self.y, random_state=0)
+        self.n_features = len(self.X[0])
+
+        self.X_train, self.X_test, \
+        self.y_train, self.y_test = train_test_split(
+            self.X, self.y, test_size=0.4, random_state=5)
+
+        self.clf = MLPClassifier(
+            activation='relu', hidden_layer_sizes=50, max_iter=500,
+            alpha=1e-4, solver='sgd', tol=1e-4, random_state=1,
+            learning_rate_init=.1)
+
+        self.clf.fit(self.X_train, self.y_train)
+
         self.porter = Porter()
         self.create_java_files()
 
@@ -29,19 +44,19 @@ class SVCTest(unittest.TestCase):
     def test_random_features(self):
         # Creating random features:
         java_preds, py_preds = [], []
-        min_vals = np.amin(self.iris.data, axis=0)
-        max_vals = np.amax(self.iris.data, axis=0)
+        min_vals = np.amin(self.X, axis=0)
+        max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_TESTS):
-            X = [random.uniform(min_vals[f], max_vals[f])
+            x = [random.uniform(min_vals[f], max_vals[f])
                  for f in range(self.n_features)]
-            java_preds.append(self.make_pred_in_java(X))
-            py_preds.append(self.make_pred_in_py(X))
+            java_preds.append(self.make_pred_in_java(x))
+            py_preds.append(self.make_pred_in_py(x))
         self.assertListEqual(py_preds, java_preds)
 
     def test_existing_features(self):
         # Get existing features:
         java_preds, py_preds = [], []
-        for X in self.iris.data:
+        for X in self.X:
             java_preds.append(self.make_pred_in_java(X))
             py_preds.append(self.make_pred_in_py(X))
         self.assertListEqual(java_preds, py_preds)
@@ -77,4 +92,3 @@ class SVCTest(unittest.TestCase):
         cmd += args
         pred = subp.check_output(cmd, stderr=subp.STDOUT)
         return int(pred)
-
