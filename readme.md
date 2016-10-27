@@ -36,7 +36,7 @@ The following matrix shows the portable classifiers:
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/c/example.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/java/example.py#L12">X</a></td>
-            <td align="center">X</td>
+            <td align="center"><a href="examples/classifier/LinearSVC/js/example.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/go/example.py#L12">X</a></td>
             <td align="center"></td>
         </tr>
