@@ -44,7 +44,7 @@ The following matrix shows the portable classifiers:
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/example.py#L12">X</a></td>
-            <td align="center">X</td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/js/example.py#L12">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
