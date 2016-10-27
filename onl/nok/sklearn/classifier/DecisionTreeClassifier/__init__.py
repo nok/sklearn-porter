@@ -15,17 +15,19 @@ class DecisionTreeClassifier(Classifier):
     # @formatter:off
     TEMPLATE = {
         'java': {
-            'if':       ('{0}if (atts[{1}] <= {2}) {{'),
-            'else':     ('{0}}} else {{'),
-            'endif':    ('{0}}}'),
-            'arr':      ('{0}classes[{1}] = {2}'),
+            'if':       ('\nif (atts[{0}] {1} {2}) {{'),
+            'else':     ('\n} else {'),
+            'endif':    ('\n}'),
+            'arr':      ('\nclasses[{0}] = {1}\n'),
+            'indent':   ('    '),
             'join':     ('; '),
         },
         'js': {
-            'if':       ('{0}if (atts[{1}] <= {2}) {{'),
-            'else':     ('{0}}} else {{'),
-            'endif':    ('{0}}}'),
-            'arr':      ('{0}classes[{1}] = {2}'),
+            'if':       ('\nif (atts[{0}] <= {1}) {{'),
+            'else':     ('\n} else {'),
+            'endif':    ('\n}'),
+            'arr':      ('\nclasses[{0}] = {1}\n'),
+            'indent':   ('    '),
             'join':     ('; '),
             'class':    ('{method}')
         }
@@ -67,17 +69,17 @@ class DecisionTreeClassifier(Classifier):
         return self.create_class(self.create_method())
 
 
-    def create_branches(self, L, R, T, value, features, node, depth):
+    def create_branches(self, l, r, t, value, features, node, depth):
         """
         Parse and port a single tree model.
 
         Parameters
         ----------
-        :param L : object
+        :param l : object
             The left children node.
-        :param R : object
+        :param r : object
             The left children node.
-        :param T : object
+        :param t : object
             The decision threshold.
         :param value : object
             The label or class.
@@ -94,22 +96,24 @@ class DecisionTreeClassifier(Classifier):
             The ported single tree as function or method.
         """
         str = ''
-        ind = '\n' + '    ' * depth
-        if T[node] != -2.:
-            str += self.temp('if').format(ind, features[node], repr(T[node]))
-            if L[node] != -1.:
+        # ind = '\n' + '    ' * depth
+        if t[node] != -2.:
+            str += self.temp('if', indentation=depth).format(
+                features[node], '<=', repr(t[node]))
+            if l[node] != -1.:
                 str += self.create_branches(
-                    L, R, T, value, features, L[node], depth + 1)
-            str += self.temp('else').format(ind)
-            if R[node] != -1.:
+                    l, r, t, value, features, l[node], depth + 1)
+            str += self.temp('else', indentation=depth)
+            if r[node] != -1.:
                 str += self.create_branches(
-                    L, R, T, value, features, R[node], depth + 1)
-            str += self.temp('endif').format(ind)
+                    l, r, t, value, features, r[node], depth + 1)
+            str += self.temp('endif', indentation=depth)
         else:
-            classes = []
+            clazzes = []
             for i, rate in enumerate(value[node][0]):
-                classes.append(self.temp('arr').format(ind, i, int(rate)))
-            str += self.temp('join').join(classes) + self.temp('join')
+                clazz = self.temp('arr', indentation=depth).format(i, int(rate))
+                clazzes.append(clazz)
+            str += self.temp('join').join(clazzes) + self.temp('join')
         return str
 
 
@@ -142,8 +146,8 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built method as string.
         """
-        branches = self.indent(self.create_tree(), indentation=4)
-        return self.temp('method', indentation=4).format(
+        branches = self.indent(self.create_tree(), indentation=1)
+        return self.temp('method', indentation=1).format(
             method_name=self.method_name, n_features=self.n_features,
             n_classes=self.n_classes, branches=branches)
 
