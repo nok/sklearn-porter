@@ -41,7 +41,6 @@ class LinearSVC(Classifier):
             'arr[]':    ('var {name} = [{values}];'),
             'arr[][]':  ('var {name} = [{values}];'),
             'indent':   ('    '),
-            'class':    ('{method}'),
         }
     }
     # @formatter:on

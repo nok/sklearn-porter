@@ -7,6 +7,10 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+before_install:
+  - sudo rm -rf ~/.nvm
+  - curl -sL "https://deb.nodesource.com/setup_7.x" | sudo -E bash -
+  - sudo apt-get install -y nodejs
 install:
   - sudo apt-get update
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
