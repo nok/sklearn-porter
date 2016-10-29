@@ -52,7 +52,7 @@ The following matrix shows the portable classifiers:
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/RandomForestClassifier/java/example.py#L13">X</a></td>
-            <td align="center">X</td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/js/example.py#L13">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
@@ -60,7 +60,7 @@ The following matrix shows the portable classifiers:
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/example.py#L12">X</a></td>
-            <td align="center">X</td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/js/example.py#L12">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
