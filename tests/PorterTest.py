@@ -18,10 +18,10 @@ class PorterTest(unittest.TestCase):
 
     def setUp(self):
         self.tmp_fn = 'Tmp'
-        self.iris = load_iris()
-        self.n_features = len(self.iris.data[0])
+        self.X, self.y = load_iris(return_X_y=True)
+        self.n_features = len(self.X[0])
         self.clf = tree.DecisionTreeClassifier(random_state=0)
-        self.clf.fit(self.iris.data, self.iris.target)
+        self.clf.fit(self.X, self.y)
         self._create_java_files()
 
     def tearDown(self):
