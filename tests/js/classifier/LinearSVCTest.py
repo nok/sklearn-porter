@@ -15,7 +15,7 @@ class LinearSVCTest(unittest.TestCase):
     N_TESTS = 150
 
     def setUp(self):
-        self.tmp_fn = 'Tmp'
+        self.tmp_fn = 'temp/tmp.js'
         self.iris = load_iris()
         self.n_features = len(self.iris.data[0])
         self.clf = LinearSVC(C=1., random_state=0)
@@ -55,23 +55,20 @@ class LinearSVCTest(unittest.TestCase):
         subp.call(['mkdir', 'temp'])
 
         # Save transpiled model:
-        path = 'temp/' + self.tmp_fn + '.js'
-        with open(path, 'w') as file:
+        with open(self.tmp_fn, 'w') as file:
             file.write(self.porter.port(self.clf))
 
     def remove_test_files(self):
         # Remove the temporary test directory:
         # -> rm -rf temp
         subp.call(['rm', '-rf', 'temp'])
-        # pass
 
     def make_pred_in_py(self, features):
         return int(self.clf.predict([features])[0])
 
     def make_pred_in_js(self, features):
-        # -> java -classpath temp <temp_filename> <features>
-        path = 'temp/' + self.tmp_fn + '.js'
-        cmd = ['node', path]
+        # -> node temp/tmp.js <features>
+        cmd = ['node', self.tmp_fn]
         args = [str(f).strip() for f in features]
         cmd += args
         pred = subp.check_output(cmd, stderr=subp.STDOUT)
