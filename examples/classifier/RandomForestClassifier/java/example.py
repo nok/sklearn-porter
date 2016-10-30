@@ -3,10 +3,10 @@ from sklearn.ensemble import RandomForestClassifier
 
 from onl.nok.sklearn.Porter import port
 
-iris = load_iris()
+X, y = load_iris(return_X_y=True)
 clf = RandomForestClassifier(n_estimators=15, max_depth=None,
                              min_samples_split=2, random_state=0)
-clf.fit(iris.data, iris.target)
+clf.fit(X, y)
 
 # Cheese!
 

@@ -3,9 +3,9 @@ from sklearn.datasets import load_iris
 
 from onl.nok.sklearn.Porter import port
 
-iris = load_iris()
+X, y = load_iris(return_X_y=True)
 clf = svm.LinearSVC(C=1., random_state=0)
-clf.fit(iris.data, iris.target)
+clf.fit(X, y)
 
 # Cheese!
 

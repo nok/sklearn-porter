@@ -4,11 +4,11 @@ from sklearn.tree import DecisionTreeClassifier
 
 from onl.nok.sklearn.Porter import port
 
-iris = load_iris()
+X, y = load_iris(return_X_y=True)
 base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
 clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100,
                          random_state=0)
-clf.fit(iris.data, iris.target)
+clf.fit(X, y)
 
 # Cheese!
 
