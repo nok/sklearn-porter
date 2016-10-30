@@ -1,5 +1,4 @@
 {0}
-
 var {1} = function(atts) {{
     var n_estimators = {2},
         preds = new Array(n_estimators),
@@ -8,7 +7,7 @@ var {1} = function(atts) {{
         normalizer, sum, idx, val,
         i, j;
 
-{4}
+    {4}
 
     for (i = 0; i < n_estimators; i++) {{
         normalizer = 0.;

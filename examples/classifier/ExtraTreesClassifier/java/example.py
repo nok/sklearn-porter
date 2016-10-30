@@ -132,6 +132,7 @@ class Tmp {
         return class_idx;
     }
 
+
     public static int predict_01(float[] atts) {
         int[] classes = new int[3];
 
@@ -311,6 +312,7 @@ class Tmp {
         return class_idx;
     }
 
+
     public static int predict_02(float[] atts) {
         int[] classes = new int[3];
 
@@ -423,6 +425,7 @@ class Tmp {
         }
         return class_idx;
     }
+
 
     public static int predict_03(float[] atts) {
         int[] classes = new int[3];
@@ -572,6 +575,7 @@ class Tmp {
         }
         return class_idx;
     }
+
 
     public static int predict_04(float[] atts) {
         int[] classes = new int[3];
@@ -727,6 +731,7 @@ class Tmp {
         }
         return class_idx;
     }
+
 
     public static int predict_05(float[] atts) {
         int[] classes = new int[3];
@@ -895,6 +900,7 @@ class Tmp {
         return class_idx;
     }
 
+
     public static int predict_06(float[] atts) {
         int[] classes = new int[3];
 
@@ -1050,6 +1056,7 @@ class Tmp {
         return class_idx;
     }
 
+
     public static int predict_07(float[] atts) {
         int[] classes = new int[3];
 
@@ -1187,6 +1194,7 @@ class Tmp {
         return class_idx;
     }
 
+
     public static int predict_08(float[] atts) {
         int[] classes = new int[3];
 
@@ -1311,6 +1319,7 @@ class Tmp {
         }
         return class_idx;
     }
+
 
     public static int predict_09(float[] atts) {
         int[] classes = new int[3];
@@ -1448,6 +1457,7 @@ class Tmp {
         }
         return class_idx;
     }
+
 
     public static int predict_10(float[] atts) {
         int[] classes = new int[3];
@@ -1616,6 +1626,7 @@ class Tmp {
         return class_idx;
     }
 
+
     public static int predict_11(float[] atts) {
         int[] classes = new int[3];
 
@@ -1734,6 +1745,7 @@ class Tmp {
         }
         return class_idx;
     }
+
 
     public static int predict_12(float[] atts) {
         int[] classes = new int[3];
@@ -1859,6 +1871,7 @@ class Tmp {
         }
         return class_idx;
     }
+
 
     public static int predict_13(float[] atts) {
         int[] classes = new int[3];
@@ -2033,6 +2046,7 @@ class Tmp {
         return class_idx;
     }
 
+
     public static int predict_14(float[] atts) {
         int[] classes = new int[3];
 
@@ -2164,6 +2178,7 @@ class Tmp {
         return class_idx;
     }
 
+
     public static int predict(float[] atts) {
         int n_classes = 3;
         int[] classes = new int[n_classes];
@@ -2182,6 +2197,7 @@ class Tmp {
         classes[Tmp.predict_12(atts)]++;
         classes[Tmp.predict_13(atts)]++;
         classes[Tmp.predict_14(atts)]++;
+
         int class_idx = 0;
         int class_val = classes[0];
         for (int i = 1; i < n_classes; i++) {

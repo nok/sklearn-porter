@@ -16,7 +16,6 @@ print(port(clf))
 
 """
 class Tmp {
-
     public static double[] predict_0(float[] atts) {
         double[] classes = new double[3];
 

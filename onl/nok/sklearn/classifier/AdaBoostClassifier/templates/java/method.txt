@@ -4,7 +4,7 @@ public static int {1}(float[] atts) {{
     int n_classes = {3};
 
     double[][] preds = new double[n_estimators][];
-{4}
+    {4}
 
     int i, j;
     double normalizer, sum;

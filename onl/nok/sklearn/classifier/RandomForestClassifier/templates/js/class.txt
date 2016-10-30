@@ -1,0 +1,14 @@
+var predictor = function(atts) {{
+
+    {2}
+
+    return {1}(atts);
+}};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
+    if (process.argv.length - 2 == {3}) {{
+        var argv = process.argv.slice(2);
+        var prediction = predictor(argv);
+        console.log(prediction);
+    }}
+}}
