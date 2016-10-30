@@ -8,7 +8,7 @@
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like [C](https://en.wikipedia.org/wiki/C_(programming_language)), [Java](https://en.wikipedia.org/wiki/Java_(programming_language)), [JavaScript](https://en.wikipedia.org/wiki/JavaScript), [Go](https://en.wikipedia.org/wiki/Go_(programming_language)) or [Swift](https://en.wikipedia.org/wiki/Swift_(programming_language)). It's recommended for limited embedded systems and critical applications where performance matters most.
 
 
-## Target Algorithm Models
+## Machine learning algorithms
 
 ### Classification
 
@@ -86,7 +86,7 @@ The following matrix shows the portable classifiers:
 
 ## Usage
 
-Either you use the porter in your application as [imported module](#module) or you use it on the [command line](#cli). 
+Either you use the porter as [imported module](#module) in your application or you use the [command-line interface](#cli). 
 
 
 ### Module
@@ -100,9 +100,9 @@ from sklearn.datasets import load_iris
 from onl.nok.sklearn.Porter import port
 
 # Load data and train a classifier:
-iris = load_iris()
+X, y = load_iris(return_X_y=True)
 clf = tree.DecisionTreeClassifier()
-clf.fit(iris.data, iris.target)
+clf.fit(X, y)
 
 # Port the model:
 print(port(clf)) 
@@ -111,7 +111,7 @@ print(port(clf))
 The [result](examples/classifier/decisiontree_predict.py) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
 
 
-### CLI
+### Command-line interface
 
 This examples shows how you can port a model from the command line. First of all you have to store the model to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
 
@@ -120,9 +120,9 @@ from sklearn.tree import tree
 from sklearn.datasets import load_iris
 from sklearn.externals import joblib
 
-iris = load_iris()
+X, y = load_iris(return_X_y=True)
 clf = tree.DecisionTreeClassifier()
-clf.fit(iris.data, iris.target)
+clf.fit(X, y)
 
 joblib.dump(clf, 'model.pkl')
 ```
@@ -157,7 +157,7 @@ conda config --add channels conda-forge
 conda env create -n sklearn-porter python=2 -f environment.yml
 ```
 
-## Unit Testing
+## Unit testing
 
 Run all [tests](tests) by executing the bash script [tests.sh](tests.sh) or type:
 
