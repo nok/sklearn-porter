@@ -1,6 +1,6 @@
 class {class_name} {{
 
-{method}
+    {method}
 
     public static void main(String[] args) {{
         if (args.length == {n_features}) {{

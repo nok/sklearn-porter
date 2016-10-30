@@ -28,7 +28,7 @@ class Classifier(object):
                 raise AttributeError(msg)
 
 
-    def indent(self, text, indentation=4):
+    def indent(self, text, indentation=4, skipping=False):
         """
         Indent text with single spaces.
 
@@ -38,6 +38,8 @@ class Classifier(object):
             The text which get a specific indentation.
         :param indentation : int
             The number of indentations.
+        :param skipping : boolean
+            Whether to skip the initial indentation.
 
         Returns
         -------
@@ -51,18 +53,23 @@ class Classifier(object):
 
         # Single line:
         if len(lines) == 1:
+            if skipping:
+                return text.strip()
             return indentation * space + text.strip()
 
         # Multiple lines:
         indented_lines = []
         for idx, line in enumerate(lines):
-            line = indentation * space + line
-            indented_lines.append(line)
+            if skipping and idx is 0:
+                indented_lines.append(line)
+            else:
+                line = indentation * space + line
+                indented_lines.append(line)
         indented_text = '\n'.join(indented_lines)
         return indented_text
 
 
-    def temp(self, name, templates=None, indentation=None):
+    def temp(self, name, templates=None, indentation=None, skipping=False):
         """
         Get specific template of chosen programming language.
 
@@ -72,6 +79,10 @@ class Classifier(object):
             The key name of the template.
         :param tempaltes : string
             The template with placeholders.
+        :param indentation : int
+            The number of indentations.
+        :param skipping : boolean
+            Whether to skip the initial indentation.
 
         Returns
         -------
@@ -86,11 +97,11 @@ class Classifier(object):
         if template is not None:
             if type(template) is str:
                 if indentation is not None:
-                    template = self.indent(template, indentation)
+                    template = self.indent(template, indentation, skipping)
                 return template
             else:
                 keys = '.'.join(keys)
-                return self.temp(keys, template)
+                return self.temp(keys, template, skipping=False)
         else:
             path = os.path.join(
                 os.path.dirname(__file__), self.__class__.__name__,
@@ -98,7 +109,7 @@ class Classifier(object):
             if os.path.isfile(path):
                 template = open(path, 'r').read()
                 if indentation is not None:
-                    template = self.indent(template, indentation)
+                    template = self.indent(template, indentation, skipping)
                 return template
             else:
                 raise AttributeError('Template \'%s\' not found.' % (name))

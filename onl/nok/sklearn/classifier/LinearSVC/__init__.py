@@ -108,7 +108,7 @@ class LinearSVC(Classifier):
         inters = self.temp('arr[]').format(
             name='inters', values=inters, n=self.n_classes)
 
-        return self.temp('method', indentation=1).format(
+        return self.temp('method', indentation=1, skipping=True).format(
             name=self.method_name, n_features=self.n_features,
             n_classes=self.n_classes, coefficients=coefs,
             intercepts=inters)

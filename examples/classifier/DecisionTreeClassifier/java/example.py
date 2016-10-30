@@ -40,7 +40,7 @@ class Tmp {
                         classes[1] = 0;
                         classes[2] = 3;
                     } else {
-                        if (atts[0] <= 6.9499998092651367) {
+                        if (atts[2] <= 5.4499998092651367) {
                             classes[0] = 0;
                             classes[1] = 2;
                             classes[2] = 0;

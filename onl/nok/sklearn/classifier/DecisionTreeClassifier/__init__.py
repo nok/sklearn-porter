@@ -23,13 +23,12 @@ class DecisionTreeClassifier(Classifier):
             'join':     ('; '),
         },
         'js': {
-            'if':       ('\nif (atts[{0}] <= {1}) {{'),
+            'if':       ('\nif (atts[{0}] {1} {2}) {{'),
             'else':     ('\n} else {'),
             'endif':    ('\n}'),
             'arr':      ('\nclasses[{0}] = {1}\n'),
             'indent':   ('    '),
             'join':     ('; '),
-            'class':    ('{method}')
         }
     }
     # @formatter:on
@@ -147,7 +146,7 @@ class DecisionTreeClassifier(Classifier):
             The built method as string.
         """
         branches = self.indent(self.create_tree(), indentation=1)
-        return self.temp('method', indentation=1).format(
+        return self.temp('method', indentation=1, skipping=True).format(
             method_name=self.method_name, n_features=self.n_features,
             n_classes=self.n_classes, branches=branches)
 
