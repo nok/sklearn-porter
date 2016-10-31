@@ -4,9 +4,9 @@ class {class_name} {{
         return Math.max(0, v);
     }}
 
-    public static double activation_tanh(double v) {{
-        return Math.tanh(v);
-    }}
+    // public static double activation_tanh(double v) {{
+    //    return Math.tanh(v);
+    // }}
 
     public static double activation_identity(double v) {{
         return v;

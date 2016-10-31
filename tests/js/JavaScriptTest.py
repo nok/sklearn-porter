@@ -3,10 +3,12 @@ import subprocess as subp
 import numpy as np
 
 from sklearn.datasets import load_iris
+from sklearn.utils import shuffle
 
 
 class JavaScriptTest():
 
+    LANGUAGE = 'js'
     N_RANDOM_TESTS = 150
 
     # noinspection PyPep8Naming
@@ -15,6 +17,8 @@ class JavaScriptTest():
 
         # Data:
         self.X, self.y = load_iris(return_X_y=True)
+        self.X = shuffle(self.X, random_state=0)
+        self.y = shuffle(self.y, random_state=0)
         self.n_features = len(self.X[0])
 
         # Placeholders:
@@ -26,6 +30,11 @@ class JavaScriptTest():
     def tearDown(self):
         self.remove_test_files()
         self.clf = None
+
+    def set_classifier(self, clf):
+        self.clf = clf
+        self.clf.fit(self.X, self.y)
+        self.create_test_files()
 
     def test_random_features(self):
         # Creating random features:

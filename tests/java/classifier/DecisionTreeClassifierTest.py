@@ -10,10 +10,8 @@ class DecisionTreeClassifierTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierTest, self).setUp()
-        self.clf = DecisionTreeClassifier(random_state=0)
-        self.clf.fit(self.X, self.y)
         self.porter = Porter(language='java')
-        self.create_test_files()
+        self.set_classifier(DecisionTreeClassifier(random_state=0))
 
     def tearDown(self):
         super(DecisionTreeClassifierTest, self).tearDown()

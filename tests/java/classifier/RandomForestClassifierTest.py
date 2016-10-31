@@ -10,10 +10,9 @@ class RandomForestClassifierTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(RandomForestClassifierTest, self).setUp()
-        self.clf = RandomForestClassifier(n_estimators=100, random_state=0)
-        self.clf.fit(self.X, self.y)
         self.porter = Porter(language='java')
-        self.create_test_files()
+        clf = RandomForestClassifier(n_estimators=100, random_state=0)
+        self.set_classifier(clf)
 
     def tearDown(self):
         super(RandomForestClassifierTest, self).tearDown()

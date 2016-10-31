@@ -10,10 +10,9 @@ class ExtraTreesClassifierTest(JavaScriptTest, unittest.TestCase):
 
     def setUp(self):
         super(ExtraTreesClassifierTest, self).setUp()
-        self.clf = ExtraTreesClassifier(random_state=0)
-        self.clf.fit(self.X, self.y)
         self.porter = Porter(language='js')
-        self.create_test_files()
+        clf = ExtraTreesClassifier(random_state=0)
+        self.set_classifier(clf)
 
     def tearDown(self):
         super(ExtraTreesClassifierTest, self).tearDown()

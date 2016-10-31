@@ -34,7 +34,7 @@ class MLPClassifier(Classifier):
     @property
     def hidden_activation_functions(self):
         """Get a list of supported activation functions of the hidden layers."""
-        return ['relu', 'identity', 'tanh']  # 'logistic' failed tests
+        return ['relu', 'identity']  # 'tanh' and 'logistic' failed in tests
 
 
     @property

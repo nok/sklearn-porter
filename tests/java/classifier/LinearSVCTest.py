@@ -10,10 +10,8 @@ class LinearSVCTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(LinearSVCTest, self).setUp()
-        self.clf = LinearSVC(C=1., random_state=0)
-        self.clf.fit(self.X, self.y)
         self.porter = Porter(language='java')
-        self.create_test_files()
+        self.set_classifier(LinearSVC(C=1., random_state=0))
 
     def tearDown(self):
         super(LinearSVCTest, self).tearDown()

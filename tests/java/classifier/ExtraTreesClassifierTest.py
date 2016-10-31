@@ -10,10 +10,8 @@ class ExtraTreesClassifierTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(ExtraTreesClassifierTest, self).setUp()
-        self.clf = ExtraTreesClassifier(random_state=0)
-        self.clf.fit(self.X, self.y)
         self.porter = Porter(language='java')
-        self.create_test_files()
+        self.set_classifier(ExtraTreesClassifier(random_state=0))
 
     def tearDown(self):
         super(ExtraTreesClassifierTest, self).tearDown()

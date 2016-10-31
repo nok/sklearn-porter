@@ -1,12 +1,7 @@
-import random
-import numpy as np
-
 import unittest
 from ..JavaTest import JavaTest
-
-from sklearn.model_selection import train_test_split
-from sklearn.datasets import load_iris
-from sklearn.utils import shuffle
+import numpy as np
+import random
 
 from sklearn.neural_network.multilayer_perceptron import MLPClassifier
 from onl.nok.sklearn.classifier.MLPClassifier \
@@ -17,21 +12,42 @@ class MLPClassifierTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(MLPClassifierTest, self).setUp()
-
-        # Data:
-        self.X = shuffle(self.X, random_state=0)
-        self.y = shuffle(self.y, random_state=0)
-        self.X_train, self.X_test,  self.y_train, self.y_test = \
-            train_test_split(self.X, self.y, test_size=0.4, random_state=5)
-
-        self.clf = MLPClassifier(
-            activation='relu', hidden_layer_sizes=50, max_iter=500,
-            alpha=1e-4, solver='sgd', tol=1e-4, random_state=1,
-            learning_rate_init=.1)
-        self.clf.fit(self.X_train, self.y_train)
-
         self.porter = Porter(language='java')
-        self.create_test_files()
+        clf = MLPClassifier(
+            activation='identity', hidden_layer_sizes=50,
+            max_iter=500, alpha=1e-4, solver='sgd', tol=1e-4,
+            random_state=1, learning_rate_init=.1)
+        self.set_classifier(clf)
 
     def tearDown(self):
         super(MLPClassifierTest, self).tearDown()
+
+    def test_hidden_activation_function_relu(self):
+        clf = MLPClassifier(
+            activation='relu', hidden_layer_sizes=50,
+            learning_rate_init=.1)
+        self.set_classifier(clf)
+        java_preds, py_preds = [], []
+        min_vals = np.amin(self.X, axis=0)
+        max_vals = np.amax(self.X, axis=0)
+        for n in range(150):
+            x = [random.uniform(min_vals[f], max_vals[f])
+                 for f in range(self.n_features)]
+            java_preds.append(self.make_pred_in_java(x))
+            py_preds.append(self.make_pred_in_py(x))
+        self.assertListEqual(py_preds, java_preds)
+
+    def test_hidden_activation_function_identity(self):
+        clf = MLPClassifier(
+            activation='identity', hidden_layer_sizes=50,
+            learning_rate_init=.1)
+        self.set_classifier(clf)
+        java_preds, py_preds = [], []
+        min_vals = np.amin(self.X, axis=0)
+        max_vals = np.amax(self.X, axis=0)
+        for n in range(150):
+            x = [random.uniform(min_vals[f], max_vals[f])
+                 for f in range(self.n_features)]
+            java_preds.append(self.make_pred_in_java(x))
+            py_preds.append(self.make_pred_in_py(x))
+        self.assertListEqual(py_preds, java_preds)
