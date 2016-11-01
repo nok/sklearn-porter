@@ -1,0 +1,4 @@
+// Type: identity
+public static double[] hidden_activation(double[] v) {
+    return v;
+}

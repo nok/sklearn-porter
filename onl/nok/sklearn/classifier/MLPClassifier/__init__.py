@@ -1,4 +1,7 @@
 from .. import Classifier
+import numpy as np
+
+np.set_printoptions(precision=15)
 
 
 class MLPClassifier(Classifier):
@@ -21,6 +24,7 @@ class MLPClassifier(Classifier):
             'arr[]':    ('double[] {name} = {{{values}}};'),
             'arr[][]':  ('double[][] {name} = {{{values}}};'),
             'arr[][][]': ('double[][][] {name} = {{{values}}};'),
+            'indent':   ('    '),
         }
     }
     # @formatter:on
@@ -33,14 +37,14 @@ class MLPClassifier(Classifier):
 
     @property
     def hidden_activation_functions(self):
-        """Get a list of supported activation functions of the hidden layers."""
-        return ['relu', 'identity']  # 'tanh' and 'logistic' failed in tests
+        """Get list of supported activation functions for the hidden layers."""
+        return ['relu', 'identity']  # 'tanh' and 'logistic' fails in tests
 
 
     @property
-    def final_activation_functions(self):
-        """Get a list of supported activation functions of the output layer."""
-        return ['softmax']  # 'logistic' failed tests
+    def output_activation_functions(self):
+        """Get list of supported activation functions for the output layer."""
+        return ['softmax']  # 'logistic' fails in tests
 
 
     def port(self, model):
@@ -61,10 +65,10 @@ class MLPClassifier(Classifier):
                               'is not supported.') % self.hidden_activation)
 
         # Output activation function ('softmax' or 'logistic'):
-        self.final_activation = self.model.out_activation_
-        if self.final_activation not in self.final_activation_functions:
+        self.output_activation = self.model.out_activation_
+        if self.output_activation not in self.output_activation_functions:
             raise ValueError(('The activation function \'%s\' of the model '
-                              'is not supported.') % self.final_activation)
+                              'is not supported.') % self.output_activation)
 
         self.n_layers = self.model.n_layers_
         self.n_hidden_layers = self.model.n_layers_ - 2
@@ -137,7 +141,7 @@ class MLPClassifier(Classifier):
         intercepts = self.temp('arr[][]').format(
             name='intercepts', values=intercepts)
 
-        return self.temp('method').format(
+        return self.temp('method', skipping=True, indentation=1).format(
             class_name=self.class_name, method_name=self.method_name,
             n_features=self.n_inputs, n_classes=self.n_outputs,
             activations=activations, coefficients=coefficients,
@@ -153,11 +157,15 @@ class MLPClassifier(Classifier):
         :return out : string
             The built class as string.
         """
+        hidden_act_type = 'hidden_activation.' + self.hidden_activation
+        hidden_act = self.temp(hidden_act_type, skipping=True, indentation=1)
+        output_act_type = 'output_activation.' + self.output_activation
+        output_act = self.temp(output_act_type, skipping=True, indentation=1)
         return self.temp('class').format(
             class_name=self.class_name, method_name=self.method_name,
             method=method, n_features=self.n_inputs,
-            hidden_activation=self.hidden_activation,
-            final_activation=self.final_activation)
+            hidden_activation_function=hidden_act,
+            output_activation_function=output_act)
 
 
     def _get_intercepts(self):

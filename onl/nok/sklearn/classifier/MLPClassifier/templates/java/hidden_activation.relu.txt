@@ -1,0 +1,7 @@
+// Type: relu
+public static double[] hidden_activation(double[] v) {
+    for (int i = 0, l = v.length; i < l; i++) {
+        v[i] = Math.max(0, v[i]);
+    }
+    return v;
+}
