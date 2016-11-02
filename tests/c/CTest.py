@@ -7,14 +7,14 @@ from sklearn.datasets import load_iris
 from sklearn.utils import shuffle
 
 
-class JavaTest():
+class CTest():
 
-    LANGUAGE = 'java'
+    LANGUAGE = 'c'
     N_RANDOM_TESTS = 150
 
     # noinspection PyPep8Naming
     def setUp(self):
-        self.tmp_fn = 'Tmp'
+        self.tmp_fn = 'tmp'
 
         # Data:
         self.X, self.y = load_iris(return_X_y=True)
@@ -51,7 +51,7 @@ class JavaTest():
         for n in range(self.N_RANDOM_TESTS):
             x = [random.uniform(min_vals[f], max_vals[f])
                  for f in range(self.n_features)]
-            java_preds.append(self.make_pred_in_java(x))
+            java_preds.append(self.make_pred_in_c(x))
             py_preds.append(self.make_pred_in_py(x))
         # noinspection PyUnresolvedReferences
         self.assertListEqual(py_preds, java_preds)
@@ -60,7 +60,7 @@ class JavaTest():
         # Get existing features:
         java_preds, py_preds = [], []
         for X in self.X:
-            java_preds.append(self.make_pred_in_java(X))
+            java_preds.append(self.make_pred_in_c(X))
             py_preds.append(self.make_pred_in_py(X))
         # noinspection PyUnresolvedReferences
         self.assertListEqual(java_preds, py_preds)
@@ -73,13 +73,13 @@ class JavaTest():
         subp.call(['mkdir', 'temp'])
 
         # Save transpiled model:
-        path = 'temp/' + self.tmp_fn + '.java'
+        path = 'temp/' + self.tmp_fn + '.c'
         with open(path, 'w') as file:
             file.write(self.porter.port(self.clf))
 
         # Compile model:
-        # -> javac temp/Tmp.java
-        subp.call(['javac', 'temp/' + self.tmp_fn + '.java'])
+        # -> gcc temp/tmp.c -o temp/tmp
+        subp.call(['gcc', path, '-o', 'temp/' + self.tmp_fn])
 
     def remove_test_files(self):
         # Remove the temporary test directory:
@@ -89,9 +89,9 @@ class JavaTest():
     def make_pred_in_py(self, features):
         return int(self.clf.predict([features])[0])
 
-    def make_pred_in_java(self, features):
+    def make_pred_in_c(self, features):
         # -> java -classpath temp <temp_filename> <features>
-        cmd = ['java', '-classpath', 'temp', self.tmp_fn]
+        cmd = ['./temp/tmp']
         args = [str(f).strip() for f in features]
         cmd += args
         pred = subp.check_output(cmd, stderr=subp.STDOUT)

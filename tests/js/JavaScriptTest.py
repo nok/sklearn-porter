@@ -1,4 +1,5 @@
 import random
+import time
 import subprocess as subp
 import numpy as np
 
@@ -26,10 +27,16 @@ class JavaScriptTest():
         self.porter = None
         # self.create_test_files()
 
+        # Time:
+        self.startTime = time.time()
+
     # noinspection PyPep8Naming
     def tearDown(self):
         self.remove_test_files()
         self.clf = None
+
+        # Time:
+        print("%.3fs" % (time.time() - self.startTime))
 
     def set_classifier(self, clf):
         self.clf = clf

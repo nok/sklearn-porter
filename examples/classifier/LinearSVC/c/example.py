@@ -12,6 +12,7 @@ clf.fit(X, y)
 print(port(clf, language='c'))
 
 """
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
@@ -36,8 +37,11 @@ int predict (float atts[4]) {
 }
 
 int main(int argc, const char * argv[]) {
-    float test[4] = {1.f, 2.f, 3.f, 4.f};
-    printf("Result: %d\\n", predict(test));
+    float atts[argc-1];
+    for (int i = 1; i < argc; i++) {
+        atts[i-1] = atof(argv[i]);
+    }
+    printf("%d", predict(atts));
     return 0;
 }
 """

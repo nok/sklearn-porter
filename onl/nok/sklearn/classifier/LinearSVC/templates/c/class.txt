@@ -1,10 +1,14 @@
+#include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
 
 {method}
 
 int main(int argc, const char * argv[]) {{
-    float test[{n_features}] = {{1.f, 2.f, 3.f, 4.f}};
-    printf("Result: %d\\n", {method_name}(test));
+    float atts[argc-1];
+    for (int i = 1; i < argc; i++) {{
+        atts[i-1] = atof(argv[i]);
+    }}
+    printf("%d", {method_name}(atts));
     return 0;
 }}

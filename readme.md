@@ -159,7 +159,7 @@ conda config --add channels conda-forge
 conda env create -n sklearn-porter python=2 -f environment.yml
 ```
 
-Furthermore you need to install [Node.js](https://nodejs.org/en/) (`>=6`) and [Java](https://java.com) (`>=1.6`) for testing.
+Furthermore you need to install [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=1.6`) and [GCC](https://gcc.gnu.org) (`>=4.2`) for testing.
 
 
 ### Testing
