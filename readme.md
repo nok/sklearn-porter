@@ -91,7 +91,7 @@ Either you use the porter as [imported module](#module) in your application or y
 
 ### Module
 
-This example shows how you can port the decision tree model from the [official user guide](http://scikit-learn.org/stable/modules/tree.html#classification) to the programming language Java:
+This example shows how you can port the decision tree model from the [official user guide](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
 
 ```python
 from sklearn.tree import tree
@@ -105,10 +105,10 @@ clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
 # Port the model:
-print(port(clf)) 
+print(port(clf))
 ```
 
-The [result](examples/classifier/decisiontree_predict.py) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
+The ported [result](examples/classifier/DecisionTreeClassifier/java/example.py#L15-L93) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
 
 
 ### Command-line interface
@@ -148,24 +148,31 @@ python onl/nok/sklearn/Porter.py -h
 ```
 
 
-## Environment
+## Development
 
-Install the [environment modules](environment.yml) by executing the bash script [environment.sh](environment.sh) or type:
+### Environment
+
+Install the required environment [modules](environment.yml) by executing the bash script [sh_environment.sh](sh_environment.sh) or type:
 
 ```sh
 conda config --add channels conda-forge
 conda env create -n sklearn-porter python=2 -f environment.yml
 ```
 
-## Unit testing
+Furthermore you need to install [Node.js](https://nodejs.org/en/) (`>=6`) and [Java](https://java.com) (`>=1.6`) for testing.
 
-Run all [tests](tests) by executing the bash script [tests.sh](tests.sh) or type:
+
+### Testing
+
+Run all [tests](tests) by executing the bash script [sh_tests.sh](sh_tests.sh) or type:
 
 ```sh
 source activate sklearn-porter
 python -m unittest discover -vp '*Test.py'
 source deactivate
 ```
+
+The tests cover module functions as well as matching predictions of ported models.
 
 
 ## Questions?
