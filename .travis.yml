@@ -9,6 +9,8 @@ python:
   - "3.5"
 node_js:
   - "6"
+compiler:
+  - gcc
 install:
   - sudo apt-get update
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then

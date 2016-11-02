@@ -5,9 +5,10 @@ int {name} (float atts[{n_features}]) {{
 
     double class_val = -INFINITY;
     int class_idx = -1;
-    for (int i = 0; i < {n_classes}; i++) {{
+    int i = 0, j = 0;
+    for (i = 0; i < {n_classes}; i++) {{
         double prob = 0.;
-        for (int j = 0; j < {n_features}; j++) {{
+        for (j = 0; j < {n_features}; j++) {{
             prob += coefs[i][j] * atts[j];
         }}
         if (prob + inters[i] > class_val) {{
