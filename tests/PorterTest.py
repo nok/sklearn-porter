@@ -24,9 +24,15 @@ class PorterTest(unittest.TestCase):
         self.clf.fit(self.X, self.y)
         self._create_java_files()
 
+        # Time:
+        self.startTime = time.time()
+
     def tearDown(self):
         self._remove_java_files()
         self.clf = None
+
+        # Time:
+        print("%.3fs" % (time.time() - self.startTime))
 
     def test_porter_args_method(self):
         args = dict(method_name="random")
