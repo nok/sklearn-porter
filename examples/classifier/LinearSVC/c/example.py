@@ -23,9 +23,10 @@ int predict (float atts[4]) {
 
     double class_val = -INFINITY;
     int class_idx = -1;
-    for (int i = 0; i < 3; i++) {
+    int i = 0, j = 0;
+    for (i = 0; i < 3; i++) {
         double prob = 0.;
-        for (int j = 0; j < 4; j++) {
+        for (j = 0; j < 4; j++) {
             prob += coefs[i][j] * atts[j];
         }
         if (prob + inters[i] > class_val) {
@@ -38,7 +39,8 @@ int predict (float atts[4]) {
 
 int main(int argc, const char * argv[]) {
     float atts[argc-1];
-    for (int i = 1; i < argc; i++) {
+    int i = 0;
+    for (i = 1; i < argc; i++) {
         atts[i-1] = atof(argv[i]);
     }
     printf("%d", predict(atts));
