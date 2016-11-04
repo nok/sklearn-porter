@@ -76,7 +76,7 @@ The following matrix shows the portable classifiers:
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/MLPClassifier/java/example.py#L25">X</a></td>
-            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/js/example.py#L25">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
