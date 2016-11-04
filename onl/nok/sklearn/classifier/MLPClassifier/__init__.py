@@ -13,7 +13,7 @@ class MLPClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html
     """
 
-    SUPPORT = {'predict': ['java']}
+    SUPPORT = {'predict': ['java', 'js']}
 
     # @formatter:off
     TEMPLATE = {
@@ -24,6 +24,15 @@ class MLPClassifier(Classifier):
             'arr[]':    ('double[] {name} = {{{values}}};'),
             'arr[][]':  ('double[][] {name} = {{{values}}};'),
             'arr[][][]': ('double[][][] {name} = {{{values}}};'),
+            'indent':   ('    '),
+        },
+        'js': {
+            'type':     ('{0}'),
+            'arr':      ('[{0}]'),
+            'new_arr':  ('Array.apply(null, Array({0})).map(Number.prototype.valueOf,0)'),
+            'arr[]':    ('var {name} = [{values}];'),
+            'arr[][]':  ('var {name} = [{values}];'),
+            'arr[][][]': ('var {name} = [{values}];'),
             'indent':   ('    '),
         }
     }
