@@ -2,8 +2,7 @@ import unittest
 from ..JavaScriptTest import JavaScriptTest
 
 from sklearn.svm.classes import LinearSVC
-from onl.nok.sklearn.classifier.LinearSVC \
-    import LinearSVC as Porter
+from onl.nok.sklearn.Porter import Porter
 
 
 class LinearSVCTest(JavaScriptTest, unittest.TestCase):

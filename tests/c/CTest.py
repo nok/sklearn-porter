@@ -90,7 +90,7 @@ class CTest():
         return int(self.clf.predict([features])[0])
 
     def make_pred_in_c(self, features):
-        # -> java -classpath temp <temp_filename> <features>
+        # -> <temp_filename> <features>
         cmd = ['./temp/tmp']
         args = [str(f).strip() for f in features]
         cmd += args

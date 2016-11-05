@@ -1,7 +1,7 @@
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
 
-from onl.nok.sklearn.Porter import port
+from onl.nok.sklearn.Porter import Porter
 
 X, y = load_iris(return_X_y=True)
 clf = tree.DecisionTreeClassifier()
@@ -9,14 +9,16 @@ clf.fit(X, y)
 
 # Cheese!
 
-print(port(clf, language='js'))
+result = Porter().port(clf)
+# result = Porter(language='java').port(clf)
+print(result)
 
 """
-var predictor = function(atts) {
+class Tmp {
 
-    var predict = function(atts) {
-        if (atts.length != 4) { return -1; };
-        var classes = new Array(3);
+    public static int predict(float[] atts) {
+        if (atts.length != 4) { return -1; }
+        int[] classes = new int[3];
 
         if (atts[2] <= 2.4500000476837158) {
             classes[0] = 50;
@@ -40,7 +42,7 @@ var predictor = function(atts) {
                         classes[1] = 0;
                         classes[2] = 3;
                     } else {
-                        if (atts[0] <= 6.9499998092651367) {
+                        if (atts[2] <= 5.4499998092651367) {
                             classes[0] = 0;
                             classes[1] = 2;
                             classes[2] = 0;
@@ -70,24 +72,25 @@ var predictor = function(atts) {
             }
         }
 
-        var class_idx = 0, class_val = classes[0];
-        for (var i = 1; i < 3; i++) {
+        int class_idx = 0;
+        int class_val = classes[0];
+        for (int i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    };
+    }
 
-    return predict(atts);
-};
-
-if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
-    if (process.argv.length - 2 == 4) {
-        var argv = process.argv.slice(2);
-        var prediction = predictor(argv);
-        console.log(prediction);
+    public static void main(String[] args) {
+        if (args.length == 4) {
+            float[] atts = new float[args.length];
+            for (int i = 0, l = args.length; i < l; i++) {
+                atts[i] = Float.parseFloat(args[i]);
+            }
+            System.out.println(Tmp.predict(atts));
+        }
     }
 }
 """

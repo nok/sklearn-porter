@@ -2,8 +2,7 @@ import unittest
 from ..JavaTest import JavaTest
 
 from sklearn.ensemble import ExtraTreesClassifier
-from onl.nok.sklearn.classifier.ExtraTreesClassifier \
-    import ExtraTreesClassifier as Porter
+from onl.nok.sklearn.Porter import Porter
 
 
 class ExtraTreesClassifierTest(JavaTest, unittest.TestCase):

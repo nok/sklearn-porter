@@ -9,12 +9,12 @@ from sklearn.datasets import load_iris
 from sklearn.externals import joblib
 from sklearn.tree import tree
 
-from onl.nok.sklearn.Porter import port
+from onl.nok.sklearn.Porter import Porter
 
 
 class PorterTest(unittest.TestCase):
 
-    N_TESTS = 50
+    N_RANDOM_TESTS = 150
 
     def setUp(self):
         self.tmp_fn = 'Tmp'
@@ -36,11 +36,13 @@ class PorterTest(unittest.TestCase):
 
     def test_porter_args_method(self):
         args = dict(method_name="random")
-        self.assertRaises(AttributeError, lambda: port(self.clf, args))
+        porter = Porter(args)
+        self.assertRaises(AttributeError, lambda: porter.port(self.clf))
 
     def test_porter_args_language(self):
         args = dict(method_name="predict", language="random")
-        self.assertRaises(AttributeError, lambda: port(self.clf, args))
+        porter = Porter(args)
+        self.assertRaises(AttributeError, lambda: porter.port(self.clf))
 
     def _create_java_files(self):
         # rm -rf temp
@@ -49,8 +51,9 @@ class PorterTest(unittest.TestCase):
         subp.call(['mkdir', 'temp'])
         path = 'temp/%s.java' % (self.tmp_fn)
         with open(path, 'w') as file:
-            out = port(self.clf, method_name='predict', class_name=self.tmp_fn)
-            file.write(out)
+            porter = Porter(method_name='predict', class_name=self.tmp_fn)
+            ported_model = porter.port(self.clf)
+            file.write(ported_model)
         # javac temp/Tmp.java
         subp.call(['javac', path])
 
@@ -59,7 +62,8 @@ class PorterTest(unittest.TestCase):
         subp.call(['rm', '-rf', 'temp'])
 
     def test_data_type(self):
-        self.assertRaises(ValueError, port, "")
+        porter = Porter()
+        self.assertRaises(ValueError, porter.port, "")
 
     def test_python_command_execution(self):
         # Rename model for comparison:
@@ -72,7 +76,7 @@ class PorterTest(unittest.TestCase):
         joblib.dump(self.clf, 'temp/%s.pkl' % (self.tmp_fn))
 
         # Port model:
-        porter_path = str(inspect.getfile(port)).split(".")[0] + '.py'
+        porter_path = str(inspect.getfile(Porter)).split(".")[0] + '.py'
         # python <Porter.py> Tmp.pkl
         cmd = ['python', porter_path, '-m', self.tmp_fn + '.pkl']
         subp.call(cmd, cwd='temp')
@@ -84,7 +88,7 @@ class PorterTest(unittest.TestCase):
     def test_java_command_execution(self):
         # Create random features:
         java_preds, py_preds = [], []
-        for n in range(self.N_TESTS):
+        for n in range(self.N_RANDOM_TESTS):
             x = [random.uniform(0., 10.) for n in range(self.n_features)]
             py_pred = int(self.clf.predict([x])[0])
             py_preds.append(py_pred)

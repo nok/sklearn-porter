@@ -4,7 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.datasets import load_iris
 from sklearn.utils import shuffle
 
-from onl.nok.sklearn.Porter import port
+from onl.nok.sklearn.Porter import Porter
 
 X, y = load_iris(return_X_y=True)
 
@@ -22,7 +22,9 @@ clf.fit(X_train, y_train)
 
 # Cheese!
 
-print(port(clf))
+result = Porter().port(clf)
+# model = Porter(language='java').port(clf)
+print(result)
 
 """
 class Tmp {

@@ -1,7 +1,7 @@
 from sklearn import svm
 from sklearn.datasets import load_iris
 
-from onl.nok.sklearn.Porter import port
+from onl.nok.sklearn.Porter import Porter
 
 X, y = load_iris(return_X_y=True)
 clf = svm.SVC(C=1., gamma=0.001, kernel='rbf', random_state=0)
@@ -9,7 +9,9 @@ clf.fit(X, y)
 
 # Cheese!
 
-print(port(clf))
+result = Porter().port(clf)
+# result = Porter(language='java').port(clf)
+print(result)
 
 """
 class Tmp {

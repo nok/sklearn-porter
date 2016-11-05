@@ -1,7 +1,7 @@
 from sklearn import svm
 from sklearn.datasets import load_iris
 
-from onl.nok.sklearn.Porter import port
+from onl.nok.sklearn.Porter import Porter
 
 X, y = load_iris(return_X_y=True)
 clf = svm.LinearSVC(C=1., random_state=0)
@@ -9,7 +9,8 @@ clf.fit(X, y)
 
 # Cheese!
 
-print(port(clf, language='c'))
+result = Porter(language='c').port(clf)
+print(result)
 
 """
 #include <stdlib.h>

@@ -2,7 +2,7 @@ from sklearn.datasets import load_iris
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from onl.nok.sklearn.Porter import port
+from onl.nok.sklearn.Porter import Porter
 
 X, y = load_iris(return_X_y=True)
 base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
@@ -12,7 +12,9 @@ clf.fit(X, y)
 
 # Cheese!
 
-print(port(clf))
+result = Porter().port(clf)
+# result = Porter(language='java').port(clf)
+print(result)
 
 """
 class Tmp {

@@ -2,8 +2,7 @@ import unittest
 from ..JavaScriptTest import JavaScriptTest
 
 from sklearn.ensemble import ExtraTreesClassifier
-from onl.nok.sklearn.classifier.ExtraTreesClassifier \
-    import ExtraTreesClassifier as Porter
+from onl.nok.sklearn.Porter import Porter
 
 
 class ExtraTreesClassifierTest(JavaScriptTest, unittest.TestCase):

@@ -4,8 +4,7 @@ import numpy as np
 import random
 
 from sklearn.svm.classes import SVC
-from onl.nok.sklearn.classifier.SVC \
-    import SVC as Porter
+from onl.nok.sklearn.Porter import Porter
 
 
 class SVCTest(JavaTest, unittest.TestCase):

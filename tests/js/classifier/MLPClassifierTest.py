@@ -4,8 +4,7 @@ import numpy as np
 import random
 
 from sklearn.neural_network.multilayer_perceptron import MLPClassifier
-from onl.nok.sklearn.classifier.MLPClassifier \
-    import MLPClassifier as Porter
+from onl.nok.sklearn.Porter import Porter
 
 
 class MLPClassifierTest(JavaScriptTest, unittest.TestCase):

@@ -1,7 +1,7 @@
 from sklearn.datasets import load_iris
 from sklearn.ensemble import ExtraTreesClassifier
 
-from onl.nok.sklearn.Porter import port
+from onl.nok.sklearn.Porter import Porter
 
 X, y = load_iris(return_X_y=True)
 clf = ExtraTreesClassifier(n_estimators=15, random_state=0)
@@ -9,7 +9,8 @@ clf.fit(X, y)
 
 # Cheese!
 
-print(port(clf, language="js"))
+result = Porter(language='js').port(clf)
+print(result)
 
 """
 var predictor = function(atts) {

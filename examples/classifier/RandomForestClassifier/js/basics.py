@@ -1,7 +1,7 @@
 from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier
 
-from onl.nok.sklearn.Porter import port
+from onl.nok.sklearn.Porter import Porter
 
 X, y = load_iris(return_X_y=True)
 clf = RandomForestClassifier(n_estimators=15, max_depth=None,
@@ -10,12 +10,14 @@ clf.fit(X, y)
 
 # Cheese!
 
-print(port(clf))
+result = Porter(language='js').port(clf)
+print(result)
 
 """
-class Tmp {
-    public static int predict_00(float[] atts) {
-        int[] classes = new int[3];
+var predictor = function(atts) {
+
+    var predict_00 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[3] <= 0.75) {
             classes[0] = 47;
@@ -56,18 +58,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_01(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_01 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[3] <= 0.80000001192092896) {
             classes[0] = 46;
@@ -114,18 +115,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_02(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_02 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[0] <= 5.5500001907348633) {
             if (atts[3] <= 0.80000001192092896) {
@@ -184,18 +184,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_03(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_03 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[0] <= 5.4499998092651367) {
             if (atts[1] <= 2.8000001907348633) {
@@ -266,18 +265,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_04(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_04 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[3] <= 0.69999998807907104) {
             classes[0] = 50;
@@ -318,18 +316,17 @@ class Tmp {
                 classes[2] = 33;
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_05(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_05 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[3] <= 0.80000001192092896) {
             classes[0] = 49;
@@ -382,18 +379,17 @@ class Tmp {
                 classes[2] = 44;
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_06(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_06 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[3] <= 0.69999998807907104) {
             classes[0] = 46;
@@ -440,18 +436,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_07(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_07 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[2] <= 2.5999999046325684) {
             classes[0] = 58;
@@ -504,18 +499,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_08(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_08 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[3] <= 0.69999998807907104) {
             classes[0] = 42;
@@ -574,18 +568,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_09(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_09 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[2] <= 2.5999999046325684) {
             classes[0] = 55;
@@ -632,18 +625,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_10(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_10 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[3] <= 0.80000001192092896) {
             classes[0] = 52;
@@ -702,18 +694,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_11(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_11 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[2] <= 2.5999999046325684) {
             classes[0] = 47;
@@ -766,18 +757,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_12(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_12 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[3] <= 0.80000001192092896) {
             classes[0] = 54;
@@ -824,18 +814,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_13(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_13 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[0] <= 5.4499998092651367) {
             if (atts[3] <= 0.80000001192092896) {
@@ -888,18 +877,17 @@ class Tmp {
                 }
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
             }
         }
         return class_idx;
-    }
-    public static int predict_14(float[] atts) {
-        int[] classes = new int[3];
+    };
+    var predict_14 = function(atts) {
+        var i = 0, classes = new Array(3);
 
         if (atts[2] <= 2.5999999046325684) {
             classes[0] = 52;
@@ -934,9 +922,41 @@ class Tmp {
                 classes[2] = 46;
             }
         }
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < 3; i++) {
+            if (classes[i] > class_val) {
+                class_idx = i;
+                class_val = classes[i];
+            }
+        }
+        return class_idx;
+    };
+
+    var predict = function(atts) {
+        var i = 0, n_classes = 3;
+        var classes = new Array(n_classes);
+        for (i = 0; i < n_classes; i++) {
+            classes[i] = 0;
+        }
+
+        classes[predict_00(atts)]++;
+        classes[predict_01(atts)]++;
+        classes[predict_02(atts)]++;
+        classes[predict_03(atts)]++;
+        classes[predict_04(atts)]++;
+        classes[predict_05(atts)]++;
+        classes[predict_06(atts)]++;
+        classes[predict_07(atts)]++;
+        classes[predict_08(atts)]++;
+        classes[predict_09(atts)]++;
+        classes[predict_10(atts)]++;
+        classes[predict_11(atts)]++;
+        classes[predict_12(atts)]++;
+        classes[predict_13(atts)]++;
+        classes[predict_14(atts)]++;
+
+        var class_idx = 0, class_val = classes[0];
+        for (i = 1; i < n_classes; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
                 class_val = classes[i];
@@ -944,44 +964,15 @@ class Tmp {
         }
         return class_idx;
     }
-    public static int predict(float[] atts) {
-        int n_classes = 3;
-        int[] classes = new int[n_classes];
-        classes[Tmp.predict_00(atts)]++;
-        classes[Tmp.predict_01(atts)]++;
-        classes[Tmp.predict_02(atts)]++;
-        classes[Tmp.predict_03(atts)]++;
-        classes[Tmp.predict_04(atts)]++;
-        classes[Tmp.predict_05(atts)]++;
-        classes[Tmp.predict_06(atts)]++;
-        classes[Tmp.predict_07(atts)]++;
-        classes[Tmp.predict_08(atts)]++;
-        classes[Tmp.predict_09(atts)]++;
-        classes[Tmp.predict_10(atts)]++;
-        classes[Tmp.predict_11(atts)]++;
-        classes[Tmp.predict_12(atts)]++;
-        classes[Tmp.predict_13(atts)]++;
-        classes[Tmp.predict_14(atts)]++;
 
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < n_classes; i++) {
-            if (classes[i] > class_val) {
-                class_idx = i;
-                class_val = classes[i];
-            }
-        }
-        return class_idx;
-    }
+    return predict(atts);
+};
 
-    public static void main(String[] args) {
-        if (args.length == 4) {
-            float[] atts = new float[args.length];
-            for (int i = 0, l = args.length; i < l; i++) {
-                atts[i] = Float.parseFloat(args[i]);
-            }
-            System.out.println(Tmp.predict(atts));
-        }
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+    if (process.argv.length - 2 == 4) {
+        var argv = process.argv.slice(2);
+        var prediction = predictor(argv);
+        console.log(prediction);
     }
 }
 """

@@ -3,8 +3,7 @@ from ..JavaTest import JavaTest
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier
-from onl.nok.sklearn.classifier.AdaBoostClassifier \
-    import AdaBoostClassifier as Porter
+from onl.nok.sklearn.Porter import Porter
 
 
 class AdaBoostClassifierTest(JavaTest, unittest.TestCase):

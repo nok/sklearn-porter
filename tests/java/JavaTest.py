@@ -27,7 +27,6 @@ class JavaTest():
         self.porter = None
         # self.create_test_files()
 
-        # Time:
         self.startTime = time.time()
 
     # noinspection PyPep8Naming
@@ -35,13 +34,19 @@ class JavaTest():
         self.remove_test_files()
         self.clf = None
 
-        # Time:
         print("%.3fs" % (time.time() - self.startTime))
 
     def set_classifier(self, clf):
         self.clf = clf
         self.clf.fit(self.X, self.y)
         self.create_test_files()
+
+    def test_model_support(self):
+        is_classifier = self.porter.is_supported_classifier(self.clf)
+        is_regressor = self.porter.is_supported_regressor(self.clf)
+        is_model_valid = is_classifier or is_regressor
+        # noinspection PyUnresolvedReferences
+        self.assertTrue(is_model_valid)
 
     def test_random_features(self):
         # Creating random features:
