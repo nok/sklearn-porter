@@ -10,4 +10,8 @@ src/*.class
 examples/tests
 examples/tests/*
 
+.temp/
 temp/
+tmp
+tmp.*
+Tmp.*
