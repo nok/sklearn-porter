@@ -12,6 +12,7 @@
 *.swo
 .DS_Store
 
+sklearn_porter.egg-info
 dist
 build
 
