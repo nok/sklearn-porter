@@ -1,8 +1,9 @@
 import os
-import argparse
 
 
 class Porter():
+
+    __version__ = '0.1.0'
 
     def __init__(
             self, language="java", method_name='predict',
@@ -82,7 +83,7 @@ class Porter():
                 The ported model.
         """
         filename = '%s.%s' % (self.class_name.lower(), self.language)
-        if self.language is 'java':
+        if self.language == 'java':
             filename = filename.capitalize()
 
         comp_cmd = ''  # compiling command
@@ -204,55 +205,3 @@ class Porter():
         msg = 'The model is not an instance of '\
               'a supported classifier or regressor.'
         raise ValueError(msg)
-
-
-def main():
-    parser = argparse.ArgumentParser(
-        description=('Transpile trained scikit-learn models '
-                     'to a low-level programming language.'),
-        epilog='More details on: https://github.com/nok/sklearn-porter')
-    parser.add_argument(
-        '--model', '-m',
-        required=True,
-        help='Set the path of an exported model in pickle (.pkl) format.')
-    parser.add_argument(
-        '--language', '-l',
-        choices=['c', 'java', 'js', 'go'],  # 'swift'
-        default='java',
-        required=False,
-        help='Set the target programming language.')
-    parser.add_argument(
-        '--output', '-o',
-        type=str,
-        required=False,
-        help='Set the output path.')
-
-    args = vars(parser.parse_args())
-
-    input = str(args['model'])
-    if input.endswith('.pkl') and os.path.isfile(input):
-
-        # Target programming language:
-        lang = str(args['language'])
-        lang = lang if lang is not '' else 'java'
-
-        # Input model:
-        model = str(args['model'])
-
-        # Output model:
-        output = model.split('.')[-2]
-        output += '.' + lang
-        if str(args['output']).endswith(('.c', '.java', '.js')):
-            output = str(args['output'])
-            # lang = out.split('.')[-1].lower()
-
-        from sklearn.externals import joblib
-        with open(output, 'w') as file:
-            model = joblib.load(model)
-            porter = Porter()
-            # class_name = out.split('.')[-2].lower().title()
-            file.write(porter.port(model))
-
-
-if __name__ == "__main__":
-    main()

@@ -2,7 +2,7 @@ import unittest
 from ..JavaTest import JavaTest
 
 from sklearn.svm.classes import LinearSVC
-from onl.nok.sklearn.Porter import Porter
+from sklearn_porter import Porter
 
 
 class LinearSVCTest(JavaTest, unittest.TestCase):

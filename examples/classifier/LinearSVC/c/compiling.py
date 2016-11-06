@@ -3,7 +3,7 @@ import subprocess as subp
 from sklearn import svm
 from sklearn.datasets import load_iris
 
-from onl.nok.sklearn.Porter import Porter
+from sklearn_porter import Porter
 
 X, y = load_iris(return_X_y=True)
 clf = svm.LinearSVC(C=1., random_state=0)

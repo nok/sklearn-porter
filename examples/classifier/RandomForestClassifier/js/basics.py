@@ -1,7 +1,7 @@
 from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier
 
-from onl.nok.sklearn.Porter import Porter
+from sklearn_porter import Porter
 
 X, y = load_iris(return_X_y=True)
 clf = RandomForestClassifier(n_estimators=15, max_depth=None,

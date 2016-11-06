@@ -3,7 +3,7 @@ from ..JavaScriptTest import JavaScriptTest
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import AdaBoostClassifier
-from onl.nok.sklearn.Porter import Porter
+from sklearn_porter import Porter
 
 
 class AdaBoostClassifierTest(JavaScriptTest, unittest.TestCase):

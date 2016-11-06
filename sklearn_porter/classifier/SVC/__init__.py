@@ -125,18 +125,15 @@ class SVC(Classifier):
         if self.params['kernel'] == 'rbf':
             str += self.temp('kernel.rbf').format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']))
-
-        if self.params['kernel'] == 'poly':
+        elif self.params['kernel'] == 'poly':
             str += self.temp('kernel.poly').format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']),
                 repr(self.params['coef0']), repr(self.params['degree']))
-
-        if self.params['kernel'] == 'sigmoid':
+        elif self.params['kernel'] == 'sigmoid':
             str += self.temp('kernel.sigmoid').format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']),
                 repr(self.params['coef0']), repr(self.params['degree']))
-
-        if self.params['kernel'] == 'linear':
+        elif self.params['kernel'] == 'linear':
             str += self.temp('kernel.linear').format(
                 len(self.svs), self.n_svs)
 
@@ -144,15 +141,11 @@ class SVC(Classifier):
         n_svs = [self.temp('type').format(repr(v)) for v in self.svs_rows]
         n_svs = ', '.join(n_svs)
         str += self.temp('arr[]').format(type='int', name='n_svs', values=n_svs)
-
         str += self.temp('starts').format(self.n_svs_rows)
         str += self.temp('ends').format(self.n_svs_rows)
-
         str += self.temp('decicions').format(self.n_svs_rows)
         str += self.temp('classes').format(self.n_classes)
-
         str = self.indent(str, indentation=8)
-
         return self.temp('method', indentation=4).format(self.method_name, str)
 
 

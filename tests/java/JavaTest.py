@@ -15,26 +15,22 @@ class JavaTest():
     # noinspection PyPep8Naming
     def setUp(self):
         self.tmp_fn = 'Tmp'
-
         # Data:
         self.X, self.y = load_iris(return_X_y=True)
         self.X = shuffle(self.X, random_state=0)
         self.y = shuffle(self.y, random_state=0)
         self.n_features = len(self.X[0])
-
         # Placeholders:
         self.clf = None
         self.porter = None
         # self.create_test_files()
-
         self.startTime = time.time()
 
     # noinspection PyPep8Naming
     def tearDown(self):
         self.remove_test_files()
         self.clf = None
-
-        print("%.3fs" % (time.time() - self.startTime))
+        print('%.3fs' % (time.time() - self.startTime))
 
     def set_classifier(self, clf):
         self.clf = clf
@@ -72,30 +68,27 @@ class JavaTest():
 
     def create_test_files(self):
         self.remove_test_files()
-
         # Create the temporary test dictionary:
-        # -> mkdir temp
+        # $ mkdir temp
         subp.call(['mkdir', 'temp'])
-
         # Save transpiled model:
         path = 'temp/' + self.tmp_fn + '.java'
         with open(path, 'w') as file:
             file.write(self.porter.port(self.clf))
-
         # Compile model:
-        # -> javac temp/Tmp.java
-        subp.call(['javac', 'temp/' + self.tmp_fn + '.java'])
+        # $ javac temp/Tmp.java
+        subp.call(['javac', path])
 
     def remove_test_files(self):
         # Remove the temporary test directory:
-        # -> rm -rf temp
+        # $ rm -rf temp
         subp.call(['rm', '-rf', 'temp'])
 
     def make_pred_in_py(self, features):
         return int(self.clf.predict([features])[0])
 
     def make_pred_in_java(self, features):
-        # -> java -classpath temp <temp_filename> <features>
+        # $ java -classpath temp <temp_filename> <features>
         cmd = ['java', '-classpath', 'temp', self.tmp_fn]
         args = [str(f).strip() for f in features]
         cmd += args

@@ -2,7 +2,7 @@ import unittest
 from ..JavaTest import JavaTest
 
 from sklearn.tree import DecisionTreeClassifier
-from onl.nok.sklearn.Porter import Porter
+from sklearn_porter import Porter
 
 
 class DecisionTreeClassifierTest(JavaTest, unittest.TestCase):

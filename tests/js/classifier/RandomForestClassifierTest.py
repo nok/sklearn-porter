@@ -2,7 +2,7 @@ import unittest
 from ..JavaScriptTest import JavaScriptTest
 
 from sklearn.ensemble import RandomForestClassifier
-from onl.nok.sklearn.Porter import Porter
+from sklearn_porter import Porter
 
 
 class RandomForestClassifierTest(JavaScriptTest, unittest.TestCase):

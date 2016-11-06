@@ -2,7 +2,7 @@ import unittest
 from ..CTest import CTest
 
 from sklearn.svm.classes import LinearSVC
-from onl.nok.sklearn.Porter import Porter
+from sklearn_porter import Porter
 
 
 class LinearSVCTest(CTest, unittest.TestCase):

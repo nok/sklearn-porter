@@ -1,0 +1,18 @@
+Metadata-Version: 1.1
+Name: sklearn-porter
+Version: 0.1.0
+Summary: Transpile trained scikit-learn models to a low-level programming language.
+Home-page: https://github.com/nok/sklearn-porter
+Author: Darius Morawiec
+Author-email: ping@nok.onl
+License: MIT
+Description: UNKNOWN
+Keywords: sklearn,scikit-learn
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5

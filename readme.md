@@ -2,8 +2,10 @@
 # sklearn-porter
 
 [![Build Status](https://img.shields.io/travis/nok/sklearn-porter/master.svg)](https://travis-ci.org/nok/sklearn-porter)
+[![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
+[![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
 [![Join the chat at https://gitter.im/nok/sklearn-porter](https://badges.gitter.im/nok/sklearn-porter.svg)](https://gitter.im/nok/sklearn-porter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/nok/scikit-learn-model-porting/master/LICENSE.txt)
 
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like [C](https://en.wikipedia.org/wiki/C_(programming_language)), [Java](https://en.wikipedia.org/wiki/Java_(programming_language)), [JavaScript](https://en.wikipedia.org/wiki/JavaScript), [Go](https://en.wikipedia.org/wiki/Go_(programming_language)) or [Swift](https://en.wikipedia.org/wiki/Swift_(programming_language)). It's recommended for limited embedded systems and critical applications where performance matters most.
 
@@ -84,6 +86,13 @@ The following matrix shows the portable classifiers:
 </table>
 
 
+## Installation
+
+```sh
+pip install sklearn-porter
+```
+
+
 ## Usage
 
 Either you use the porter as [imported module](#module) in your application or you use the [command-line interface](#cli). 
@@ -97,7 +106,7 @@ This example shows how you can port the decision tree model from the [official u
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
 
-from onl.nok.sklearn.Porter import Porter
+from sklearn_porter import Porter
 
 # Load data and train a classifier:
 X, y = load_iris(return_X_y=True)
@@ -105,7 +114,7 @@ clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
 # Port the classifier:
-result = Porter().port(clf) 
+result = Porter(language='java').port(clf) 
 print(result)
 ```
 
@@ -130,24 +139,34 @@ clf.fit(X, y)
 joblib.dump(clf, 'model.pkl')
 ```
 
-After that you can port the model by using the following command:
+After that the model can be ported by using the following command:
 
 ```sh
-python onl/nok/sklearn/Porter.py --model <pickle_model_path> --output <output_file_path> [--language {c,java,js}]
+python -m sklearn_porter --input <pickle_file> [--output <destination_dir>] [--language {c,java,js,go}]
+python -m sklearn_porter -i <pickle_file> [-o <destination_dir>] [-l {c,java,js,go}]
 ```
 
-Here you see some real examples:
+The following commands have all the same result:
 
 ```sh
-python onl/nok/sklearn/Porter.py --model examples/cli/model.pkl --output examples/cli/Model.java --language java
-python onl/nok/sklearn/Porter.py -m examples/cli/model.pkl -o examples/cli/Model.java -l java
+python -m sklearn_porter --input model.pkl --language java
+python -m sklearn_porter -i model.pkl -l java
 ```
 
-For further help you can display all options:
+By changing the language parameter you can set the target programming language:
+
+```
+python -m sklearn_porter -i model.pkl -l java
+python -m sklearn_porter -i model.pkl -l js
+python -m sklearn_porter -i model.pkl -l c
+python -m sklearn_porter -i model.pkl -l go
+```
+
+Finally the following command will display all options:
 
 ```sh
-python onl/nok/sklearn/Porter.py --help
-python onl/nok/sklearn/Porter.py -h
+python -m sklearn_porter --help
+python -m sklearn_porter -h
 ```
 
 

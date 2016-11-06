@@ -2,7 +2,7 @@ import unittest
 from ..JavaScriptTest import JavaScriptTest
 
 from sklearn.tree import DecisionTreeClassifier
-from onl.nok.sklearn.Porter import Porter
+from sklearn_porter import Porter
 
 
 class DecisionTreeClassifierTest(JavaScriptTest, unittest.TestCase):
