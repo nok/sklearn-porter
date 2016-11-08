@@ -1,0 +1,7 @@
+// Type: logistic
+var output_activation = function(v) {
+    for (var i = 0, l = v.length; i < l; i++) {
+        v[i] = 1. / (1. + Math.exp(-v[i]));
+    }
+    return v;
+};

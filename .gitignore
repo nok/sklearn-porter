@@ -2,12 +2,27 @@
 
 *.pyc
 *.pkl
+*.so
+*.pyd
 *.npy
+*~
+.#*
+*.lprof
+*.swp
+*.swo
+.DS_Store
+
+sklearn_porter.egg-info
+dist
+build
 
 src/*.java
 src/*.class
 
 examples/tests
-examples/tests/*
 
+.temp/
 temp/
+tmp
+tmp.*
+Tmp.*

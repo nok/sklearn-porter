@@ -1,0 +1,14 @@
+var predictor = function(atts) {{
+
+    {method}
+
+    return {method_name}(atts);
+}};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
+    if (process.argv.length - 2 == {n_features}) {{
+        var argv = process.argv.slice(2);
+        var prediction = predictor(argv);
+        console.log(prediction);
+    }}
+}}

@@ -1,0 +1,5 @@
+var {1}_{0} = function(atts) {{
+    var classes = new Array({2});
+    {3}
+    return classes;
+}};

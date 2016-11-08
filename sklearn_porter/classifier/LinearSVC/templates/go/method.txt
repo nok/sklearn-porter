@@ -1,0 +1,24 @@
+func {name}(atts []float64) int {{
+
+	{coefficients}
+	{intercepts}
+
+	if len(atts) != len(coefs[0]) {{
+		return -1
+	}}
+
+	classIdx := -1
+	classVal := math.Inf(-1)
+	outerCount, innerCount := len(coefs), len(coefs[0])
+	for i := 0; i < outerCount; i++ {{
+		var prob float64
+		for j := 0; j < innerCount; j++ {{
+			prob = prob + coefs[i][j]*atts[j]
+		}}
+		if prob+inters[i] > classVal {{
+			classVal = prob + inters[i]
+			classIdx = i
+		}}
+	}}
+	return classIdx
+}}

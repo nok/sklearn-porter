@@ -1,0 +1,20 @@
+// Type: softmax
+var output_activation = function(v) {
+    var max = Number.NEGATIVE_INFINITY;
+    for (var i = 0, l = v.length; i < l; i++) {
+        if (v[i] > max) {
+            max = v[i];
+        }
+    }
+    for (var i = 0, l = v.length; i < l; i++) {
+        v[i] = Math.exp(v[i] - max);
+    }
+    var sum = 0.0;
+    for (var i = 0, l = v.length; i < l; i++) {
+        sum += v[i];
+    }
+    for (var i = 0, l = v.length; i < l; i++) {
+        v[i] /= sum;
+    }
+    return v;
+};

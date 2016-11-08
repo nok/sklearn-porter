@@ -1,0 +1,14 @@
+var {method_name} = function(atts) {{
+    if (atts.length != {n_features}) {{ return -1; }};
+    var classes = new Array({n_classes});
+    {branches}
+
+    var class_idx = 0, class_val = classes[0];
+    for (var i = 1; i < {n_classes}; i++) {{
+        if (classes[i] > class_val) {{
+            class_idx = i;
+            class_val = classes[i];
+        }}
+    }}
+    return class_idx;
+}};

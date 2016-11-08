@@ -1,0 +1,52 @@
+{0}
+var {1} = function(atts) {{
+    var n_estimators = {2},
+        preds = new Array(n_estimators),
+        n_classes = {3},
+        classes = new Array(n_classes),
+        normalizer, sum, idx, val,
+        i, j;
+
+    {4}
+
+    for (i = 0; i < n_estimators; i++) {{
+        normalizer = 0.;
+        for (j = 0; j < n_classes; j++) {{
+            normalizer += preds[i][j];
+        }}
+        if (normalizer == 0.) {{
+            normalizer = 1.0;
+        }}
+        for (j = 0; j < n_classes; j++) {{
+            preds[i][j] = preds[i][j] / normalizer;
+            if (preds[i][j] < 2.2250738585072014e-308) {{
+                preds[i][j] = 2.2250738585072014e-308;
+            }}
+            preds[i][j] = Math.log(preds[i][j]);
+        }}
+        sum = 0.0;
+        for (j = 0; j < n_classes; j++) {{
+            sum += preds[i][j];
+        }}
+        for (j = 0; j < n_classes; j++) {{
+            preds[i][j] = (n_classes - 1) * (preds[i][j] - (1. / n_classes) * sum);
+        }}
+    }}
+    for (i = 0; i < n_classes; i++) {{
+        classes[i] = 0.0;
+    }}
+    for (i = 0; i < n_estimators; i++) {{
+        for (j = 0; j < n_classes; j++) {{
+            classes[j] += preds[i][j];
+        }}
+    }}
+    idx = -1;
+    val = Number.NEGATIVE_INFINITY;
+    for (i = 0; i < n_classes; i++) {{
+        if (classes[i] > val) {{
+            idx = i;
+            val = classes[i];
+        }}
+    }}
+    return idx;
+}};

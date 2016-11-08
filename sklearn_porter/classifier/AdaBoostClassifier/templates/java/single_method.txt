@@ -1,0 +1,5 @@
+public static double[] {1}_{0}(float[] atts) {{
+    double[] classes = new double[{2}];
+    {3}
+    return classes;
+}}
