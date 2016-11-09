@@ -30,7 +30,7 @@ The following matrix shows the portable classifiers:
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/SVC/java/basics.py#L12">X</a></td>
-            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/SVC/js/basics.py#L12">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>

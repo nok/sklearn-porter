@@ -10,7 +10,7 @@ class SVC(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html
     """
 
-    SUPPORT = {'predict': ['java']}
+    SUPPORT = {'predict': ['java', 'js']}
 
     # @formatter:off
     TEMPLATE = {
@@ -19,6 +19,14 @@ class SVC(Classifier):
             'arr':      ('{{{0}}}'),
             'arr[]':    ('\n{type}[] {name} = {{{values}}};'),
             'arr[][]':  ('\n{type}[][] {name} = {{{values}}};'),
+            'indent':   ('    '),
+        },
+        'js': {
+            'type':     ('{0}'),
+            'arr':      ('[{0}]'),
+            'arr[]':    ('\nvar {name} = [{values}];'),
+            'arr[][]':  ('\nvar {name} = [{values}];'),
+            'indent':   ('    '),
         }
     }
     # @formatter:on
@@ -145,8 +153,9 @@ class SVC(Classifier):
         str += self.temp('ends').format(self.n_svs_rows)
         str += self.temp('decicions').format(self.n_svs_rows)
         str += self.temp('classes').format(self.n_classes)
-        str = self.indent(str, indentation=8)
-        return self.temp('method', indentation=4).format(self.method_name, str)
+        str = self.indent(str, indentation=2)
+        return self.temp('method', indentation=1, skipping=True).format(
+            method_name=self.method_name, decicion=str)
 
 
     def create_class(self, method):
@@ -159,4 +168,5 @@ class SVC(Classifier):
             The built class as string.
         """
         return self.temp('class').format(
-            self.class_name, self.method_name, method, self.n_svs)
+            class_name=self.class_name, method_name=self.method_name,
+            method=method, n_features=self.n_svs)

@@ -1,0 +1,13 @@
+var decisions = new Array({0});
+for (var i = 0, d = 0, l = {0}; i < l; i++) {{
+    for (var j = i + 1; j < l; j++) {{
+        var tmp1 = 0., tmp2 = 0.;
+        for (var k = starts[j]; k < ends[j]; k++) {{
+           tmp1 += kernels[k] * coeffs[i][k];
+        }}
+        for (var k = starts[i]; k < ends[i]; k++) {{
+            tmp2 += kernels[k] * coeffs[j - 1][k];
+        }}
+        decisions[d] = tmp1 + tmp2 + inters[d++];
+    }}
+}}
