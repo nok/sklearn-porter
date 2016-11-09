@@ -29,19 +29,22 @@ class PorterTest(unittest.TestCase):
         self._remove_java_files()
         self.clf = None
         # Time:
-        print("%.3fs" % (time.time() - self.startTime))
+        print('%.3fs' % (time.time() - self.startTime))
 
     def test_porter_args_method(self):
-        args = dict(method_name="random")
+        """Test invalid method name."""
+        args = dict(method_name='random')
         porter = Porter(args)
         self.assertRaises(AttributeError, lambda: porter.port(self.clf))
 
     def test_porter_args_language(self):
-        args = dict(method_name="predict", language="random")
+        """Test invalid programming language."""
+        args = dict(method_name='predict', language='random')
         porter = Porter(args)
         self.assertRaises(AttributeError, lambda: porter.port(self.clf))
 
     def _create_java_files(self):
+        """Create and compile ported model for comparison of predictions."""
         # $ rm -rf temp
         subp.call(['rm', '-rf', 'temp'])
         # $ mkdir temp
@@ -55,14 +58,17 @@ class PorterTest(unittest.TestCase):
         subp.call(['javac', path])
 
     def _remove_java_files(self):
+        """Remove all temporary test files."""
         # $ rm -rf temp
         subp.call(['rm', '-rf', 'temp'])
 
     def test_data_type(self):
+        """Test invalid scikit-learn model."""
         porter = Porter()
-        self.assertRaises(ValueError, porter.port, "")
+        self.assertRaises(ValueError, porter.port, '')
 
     def test_python_command_execution(self):
+        """Test command line execution."""
         # Rename model for comparison:
         cp_src = 'temp/%s.java' % (self.tmp_fn)
         cp_dest = 'temp/%s_2.java' % (self.tmp_fn)
@@ -79,6 +85,7 @@ class PorterTest(unittest.TestCase):
         self.assertEqual(equal, True)
 
     def test_java_command_execution(self):
+        """Test whether the prediction of random features match or not."""
         # Create random features:
         java_preds, py_preds = [], []
         for n in range(self.N_RANDOM_TESTS):
@@ -90,6 +97,7 @@ class PorterTest(unittest.TestCase):
         self.assertEqual(py_preds, java_preds)
 
     def make_pred_in_java(self, features):
+        """Run Java prediction on the command line."""
         # $ java -classpath temp <temp_filename> <features>
         cmd = ['java', '-classpath', 'temp', self.tmp_fn]
         args = [str(f).strip() for f in features]
