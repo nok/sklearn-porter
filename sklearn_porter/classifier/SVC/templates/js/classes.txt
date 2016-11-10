@@ -5,7 +5,7 @@ for (var i = 0, d = 0, l = {0}; i < l; i++) {{
     }}
 }}
 
-var amounts = Array.apply(null, Array({0})).map(Number.prototype.valueOf,0);
+var amounts = new Array({0}).fill(0);
 for (var i = 0, l = {0}; i < l; i++) {{
     amounts[votes[i]] += 1;
 }}
