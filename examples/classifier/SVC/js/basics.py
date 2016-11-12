@@ -64,14 +64,15 @@ var predictor = function(atts) {
                 }
                 decisions[d] = tmp1 + tmp2 + inters[d++];
             }
-        }var votes = new Array(3);
+        }
+        var votes = new Array(3);
         for (var i = 0, d = 0, l = 3; i < l; i++) {
             for (var j = i + 1; j < l; j++) {
                 votes[d] = decisions[d++] > 0 ? i : j;
             }
         }
 
-        var amounts = new Array.apply(null, Array(3)).map(Number.prototype.valueOf,0);
+        var amounts = new Array(3).fill(0);
         for (var i = 0, l = 3; i < l; i++) {
             amounts[votes[i]] += 1;
         }
