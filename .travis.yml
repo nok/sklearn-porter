@@ -7,6 +7,10 @@ python:
   - "3.3"
   - "3.4"
   - "3.5"
+node_js:
+  - "6"
+compiler:
+  - gcc
 install:
   - sudo apt-get update
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
@@ -20,8 +24,9 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda config --add channels conda-forge
   - conda update -q conda
+  - conda install -n root _license
   - conda info -a
   - conda env create -q -n sklearn-porter python=$TRAVIS_PYTHON_VERSION -f environment.yml
   - source activate sklearn-porter
 script:
-  - python -m unittest discover -p '*Test.py'
+  - python -m unittest discover -vp '*Test.py'

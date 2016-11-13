@@ -1,0 +1,7 @@
+// Type: logistic
+public static double[] output_activation(double[] v) {
+    for (int i = 0, l = v.length; i < l; i++) {
+        v[i] = 1. / (1. + Math.exp(-v[i]));
+    }
+    return v;
+}

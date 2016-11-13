@@ -1,0 +1,21 @@
+
+int[] votes = new int[{0}];
+for (int i = 0, d = 0, l = {0}; i < l; i++) {{
+    for (int j = i + 1; j < l; j++) {{
+        votes[d] = decisions[d++] > 0 ? i : j;
+    }}
+}}
+
+int[] amounts = new int[{0}];
+for (int i = 0, l = {0}; i < l; i++) {{
+    amounts[votes[i]] += 1;
+}}
+
+int class_val = -1, class_idx = -1;
+for (int i = 0, l = {0}; i < l; i++) {{
+    if (amounts[i] > class_val) {{
+        class_val = amounts[i];
+        class_idx = i;
+    }}
+}}
+return classes[class_idx];

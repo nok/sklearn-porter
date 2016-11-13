@@ -1,0 +1,14 @@
+class {class_name} {{
+
+    {method}
+
+    public static void main(String[] args) {{
+        if (args.length == {n_features}) {{
+            float[] atts = new float[args.length];
+            for (int i = 0, l = args.length; i < l; i++) {{
+                atts[i] = Float.parseFloat(args[i]);
+            }}
+            System.out.println({class_name}.{method_name}(atts));
+        }}
+    }}
+}}

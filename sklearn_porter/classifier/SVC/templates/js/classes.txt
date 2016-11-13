@@ -1,0 +1,20 @@
+var votes = new Array({0});
+for (var i = 0, d = 0, l = {0}; i < l; i++) {{
+    for (var j = i + 1; j < l; j++) {{
+        votes[d] = decisions[d++] > 0 ? i : j;
+    }}
+}}
+
+var amounts = new Array({0}).fill(0);
+for (var i = 0, l = {0}; i < l; i++) {{
+    amounts[votes[i]] += 1;
+}}
+
+var class_val = -1, class_idx = -1;
+for (var i = 0, l = {0}; i < l; i++) {{
+    if (amounts[i] > class_val) {{
+        class_val = amounts[i];
+        class_idx = i;
+    }}
+}}
+return classes[class_idx];

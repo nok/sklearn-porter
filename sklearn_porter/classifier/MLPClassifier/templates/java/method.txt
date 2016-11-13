@@ -1,0 +1,30 @@
+public static int {method_name}(double[] atts) {{
+    if (atts.length != {n_features}) {{ return -1; }}
+
+    {activations}
+    {coefficients}
+    {intercepts}
+
+    for (int i = 0; i < activations.length - 1; i++) {{
+        for (int j = 0; j < activations[i + 1].length; j++) {{
+            for (int l = 0; l < activations[i].length; l++) {{
+                activations[i + 1][j] += activations[i][l] * coefficients[i][l][j];
+            }}
+            activations[i + 1][j] += intercepts[i][j];
+            if ((i + 1) != (activations.length - 1)) {{
+                activations[i + 1] = {class_name}.hidden_activation(activations[i + 1]);
+            }}
+        }}
+    }}
+    activations[activations.length - 1] = {class_name}.output_activation(activations[activations.length - 1]);
+
+    int class_idx = -1;
+    double class_val = -1;
+    for (int i = 0, l = activations[activations.length - 1].length; i < l; i++) {{
+        if (activations[activations.length - 1][i] > class_val) {{
+            class_val = activations[activations.length - 1][i];
+            class_idx = i;
+        }}
+    }}
+    return class_idx;
+}}

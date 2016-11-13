@@ -1,0 +1,11 @@
+
+// exp(-y|x-x'|^2)
+var kernels = new Array({0}),
+    kernel;
+for (var i = 0; i < {0}; i++) {{
+    kernel = 0.;
+    for (var j = 0; j < {1}; j++) {{
+        kernel += Math.pow(svs[i][j] - atts[j], 2);
+    }}
+    kernels[i] = Math.exp(-{2} * kernel);
+}}

@@ -1,0 +1,20 @@
+// Type: softmax
+public static double[] output_activation(double[] v) {
+    double max = Double.NEGATIVE_INFINITY;
+    for (double x : v) {
+        if (x > max) {
+            max = x;
+        }
+    }
+    for (int i = 0, l = v.length; i < l; i++) {
+        v[i] = Math.exp(v[i] - max);
+    }
+    double sum = 0.0;
+    for (double x : v) {
+        sum += x;
+    }
+    for (int i = 0, l = v.length; i < l; i++) {
+        v[i] /= sum;
+    }
+    return v;
+}

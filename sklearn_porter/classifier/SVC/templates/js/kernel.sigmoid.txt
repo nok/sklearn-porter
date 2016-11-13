@@ -1,0 +1,14 @@
+
+// Math.tanh polyfill:
+Math.tanh=Math.tanh||function(a){{if(a===1/0)return 1;if(a===-(1/0))return-1;var b=Math.exp(2*a);return(b-1)/(b+1)}};
+
+// tanh(y<x,x'>+r)
+var kernels = new Array({0}).fill(0),
+    kernel;
+for (var i = 0; i < {0}; i++) {{
+    kernel = 0.;
+    for (var j = 0; j < {1}; j++) {{
+        kernel += svs[i][j] * atts[j];
+    }}
+    kernels[i] = Math.tanh(({2} * kernel) + {3});
+}}

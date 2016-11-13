@@ -1,0 +1,4 @@
+var ends = new Array({0});
+for (var i = 0; i < {0}; i++) {{
+    ends[i] = n_svs[i] + starts[i];
+}}

@@ -1,0 +1,4 @@
+// Type: identity
+var hidden_activation = function(v) {
+    return v;
+};

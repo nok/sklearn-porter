@@ -1,0 +1,3 @@
+public static int {method_name}(float[] atts) {{
+    {decicion}
+}}

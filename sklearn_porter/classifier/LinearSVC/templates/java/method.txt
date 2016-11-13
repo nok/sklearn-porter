@@ -1,0 +1,20 @@
+public static int {name}(float[] atts) {{
+    if (atts.length != {n_features}) {{ return -1; }}
+
+    {coefficients}
+    {intercepts}
+
+    int class_idx = -1;
+    double class_val = Double.NEGATIVE_INFINITY;
+    for (int i = 0; i < {n_classes}; i++) {{
+        double prob = 0.;
+        for (int j = 0; j < {n_features}; j++) {{
+            prob += coefs[i][j] * atts[j];
+        }}
+        if (prob + inters[i] > class_val) {{
+            class_val = prob + inters[i];
+            class_idx = i;
+        }}
+    }}
+    return class_idx;
+}}

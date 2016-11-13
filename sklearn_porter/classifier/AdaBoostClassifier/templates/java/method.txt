@@ -1,0 +1,49 @@
+{0}
+public static int {1}(float[] atts) {{
+    int n_estimators = {2};
+    int n_classes = {3};
+
+    double[][] preds = new double[n_estimators][];
+    {4}
+
+    int i, j;
+    double normalizer, sum;
+    for (i = 0; i < n_estimators; i++) {{
+        normalizer = 0.;
+        for (j = 0; j < n_classes; j++) {{
+            normalizer += preds[i][j];
+        }}
+        if (normalizer == 0.) {{
+            normalizer = 1.;
+        }}
+        for (j = 0; j < n_classes; j++) {{
+            preds[i][j] = preds[i][j] / normalizer;
+            if (preds[i][j] < 2.2250738585072014e-308) {{
+                preds[i][j] = 2.2250738585072014e-308;
+            }}
+            preds[i][j] = Math.log(preds[i][j]);
+        }}
+        sum = 0.;
+        for (j = 0; j < n_classes; j++) {{
+            sum += preds[i][j];
+        }}
+        for (j = 0; j < n_classes; j++) {{
+            preds[i][j] = (n_classes - 1) * (preds[i][j] - (1. / n_classes) * sum);
+        }}
+    }}
+    double[] classes = new double[n_classes];
+    for (i = 0; i < n_estimators; i++) {{
+        for (j = 0; j < n_classes; j++) {{
+            classes[j] += preds[i][j];
+        }}
+    }}
+    int idx = 0;
+    double val = Double.NEGATIVE_INFINITY;
+    for (i = 0; i < n_classes; i++) {{
+        if (classes[i] > val) {{
+            idx = i;
+            val = classes[i];
+        }}
+    }}
+    return idx;
+}}
