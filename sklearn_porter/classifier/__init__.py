@@ -28,7 +28,7 @@ class Classifier(object):
                 raise AttributeError(msg)
 
 
-    def indent(self, text, indentation=4, skipping=False):
+    def indent(self, text, indentation=1, skipping=False):
         """
         Indent text with single spaces.
 
@@ -47,8 +47,6 @@ class Classifier(object):
             The indented text.
         """
         lines = text.splitlines()
-
-        # TODO: Refactor the indentation type:
         space = self.TEMPLATE.get(self.language).get('indent', ' ')
 
         # Single line:
