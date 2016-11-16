@@ -1,0 +1,15 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+{2}
+
+int main(int argc, const char * argv[]) {{
+    float atts[argc-1];
+    int i;
+    for (i = 1; i < argc; i++) {{
+        atts[i-1] = atof(argv[i]);
+    }}
+    printf("%d", {1}(atts));
+    return 0;
+}}
