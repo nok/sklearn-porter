@@ -10,10 +10,10 @@ class DecisionTreeClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
 
-    SUPPORT = {'predict': ['java', 'js']}
+    SUPPORTED_METHODS = ['predict']
 
     # @formatter:off
-    TEMPLATE = {
+    TEMPLATES = {
         'java': {
             'if':       ('\nif (atts[{0}] {1} {2}) {{'),
             'else':     ('\n} else {'),

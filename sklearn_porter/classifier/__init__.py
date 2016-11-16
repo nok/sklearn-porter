@@ -3,8 +3,8 @@ import os.path
 
 class Classifier(object):
 
-    SUPPORT = {}
-    TEMPLATE = {}
+    SUPPORTED_METHODS = {}
+    TEMPLATES = {}
 
 
     def __init__(
@@ -17,15 +17,16 @@ class Classifier(object):
 
     def check_support(self):
         """Check template and programming language support."""
-        if self.method_name not in self.__class__.SUPPORT:
-            msg = ('The given method is not supported '
-                   'by the chosen classifier.')
-            raise AttributeError(msg)
-        else:
-            if self.language not in self.__class__.SUPPORT[self.method_name]:
-                msg = ('The given programming language is '
+
+        if self.method_name not in self.__class__.SUPPORTED_METHODS:
+            err_msg = ('The given method is not supported '
+                       'by the chosen classifier.')
+            raise AttributeError(err_msg)
+
+        if self.language not in self.__class__.TEMPLATES.keys():
+            err_msg = ('The given programming language is '
                        'not supported for the given method.')
-                raise AttributeError(msg)
+            raise AttributeError(err_msg)
 
 
     def indent(self, text, indentation=1, skipping=False):
@@ -47,7 +48,7 @@ class Classifier(object):
             The indented text.
         """
         lines = text.splitlines()
-        space = self.TEMPLATE.get(self.language).get('indent', ' ')
+        space = self.TEMPLATES.get(self.language).get('indent', ' ')
 
         # Single line:
         if len(lines) == 1:
@@ -88,7 +89,7 @@ class Classifier(object):
             The wanted template string.
         """
         if templates is None:
-            templates = self.TEMPLATE.get(self.language)
+            templates = self.TEMPLATES.get(self.language)
         keys = name.split('.')
         key = keys.pop(0).lower()
         template = templates.get(key, None)
