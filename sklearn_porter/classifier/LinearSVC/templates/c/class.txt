@@ -6,7 +6,7 @@
 
 int main(int argc, const char * argv[]) {{
     float atts[argc-1];
-    int i = 0;
+    int i;
     for (i = 1; i < argc; i++) {{
         atts[i-1] = atof(argv[i]);
     }}
