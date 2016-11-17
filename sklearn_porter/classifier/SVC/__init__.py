@@ -14,6 +14,13 @@ class SVC(Classifier):
 
     # @formatter:off
     TEMPLATE = {
+        'c': {
+            'type':     ('{0}'),
+            'arr':      ('{{{0}}}'),
+            'arr[]':    ('\n{type} {name}[] = {{{values}}};'),
+            'arr[][]':  ('\n{type} {name}[][] = {{{values}}};'),
+            'indent':   ('    '),
+        },
         'java': {
             'type':     ('{0}'),
             'arr':      ('{{{0}}}'),
