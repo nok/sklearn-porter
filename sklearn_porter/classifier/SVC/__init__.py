@@ -18,7 +18,7 @@ class SVC(Classifier):
             'type':     ('{0}'),
             'arr':      ('{{{0}}}'),
             'arr[]':    ('\n{type} {name}[] = {{{values}}};'),
-            'arr[][]':  ('\n{type} {name}[][] = {{{values}}};'),
+            'arr[][]':  ('\n{type} {name}[{n}][{m}] = {{{values}}};'),
             'indent':   ('    '),
         },
         'java': {
@@ -112,7 +112,8 @@ class SVC(Classifier):
             vectors.append(_vectors)
         vectors = ', '.join(vectors)
         str += self.temp('arr[][]').format(
-            type='double', name='svs', values=vectors)
+            type='double', name='svs', values=vectors,
+            n=len(self.svs), m=self.n_svs)
 
         # Coefficients:
         coeffs = []
@@ -122,7 +123,8 @@ class SVC(Classifier):
             coeffs.append(_coeffs)
         coeffs = ', '.join(coeffs)
         str += self.temp('arr[][]').format(
-            type='double', name='coeffs', values=coeffs)
+            type='double', name='coeffs', values=coeffs,
+            n=len(self.coeffs), m=len(self.coeffs[0]))
 
         # Interceptions:
         inters = [self.temp('type').format(repr(i)) for i in self.inters]
@@ -160,8 +162,9 @@ class SVC(Classifier):
         str += self.temp('ends').format(self.n_svs_rows)
         str += self.temp('decicions').format(self.n_svs_rows)
         str += self.temp('classes').format(self.n_classes)
-        str = self.indent(str, indentation=2)
-        return self.temp('method', indentation=1, skipping=True).format(
+        wrap = 0 if self.language in ['java', 'js'] else 1
+        str = self.indent(str, indentation=2-wrap)
+        return self.temp('method', indentation=1-wrap, skipping=True).format(
             method_name=self.method_name, decicion=str)
 
 

@@ -9,6 +9,7 @@ for (i = 0, d = 0, l = {0}; i < l; i++) {{
         for (k = starts[i]; k < ends[i]; k++) {{
             tmp2 += kernels[k] * coeffs[j - 1][k];
         }}
-        decisions[d] = tmp1 + tmp2 + inters[d++];
+        decisions[d] = tmp1 + tmp2 + inters[d];
+        d = d + 1;
     }}
 }}

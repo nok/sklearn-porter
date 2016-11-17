@@ -1,9 +1,9 @@
 
 int votes[{0}];
-int j, j;
 for (i = 0, d = 0, l = {0}; i < l; i++) {{
     for (j = i + 1; j < l; j++) {{
-        votes[d] = decisions[d++] > 0 ? i : j;
+        votes[d] = decisions[d] > 0 ? i : j;
+        d = d + 1;
     }}
 }}
 
