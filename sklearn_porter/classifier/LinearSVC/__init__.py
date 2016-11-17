@@ -10,10 +10,10 @@ class LinearSVC(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html
     """
 
-    SUPPORT = {'predict': ['c', 'go', 'java', 'js']}
+    SUPPORTED_METHODS = ['predict']
 
     # @formatter:off
-    TEMPLATE = {
+    TEMPLATES = {
         'c': {
             'type':     ('{0}'),
             'arr':      ('{{{0}}}'),

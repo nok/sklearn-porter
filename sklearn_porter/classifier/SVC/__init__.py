@@ -10,10 +10,10 @@ class SVC(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html
     """
 
-    SUPPORT = {'predict': ['java', 'js']}
+    SUPPORTED_METHODS = ['predict']
 
     # @formatter:off
-    TEMPLATE = {
+    TEMPLATES = {
         'java': {
             'type':     ('{0}'),
             'arr':      ('{{{0}}}'),

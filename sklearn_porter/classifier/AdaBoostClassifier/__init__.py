@@ -12,10 +12,10 @@ class AdaBoostClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
     """
 
-    SUPPORT = {'predict': ['java', 'js']}
+    SUPPORTED_METHODS = ['predict']
 
     # @formatter:off
-    TEMPLATE = {
+    TEMPLATES = {
         'c': {
             'if':       ('\nif (atts[{0}] {1} {2}) {{'),
             'else':     ('\n} else {'),

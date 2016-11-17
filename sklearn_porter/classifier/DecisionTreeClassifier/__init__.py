@@ -10,10 +10,18 @@ class DecisionTreeClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
 
-    SUPPORT = {'predict': ['java', 'js']}
+    SUPPORTED_METHODS = ['predict']
 
     # @formatter:off
-    TEMPLATE = {
+    TEMPLATES = {
+        'c': {
+            'if':       ('\nif (atts[{0}] {1} {2}) {{'),
+            'else':     ('\n} else {'),
+            'endif':    ('\n}'),
+            'arr':      ('\nclasses[{0}] = {1}\n'),
+            'indent':   ('    '),
+            'join':     ('; '),
+        },
         'java': {
             'if':       ('\nif (atts[{0}] {1} {2}) {{'),
             'else':     ('\n} else {'),
@@ -128,12 +136,13 @@ class DecisionTreeClassifier(Classifier):
         feature_indices = []
         for i in self.model.tree_.feature:
             feature_indices.append([str(j) for j in range(self.n_features)][i])
+        indentation = 1 if self.language in ['java', 'js'] else 0
         return self.create_branches(
             self.model.tree_.children_left,
             self.model.tree_.children_right,
             self.model.tree_.threshold,
             self.model.tree_.value,
-            feature_indices, 0, 1)
+            feature_indices, 0, indentation)
 
 
     def create_method(self):
@@ -145,10 +154,11 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built method as string.
         """
+        indentation = 1 if self.language in ['java', 'js'] else 0
         branches = self.indent(self.create_tree(), indentation=1)
-        return self.temp('method', indentation=1, skipping=True).format(
-            method_name=self.method_name, n_features=self.n_features,
-            n_classes=self.n_classes, branches=branches)
+        return self.temp('method', indentation=indentation, skipping=True)\
+            .format(method_name=self.method_name, n_features=self.n_features,
+                    n_classes=self.n_classes, branches=branches)
 
 
     def create_class(self, method):

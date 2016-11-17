@@ -1,0 +1,21 @@
+{0}
+int {1} (float atts[]) {{
+    int n_classes = {3};
+    int classes[n_classes];
+    int i;
+    for (i = 0; i < n_classes; i++) {{
+        classes[i] = 0;
+    }}
+
+    {4}
+
+    int class_idx = 0;
+    int class_val = classes[0];
+    for (i = 1; i < n_classes; i++) {{
+        if (classes[i] > class_val) {{
+            class_idx = i;
+            class_val = classes[i];
+        }}
+    }}
+    return class_idx;
+}}

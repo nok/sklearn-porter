@@ -1,0 +1,16 @@
+int {method_name}(float atts[{n_classes}]) {{
+
+    int classes[{n_classes}];
+    {branches}
+
+    int class_val = -1;
+    int class_idx = -1;
+    int i;
+    for (i = 0; i < {n_classes}; i++) {{
+        if (classes[i] > class_val) {{
+            class_idx = i;
+            class_val = classes[i];
+        }}
+    }}
+    return class_idx;
+}}

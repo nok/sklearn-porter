@@ -12,10 +12,18 @@ class RandomForestClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html
     """
 
-    SUPPORT = {'predict': ['java', 'js']}
+    SUPPORTED_METHODS = ['predict']
 
     # @formatter:off
-    TEMPLATE = {
+    TEMPLATES = {
+        'c': {
+            'if':       ('\nif (atts[{0}] {1} {2}) {{'),
+            'else':     ('\n} else {'),
+            'endif':    ('\n}'),
+            'arr':      ('\nclasses[{0}] = {1}\n'),
+            'indent':   ('    '),
+            'join':     ('; '),
+        },
         'java': {
             'if':       ('\nif (atts[{0}] {1} {2}) {{'),
             'else':     ('\n} else {'),
@@ -196,9 +204,10 @@ class RandomForestClassifier(Classifier):
         fns = '\n'.join(fns)
 
         # Merge generated content:
+        indent = 1 if self.language in ['java', 'js'] else 0
         method = self.temp('method').format(
             fns, self.method_name, self.n_estimators, self.n_classes, fn_names)
-        method = self.indent(method, indentation=1, skipping=True)
+        method = self.indent(method, indentation=indent, skipping=True)
         return method
 
 
