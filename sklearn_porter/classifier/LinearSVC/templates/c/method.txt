@@ -5,7 +5,7 @@ int {name} (float atts[{n_features}]) {{
 
     double class_val = -INFINITY;
     int class_idx = -1;
-    int i = 0, j = 0;
+    int i, j;
     for (i = 0; i < {n_classes}; i++) {{
         double prob = 0.;
         for (j = 0; j < {n_features}; j++) {{

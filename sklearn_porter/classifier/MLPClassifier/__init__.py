@@ -13,10 +13,10 @@ class MLPClassifier(Classifier):
     http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html
     """
 
-    SUPPORT = {'predict': ['java', 'js']}
+    SUPPORTED_METHODS = ['predict']
 
     # @formatter:off
-    TEMPLATE = {
+    TEMPLATES = {
         'java': {
             'type':     ('{0}'),
             'arr':      ('{{{0}}}'),
@@ -29,7 +29,7 @@ class MLPClassifier(Classifier):
         'js': {
             'type':     ('{0}'),
             'arr':      ('[{0}]'),
-            'new_arr':  ('Array.apply(null, Array({0})).map(Number.prototype.valueOf,0)'),
+            'new_arr':  ('new Array({0}).fill(0)'),
             'arr[]':    ('var {name} = [{values}];'),
             'arr[][]':  ('var {name} = [{values}];'),
             'arr[][][]': ('var {name} = [{values}];'),
