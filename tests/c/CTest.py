@@ -72,7 +72,7 @@ class CTest():
             file.write(self.porter.port(self.clf))
         # Compile model:
         # $ gcc temp/tmp.c -o temp/tmp
-        subp.call(['gcc', path, '-o', 'temp/' + self.tmp_fn])
+        subp.call(['gcc', path, '-lm', '-o', 'temp/' + self.tmp_fn])
 
     def remove_test_files(self):
         # Remove the temporary test directory:
