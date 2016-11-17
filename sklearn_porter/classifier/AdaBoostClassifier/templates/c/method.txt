@@ -4,7 +4,7 @@ int {1}(float atts[]) {{
     int n_estimators = {2};
     int n_classes = {3};
 
-    double preds[n_estimators][n_classes];
+    double *preds[n_estimators];
     {4}
 
     double normalizer, sum;
