@@ -1,0 +1,54 @@
+{0}
+int {1}(float atts[]) {{
+    int i, j;
+    int n_estimators = {2};
+    int n_classes = {3};
+
+    double *preds[n_estimators];
+    {4}
+
+    double normalizer, sum;
+    for (i = 0; i < n_estimators; i++) {{
+        normalizer = 0.;
+        for (j = 0; j < n_classes; j++) {{
+            normalizer += preds[i][j];
+        }}
+        if (normalizer == 0.) {{
+            normalizer = 1.;
+        }}
+        for (j = 0; j < n_classes; j++) {{
+            preds[i][j] = preds[i][j] / normalizer;
+            if (preds[i][j] < 2.2250738585072014e-308) {{
+                preds[i][j] = 2.2250738585072014e-308;
+            }}
+            preds[i][j] = log(preds[i][j]);
+        }}
+        sum = 0.;
+        for (j = 0; j < n_classes; j++) {{
+            sum += preds[i][j];
+        }}
+        for (j = 0; j < n_classes; j++) {{
+            preds[i][j] = (n_classes - 1) * (preds[i][j] - (1. / n_classes) * sum);
+        }}
+    }}
+
+    double classes[n_classes];
+    for (i = 0; i < n_classes; i++) {{
+        classes[i] = 0.;
+    }}
+    for (i = 0; i < n_estimators; i++) {{
+        for (j = 0; j < n_classes; j++) {{
+            classes[j] += preds[i][j];
+        }}
+    }}
+
+    int class_idx = 0;
+    double class_val = classes[0];
+    for (i = 1; i < n_classes; i++) {{
+        if (classes[i] > class_val) {{
+            class_idx = i;
+            class_val = classes[i];
+        }}
+    }}
+    return class_idx;
+}}

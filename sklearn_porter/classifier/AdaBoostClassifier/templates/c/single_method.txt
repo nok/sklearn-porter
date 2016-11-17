@@ -1,0 +1,5 @@
+double *{1}_{0}(float atts[]) {{
+    double *classes = malloc(sizeof(double) * {2});
+    {3}
+    return classes;
+}}
