@@ -19,12 +19,16 @@ The following matrix shows the portable classifiers:
 <table>
     <tbody>
         <tr>
+            <td width="35%"></td>
+            <td align="center" colspan="5" width="65%"><strong>Programming language</strong></td>
+        </tr>
+        <tr>
             <td width="35%"><strong>Classifier</strong></td>
-            <td align="center" width="13%"><strong>C</strong></td>
-            <td align="center" width="13%"><strong>Java</strong></td>
-            <td align="center" width="13%"><strong>JavaScript</strong></td>
-            <td align="center" width="13%"><strong>Go</strong></td>
-            <td align="center" width="13%"><strong>Swift</strong></td>
+            <td align="center" width="13%">C</td>
+            <td align="center" width="13%">Java</td>
+            <td align="center" width="13%">JavaScript</td>
+            <td align="center" width="13%">Go</td>
+            <td align="center" width="13%">Swift</td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
