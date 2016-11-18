@@ -3,7 +3,7 @@ import os
 
 class Porter():
 
-    __version__ = '0.1.0'
+    __version__ = '0.2.0'
 
     def __init__(
             self, language="java", method_name='predict',
