@@ -17,7 +17,7 @@ setup(
     description='Transpile trained scikit-learn models to a low-level programming language.',
     author='Darius Morawiec',
     author_email='ping@nok.onl',
-    url='https://github.com/nok/sklearn-porter',
+    url='https://github.com/nok/sklearn-porter/tree/stable',
     classifiers=[
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
