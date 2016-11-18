@@ -1,6 +1,10 @@
+language: python
 notifications:
   email: false
-language: python
+branches:
+  only:
+  - master
+  - stable
 python:
   - "2.7"
   - "3.2"
