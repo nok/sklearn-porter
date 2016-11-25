@@ -45,11 +45,9 @@ class LinearSVC(Classifier):
     }
     # @formatter:on
 
-
     def __init__(
             self, language='java', method_name='predict', class_name='Tmp'):
         super(LinearSVC, self).__init__(language, method_name, class_name)
-
 
     def port(self, model):
         """
@@ -68,7 +66,6 @@ class LinearSVC(Classifier):
         if self.method_name == 'predict':
             return self.predict()
 
-
     def predict(self):
         """
         Port the predict method.
@@ -79,7 +76,6 @@ class LinearSVC(Classifier):
             The ported predict method.
         """
         return self.create_class(self.create_method())
-
 
     def create_method(self):
         """
@@ -112,7 +108,6 @@ class LinearSVC(Classifier):
             name=self.method_name, n_features=self.n_features,
             n_classes=self.n_classes, coefficients=coefs,
             intercepts=inters)
-
 
     def create_class(self, method):
         """

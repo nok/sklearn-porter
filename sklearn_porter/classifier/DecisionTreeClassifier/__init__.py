@@ -41,12 +41,10 @@ class DecisionTreeClassifier(Classifier):
     }
     # @formatter:on
 
-
     def __init__(
             self, language='java', method_name='predict', class_name='Tmp'):
         super(DecisionTreeClassifier, self).__init__(
             language, method_name, class_name)
-
 
     def port(self, model):
         """
@@ -63,7 +61,6 @@ class DecisionTreeClassifier(Classifier):
         if self.method_name == 'predict':
             return self.predict()
 
-
     def predict(self):
         """
         Port the predict method.
@@ -74,7 +71,6 @@ class DecisionTreeClassifier(Classifier):
             The ported predict method.
         """
         return self.create_class(self.create_method())
-
 
     def create_branches(self, l, r, t, value, features, node, depth):
         """
@@ -123,7 +119,6 @@ class DecisionTreeClassifier(Classifier):
             str += self.temp('join').join(clazzes) + self.temp('join')
         return str
 
-
     def create_tree(self):
         """
         Parse and build the tree branches.
@@ -144,7 +139,6 @@ class DecisionTreeClassifier(Classifier):
             self.model.tree_.value,
             feature_indices, 0, indentation)
 
-
     def create_method(self):
         """
         Build the model method or function.
@@ -159,7 +153,6 @@ class DecisionTreeClassifier(Classifier):
         return self.temp('method', indentation=indentation, skipping=True)\
             .format(method_name=self.method_name, n_features=self.n_features,
                     n_classes=self.n_classes, branches=branches)
-
 
     def create_class(self, method):
         """

@@ -43,12 +43,10 @@ class RandomForestClassifier(Classifier):
     }
     # @formatter:on
 
-
     def __init__(
             self, language='java', method_name='predict', class_name='Tmp'):
         super(RandomForestClassifier, self).__init__(
             language, method_name, class_name)
-
 
     def port(self, model):
         """
@@ -83,7 +81,6 @@ class RandomForestClassifier(Classifier):
         if self.method_name == 'predict':
             return self.predict()
 
-
     def predict(self):
         """
         Port the predict method.
@@ -94,7 +91,6 @@ class RandomForestClassifier(Classifier):
             The ported predict method.
         """
         return self.create_class(self.create_method())
-
 
     def create_branches(self, l, r, t, value, features, node, depth):
         """
@@ -143,7 +139,6 @@ class RandomForestClassifier(Classifier):
             str += self.temp('join').join(clazzes) + self.temp('join')
         return str
 
-
     def create_single_method(self, model_index, model):
         """
         Port a method for a single tree.
@@ -173,7 +168,6 @@ class RandomForestClassifier(Classifier):
 
         return self.temp('single_method').format(
             model_index, self.method_name, self.n_classes, tree_branches)
-
 
     def create_method(self):
         """
@@ -209,7 +203,6 @@ class RandomForestClassifier(Classifier):
             fns, self.method_name, self.n_estimators, self.n_classes, fn_names)
         method = self.indent(method, indentation=indent, skipping=True)
         return method
-
 
     def create_class(self, method):
         """

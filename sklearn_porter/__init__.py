@@ -30,7 +30,6 @@ class Porter():
         self.class_name = class_name
         self.with_details = with_details
 
-
     def port(self, model):
         """
         Port a trained model to the syntax of a chosen programming language.
@@ -57,7 +56,6 @@ class Porter():
         if self.with_details:
             return self.get_details(ported_model)
         return ported_model
-
 
     def get_details(self, model):
         """
@@ -113,7 +111,6 @@ class Porter():
         }
         return data
 
-
     def get_model_data(self, model):
         """
         Get data of the assigned model.
@@ -134,7 +131,6 @@ class Porter():
         md_type = self.is_supported_model(model)
         md_name = type(model).__name__
         return md_type, md_name
-
 
     def is_supported_classifier(self, model):
         """
@@ -161,7 +157,6 @@ class Porter():
             'sklearn.svm.classes.SVC',
         ]
 
-
     def is_supported_regressor(self, model):
         """
         Check whether the model is a convertible classifier.
@@ -178,7 +173,6 @@ class Porter():
         """
         path = model.__class__.__module__ + '.' + model.__class__.__name__
         return path in []
-
 
     def is_supported_model(self, model):
         """

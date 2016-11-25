@@ -38,11 +38,9 @@ class SVC(Classifier):
     }
     # @formatter:on
 
-
     def __init__(
             self, language='java', method_name='predict', class_name='Tmp'):
         super(SVC, self).__init__(language, method_name, class_name)
-
 
     def port(self, model):
         """
@@ -80,7 +78,6 @@ class SVC(Classifier):
         if self.method_name == 'predict':
             return self.predict()
 
-
     def predict(self):
         """
         Port the predict method.
@@ -91,7 +88,6 @@ class SVC(Classifier):
             The ported predict method.
         """
         return self.create_class(self.create_method())
-
 
     def create_method(self):
         """
@@ -166,7 +162,6 @@ class SVC(Classifier):
         str = self.indent(str, indentation=2-wrap)
         return self.temp('method', indentation=1-wrap, skipping=True).format(
             method_name=self.method_name, decicion=str)
-
 
     def create_class(self, method):
         """

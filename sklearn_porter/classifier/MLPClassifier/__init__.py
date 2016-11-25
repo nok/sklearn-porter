@@ -38,23 +38,19 @@ class MLPClassifier(Classifier):
     }
     # @formatter:on
 
-
     def __init__(
             self, language='java', method_name='predict', class_name='Tmp'):
         super(MLPClassifier, self).__init__(language, method_name, class_name)
-
 
     @property
     def hidden_activation_functions(self):
         """Get list of supported activation functions for the hidden layers."""
         return ['relu', 'identity']  # 'tanh' and 'logistic' fails in tests
 
-
     @property
     def output_activation_functions(self):
         """Get list of supported activation functions for the output layer."""
         return ['softmax']  # 'logistic' fails in tests
-
 
     def port(self, model):
         """
@@ -102,7 +98,6 @@ class MLPClassifier(Classifier):
         if self.method_name == 'predict':
             return self.predict()
 
-
     def predict(self):
         """
         Port the predict method.
@@ -113,7 +108,6 @@ class MLPClassifier(Classifier):
             The ported predict method.
         """
         return self.create_class(self.create_method())
-
 
     def create_method(self):
         """
@@ -156,7 +150,6 @@ class MLPClassifier(Classifier):
             activations=activations, coefficients=coefficients,
             intercepts=intercepts)
 
-
     def create_class(self, method):
         """
         Build the model class.
@@ -176,7 +169,6 @@ class MLPClassifier(Classifier):
             hidden_activation_function=hidden_act,
             output_activation_function=output_act)
 
-
     def _get_intercepts(self):
         """
         Concatenate all intercepts of the classifier.
@@ -184,7 +176,6 @@ class MLPClassifier(Classifier):
         for layer in self.intercepts:
             inter = ', '.join([repr(b) for b in layer])
             yield self.temp('arr').format(inter)
-
 
     def _get_activations(self):
         """
