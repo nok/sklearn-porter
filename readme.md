@@ -14,7 +14,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
 
 ### Classification
 
-The following matrix shows the portable classifiers:
+The portable classifiers are listed in the following table:
 
 <table>
     <tbody>
