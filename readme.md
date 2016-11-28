@@ -7,7 +7,7 @@
 [![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
 [![Join the chat at https://gitter.im/nok/sklearn-porter](https://badges.gitter.im/nok/sklearn-porter.svg)](https://gitter.im/nok/sklearn-porter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to a low-level programming language like [C](https://en.wikipedia.org/wiki/C_(programming_language)), [Java](https://en.wikipedia.org/wiki/Java_(programming_language)), [JavaScript](https://en.wikipedia.org/wiki/JavaScript), [Go](https://en.wikipedia.org/wiki/Go_(programming_language)) or [Swift](https://en.wikipedia.org/wiki/Swift_(programming_language)). It's recommended for limited embedded systems and critical applications where performance matters most.
+Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) models to [C](https://en.wikipedia.org/wiki/C_(programming_language)), [Java](https://en.wikipedia.org/wiki/Java_(programming_language)), [JavaScript](https://en.wikipedia.org/wiki/JavaScript) and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
 
 ## Machine learning algorithms
@@ -20,7 +20,7 @@ The following matrix shows the portable classifiers:
     <tbody>
         <tr>
             <td width="35%"></td>
-            <td align="center" colspan="5" width="65%"><strong>Programming language</strong></td>
+            <td align="center" colspan="4" width="65%"><strong>Programming language</strong></td>
         </tr>
         <tr>
             <td width="35%"><strong>Classifier</strong></td>
@@ -28,14 +28,12 @@ The following matrix shows the portable classifiers:
             <td align="center" width="13%">Java</td>
             <td align="center" width="13%">JavaScript</td>
             <td align="center" width="13%">Go</td>
-            <td align="center" width="13%">Swift</td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
             <td align="center"><a href="examples/classifier/SVC/c/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/SVC/java/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/SVC/js/basics.py#L12">X</a></td>
-            <td align="center"></td>
             <td align="center"></td>
         </tr>
         <tr>
@@ -44,14 +42,12 @@ The following matrix shows the portable classifiers:
             <td align="center"><a href="examples/classifier/LinearSVC/java/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/js/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/go/basics.py#L12">X</a></td>
-            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/c/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/js/basics.py#L12">X</a></td>
-            <td align="center"></td>
             <td align="center"></td>
         </tr>
         <tr>
@@ -60,14 +56,12 @@ The following matrix shows the portable classifiers:
             <td align="center"><a href="examples/classifier/RandomForestClassifier/java/basics.py#L13">X</a></td>
             <td align="center"><a href="examples/classifier/RandomForestClassifier/js/basics.py#L13">X</a></td>
             <td align="center"></td>
-            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
             <td align="center"><a href="examples/classifier/ExtraTreesClassifier/c/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/ExtraTreesClassifier/js/basics.py#L12">X</a></td>
-            <td align="center"></td>
             <td align="center"></td>
         </tr>
         <tr>
@@ -76,14 +70,12 @@ The following matrix shows the portable classifiers:
             <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/basics.py#L16">X</a></td>
             <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/basics.py#L16">X</a></td>
             <td align="center"></td>
-            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/MLPClassifier/java/basics.py#L25">X</a></td>
             <td align="center"><a href="examples/classifier/MLPClassifier/js/basics.py#L25">X</a></td>
-            <td align="center"></td>
             <td align="center"></td>
         </tr>
     </tbody>
@@ -122,7 +114,7 @@ result = Porter(language='java').port(clf)
 print(result)
 ```
 
-The ported [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L16-L96) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
+The transpiled [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L16-L96) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
 
 
 ### Command-line interface
