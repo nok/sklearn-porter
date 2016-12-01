@@ -1,6 +1,7 @@
 import random
 import time
 import subprocess as subp
+import os
 import numpy as np
 
 from sklearn.datasets import load_iris
@@ -10,11 +11,17 @@ from sklearn.utils import shuffle
 class CTest():
 
     LANGUAGE = 'c'
-    N_RANDOM_TESTS = 150
 
     # noinspection PyPep8Naming
     def setUp(self):
+        # Environment:
         self.tmp_fn = 'tmp'
+        self.n_random_tests = 150
+        if 'N_RANDOM_TESTS' in set(os.environ):
+            arg = os.environ.get('N_RANDOM_TESTS')
+            if str(arg).strip().isdigit():
+                self.n_random_tests = int(arg)
+
         # Data:
         self.X, self.y = load_iris(return_X_y=True)
         self.X = shuffle(self.X, random_state=0)
@@ -44,7 +51,7 @@ class CTest():
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.n_random_tests):
             x = [random.uniform(min_vals[f], max_vals[f])
                  for f in range(self.n_features)]
             java_preds.append(self.make_pred_in_c(x))
@@ -68,8 +75,8 @@ class CTest():
         subp.call(['mkdir', 'temp'])
         # Save transpiled model:
         path = 'temp/' + self.tmp_fn + '.c'
-        with open(path, 'w') as file:
-            file.write(self.porter.port(self.clf))
+        with open(path, 'w') as f:
+            f.write(self.porter.port(self.clf))
         # Compile model:
         # $ gcc temp/tmp.c -o temp/tmp
         subp.call(['gcc', path, '-lm', '-o', 'temp/' + self.tmp_fn])

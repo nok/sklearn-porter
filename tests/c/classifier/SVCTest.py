@@ -24,7 +24,7 @@ class SVCTest(CTest, unittest.TestCase):
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.n_random_tests):
             x = [random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             java_preds.append(self.make_pred_in_c(x))
@@ -37,7 +37,7 @@ class SVCTest(CTest, unittest.TestCase):
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.n_random_tests):
             x = [random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             java_preds.append(self.make_pred_in_c(x))
@@ -50,7 +50,7 @@ class SVCTest(CTest, unittest.TestCase):
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.n_random_tests):
             x = [random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             java_preds.append(self.make_pred_in_c(x))

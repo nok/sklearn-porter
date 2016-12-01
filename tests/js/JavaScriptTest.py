@@ -1,6 +1,7 @@
 import random
 import time
 import subprocess as subp
+import os
 import numpy as np
 
 from sklearn.datasets import load_iris
@@ -10,11 +11,16 @@ from sklearn.utils import shuffle
 class JavaScriptTest():
 
     LANGUAGE = 'js'
-    N_RANDOM_TESTS = 150
 
     # noinspection PyPep8Naming
     def setUp(self):
+        # Environment:
         self.tmp_fn = 'temp/tmp.js'
+        self.n_random_tests = 150
+        if 'N_RANDOM_TESTS' in set(os.environ):
+            arg = os.environ.get('N_RANDOM_TESTS')
+            if str(arg).strip().isdigit():
+                self.n_random_tests = int(arg)
         # Data:
         self.X, self.y = load_iris(return_X_y=True)
         self.X = shuffle(self.X, random_state=0)
@@ -44,7 +50,7 @@ class JavaScriptTest():
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.n_random_tests):
             x = [random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             java_preds.append(self.make_pred_in_js(x))
@@ -67,8 +73,8 @@ class JavaScriptTest():
         # $ mkdir temp
         subp.call(['mkdir', 'temp'])
         # Save transpiled model:
-        with open(self.tmp_fn, 'w') as file:
-            file.write(self.porter.port(self.clf))
+        with open(self.tmp_fn, 'w') as f:
+            f.write(self.porter.port(self.clf))
 
     def remove_test_files(self):
         # Remove the temporary test directory:

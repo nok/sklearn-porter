@@ -3,6 +3,7 @@ import time
 import subprocess as subp
 import unittest
 import filecmp
+import os
 
 from sklearn.datasets import load_iris
 from sklearn.externals import joblib
@@ -13,10 +14,15 @@ from sklearn_porter import Porter
 
 class PorterTest(unittest.TestCase):
 
-    N_RANDOM_TESTS = 150
-
     def setUp(self):
+        # Environment:
         self.tmp_fn = 'Tmp'
+        self.n_random_tests = 150
+        if 'N_RANDOM_TESTS' in set(os.environ):
+            arg = os.environ.get('N_RANDOM_TESTS')
+            if str(arg).strip().isdigit():
+                self.n_random_tests = int(arg)
+        # Data:
         self.X, self.y = load_iris(return_X_y=True)
         self.n_features = len(self.X[0])
         self.clf = tree.DecisionTreeClassifier(random_state=0)
@@ -49,11 +55,11 @@ class PorterTest(unittest.TestCase):
         subp.call(['rm', '-rf', 'temp'])
         # $ mkdir temp
         subp.call(['mkdir', 'temp'])
-        path = 'temp/%s.java' % (self.tmp_fn)
-        with open(path, 'w') as file:
+        path = 'temp/%s.java' % self.tmp_fn
+        with open(path, 'w') as f:
             porter = Porter(method_name='predict', class_name=self.tmp_fn)
             ported_model = porter.port(self.clf)
-            file.write(ported_model)
+            f.write(ported_model)
         # $ javac temp/Tmp.java
         subp.call(['javac', path])
 
@@ -70,12 +76,12 @@ class PorterTest(unittest.TestCase):
     def test_python_command_execution(self):
         """Test command line execution."""
         # Rename model for comparison:
-        cp_src = 'temp/%s.java' % (self.tmp_fn)
-        cp_dest = 'temp/%s_2.java' % (self.tmp_fn)
+        cp_src = 'temp/%s.java' % self.tmp_fn
+        cp_dest = 'temp/%s_2.java' % self.tmp_fn
         # $ mv temp/Tmp.java temp/Tmp_2.java
         subp.call(['mv', cp_src, cp_dest])
         # Dump model:
-        pkl_path = 'temp/%s.pkl' % (self.tmp_fn)
+        pkl_path = 'temp/%s.pkl' % self.tmp_fn
         joblib.dump(self.clf, pkl_path)
         # Port model:
         cmd = ['python', '-m', 'sklearn_porter', '-i', pkl_path]
@@ -88,7 +94,7 @@ class PorterTest(unittest.TestCase):
         """Test whether the prediction of random features match or not."""
         # Create random features:
         java_preds, py_preds = [], []
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.n_random_tests):
             x = [random.uniform(0., 10.) for n in range(self.n_features)]
             py_pred = int(self.clf.predict([x])[0])
             py_preds.append(py_pred)

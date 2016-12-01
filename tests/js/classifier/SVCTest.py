@@ -15,7 +15,6 @@ class SVCTest(JavaScriptTest, unittest.TestCase):
         clf = SVC(C=1., kernel='rbf', gamma=0.001, random_state=0)
         self.classifier = self.set_classifier(clf)
 
-
     def tearDown(self):
         super(SVCTest, self).tearDown()
 
@@ -25,7 +24,7 @@ class SVCTest(JavaScriptTest, unittest.TestCase):
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.n_random_tests):
             x = [random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             java_preds.append(self.make_pred_in_js(x))
@@ -38,7 +37,7 @@ class SVCTest(JavaScriptTest, unittest.TestCase):
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.n_random_tests):
             x = [random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             java_preds.append(self.make_pred_in_js(x))
@@ -51,7 +50,7 @@ class SVCTest(JavaScriptTest, unittest.TestCase):
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.n_random_tests):
             x = [random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             java_preds.append(self.make_pred_in_js(x))
