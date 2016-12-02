@@ -41,7 +41,7 @@ class Porter():
 
         Returns
         -------
-        :return: string
+        :return : string
             The ported model as string.
         """
         md_type, md_name = self.get_model_data(model)
@@ -143,11 +143,13 @@ class Porter():
 
         Returns
         -------
-        :return bool
+        :return : bool
             Whether the model is a supported classifier.
         """
-        path = model.__class__.__module__ + '.' + model.__class__.__name__
-        return path in [
+        module = model.__class__.__module__
+        mame = model.__class__.__name__
+        path = '.'.join([module, mame])
+        return path in set([
             'sklearn.neural_network.multilayer_perceptron.MLPClassifier',
             'sklearn.tree.tree.DecisionTreeClassifier',
             'sklearn.ensemble.weight_boosting.AdaBoostClassifier',
@@ -155,7 +157,7 @@ class Porter():
             'sklearn.ensemble.forest.ExtraTreesClassifier',
             'sklearn.svm.classes.LinearSVC',
             'sklearn.svm.classes.SVC',
-        ]
+        ])
 
     def is_supported_regressor(self, model):
         """
@@ -168,11 +170,13 @@ class Porter():
 
         Returns
         -------
-        :return bool
+        :return : bool
             Whether the model is a supported regressor.
         """
-        path = model.__class__.__module__ + '.' + model.__class__.__name__
-        return path in []
+        module = model.__class__.__module__
+        mame = model.__class__.__name__
+        path = '.'.join([module, mame])
+        return path in set([])
 
     def is_supported_model(self, model):
         """
@@ -185,7 +189,7 @@ class Porter():
 
         Returns
         -------
-        :return bool
+        :return : bool
             Whether the model is a supported model.
 
         See also
