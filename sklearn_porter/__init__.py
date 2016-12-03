@@ -46,7 +46,8 @@ class Porter():
         """
         md_type, md_name = self.get_model_data(model)
         md_path = '.'.join([md_type, md_name])
-        md_mod = __import__(md_path, globals(), locals(), [md_name], -1)
+        md_mod = __import__(md_path, globals(),
+                            locals(), [md_name], -1)
         klass = getattr(md_mod, md_name)
         instance = klass(
             language=self.language,
@@ -111,7 +112,8 @@ class Porter():
         }
         return data
 
-    def get_model_data(self, model):
+    @staticmethod
+    def get_model_data(model):
         """
         Get data of the assigned model.
 
@@ -128,11 +130,12 @@ class Porter():
         :return md_name : string
             The name of the used algorithm.
         """
-        md_type = self.is_supported_model(model)
+        md_type = Porter.is_supported_model(model)
         md_name = type(model).__name__
         return md_type, md_name
 
-    def is_supported_classifier(self, model):
+    @staticmethod
+    def is_supported_classifier(model):
         """
         Check whether the model is a convertible classifier.
 
@@ -159,7 +162,8 @@ class Porter():
             'sklearn.svm.classes.SVC',
         ])
 
-    def is_supported_regressor(self, model):
+    @staticmethod
+    def is_supported_regressor(model):
         """
         Check whether the model is a convertible classifier.
 
@@ -178,7 +182,8 @@ class Porter():
         path = '.'.join([module, mame])
         return path in set([])
 
-    def is_supported_model(self, model):
+    @staticmethod
+    def is_supported_model(model):
         """
         Check whether the model is a convertible classifier or regressor.
 
@@ -196,10 +201,10 @@ class Porter():
         --------
         onl.nok.sklearn.classifier.*, onl.nok.sklearn.regressor.*
         """
-        if self.is_supported_classifier(model):
+        if Porter.is_supported_classifier(model):
             return 'classifier'
-        if self.is_supported_regressor(model):
+        if Porter.is_supported_regressor(model):
             return 'regressors'
-        msg = 'The model is not an instance of '\
-              'a supported classifier or regressor.'
+        msg = ('The model is not an instance of ',
+               'a supported classifier or regressor.')
         raise ValueError(msg)

@@ -7,7 +7,7 @@ from . import Porter
 def main():
     parser = argparse.ArgumentParser(
         description=('Transpile trained scikit-learn models '
-                     'to a low-level programming language.'),
+                     'to C, Java, JavaScript and others. '),
         epilog='More details on: https://github.com/nok/sklearn-porter')
     parser.add_argument(
         '--input', '-i',
@@ -16,13 +16,13 @@ def main():
     parser.add_argument(
         '--output', '-o',
         required=False,
-        help='Set the destination path.')
+        help='Set the destination directory.')
     parser.add_argument(
         '--language', '-l',
-        choices=['c', 'java', 'js', 'go'],  # 'swift'
+        choices=['c', 'java', 'js', 'go'],
         default='java',
         required=False,
-        help='Set the target programming language.')
+        help="Set the target programming language ('c', 'java', 'js', 'go').")
     args = vars(parser.parse_args())
 
     model_path = str(args['input'])
@@ -32,8 +32,8 @@ def main():
         raw_model = joblib.load(model_path)
         # Port model:
         porter = Porter(language=str(args['language']), with_details=True)
-        data = porter.port(raw_model)
-        filename = data.get('filename')
+        result = porter.port(raw_model)
+        filename = result.get('filename')
         # Define destination path:
         if str(args['output']) != '' and os.path.isdir(str(args['output'])):
             model_path = str(args['output'])
@@ -45,9 +45,10 @@ def main():
             model_path += [filename]
             model_path = os.sep.join(model_path)
         # Save ported model:
-        with open(model_path, 'w') as file:
-            file.write(data.get('model'))
-
+        with open(model_path, 'w') as f:
+            f.write(result.get('model'))
+    else:
+        raise ValueError('No valid model in pickle format was found.')
 
 if __name__ == "__main__":
     main()
