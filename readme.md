@@ -187,6 +187,7 @@ Run all [tests](tests) by executing the bash script [sh_tests.sh](sh_tests.sh) o
 ```sh
 source activate sklearn-porter
 python -m unittest discover -vp '*Test.py'
+# N_RANDOM_TESTS=30 python -m unittest discover -vp '*Test.py'
 source deactivate
 ```
 
