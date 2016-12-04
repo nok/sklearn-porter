@@ -13,7 +13,7 @@ result = Porter(language='js').port(clf)
 print(result)
 
 """
-var predictor = function(atts) {
+var Tmp = function(atts) {
 
     var predict_00 = function(atts) {
         var classes = new Array(3);
@@ -2137,7 +2137,7 @@ var predictor = function(atts) {
         return class_idx;
     };
 
-    var predict = function(atts) {
+    this.predict = function(atts) {
         var i = 0, n_classes = 3;
         var classes = new Array(n_classes);
         for (i = 0; i < n_classes; i++) {
@@ -2170,13 +2170,12 @@ var predictor = function(atts) {
         return class_idx;
     }
 
-    return predict(atts);
 };
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv.length - 2 == 4) {
         var argv = process.argv.slice(2);
-        var prediction = predictor(argv);
+        var prediction = new Tmp().predict(argv);
         console.log(prediction);
     }
 }

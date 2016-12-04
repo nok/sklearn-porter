@@ -29,7 +29,7 @@ print(result)
 // Array.prototype.fill polyfill:
 [].fill||(Array.prototype.fill=function(a){for(var b=Object(this),c=parseInt(b.length,10),d=arguments[1],e=parseInt(d,10)||0,f=0>e?Math.max(c+e,0):Math.min(e,c),g=arguments[2],h=void 0===g?c:parseInt(g)||0,i=0>h?Math.max(c+h,0):Math.min(h,c);i>f;f++)b[f]=a;return b});
 
-var predictor = function(atts) {
+var Tmp = function(atts) {
 
     // Type: relu
     var hidden_activation = function(v) {
@@ -60,7 +60,7 @@ var predictor = function(atts) {
         return v;
     };
 
-    var predict = function(atts) {
+    this.predict = function(atts) {
         if (atts.length != 4) { return -1; };
 
         var activations = [atts, new Array(50).fill(0), new Array(3).fill(0)];
@@ -91,13 +91,12 @@ var predictor = function(atts) {
         return class_idx;
     };
 
-    return predict(atts);
 };
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv.length - 2 == 4) {
         var argv = process.argv.slice(2);
-        var prediction = predictor(argv);
+        var prediction = new Tmp().predict(argv);
         console.log(prediction);
     }
 }

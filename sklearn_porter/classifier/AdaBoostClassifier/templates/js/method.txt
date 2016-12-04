@@ -1,5 +1,5 @@
 {0}
-var {1} = function(atts) {{
+this.{1} = function(atts) {{
     var n_estimators = {2},
         preds = new Array(n_estimators),
         n_classes = {3},

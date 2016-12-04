@@ -14,10 +14,10 @@ result = Porter(language='js').port(clf)
 print(result)
 
 """
-var predictor = function(atts) {
+var Tmp = function(atts) {
 
     var predict_00 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[3] <= 0.75) {
             classes[0] = 47;
@@ -58,7 +58,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -68,7 +68,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_01 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[3] <= 0.80000001192092896) {
             classes[0] = 46;
@@ -115,7 +115,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -125,7 +125,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_02 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[0] <= 5.5500001907348633) {
             if (atts[3] <= 0.80000001192092896) {
@@ -184,7 +184,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -194,7 +194,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_03 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[0] <= 5.4499998092651367) {
             if (atts[1] <= 2.8000001907348633) {
@@ -265,7 +265,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -275,7 +275,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_04 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[3] <= 0.69999998807907104) {
             classes[0] = 50;
@@ -316,7 +316,7 @@ var predictor = function(atts) {
                 classes[2] = 33;
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -326,7 +326,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_05 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[3] <= 0.80000001192092896) {
             classes[0] = 49;
@@ -379,7 +379,7 @@ var predictor = function(atts) {
                 classes[2] = 44;
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -389,7 +389,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_06 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[3] <= 0.69999998807907104) {
             classes[0] = 46;
@@ -436,7 +436,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -446,7 +446,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_07 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[2] <= 2.5999999046325684) {
             classes[0] = 58;
@@ -499,7 +499,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -509,7 +509,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_08 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[3] <= 0.69999998807907104) {
             classes[0] = 42;
@@ -568,7 +568,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -578,7 +578,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_09 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[2] <= 2.5999999046325684) {
             classes[0] = 55;
@@ -625,7 +625,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -635,7 +635,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_10 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[3] <= 0.80000001192092896) {
             classes[0] = 52;
@@ -694,7 +694,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -704,7 +704,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_11 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[2] <= 2.5999999046325684) {
             classes[0] = 47;
@@ -757,7 +757,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -767,7 +767,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_12 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[3] <= 0.80000001192092896) {
             classes[0] = 54;
@@ -814,7 +814,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -824,7 +824,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_13 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[0] <= 5.4499998092651367) {
             if (atts[3] <= 0.80000001192092896) {
@@ -877,7 +877,7 @@ var predictor = function(atts) {
                 }
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -887,7 +887,7 @@ var predictor = function(atts) {
         return class_idx;
     };
     var predict_14 = function(atts) {
-        var i = 0, classes = new Array(3);
+        var classes = new Array(3);
 
         if (atts[2] <= 2.5999999046325684) {
             classes[0] = 52;
@@ -922,7 +922,7 @@ var predictor = function(atts) {
                 classes[2] = 46;
             }
         }
-        var class_idx = 0, class_val = classes[0];
+        var i = 0, class_idx = 0, class_val = classes[0];
         for (i = 1; i < 3; i++) {
             if (classes[i] > class_val) {
                 class_idx = i;
@@ -932,7 +932,7 @@ var predictor = function(atts) {
         return class_idx;
     };
 
-    var predict = function(atts) {
+    this.predict = function(atts) {
         var i = 0, n_classes = 3;
         var classes = new Array(n_classes);
         for (i = 0; i < n_classes; i++) {
@@ -965,13 +965,12 @@ var predictor = function(atts) {
         return class_idx;
     }
 
-    return predict(atts);
 };
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv.length - 2 == 4) {
         var argv = process.argv.slice(2);
-        var prediction = predictor(argv);
+        var prediction = new Tmp().predict(argv);
         console.log(prediction);
     }
 }

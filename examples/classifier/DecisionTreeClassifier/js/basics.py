@@ -13,9 +13,9 @@ result = Porter(language='js').port(clf)
 print(result)
 
 """
-var predictor = function(atts) {
+var Tmp = function(atts) {
 
-    var predict = function(atts) {
+    this.predict = function(atts) {
         if (atts.length != 4) { return -1; };
         var classes = new Array(3);
 
@@ -54,14 +54,14 @@ var predictor = function(atts) {
                 }
             } else {
                 if (atts[2] <= 4.8500003814697266) {
-                    if (atts[1] <= 3.0999999046325684) {
-                        classes[0] = 0;
-                        classes[1] = 0;
-                        classes[2] = 2;
-                    } else {
+                    if (atts[0] <= 5.9499998092651367) {
                         classes[0] = 0;
                         classes[1] = 1;
                         classes[2] = 0;
+                    } else {
+                        classes[0] = 0;
+                        classes[1] = 0;
+                        classes[2] = 2;
                     }
                 } else {
                     classes[0] = 0;
@@ -81,13 +81,12 @@ var predictor = function(atts) {
         return class_idx;
     };
 
-    return predict(atts);
 };
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv.length - 2 == 4) {
         var argv = process.argv.slice(2);
-        var prediction = predictor(argv);
+        var prediction = new Tmp().predict(argv);
         console.log(prediction);
     }
 }

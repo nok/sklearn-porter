@@ -17,7 +17,7 @@ result = Porter(language='js').port(clf)
 print(result)
 
 """
-var predictor = function(atts) {
+var Tmp = function(atts) {
 
     var predict_0 = function(atts) {
         var classes = new Array(3);
@@ -207,7 +207,7 @@ var predictor = function(atts) {
         }
         return classes;
     };
-    var predict = function(atts) {
+    this.predict = function(atts) {
         var n_estimators = 4,
             preds = new Array(n_estimators),
             n_classes = 3,
@@ -262,13 +262,12 @@ var predictor = function(atts) {
         return idx;
     };
 
-    return predict(atts);
 };
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv.length - 2 == 4) {
         var argv = process.argv.slice(2);
-        var prediction = predictor(argv);
+        var prediction = new Tmp().predict(argv);
         console.log(prediction);
     }
 }

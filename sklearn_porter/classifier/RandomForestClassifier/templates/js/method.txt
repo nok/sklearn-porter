@@ -1,6 +1,6 @@
 {0}
 
-var {1} = function(atts) {{
+this.{1} = function(atts) {{
     var i = 0, n_classes = {3};
     var classes = new Array(n_classes);
     for (i = 0; i < n_classes; i++) {{
