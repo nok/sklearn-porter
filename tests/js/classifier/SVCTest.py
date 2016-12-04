@@ -13,14 +13,14 @@ class SVCTest(JavaScriptTest, unittest.TestCase):
         super(SVCTest, self).setUp()
         self.porter = Porter(language='js')
         clf = SVC(C=1., kernel='rbf', gamma=0.001, random_state=0)
-        self.classifier = self.set_classifier(clf)
+        self._port_model(clf)
 
     def tearDown(self):
         super(SVCTest, self).tearDown()
 
     def test_kernel_linear(self):
         clf = SVC(C=1., kernel='linear', gamma=0.001, random_state=0)
-        self.set_classifier(clf)
+        self._port_model(clf)
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
@@ -33,7 +33,7 @@ class SVCTest(JavaScriptTest, unittest.TestCase):
 
     def test_kernel_poly(self):
         clf = SVC(C=1., kernel='poly', gamma=0.001, random_state=0)
-        self.set_classifier(clf)
+        self._port_model(clf)
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
@@ -46,7 +46,7 @@ class SVCTest(JavaScriptTest, unittest.TestCase):
 
     def test_kernel_sigmoid(self):
         clf = SVC(C=1., kernel='sigmoid', gamma=0.001, random_state=0)
-        self.set_classifier(clf)
+        self._port_model(clf)
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)

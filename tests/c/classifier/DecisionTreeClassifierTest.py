@@ -10,7 +10,7 @@ class DecisionTreeClassifierTest(CTest, unittest.TestCase):
     def setUp(self):
         super(DecisionTreeClassifierTest, self).setUp()
         self.porter = Porter(language='c')
-        self.set_classifier(DecisionTreeClassifier(random_state=0))
+        self._port_model(DecisionTreeClassifier(random_state=0))
 
     def tearDown(self):
         super(DecisionTreeClassifierTest, self).tearDown()

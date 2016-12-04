@@ -14,7 +14,7 @@ class AdaBoostClassifierTest(CTest, unittest.TestCase):
         base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
         clf = AdaBoostClassifier(
             base_estimator=base_estimator, n_estimators=100, random_state=0)
-        self.set_classifier(clf)
+        self._port_model(clf)
 
     def tearDown(self):
         super(AdaBoostClassifierTest, self).tearDown()

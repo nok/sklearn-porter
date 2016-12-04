@@ -16,7 +16,7 @@ class MLPClassifierTest(JavaTest, unittest.TestCase):
             activation='identity', hidden_layer_sizes=50,
             max_iter=500, alpha=1e-4, solver='sgd', tol=1e-4,
             random_state=1, learning_rate_init=.1)
-        self.set_classifier(clf)
+        self._port_model(clf)
 
     def tearDown(self):
         super(MLPClassifierTest, self).tearDown()
@@ -25,7 +25,7 @@ class MLPClassifierTest(JavaTest, unittest.TestCase):
         clf = MLPClassifier(
             activation='relu', hidden_layer_sizes=50,
             learning_rate_init=.1)
-        self.set_classifier(clf)
+        self._port_model(clf)
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
@@ -40,7 +40,7 @@ class MLPClassifierTest(JavaTest, unittest.TestCase):
         clf = MLPClassifier(
             activation='identity', hidden_layer_sizes=50,
             learning_rate_init=.1)
-        self.set_classifier(clf)
+        self._port_model(clf)
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
