@@ -63,7 +63,8 @@ class JavaTest():
         # $ mkdir temp
         subp.call(['mkdir', 'temp'])
         # Save transpiled model:
-        path = 'temp/' + self.tmp_fn + '.java'
+        filename = self.tmp_fn + '.java'
+        path = os.path.join('temp', filename)
         with open(path, 'w') as f:
             f.write(self.porter.port(self.clf))
         # $ javac temp/Tmp.java

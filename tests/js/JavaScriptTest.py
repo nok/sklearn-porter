@@ -42,7 +42,7 @@ class JavaScriptTest():
                 self.fail(err_msg)
 
     def _init_test(self):
-        self.tmp_fn = 'temp/tmp.js'
+        self.tmp_fn = os.path.join('temp', 'tmp.js')
         self.n_random_tests = 150
         if 'N_RANDOM_TESTS' in set(os.environ):
             n = os.environ.get('N_RANDOM_TESTS')

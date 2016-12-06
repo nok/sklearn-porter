@@ -63,7 +63,8 @@ class CTest():
         # $ mkdir temp
         subp.call(['mkdir', 'temp'])
         # Save transpiled model:
-        path = 'temp/' + self.tmp_fn + '.c'
+        filename = self.tmp_fn + '.c'
+        path = os.path.join('temp', filename)
         with open(path, 'w') as f:
             f.write(self.porter.port(self.clf))
         # $ gcc temp/tmp.c -o temp/tmp
@@ -100,7 +101,7 @@ class CTest():
 
     def make_pred_in_c(self, features):
         # $ <temp_filename> <features>
-        cmd = ['./temp/tmp']
+        cmd = [os.path.join('.', 'temp', 'tmp')]
         args = [str(f).strip() for f in features]
         cmd += args
         pred = subp.check_output(cmd, stderr=subp.STDOUT)

@@ -65,7 +65,8 @@ class PorterTest(unittest.TestCase):
         subp.call(['rm', '-rf', 'temp'])
         # $ mkdir temp
         subp.call(['mkdir', 'temp'])
-        path = 'temp/%s.java' % self.tmp_fn
+        filename = '%s.java' % self.tmp_fn
+        path = os.path.join('temp', filename)
         with open(path, 'w') as f:
             porter = Porter(method_name='predict', class_name=self.tmp_fn)
             ported_model = porter.port(self.clf)
@@ -99,12 +100,15 @@ class PorterTest(unittest.TestCase):
     def test_python_command_execution(self):
         """Test command line execution."""
         # Rename model for comparison:
-        cp_src = 'temp/%s.java' % self.tmp_fn
-        cp_dest = 'temp/%s_2.java' % self.tmp_fn
+        filename = '%s.java' % self.tmp_fn
+        cp_src = os.path.join('temp', filename)
+        filename = '%s_2.java' % self.tmp_fn
+        cp_dest = os.path.join('temp', filename)
         # $ mv temp/Tmp.java temp/Tmp_2.java
         subp.call(['mv', cp_src, cp_dest])
         # Dump model:
-        pkl_path = 'temp/%s.pkl' % self.tmp_fn
+        filename = '%s.pkl' % self.tmp_fn
+        pkl_path = os.path.join('temp', filename)
         joblib.dump(self.clf, pkl_path)
         # Port model:
         cmd = ['python', '-m', 'sklearn_porter', '-i', pkl_path]
