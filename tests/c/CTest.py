@@ -60,8 +60,7 @@ class CTest():
         self._clear_model()
         self.clf = clf
         self.clf.fit(self.X, self.y)
-        # $ mkdir temp
-        subp.call(['mkdir', 'temp'])
+        subp.call(['mkdir', 'temp'])  # $ mkdir temp
         # Save transpiled model:
         filename = self.tmp_fn + '.c'
         path = os.path.join('temp', filename)
@@ -73,8 +72,7 @@ class CTest():
 
     def _clear_model(self):
         self.clf = None
-        # $ rm -rf temp
-        subp.call(['rm', '-rf', 'temp'])
+        subp.call(['rm', '-rf', 'temp'])  # $ rm -rf temp
 
     def test_random_features(self):
         java_preds, py_preds = [], []
@@ -100,8 +98,7 @@ class CTest():
         return int(self.clf.predict([features])[0])
 
     def make_pred_in_c(self, features):
-        # $ <temp_filename> <features>
-        cmd = [os.path.join('.', 'temp', 'tmp')]
+        cmd = [os.path.join('.', 'temp', 'tmp')]  # $ <temp_filename> <features>
         args = [str(f).strip() for f in features]
         cmd += args
         pred = subp.check_output(cmd, stderr=subp.STDOUT)

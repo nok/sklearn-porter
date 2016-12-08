@@ -60,21 +60,18 @@ class JavaTest():
         self._clear_model()
         self.clf = clf
         self.clf.fit(self.X, self.y)
-        # $ mkdir temp
-        subp.call(['mkdir', 'temp'])
+        subp.call(['mkdir', 'temp'])  # $ mkdir temp
         # Save transpiled model:
         filename = self.tmp_fn + '.java'
         path = os.path.join('temp', filename)
         with open(path, 'w') as f:
             f.write(self.porter.port(self.clf))
-        # $ javac temp/Tmp.java
-        subp.call(['javac', path])
+        subp.call(['javac', path])  # $ javac temp/Tmp.java
         self._start_test()
 
     def _clear_model(self):
         self.clf = None
-        # $ rm -rf temp
-        subp.call(['rm', '-rf', 'temp'])
+        subp.call(['rm', '-rf', 'temp'])  # $ rm -rf temp
 
     def test_random_features(self):
         java_preds, py_preds = [], []

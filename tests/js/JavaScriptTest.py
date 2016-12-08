@@ -31,8 +31,8 @@ class JavaScriptTest():
         print('%.3fs' % (time.time() - self.start_time))
 
     def _check_test_dependencies(self):
-        # $ if hash gcc 2/dev/null; then echo 1; else echo 0; fi
         for dep in self.TEST_DEPENDENCIES:
+            # $ if hash gcc 2/dev/null; then echo 1; else echo 0; fi
             cmd = 'if hash %s 2/dev/null; then echo 1; else echo 0; fi' % dep
             available = subp.check_output(cmd, shell=True, stderr=subp.STDOUT)
             available = available.strip() is '1'
@@ -60,16 +60,14 @@ class JavaScriptTest():
         self._clear_model()
         self.clf = clf
         self.clf.fit(self.X, self.y)
-        # $ mkdir temp
-        subp.call(['mkdir', 'temp'])
+        subp.call(['mkdir', 'temp'])  # $ mkdir temp
         with open(self.tmp_fn, 'w') as f:
             f.write(self.porter.port(self.clf))
         self._start_test()
 
     def _clear_model(self):
         self.clf = None
-        # $ rm -rf temp
-        subp.call(['rm', '-rf', 'temp'])
+        subp.call(['rm', '-rf', 'temp'])  # $ rm -rf temp
 
     def test_random_features(self):
         java_preds, py_preds = [], []
@@ -95,8 +93,7 @@ class JavaScriptTest():
         return int(self.clf.predict([features])[0])
 
     def make_pred_in_js(self, features):
-        # $ node temp/tmp.js <features>
-        cmd = ['node', self.tmp_fn]
+        cmd = ['node', self.tmp_fn]  # $ node temp/tmp.js <features>
         args = [str(f).strip() for f in features]
         cmd += args
         pred = subp.check_output(cmd, stderr=subp.STDOUT)

@@ -61,24 +61,20 @@ class PorterTest(unittest.TestCase):
 
     def _port_model(self):
         """Create and compile ported model for comparison of predictions."""
-        # $ rm -rf temp
-        subp.call(['rm', '-rf', 'temp'])
-        # $ mkdir temp
-        subp.call(['mkdir', 'temp'])
+        subp.call(['rm', '-rf', 'temp'])  # $ rm -rf temp
+        subp.call(['mkdir', 'temp'])  # $ mkdir temp
         filename = '%s.java' % self.tmp_fn
         path = os.path.join('temp', filename)
         with open(path, 'w') as f:
             porter = Porter(method_name='predict', class_name=self.tmp_fn)
             ported_model = porter.port(self.clf)
             f.write(ported_model)
-        # $ javac temp/Tmp.java
-        subp.call(['javac', path])
+        subp.call(['javac', path])  # $ javac temp/Tmp.java
 
     def _clear_model(self):
         """Remove all temporary test files."""
         self.clf = None
-        # $ rm -rf temp
-        subp.call(['rm', '-rf', 'temp'])
+        subp.call(['rm', '-rf', 'temp'])  # $ rm -rf temp
 
     def test_porter_args_method(self):
         """Test invalid method name."""
@@ -104,8 +100,7 @@ class PorterTest(unittest.TestCase):
         cp_src = os.path.join('temp', filename)
         filename = '%s_2.java' % self.tmp_fn
         cp_dest = os.path.join('temp', filename)
-        # $ mv temp/Tmp.java temp/Tmp_2.java
-        subp.call(['mv', cp_src, cp_dest])
+        subp.call(['mv', cp_src, cp_dest])  # $ mv temp/Tmp.java temp/Tmp_2.java
         # Dump model:
         filename = '%s.pkl' % self.tmp_fn
         pkl_path = os.path.join('temp', filename)
