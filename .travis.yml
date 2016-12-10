@@ -21,7 +21,6 @@ before_install:
   - sudo apt-add-repository ppa:ondrej/php -y
   - sudo apt-get update -q
 install:
-  - sudo apt-get install gcc-4.8 -y
   - sudo apt-get install php7.0 -y
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
