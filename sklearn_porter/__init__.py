@@ -1,9 +1,10 @@
 import os
+import sys
 
 
 class Porter():
 
-    __version__ = '0.2.0'
+    __version__ = '0.2.1'
 
     def __init__(
             self, language="java", method_name='predict',
@@ -45,9 +46,11 @@ class Porter():
             The ported model as string.
         """
         md_type, md_name = self.get_model_data(model)
-        md_path = '.'.join([md_type, md_name])
-        md_mod = __import__(md_path, globals(),
-                            locals(), [md_name], -1)
+        md_path = '.'.join([md_type, md_name])  # e.g.: classifier.LinearSVC
+        level = -1 if sys.version_info < (3, 3) else 1
+        md_mod = __import__(
+            md_path, globals(), locals(),
+            [md_name], level)
         klass = getattr(md_mod, md_name)
         instance = klass(
             language=self.language,
