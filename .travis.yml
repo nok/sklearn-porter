@@ -17,8 +17,10 @@ php:
   - "7.0"
 compiler:
   - gcc
-install:
+before_install:
   - sudo apt-get update
+install:
+  - sudo apt-get install php7.0
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
