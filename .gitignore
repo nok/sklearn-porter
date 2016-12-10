@@ -15,6 +15,7 @@
 sklearn_porter.egg-info
 dist
 build
+bin
 
 src/*.java
 src/*.class
