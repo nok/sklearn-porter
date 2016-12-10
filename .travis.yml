@@ -18,7 +18,7 @@ php:
 compiler:
   - gcc
 before_install:
-  - sudo apt-add-repository ppa:ondrej/php
+  - sudo apt-add-repository ppa:ondrej/php -y
   - sudo apt-get update -q
 install:
   - sudo apt-get install gcc-4.8 -y
