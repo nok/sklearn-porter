@@ -15,25 +15,25 @@ class SVC(Classifier):
     # @formatter:off
     TEMPLATES = {
         'c': {
-            'type':     ('{0}'),
-            'arr':      ('{{{0}}}'),
-            'arr[]':    ('\n{type} {name}[] = {{{values}}};'),
-            'arr[][]':  ('\n{type} {name}[{n}][{m}] = {{{values}}};'),
-            'indent':   ('    '),
+            'type':     '{0}',
+            'arr':      '{{{0}}}',
+            'arr[]':    '\n{type} {name}[] = {{{values}}};',
+            'arr[][]':  '\n{type} {name}[{n}][{m}] = {{{values}}};',
+            'indent':   '    ',
         },
         'java': {
-            'type':     ('{0}'),
-            'arr':      ('{{{0}}}'),
-            'arr[]':    ('\n{type}[] {name} = {{{values}}};'),
-            'arr[][]':  ('\n{type}[][] {name} = {{{values}}};'),
-            'indent':   ('    '),
+            'type':     '{0}',
+            'arr':      '{{{0}}}',
+            'arr[]':    '\n{type}[] {name} = {{{values}}};',
+            'arr[][]':  '\n{type}[][] {name} = {{{values}}};',
+            'indent':   '    ',
         },
         'js': {
-            'type':     ('{0}'),
-            'arr':      ('[{0}]'),
-            'arr[]':    ('\nvar {name} = [{values}];'),
-            'arr[][]':  ('\nvar {name} = [{values}];'),
-            'indent':   ('    '),
+            'type':     '{0}',
+            'arr':      '[{0}]',
+            'arr[]':    '\nvar {name} = [{values}];',
+            'arr[][]':  '\nvar {name} = [{values}];',
+            'indent':   '    ',
         }
     }
     # @formatter:on

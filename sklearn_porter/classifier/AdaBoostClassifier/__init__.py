@@ -17,28 +17,28 @@ class AdaBoostClassifier(Classifier):
     # @formatter:off
     TEMPLATES = {
         'c': {
-            'if':       ('\nif (atts[{0}] {1} {2}) {{'),
-            'else':     ('\n} else {'),
-            'endif':    ('\n}'),
-            'arr':      ('\nclasses[{0}] = {1}\n'),
-            'indent':   ('    '),
-            'join':     ('; '),
+            'if':       '\nif (atts[{0}] {1} {2}) {{',
+            'else':     '\n} else {',
+            'endif':    '\n}',
+            'arr':      '\nclasses[{0}] = {1}\n',
+            'indent':   '    ',
+            'join':     '; ',
         },
         'java': {
-            'if':       ('\nif (atts[{0}] {1} {2}) {{'),
-            'else':     ('\n} else {'),
-            'endif':    ('\n}'),
-            'arr':      ('\nclasses[{0}] = {1}\n'),
-            'indent':   ('    '),
-            'join':     ('; '),
+            'if':       '\nif (atts[{0}] {1} {2}) {{',
+            'else':     '\n} else {',
+            'endif':    '\n}',
+            'arr':      '\nclasses[{0}] = {1}\n',
+            'indent':   '    ',
+            'join':     '; ',
         },
         'js': {
-            'if':       ('\nif (atts[{0}] {1} {2}) {{'),
-            'else':     ('\n} else {'),
-            'endif':    ('\n}'),
-            'arr':      ('\nclasses[{0}] = {1}\n'),
-            'indent':   ('    '),
-            'join':     ('; '),
+            'if':       '\nif (atts[{0}] {1} {2}) {{',
+            'else':     '\n} else {',
+            'endif':    '\n}',
+            'arr':      '\nclasses[{0}] = {1}\n',
+            'indent':   '    ',
+            'join':     '; ',
         }
     }
     # @formatter:on

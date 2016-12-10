@@ -18,22 +18,22 @@ class MLPClassifier(Classifier):
     # @formatter:off
     TEMPLATES = {
         'java': {
-            'type':     ('{0}'),
-            'arr':      ('{{{0}}}'),
-            'new_arr':  ('new double[{0}]'),
-            'arr[]':    ('double[] {name} = {{{values}}};'),
-            'arr[][]':  ('double[][] {name} = {{{values}}};'),
-            'arr[][][]': ('double[][][] {name} = {{{values}}};'),
-            'indent':   ('    '),
+            'type':     '{0}',
+            'arr':      '{{{0}}}',
+            'new_arr':  'new double[{0}]',
+            'arr[]':    'double[] {name} = {{{values}}};',
+            'arr[][]':  'double[][] {name} = {{{values}}};',
+            'arr[][][]': 'double[][][] {name} = {{{values}}};',
+            'indent':   '    ',
         },
         'js': {
-            'type':     ('{0}'),
-            'arr':      ('[{0}]'),
-            'new_arr':  ('new Array({0}).fill(0)'),
-            'arr[]':    ('var {name} = [{values}];'),
-            'arr[][]':  ('var {name} = [{values}];'),
-            'arr[][][]': ('var {name} = [{values}];'),
-            'indent':   ('    '),
+            'type':     '{0}',
+            'arr':      '[{0}]',
+            'new_arr':  'new Array({0}).fill(0)',
+            'arr[]':    'var {name} = [{values}];',
+            'arr[][]':  'var {name} = [{values}];',
+            'arr[][][]': 'var {name} = [{values}];',
+            'indent':   '    ',
         }
     }
     # @formatter:on
