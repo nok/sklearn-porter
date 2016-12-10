@@ -13,6 +13,8 @@ python:
   - "3.5"
 node_js:
   - "6"
+php:
+  - "7.0"
 compiler:
   - gcc
 install:

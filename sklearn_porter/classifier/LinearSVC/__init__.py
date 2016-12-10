@@ -41,7 +41,14 @@ class LinearSVC(Classifier):
             'arr[]':    ('var {name} = [{values}];'),
             'arr[][]':  ('var {name} = [{values}];'),
             'indent':   ('    '),
-        }
+        },
+        'php': {
+            'type':     ('{0}'),
+            'arr':      ('[{0}]'),
+            'arr[]':    ('${name} = [{values}];'),
+            'arr[][]':  ('${name} = [{values}];'),
+            'indent':   ('    '),
+        },
     }
     # @formatter:on
 
