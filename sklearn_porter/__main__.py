@@ -6,23 +6,30 @@ from . import Porter
 
 def main():
     parser = argparse.ArgumentParser(
-        description=('Transpile trained scikit-learn models '
-                     'to C, Java, JavaScript and others. '),
-        epilog='More details on: https://github.com/nok/sklearn-porter')
+        description=(
+            'Transpile trained scikit-learn models '
+            'to C, Java, JavaScript and others. '),
+        epilog=(
+            'More details on: '
+            'https://github.com/nok/sklearn-porter'))
     parser.add_argument(
         '--input', '-i',
         required=True,
-        help='Set the path of an exported model in pickle (.pkl) format.')
+        help=(
+            'Set the path of an exported model '
+            'in pickle (.pkl) format.'))
     parser.add_argument(
         '--output', '-o',
         required=False,
         help='Set the destination directory.')
     parser.add_argument(
         '--language', '-l',
-        choices=['c', 'java', 'js', 'go'],
+        choices=['c', 'java', 'js', 'go', 'php'],
         default='java',
         required=False,
-        help="Set the target programming language ('c', 'java', 'js', 'go').")
+        help=(
+            'Set the target programming language '
+            '("c", "java", "js", "go", "php").'))
     args = vars(parser.parse_args())
 
     model_path = str(args['input'])
