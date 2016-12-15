@@ -1,0 +1,9 @@
+class {class_name}
+
+    {method}
+
+end
+
+if ARGV.length == {n_features}
+    puts {class_name}.{method_name}(ARGV)
+end

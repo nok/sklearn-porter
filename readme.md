@@ -23,18 +23,20 @@ The portable classifiers are listed in the following table:
             <td align="center" colspan="5" width="65%"><strong>Programming language</strong></td>
         </tr>
         <tr>
-            <td width="35%"><strong>Classifier</strong></td>
-            <td align="center" width="13%">C</td>
-            <td align="center" width="13%">Java</td>
-            <td align="center" width="13%">JavaScript</td>
-            <td align="center" width="13%">Go</td>
-            <td align="center" width="13%">PHP</td>
+            <td width="34%"><strong>Classifier</strong></td>
+            <td align="center" width="11%">C</td>
+            <td align="center" width="11%">Java</td>
+            <td align="center" width="11%">JavaScript</td>
+            <td align="center" width="11%">Go</td>
+            <td align="center" width="11%">PHP</td>
+            <td align="center" width="11%">Ruby</td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
             <td align="center"><a href="examples/classifier/SVC/c/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/SVC/java/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/SVC/js/basics.py#L12">X</a></td>
+            <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
@@ -45,12 +47,14 @@ The portable classifiers are listed in the following table:
             <td align="center"><a href="examples/classifier/LinearSVC/js/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/go/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/php/basics.py#L12">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/ruby/basics.py#L12">X</a></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/c/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/js/basics.py#L12">X</a></td>
+            <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
@@ -61,12 +65,14 @@ The portable classifiers are listed in the following table:
             <td align="center"><a href="examples/classifier/RandomForestClassifier/js/basics.py#L13">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
+            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
             <td align="center"><a href="examples/classifier/ExtraTreesClassifier/c/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/ExtraTreesClassifier/js/basics.py#L12">X</a></td>
+            <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
@@ -77,12 +83,14 @@ The portable classifiers are listed in the following table:
             <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/basics.py#L16">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
+            <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/MLPClassifier/java/basics.py#L25">X</a></td>
             <td align="center"><a href="examples/classifier/MLPClassifier/js/basics.py#L25">X</a></td>
+            <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
@@ -185,7 +193,7 @@ conda config --add channels conda-forge
 conda env create -n sklearn-porter python=2 -f environment.yml
 ```
 
-Furthermore you need to install [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=1.6`), [PHP](http://www.php.net/) (`>=7`) and [GCC](https://gcc.gnu.org) (`>=4.2`) for testing.
+Furthermore you need to install [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=1.6`), [PHP](http://www.php.net/) (`>=7`), [Ruby](https://www.ruby-lang.org) (`>=1.9.3`) and [GCC](https://gcc.gnu.org) (`>=4.2`) for testing.
 
 
 ### Testing

@@ -49,6 +49,13 @@ class LinearSVC(Classifier):
             'arr[][]':  '${name} = [{values}];',
             'indent':   '    ',
         },
+        'ruby': {
+            'type': '{0}',
+            'arr': '[{0}]',
+            'arr[]': ('{name} = [{values}]'),
+            'arr[][]': ('{name} = [{values}]'),
+            'indent': '    ',
+        }
     }
     # @formatter:on
 

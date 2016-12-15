@@ -1,0 +1,21 @@
+def self.{name} (atts)
+
+    {coefficients}
+    {intercepts}
+
+    class_val = -1.0/0.0
+    class_idx = -1
+
+    for i in 0 ... {n_classes}
+        prob = 0
+        for j in 0 ... {n_features}
+            prob += coefs[i][j] * atts[j].to_f
+        end
+        if prob + inters[i] > class_val
+            class_val = prob + inters[i]
+            class_idx = i
+        end
+    end
+
+    return class_idx
+end
