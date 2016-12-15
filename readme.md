@@ -19,8 +19,8 @@ The portable classifiers are listed in the following table:
 <table>
     <tbody>
         <tr>
-            <td width="35%"></td>
-            <td align="center" colspan="5" width="65%"><strong>Programming language</strong></td>
+            <td width="34%"></td>
+            <td align="center" colspan="6" width="66%"><strong>Programming language</strong></td>
         </tr>
         <tr>
             <td width="34%"><strong>Classifier</strong></td>
