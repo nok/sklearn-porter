@@ -96,7 +96,7 @@ class PhpTest():
         return int(self.clf.predict([features])[0])
 
     def make_pred_in_php(self, features):
-        # $ java -classpath temp <temp_filename> <features>
+        # $ php -f <temp_filename> <features>
         filename = self.tmp_fn + '.php'
         path = os.path.join('temp', filename)
         cmd = ['php', '-f', path]
