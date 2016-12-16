@@ -1,6 +1,15 @@
 import os
 import sys
 
+from sklearn.neural_network.multilayer_perceptron import MLPClassifier
+from sklearn.tree.tree import DecisionTreeClassifier
+from sklearn.ensemble.weight_boosting import AdaBoostClassifier
+from sklearn.ensemble.forest import RandomForestClassifier
+from sklearn.ensemble.forest import ExtraTreesClassifier
+from sklearn.svm.classes import LinearSVC
+from sklearn.svm.classes import SVC
+# from sklearn.neighbors.classification import KNeighborsClassifier
+
 
 class Porter():
 
@@ -152,18 +161,16 @@ class Porter():
         :return : bool
             Whether the model is a supported classifier.
         """
-        module = model.__class__.__module__
-        mame = model.__class__.__name__
-        path = '.'.join([module, mame])
-        return path in set([
-            'sklearn.neural_network.multilayer_perceptron.MLPClassifier',
-            'sklearn.tree.tree.DecisionTreeClassifier',
-            'sklearn.ensemble.weight_boosting.AdaBoostClassifier',
-            'sklearn.ensemble.forest.RandomForestClassifier',
-            'sklearn.ensemble.forest.ExtraTreesClassifier',
-            'sklearn.svm.classes.LinearSVC',
-            'sklearn.svm.classes.SVC',
-        ])
+        return isinstance(model, (
+            MLPClassifier,
+            DecisionTreeClassifier,
+            AdaBoostClassifier,
+            RandomForestClassifier,
+            ExtraTreesClassifier,
+            LinearSVC,
+            SVC,
+            # KNeighborsClassifier
+        ))
 
     @staticmethod
     def is_supported_regressor(model):
@@ -180,10 +187,8 @@ class Porter():
         :return : bool
             Whether the model is a supported regressor.
         """
-        module = model.__class__.__module__
-        mame = model.__class__.__name__
-        path = '.'.join([module, mame])
-        return path in set([])
+        # return isinstance(model, ())
+        return False
 
     @staticmethod
     def is_supported_model(model):
@@ -208,6 +213,6 @@ class Porter():
             return 'classifier'
         if Porter.is_supported_regressor(model):
             return 'regressors'
-        msg = ('The model is not an instance of ',
-               'a supported classifier or regressor.')
+        msg = 'The model is not an instance of '\
+              'a supported classifier or regressor.'
         raise ValueError(msg)
