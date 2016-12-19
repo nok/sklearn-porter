@@ -55,7 +55,7 @@ The portable classifiers are listed in the following table:
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/js/basics.py#L12">X</a></td>
             <td align="center"></td>
-            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/php/basics.py#L12">X</a></td>
             <td align="center"></td>
         </tr>
         <tr>
