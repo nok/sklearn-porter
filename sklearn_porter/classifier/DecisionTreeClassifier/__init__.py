@@ -139,7 +139,7 @@ class DecisionTreeClassifier(Classifier):
         feature_indices = []
         for i in self.model.tree_.feature:
             feature_indices.append([str(j) for j in range(self.n_features)][i])
-        indentation = 1 if self.language in ['java', 'js'] else 0
+        indentation = 1 if self.language in ['java', 'js', 'php'] else 0
         return self.create_branches(
             self.model.tree_.children_left,
             self.model.tree_.children_right,
@@ -156,7 +156,7 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built method as string.
         """
-        indentation = 1 if self.language in ['java', 'js'] else 0
+        indentation = 1 if self.language in ['java', 'js', 'php'] else 0
         branches = self.indent(self.create_tree(), indentation=1)
         return self.temp('method', indentation=indentation, skipping=True)\
             .format(method_name=self.method_name, n_features=self.n_features,
