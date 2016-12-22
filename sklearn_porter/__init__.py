@@ -8,7 +8,7 @@ from sklearn.ensemble.forest import RandomForestClassifier
 from sklearn.ensemble.forest import ExtraTreesClassifier
 from sklearn.svm.classes import LinearSVC
 from sklearn.svm.classes import SVC
-# from sklearn.neighbors.classification import KNeighborsClassifier
+from sklearn.neighbors.classification import KNeighborsClassifier
 
 
 class Porter():
@@ -169,7 +169,7 @@ class Porter():
             ExtraTreesClassifier,
             LinearSVC,
             SVC,
-            # KNeighborsClassifier
+            KNeighborsClassifier
         ))
 
     @staticmethod

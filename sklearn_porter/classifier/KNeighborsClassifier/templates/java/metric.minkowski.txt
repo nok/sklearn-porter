@@ -1,0 +1,7 @@
+public static double dist(double[] temp, double[] cand, double q) {
+    double sum = 0.;
+    for (int i = 0; i < temp.length; i++) {
+        sum += Math.pow(Math.abs(temp[i] - cand[i]), q);
+    }
+    return Math.pow(sum, 1. / q);
+}
