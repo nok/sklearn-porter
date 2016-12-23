@@ -4,11 +4,11 @@ class {class_name} {{
 
     public static void main(String[] args) {{
         if (args.length == {n_features}) {{
-            float[] atts = new float[args.length];
+            double[] atts = new double[args.length];
             for (int i = 0, l = args.length; i < l; i++) {{
-                atts[i] = Float.parseFloat(args[i]);
+                atts[i] = Double.parseDouble(args[i]);
             }}
-            System.out.println({class_name}.{method_name}(atts));
+            System.out.println(Tmp.predict(atts));
         }}
     }}
 }}

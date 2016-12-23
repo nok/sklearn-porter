@@ -1,15 +1,15 @@
 {distance_computation}
 
-public static int {name}(double[] atts) {{
+public static int {method_name}(double[] atts) {{
     if (atts.length != {n_features}) {{ return -1; }}
 
     {X}
     {y}
 
-    int classIdx;
-    double minDist = Double.INFINITY;
-    for (int i = 0; i < templates.length; i++) {{
-        if ({name}.compDist(X[i], atts) <= minDist) {{
+    int classIdx = -1;
+    double minDist = Double.POSITIVE_INFINITY;
+    for (int i = 0; i < {n_templates}; i++) {{
+        if ({class_name}.compDist(X[i], atts, {power}) < minDist) {{
             classIdx = y[i];
         }}
     }}
