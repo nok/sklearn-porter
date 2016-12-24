@@ -42,6 +42,7 @@ class KNeighborsClassifier(Classifier):
         self.n_classes = len(self.model.classes_)
         self.n_templates = len(self.model._fit_X)
         self.n_features = len(self.model._fit_X[0])
+        self.n_neighbors = self.model.n_neighbors
 
         self.algorithm = self.model.algorithm
         self.power_param = self.model.p
@@ -133,6 +134,7 @@ class KNeighborsClassifier(Classifier):
         return self.temp('method.predict', indentation=1, skipping=True).format(
             method_name=self.method_name,
             class_name=self.class_name,
+            n_neighbors=self.n_neighbors,
             n_templates=self.n_templates,
             n_features=self.n_features,
             n_classes=self.n_classes,

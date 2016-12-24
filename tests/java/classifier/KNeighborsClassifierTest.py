@@ -11,7 +11,7 @@ class KNeighborsClassifierTest(JavaTest, unittest.TestCase):
         super(KNeighborsClassifierTest, self).setUp()
         self.porter = Porter(language='java')
         model = KNeighborsClassifier(algorithm='brute',
-                                     n_neighbors=1,
+                                     n_neighbors=3,
                                      weights='uniform')
         self._port_model(model)
 

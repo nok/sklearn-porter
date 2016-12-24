@@ -1,19 +1,50 @@
 {distance_computation}
 
 public static int {method_name}(double[] atts) {{
-    if (atts.length != {n_features}) {{ return -1; }}
+    if (atts.length != {n_features}) {{
+        return -1;
+    }}
 
     {X}
     {y}
 
     int classIdx = -1;
-    double minDist = Double.POSITIVE_INFINITY;
-    double curDist;
-    for (int i = 0; i < {n_templates}; i++) {{
-        curDist = {class_name}.compDist(X[i], atts, {power});
-        if (curDist < minDist) {{
-            minDist = curDist;
-            classIdx = y[i];
+    int nNeighbors = {n_neighbors};
+    int nTemplates = {n_templates};
+    int nClasses = {n_classes};
+    double power = {power};
+
+    if (nNeighbors == 1) {{
+        double minDist = Double.POSITIVE_INFINITY;
+        double curDist;
+        for (int i = 0; i < nTemplates; i++) {{
+            curDist = Tmp.compDist(X[i], atts, power);
+            if (curDist <= minDist) {{
+                minDist = curDist;
+                classIdx = y[i];
+            }}
+        }}
+    }} else {{
+        int[] classes = new int[nClasses];
+        ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
+        for (int i = 0; i < nTemplates; i++) {{
+            dists.add(new Neighbor(y[i], Tmp.compDist(X[i], atts, power)));
+        }}
+        Collections.sort(dists, new Comparator<Neighbor>() {{
+            @Override
+            public int compare(Neighbor n1, Neighbor n2) {{
+                return n1.dist.compareTo(n2.dist);
+            }}
+        }});
+        for (Neighbor neighbor : dists.subList(0, nNeighbors)) {{
+            classes[neighbor.clazz]++;
+        }}
+        int classVal = -1;
+        for (int i = 0; i < nClasses; i++) {{
+            if (classes[i] > classVal) {{
+                classVal = classes[i];
+                classIdx = i;
+            }}
         }}
     }}
     return classIdx;

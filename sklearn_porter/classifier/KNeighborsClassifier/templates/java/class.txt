@@ -1,4 +1,15 @@
+import java.util.*;
+
 class {class_name} {{
+
+    private static class Neighbor {{
+        Integer clazz;
+        Double dist;
+        public Neighbor(int clazz, double dist) {{
+            this.clazz = clazz;
+            this.dist = dist;
+        }}
+    }}
 
     {method}
 
