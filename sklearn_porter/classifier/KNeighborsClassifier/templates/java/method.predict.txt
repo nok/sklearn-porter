@@ -8,8 +8,11 @@ public static int {method_name}(double[] atts) {{
 
     int classIdx = -1;
     double minDist = Double.POSITIVE_INFINITY;
+    double curDist;
     for (int i = 0; i < {n_templates}; i++) {{
-        if ({class_name}.compDist(X[i], atts, {power}) < minDist) {{
+        curDist = {class_name}.compDist(X[i], atts, {power});
+        if (curDist < minDist) {{
+            minDist = curDist;
             classIdx = y[i];
         }}
     }}
