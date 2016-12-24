@@ -55,28 +55,9 @@ class KNeighborsClassifier(Classifier):
                 self.tree = tree
 
         self.metric = self.model.metric
-
-        # print('algorithm', self.model.algorithm)
-        # print('classes_', self.model.classes_)
-        # print('metric', self.model.metric)
-        # print('metric_params', self.model.metric_params)
-        # print('n_neighbors', self.model.n_neighbors)
-        # print('radius', self.model.radius)
-        # print('algorithm', self.model.algorithm)
-        # print('weights', self.model.weights)
-
-        # print('_fit_X', self.model._fit_X)
-        # print('_y', self.model._y)
-        # print('_tree', self.model._tree)
-        # print('p', self.model.p)
-
-        # print('_tree.data', self.model._tree.data)
-
-        # for i in dir(self.model):
-        #     print(i, "  ", type(getattr(self.model, i)))
-
-        # self.n_features = len(self.model.coef_[0])
-        # self.n_classes = len(self.model.classes_)
+        if self.model.weights is not 'uniform':
+            msg = "Only 'uniform' weights are supported for this classifier."
+            raise NotImplementedError(msg)
 
         if self.method_name == 'predict':
             return self.predict()
