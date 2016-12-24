@@ -86,6 +86,15 @@ The portable classifiers are listed in the following table:
             <td align="center"></td>
         </tr>
         <tr>
+            <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">sklearn.neighbors.KNeighborsClassifier</a></td>
+            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/KNeighborsClassifier/java/basics.py#L12">X</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
+        <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/MLPClassifier/java/basics.py#L25">X</a></td>
