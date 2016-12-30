@@ -18,7 +18,7 @@ public static int {method_name}(double[] atts) {{
         double minDist = Double.POSITIVE_INFINITY;
         double curDist;
         for (int i = 0; i < nTemplates; i++) {{
-            curDist = Tmp.compDist(X[i], atts, power);
+            curDist = {class_name}.compDist(X[i], atts, power);
             if (curDist <= minDist) {{
                 minDist = curDist;
                 classIdx = y[i];
@@ -28,7 +28,7 @@ public static int {method_name}(double[] atts) {{
         int[] classes = new int[nClasses];
         ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
         for (int i = 0; i < nTemplates; i++) {{
-            dists.add(new Neighbor(y[i], Tmp.compDist(X[i], atts, power)));
+            dists.add(new Neighbor(y[i], {class_name}.compDist(X[i], atts, power)));
         }}
         Collections.sort(dists, new Comparator<Neighbor>() {{
             @Override
