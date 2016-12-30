@@ -1,0 +1,53 @@
+{distance_computation}
+
+this.{method_name} = function(atts) {{
+
+    if (atts.length != {n_features}) {{
+        return -1;
+    }}
+
+    {X}
+    {y}
+
+    var classIdx = -1,
+        nNeighbors = {n_neighbors},
+        nTemplates = {n_templates},
+        nClasses = {n_classes},
+        power = {power},
+        i;
+
+    if (nNeighbors == 1) {{
+        var minDist = Number.POSITIVE_INFINITY,
+            curDist;
+        for (i = 0; i < nTemplates; i++) {{
+            curDist = compDist(X[i], atts, power);
+            if (curDist <= minDist) {{
+                minDist = curDist;
+                classIdx = y[i];
+            }}
+        }}
+    }} else {{
+        var classes = new Array(nClasses).fill(0);
+        var dists = [];
+        for (i = 0; i < nTemplates; i++) {{
+            dists.push(new Neighbor(y[i], compDist(X[i], atts, power)));
+        }}
+        dists.sort(function compare(n1, n2) {{
+            if (n1.dist < n2.dist) {{
+                return -1;
+            }}
+            return 1;
+        }});
+        for (i = 0; i < nNeighbors; i++) {{
+            classes[dists[i].clazz]++;
+        }}
+        var classVal = -1;
+        for (i = 0; i < nClasses; i++) {{
+            if (classes[i] > classVal) {{
+                classVal = classes[i];
+                classIdx = i;
+            }}
+        }}
+    }}
+    return classIdx;
+}};

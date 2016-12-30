@@ -89,7 +89,7 @@ The portable classifiers are listed in the following table:
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">sklearn.neighbors.KNeighborsClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/KNeighborsClassifier/java/basics.py#L12">X</a></td>
-            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/KNeighborsClassifier/js/basics.py#L12">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>

@@ -21,6 +21,13 @@ class KNeighborsClassifier(Classifier):
             'arr[][]':  '{type}[][] {name} = {{{values}}};',
             'indent':   '    ',
         },
+        'js': {
+            'type':     '{0}',
+            'arr':      '[{0}]',
+            'arr[]':    'var {name} = [{values}];',
+            'arr[][]':  'var {name} = [{values}];',
+            'indent':   '    ',
+        },
     }
     # @formatter:on
 
