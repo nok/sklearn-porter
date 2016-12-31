@@ -163,8 +163,8 @@ joblib.dump(clf, 'model.pkl')
 After that the model can be ported by using the following command:
 
 ```sh
-python -m sklearn_porter --input <pickle_file> [--output <destination_dir>] [--language {c,java,js,go}]
-python -m sklearn_porter -i <pickle_file> [-o <destination_dir>] [-l {c,java,js,go}]
+python -m sklearn_porter --input <pickle_file> [--output <destination_dir>] [--language {c,go,java,js,php,ruby}]
+python -m sklearn_porter -i <pickle_file> [-o <destination_dir>] [-l {c,go,java,js,php,ruby}]
 ```
 
 The following commands have all the same result:
@@ -177,10 +177,12 @@ python -m sklearn_porter -i model.pkl -l java
 By changing the language parameter you can set the target programming language:
 
 ```
-python -m sklearn_porter -i model.pkl -l java
-python -m sklearn_porter -i model.pkl -l js
 python -m sklearn_porter -i model.pkl -l c
 python -m sklearn_porter -i model.pkl -l go
+python -m sklearn_porter -i model.pkl -l java
+python -m sklearn_porter -i model.pkl -l js
+python -m sklearn_porter -i model.pkl -l php
+python -m sklearn_porter -i model.pkl -l ruby
 ```
 
 Finally the following command will display all options:

@@ -24,12 +24,12 @@ def main():
         help='Set the destination directory.')
     parser.add_argument(
         '--language', '-l',
-        choices=['c', 'java', 'js', 'go', 'php'],
+        choices=['c', 'java', 'js', 'go', 'php', 'ruby'],
         default='java',
         required=False,
         help=(
             'Set the target programming language '
-            '("c", "java", "js", "go", "php").'))
+            '("c", "java", "js", "go", "php", "ruby").'))
     args = vars(parser.parse_args())
 
     model_path = str(args['input'])
