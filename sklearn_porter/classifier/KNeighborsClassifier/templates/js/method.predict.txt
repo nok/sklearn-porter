@@ -33,10 +33,7 @@ this.{method_name} = function(atts) {{
             dists.push(new Neighbor(y[i], compDist(X[i], atts, power)));
         }}
         dists.sort(function compare(n1, n2) {{
-            if (n1.dist < n2.dist) {{
-                return -1;
-            }}
-            return 1;
+            return (n1.dist < n2.dist) ? -1 : 1;
         }});
         for (i = 0; i < nNeighbors; i++) {{
             classes[dists[i].clazz]++;
