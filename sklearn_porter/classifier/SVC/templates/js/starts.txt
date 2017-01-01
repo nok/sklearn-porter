@@ -1,8 +1,8 @@
 var starts = new Array({0});
-for (var i = 0; i < {0}; i++) {{
+for (i = 0; i < {0}; i++) {{
     if (i != 0) {{
         var start = 0;
-        for (var j = 0; j < i; j++) {{
+        for (j = 0; j < i; j++) {{
             start += n_svs[j];
         }}
         starts[i] = start;
