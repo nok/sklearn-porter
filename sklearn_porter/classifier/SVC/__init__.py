@@ -34,7 +34,14 @@ class SVC(Classifier):
             'arr[]':    '\nvar {name} = [{values}];',
             'arr[][]':  '\nvar {name} = [{values}];',
             'indent':   '    ',
-        }
+        },
+        'php': {
+            'type':     '{0}',
+            'arr':      '[{0}]',
+            'arr[]':    '${name} = [{values}];',
+            'arr[][]':  '${name} = [{values}];',
+            'indent':   '    ',
+        },
     }
     # @formatter:on
 
@@ -98,7 +105,7 @@ class SVC(Classifier):
         :return out : string
             The built method as string.
         """
-        str = ''
+        str = '\n'
 
         # Support vectors:
         vectors = []
@@ -107,9 +114,10 @@ class SVC(Classifier):
             _vectors = self.temp('arr').format(', '.join(_vectors))
             vectors.append(_vectors)
         vectors = ', '.join(vectors)
-        str += self.temp('arr[][]').format(
+        str += self.temp('arr[][]', skipping=True).format(
             type='double', name='svs', values=vectors,
             n=len(self.svs), m=self.n_svs)
+        str += '\n'
 
         # Coefficients:
         coeffs = []
@@ -121,18 +129,21 @@ class SVC(Classifier):
         str += self.temp('arr[][]').format(
             type='double', name='coeffs', values=coeffs,
             n=len(self.coeffs), m=len(self.coeffs[0]))
+        str += '\n'
 
         # Interceptions:
         inters = [self.temp('type').format(repr(i)) for i in self.inters]
         inters = ', '.join(inters)
         str += self.temp('arr[]').format(
             type='double', name='inters', values=inters)
+        str += '\n'
 
         # Classes:
         classes = [self.temp('type').format(repr(c)) for c in self.classes]
         classes = ', '.join(classes)
         str += self.temp('arr[]').format(
-            type='int', name='classes', values=classes) + '\n'
+            type='int', name='classes', values=classes)
+        str += '\n'
 
         # Kernels:
         if self.params['kernel'] == 'rbf':
@@ -158,7 +169,7 @@ class SVC(Classifier):
         str += self.temp('ends').format(self.n_svs_rows)
         str += self.temp('decicions').format(self.n_svs_rows)
         str += self.temp('classes').format(self.n_classes)
-        wrap = 0 if self.language in ['java', 'js'] else 1
+        wrap = 0 if self.language in ['java', 'js', 'php'] else 1
         str = self.indent(str, indentation=2-wrap)
         return self.temp('method', indentation=1-wrap, skipping=True).format(
             method_name=self.method_name, decicion=str)

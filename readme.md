@@ -37,7 +37,7 @@ The portable classifiers are listed in the following table:
             <td align="center"><a href="examples/classifier/SVC/java/basics.py#L12">X</a></td>
             <td align="center"><a href="examples/classifier/SVC/js/basics.py#L12">X</a></td>
             <td align="center"></td>
-            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/SVC/php/basics.py#L12">X</a></td>
             <td align="center"></td>
         </tr>
         <tr>

@@ -1,0 +1,15 @@
+$decisions = array_fill(0, {0}, 0);
+for ($i = 0, $d = 0, $l = {0}; $i < $l; $i++) {{
+    for ($j = $i + 1; $j < $l; $j++) {{
+        $tmp1 = 0.;
+        $tmp2 = 0.;
+        for ($k = $starts[$j]; $k < $ends[$j]; $k++) {{
+           $tmp1 += $kernels[$k] * $coeffs[$i][$k];
+        }}
+        for ($k = $starts[$i]; $k < $ends[$i]; $k++) {{
+            $tmp2 += $kernels[$k] * $coeffs[$j - 1][$k];
+        }}
+        $decisions[$d] = $tmp1 + $tmp2 + $inters[$d];
+        $d++;
+    }}
+}}
