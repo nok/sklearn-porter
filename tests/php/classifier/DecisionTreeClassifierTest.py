@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..PhpTest import PhpTest
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn_porter import Porter
+
+from ..PhpTest import PhpTest
 
 
 class DecisionTreeClassifierTest(PhpTest, unittest.TestCase):

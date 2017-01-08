@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..PhpTest import PhpTest
 
 from sklearn.svm.classes import LinearSVC
 from sklearn_porter import Porter
+
+from ..PhpTest import PhpTest
 
 
 class LinearSVCTest(PhpTest, unittest.TestCase):

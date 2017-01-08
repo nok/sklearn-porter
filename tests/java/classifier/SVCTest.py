@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..JavaTest import JavaTest
 import numpy as np
 import random
 
 from sklearn.svm.classes import SVC
 from sklearn_porter import Porter
+
+from ..JavaTest import JavaTest
 
 
 class SVCTest(JavaTest, unittest.TestCase):

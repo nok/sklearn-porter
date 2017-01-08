@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..JavaScriptTest import JavaScriptTest
 import numpy as np
 import random
 
 from sklearn.svm.classes import SVC
 from sklearn_porter import Porter
+
+from ..JavaScriptTest import JavaScriptTest
 
 
 class SVCTest(JavaScriptTest, unittest.TestCase):

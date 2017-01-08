@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..RubyTest import RubyTest
 
 from sklearn.svm.classes import LinearSVC
 from sklearn_porter import Porter
+
+from ..RubyTest import RubyTest
 
 
 class LinearSVCTest(RubyTest, unittest.TestCase):

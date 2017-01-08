@@ -1,10 +1,13 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..JavaScriptTest import JavaScriptTest
 import numpy as np
 import random
 
 from sklearn.neural_network.multilayer_perceptron import MLPClassifier
 from sklearn_porter import Porter
+
+from ..JavaScriptTest import JavaScriptTest
 
 
 class MLPClassifierTest(JavaScriptTest, unittest.TestCase):

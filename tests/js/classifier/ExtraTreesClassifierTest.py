@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..JavaScriptTest import JavaScriptTest
 
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn_porter import Porter
+
+from ..JavaScriptTest import JavaScriptTest
 
 
 class ExtraTreesClassifierTest(JavaScriptTest, unittest.TestCase):

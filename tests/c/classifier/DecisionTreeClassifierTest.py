@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..CTest import CTest
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn_porter import Porter
+
+from ..CTest import CTest
 
 
 class DecisionTreeClassifierTest(CTest, unittest.TestCase):

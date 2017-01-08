@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..JavaTest import JavaTest
 
 from sklearn.naive_bayes import BernoulliNB
 from sklearn_porter import Porter
+
+from ..JavaTest import JavaTest
 
 
 class BernoulliNBTest(JavaTest, unittest.TestCase):

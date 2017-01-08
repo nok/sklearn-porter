@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..JavaTest import JavaTest
 
 from sklearn.svm.classes import LinearSVC
 from sklearn_porter import Porter
+
+from ..JavaTest import JavaTest
 
 
 class LinearSVCTest(JavaTest, unittest.TestCase):

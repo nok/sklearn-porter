@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..CTest import CTest
 
 from sklearn.ensemble import RandomForestClassifier
 from sklearn_porter import Porter
+
+from ..CTest import CTest
 
 
 class RandomForestClassifierTest(CTest, unittest.TestCase):

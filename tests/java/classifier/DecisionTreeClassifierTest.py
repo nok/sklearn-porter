@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..JavaTest import JavaTest
 
 from sklearn.tree import DecisionTreeClassifier
 from sklearn_porter import Porter
+
+from ..JavaTest import JavaTest
 
 
 class DecisionTreeClassifierTest(JavaTest, unittest.TestCase):

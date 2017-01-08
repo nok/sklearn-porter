@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from .. import Classifier
 import numpy as np
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from sklearn.neural_network import MLPClassifier
 
 from sklearn.model_selection import train_test_split
@@ -5,6 +7,7 @@ from sklearn.datasets import load_iris
 from sklearn.utils import shuffle
 
 from sklearn_porter import Porter
+
 
 X, y = load_iris(return_X_y=True)
 

@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+
 from sklearn.datasets import load_iris
 from sklearn.ensemble import ExtraTreesClassifier
 
 from sklearn_porter import Porter
+
 
 X, y = load_iris(return_X_y=True)
 clf = ExtraTreesClassifier(n_estimators=15, random_state=0)

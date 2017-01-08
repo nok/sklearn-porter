@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..JavaScriptTest import JavaScriptTest
 
 from sklearn.svm.classes import LinearSVC
 from sklearn_porter import Porter
+
+from ..JavaScriptTest import JavaScriptTest
 
 
 class LinearSVCTest(JavaScriptTest, unittest.TestCase):

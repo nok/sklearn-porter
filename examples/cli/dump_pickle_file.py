@@ -1,6 +1,9 @@
+# -*- coding: utf-8 -*-
+
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
 from sklearn.externals import joblib
+
 
 X, y = load_iris(return_X_y=True)
 clf = tree.DecisionTreeClassifier()

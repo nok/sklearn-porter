@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 from sklearn.datasets import load_iris
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier

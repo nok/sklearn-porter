@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import random
 import time
 import subprocess as subp

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 
@@ -15,7 +17,7 @@ from sklearn.naive_bayes import BernoulliNB
 
 class Porter():
 
-    __version__ = '0.2.1'
+    __version__ = '0.3.0'
 
     def __init__(
             self, language="java", method_name='predict',

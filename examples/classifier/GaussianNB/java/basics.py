@@ -1,7 +1,10 @@
+# -*- coding: utf-8 -*-
+
 from sklearn.datasets import load_iris
 from sklearn.naive_bayes import GaussianNB
 
 from sklearn_porter import Porter
+
 
 X, y = load_iris(return_X_y=True)
 clf = GaussianNB()

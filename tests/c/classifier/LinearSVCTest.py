@@ -1,8 +1,11 @@
+# -*- coding: utf-8 -*-
+
 import unittest
-from ..CTest import CTest
 
 from sklearn.svm.classes import LinearSVC
 from sklearn_porter import Porter
+
+from ..CTest import CTest
 
 
 class LinearSVCTest(CTest, unittest.TestCase):
