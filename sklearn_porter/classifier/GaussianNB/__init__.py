@@ -5,9 +5,9 @@ class GaussianNB(Classifier):
     """
     See also
     --------
-    sklearn.naive_bayes.GaussianNB
+    sklearn.naive_bayes.BernoulliNB
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.naive_bayes.GaussianNB.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB
     """
 
     SUPPORTED_METHODS = ['predict']
@@ -38,7 +38,7 @@ class GaussianNB(Classifier):
         :param model : GaussianNB
             An instance of a trained GaussianNB classifier.
         """
-        super(self.__class__, self).port(model)
+        super(GaussianNB, self).port(model)
 
         self.n_features = len(model.sigma_[0])
         self.n_classes = len(model.classes_)

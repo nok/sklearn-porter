@@ -1,0 +1,36 @@
+public static int {method_name}(double[] atts) {{
+    if (atts.length != {n_features}) {{
+        return -1;
+    }}
+    int i, j;
+
+    {priors}
+    {neg_probs}
+    {del_probs}
+
+    double[] jll = new double[{n_classes}];
+    for (i = 0; i < {n_classes}; i++) {{
+        double sum = 0.;
+        for (j = 0; j < {n_features}; j++) {{
+            sum += atts[i] * delProbs[j][i];
+        }}
+        jll[i] = sum;
+    }}
+    for (i = 0; i < {n_classes}; i++) {{
+        double sum = 0.;
+        for (j = 0; j < {n_features}; j++) {{
+            sum += negProbs[i][j];
+        }}
+        jll[i] += priors[i] + sum;
+    }}
+
+    double highestLikeli = Double.NEGATIVE_INFINITY;
+    int classIndex = -1;
+    for (i = 0; i < {n_classes}; i++) {{
+        if (jll[i] > highestLikeli) {{
+            highestLikeli = jll[i];
+            classIndex = i;
+        }}
+    }}
+    return classIndex;
+}}

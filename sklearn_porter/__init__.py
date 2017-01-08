@@ -10,6 +10,7 @@ from sklearn.svm.classes import LinearSVC
 from sklearn.svm.classes import SVC
 from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import BernoulliNB
 
 
 class Porter():
@@ -172,6 +173,7 @@ class Porter():
             SVC,
             KNeighborsClassifier,
             GaussianNB,
+            BernoulliNB,
         ))
 
     @staticmethod
