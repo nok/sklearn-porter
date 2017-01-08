@@ -6,14 +6,12 @@ class Classifier(object):
     SUPPORTED_METHODS = {}
     TEMPLATES = {}
 
-
     def __init__(
             self, language='java', method_name='predict', class_name='Tmp'):
         self.language = language
         self.method_name = method_name
         self.class_name = class_name
         self.check_support()
-
 
     def check_support(self):
         """Check template and programming language support."""
@@ -27,7 +25,6 @@ class Classifier(object):
             err_msg = ('The given programming language is '
                        'not supported for the given method.')
             raise AttributeError(err_msg)
-
 
     def indent(self, text, indentation=1, skipping=False):
         """
@@ -66,7 +63,6 @@ class Classifier(object):
                 indented_lines.append(line)
         indented_text = '\n'.join(indented_lines)
         return indented_text
-
 
     def temp(self, name, templates=None, indentation=None, skipping=False):
         """
@@ -112,7 +108,6 @@ class Classifier(object):
                 return template
             else:
                 raise AttributeError('Template \'%s\' not found.' % (name))
-
 
     def port(self, model):
         """

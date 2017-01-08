@@ -103,6 +103,15 @@ The portable classifiers are listed in the following table:
             <td align="center"></td>
             <td align="center"></td>
         </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">sklearn.naive_bayes.GaussianNB</a></td>
+            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/GaussianNB/java/basics.py#L12">X</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
     </tbody>
 </table>
 
