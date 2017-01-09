@@ -1,0 +1,25 @@
+
+int votes[{0}];
+for (i = 0, d = 0, l = {0}; i < l; i++) {{
+    for (j = i + 1; j < l; j++) {{
+        votes[d] = decisions[d] > 0 ? i : j;
+        d = d + 1;
+    }}
+}}
+
+int amounts[{0}];
+for (i = 0, l = {0}; i < l; i++) {{
+    amounts[i] = 0;
+}}
+for (i = 0, l = {0}; i < l; i++) {{
+    amounts[votes[i]] += 1;
+}}
+
+int class_val = -1, class_idx = -1;
+for (i = 0, l = {0}; i < l; i++) {{
+    if (amounts[i] > class_val) {{
+        class_val = amounts[i];
+        class_idx = i;
+    }}
+}}
+return classes[class_idx];

@@ -39,7 +39,6 @@ var Tmp = function(atts) {
             }
             kernels[i] = Math.exp(-0.001 * kernel);
         }
-
         var n_svs = [50, 50, 50];var starts = new Array(3);
         for (i = 0; i < 3; i++) {
             if (i != 0) {

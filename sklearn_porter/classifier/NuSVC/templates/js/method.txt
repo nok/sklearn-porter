@@ -1,0 +1,4 @@
+this.{method_name} = function(atts) {{
+    var i, j, k, d, l;
+    {decicion}
+}};

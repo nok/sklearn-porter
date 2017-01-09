@@ -19,22 +19,22 @@ class SVC(Classifier):
         'c': {
             'type':     '{0}',
             'arr':      '{{{0}}}',
-            'arr[]':    '\n{type} {name}[] = {{{values}}};',
-            'arr[][]':  '\n{type} {name}[{n}][{m}] = {{{values}}};',
+            'arr[]':    '{type} {name}[] = {{{values}}};',
+            'arr[][]':  '{type} {name}[{n}][{m}] = {{{values}}};',
             'indent':   '    ',
         },
         'java': {
             'type':     '{0}',
             'arr':      '{{{0}}}',
-            'arr[]':    '\n{type}[] {name} = {{{values}}};',
-            'arr[][]':  '\n{type}[][] {name} = {{{values}}};',
+            'arr[]':    '{type}[] {name} = {{{values}}};',
+            'arr[][]':  '{type}[][] {name} = {{{values}}};',
             'indent':   '    ',
         },
         'js': {
             'type':     '{0}',
             'arr':      '[{0}]',
-            'arr[]':    '\nvar {name} = [{values}];',
-            'arr[][]':  '\nvar {name} = [{values}];',
+            'arr[]':    'var {name} = [{values}];',
+            'arr[][]':  'var {name} = [{values}];',
             'indent':   '    ',
         },
         'php': {
@@ -60,7 +60,7 @@ class SVC(Classifier):
         :param model : SVC
             An instance of a trained SVC classifier.
         """
-        super(self.__class__, self).port(model)
+        super(SVC, self).port(model)
 
         params = model.get_params()
         # Check kernel type:

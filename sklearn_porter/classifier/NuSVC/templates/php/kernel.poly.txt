@@ -1,0 +1,10 @@
+
+// (y<x,x'>+r)^d
+$kernels = array_fill(0, {0}, 0);
+for ($i = 0; $i < {0}; $i++) {{
+    $kernel = 0.;
+    for ($j = 0; $j < {1}; $j++) {{
+        $kernel += $svs[$i][$j] * $atts[$j];
+    }}
+    $kernels[$i] = pow(({2} * $kernel) + {3}, {4});
+}}

@@ -1,0 +1,3 @@
+public static function {method_name}($atts) {{
+    {decicion}
+}}

@@ -1,0 +1,5 @@
+
+int ends[{0}];
+for (i = 0; i < {0}; i++) {{
+    ends[i] = n_svs[i] + starts[i];
+}}

@@ -41,6 +41,15 @@ The portable classifiers are listed in the following table:
             <td align="center"></td>
         </tr>
         <tr>
+            <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.NuSVC.html">sklearn.svm.NuSVC</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/c/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/java/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/js/basics.py#L15">X</a></td>
+            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/NuSVC/php/basics.py#L15">X</a></td>
+            <td align="center"></td>
+        </tr>
+        <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/c/basics.py#L15">X</a> , <a href="examples/classifier/LinearSVC/c/compiling.py#L17">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/java/basics.py#L15">X</a></td>

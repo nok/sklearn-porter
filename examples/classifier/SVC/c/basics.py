@@ -38,7 +38,6 @@ int predict(float atts[]) {
         }
         kernels[i] = exp(-0.001 * kernel);
     }
-
     int n_svs[] = {50, 50, 50};int starts[3];
     for (i = 0; i < 3; i++) {
         if (i != 0) {

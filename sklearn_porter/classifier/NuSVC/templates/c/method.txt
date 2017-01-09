@@ -1,0 +1,4 @@
+int {method_name}(float atts[]) {{
+    int i, j, k, d, l;
+    {decicion}
+}}
