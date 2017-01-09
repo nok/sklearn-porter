@@ -140,6 +140,12 @@ The portable classifiers are listed in the following table:
 pip install sklearn-porter
 ```
 
+If you want the latest bleeding edge changes, you can install the module from the master (development) branch:
+
+```sh
+pip install https://github.com/nok/sklearn-porter/zipball/master
+```
+
 
 ## Usage
 
