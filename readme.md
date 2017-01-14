@@ -194,7 +194,7 @@ clf.fit(X, y)
 joblib.dump(clf, 'model.pkl')
 ```
 
-After that the model can be ported by using the following command:
+After that the model can be transpiled by using the following command:
 
 ```sh
 python -m sklearn_porter --input <pickle_file> [--output <destination_dir>] [--language {c,go,java,js,php,ruby}]
@@ -219,7 +219,7 @@ python -m sklearn_porter -i model.pkl -l php
 python -m sklearn_porter -i model.pkl -l ruby
 ```
 
-Finally the following command will display all options:
+Finally the following command displays all options:
 
 ```sh
 python -m sklearn_porter --help
@@ -231,28 +231,40 @@ python -m sklearn_porter -h
 
 ### Environment
 
-Install the required environment [modules](environment.yml) by executing the bash script [sh_environment.sh](sh_environment.sh) or type:
+Install the required [environment modules](environment.yml) by executing the script [create_env.sh](recipes/create_env.sh):
+
+```sh
+./recipes/create_env.sh
+```
 
 ```sh
 conda config --add channels conda-forge
 conda env create -n sklearn-porter python=2 -f environment.yml
+source activate sklearn-porter
 ```
 
-Furthermore you need to install [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=1.6`), [PHP](http://www.php.net/) (`>=7`), [Ruby](https://www.ruby-lang.org) (`>=1.9.3`) and [GCC](https://gcc.gnu.org) (`>=4.2`) for testing.
+Furthermore you need to install [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=1.6`), [PHP](http://www.php.net/) (`>=7`), [Ruby](https://www.ruby-lang.org) (`>=1.9.3`) and [GCC](https://gcc.gnu.org) (`>=4.2`) for all tests.
 
 
 ### Testing
 
-Run all [tests](tests) by executing the bash script [sh_tests.sh](sh_tests.sh) or type:
+The tests cover module functions as well as matching predictions of transpiled models. Run [all tests](tests) by executing the script [run_tests.sh](recipes/run_tests.sh):
+
+```sh
+./recipes/run_tests.sh
+```
 
 ```sh
 source activate sklearn-porter
 python -m unittest discover -vp '*Test.py'
-# N_RANDOM_TESTS=30 python -m unittest discover -vp '*Test.py'
 source deactivate
 ```
 
-The tests cover module functions as well as matching predictions of ported models.
+While you are developing new features or fixes, you can reduce the test duration by setting the number of random model tests:
+
+```
+N_RANDOM_TESTS=30 python -m unittest discover -vp '*Test.py'
+```
 
 
 ## Questions?
