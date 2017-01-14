@@ -155,7 +155,7 @@ Either you use the porter as [imported module](#module) in your application or y
 
 ### Module
 
-This example shows how you can port the decision tree model from the [official user guide](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
+This example shows how you can port a decision tree model from the [official user guide](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
 
 ```python
 from sklearn.tree import tree
@@ -178,7 +178,7 @@ The transpiled [result](examples/classifier/DecisionTreeClassifier/java/basics.p
 
 ### Command-line interface
 
-This examples shows how you can port a model from the command line. First of all you have to store the model to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
+This example shows how you can port a model from the command line. First of all you have to store the model to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
 
 ```python
 from sklearn.tree import tree
@@ -219,7 +219,7 @@ python -m sklearn_porter -i model.pkl -l php
 python -m sklearn_porter -i model.pkl -l ruby
 ```
 
-Finally the following command displays all options:
+Further information will be shown by using the `--help` parameter:
 
 ```sh
 python -m sklearn_porter --help
