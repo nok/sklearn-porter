@@ -274,4 +274,4 @@ Don't be shy and feel free to contact me on [Twitter](https://twitter.com/darius
 
 ## License
 
-The library is Open Source Software released under the [MIT](license.txt) license.
+The module is Open Source Software released under the [MIT](license.txt) license.
