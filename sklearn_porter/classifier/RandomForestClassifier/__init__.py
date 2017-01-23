@@ -2,10 +2,10 @@
 
 import sklearn
 
-from .. import Classifier
+from .. import Model
 
 
-class RandomForestClassifier(Classifier):
+class RandomForestClassifier(Model):
     """
     See also
     --------
@@ -47,8 +47,8 @@ class RandomForestClassifier(Classifier):
 
     def __init__(
             self, language='java', method_name='predict', class_name='Tmp'):
-        super(RandomForestClassifier, self).__init__(
-            language, method_name, class_name)
+        super(RandomForestClassifier, self).__init__(language, method_name,
+                                                     class_name)
 
     def port(self, model):
         """
@@ -123,20 +123,20 @@ class RandomForestClassifier(Classifier):
         str = ''
         # ind = '\n' + '    ' * depth
         if t[node] != -2.:
-            str += self.temp('if', indentation=depth).format(
+            str += self.temp('if', n_indents=depth).format(
                 features[node], '<=', repr(t[node]))
             if l[node] != -1.:
                 str += self.create_branches(
                     l, r, t, value, features, l[node], depth + 1)
-            str += self.temp('else', indentation=depth)
+            str += self.temp('else', n_indents=depth)
             if r[node] != -1.:
                 str += self.create_branches(
                     l, r, t, value, features, r[node], depth + 1)
-            str += self.temp('endif', indentation=depth)
+            str += self.temp('endif', n_indents=depth)
         else:
             clazzes = []
             for i, rate in enumerate(value[node][0]):
-                clazz = self.temp('arr', indentation=depth).format(i, int(rate))
+                clazz = self.temp('arr', n_indents=depth).format(i, int(rate))
                 clazzes.append(clazz)
             str += self.temp('join').join(clazzes) + self.temp('join')
         return str
@@ -186,11 +186,11 @@ class RandomForestClassifier(Classifier):
         for idx, model in enumerate(self.models):
             fn_name = self.method_name + suffix.format(idx)
             fn_name = self.temp(
-                'method_calls', indentation=2, skipping=True).format(
+                'method_calls', n_indents=2, skipping=True).format(
                 idx, self.class_name, fn_name)
             fn_names.append(fn_name)
         fn_names = '\n'.join(fn_names)
-        fn_names = self.indent(fn_names, indentation=1, skipping=True)
+        fn_names = self.indent(fn_names, n_indents=1, skipping=True)
 
         # Generate related trees:
         fns = []
@@ -203,7 +203,7 @@ class RandomForestClassifier(Classifier):
         indent = 1 if self.language in ['java', 'js'] else 0
         method = self.temp('method').format(
             fns, self.method_name, self.n_estimators, self.n_classes, fn_names)
-        method = self.indent(method, indentation=indent, skipping=True)
+        method = self.indent(method, n_indents=indent, skipping=True)
         return method
 
     def create_class(self, method):

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from .. import Classifier
+from .. import Model
 
 
-class GaussianNB(Classifier):
+class GaussianNB(Model):
     """
     See also
     --------
@@ -96,7 +96,7 @@ class GaussianNB(Classifier):
             The built method as string.
         """
         indent = 1 if self.language in ['java'] else 0
-        return self.temp('method.predict', indentation=indent,
+        return self.temp('method.predict', n_indents=indent,
                          skipping=True).format(**self.__dict__)
 
     def create_class(self, method):

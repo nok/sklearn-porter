@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from .. import Classifier
+from .. import Model
 
 
-class KNeighborsClassifier(Classifier):
+class KNeighborsClassifier(Model):
     """
     See also
     --------
@@ -35,7 +35,8 @@ class KNeighborsClassifier(Classifier):
 
     def __init__(
             self, language='java', method_name='predict', class_name='Tmp'):
-        super(KNeighborsClassifier, self).__init__(language, method_name, class_name)
+        super(KNeighborsClassifier, self).__init__(language, method_name,
+                                                   class_name)
 
     def port(self, model):
         """
@@ -95,7 +96,7 @@ class KNeighborsClassifier(Classifier):
         # Distance computation
         metric_name = '.'.join(['metric', self.metric])
         distance_comp = self.temp(
-            metric_name, indentation=1, skipping=True)
+            metric_name, n_indents=1, skipping=True)
 
         # Templates
         temps = []
@@ -121,7 +122,7 @@ class KNeighborsClassifier(Classifier):
             values=classes,
             n=self.n_templates)
 
-        return self.temp('method.predict', indentation=1, skipping=True).format(
+        return self.temp('method.predict', n_indents=1, skipping=True).format(
             method_name=self.method_name,
             class_name=self.class_name,
             n_neighbors=self.n_neighbors,

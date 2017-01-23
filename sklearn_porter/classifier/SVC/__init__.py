@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from .. import Classifier
+from .. import Model
 
 
-class SVC(Classifier):
+class SVC(Model):
     """
     See also
     --------
@@ -172,8 +172,8 @@ class SVC(Classifier):
         str += self.temp('decicions').format(self.n_svs_rows)
         str += self.temp('classes').format(self.n_classes)
         wrap = 0 if self.language in ['java', 'js', 'php'] else 1
-        str = self.indent(str, indentation=2-wrap)
-        return self.temp('method', indentation=1-wrap, skipping=True).format(
+        str = self.indent(str, n_indents=2-wrap)
+        return self.temp('method', n_indents=1-wrap, skipping=True).format(
             method_name=self.method_name, decicion=str)
 
     def create_class(self, method):

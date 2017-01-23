@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from .. import Classifier
+from .. import Model
 
 
-class DecisionTreeClassifier(Classifier):
+class DecisionTreeClassifier(Model):
     """
     See also
     --------
@@ -111,20 +111,20 @@ class DecisionTreeClassifier(Classifier):
         str = ''
         # ind = '\n' + '    ' * depth
         if t[node] != -2.:
-            str += self.temp('if', indentation=depth).format(
+            str += self.temp('if', n_indents=depth).format(
                 features[node], '<=', repr(t[node]))
             if l[node] != -1.:
                 str += self.create_branches(
                     l, r, t, value, features, l[node], depth + 1)
-            str += self.temp('else', indentation=depth)
+            str += self.temp('else', n_indents=depth)
             if r[node] != -1.:
                 str += self.create_branches(
                     l, r, t, value, features, r[node], depth + 1)
-            str += self.temp('endif', indentation=depth)
+            str += self.temp('endif', n_indents=depth)
         else:
             clazzes = []
             for i, rate in enumerate(value[node][0]):
-                clazz = self.temp('arr', indentation=depth).format(i, int(rate))
+                clazz = self.temp('arr', n_indents=depth).format(i, int(rate))
                 clazzes.append(clazz)
             str += self.temp('join').join(clazzes) + self.temp('join')
         return str
@@ -159,8 +159,8 @@ class DecisionTreeClassifier(Classifier):
             The built method as string.
         """
         indentation = 1 if self.language in ['java', 'js', 'php'] else 0
-        branches = self.indent(self.create_tree(), indentation=1)
-        return self.temp('method', indentation=indentation, skipping=True)\
+        branches = self.indent(self.create_tree(), n_indents=1)
+        return self.temp('method', n_indents=indentation, skipping=True)\
             .format(method_name=self.method_name, n_features=self.n_features,
                     n_classes=self.n_classes, branches=branches)
 

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from .. import Classifier
+from .. import Model
 import numpy as np
 
 np.set_printoptions(precision=15)
 
 
-class MLPClassifier(Classifier):
+class MLPClassifier(Model):
     """
     See also
     --------
@@ -146,7 +146,7 @@ class MLPClassifier(Classifier):
         intercepts = self.temp('arr[][]').format(
             name='intercepts', values=intercepts)
 
-        return self.temp('method', skipping=True, indentation=1).format(
+        return self.temp('method', skipping=True, n_indents=1).format(
             class_name=self.class_name, method_name=self.method_name,
             n_features=self.n_inputs, n_classes=self.n_outputs,
             activations=activations, coefficients=coefficients,
@@ -162,9 +162,9 @@ class MLPClassifier(Classifier):
             The built class as string.
         """
         hidden_act_type = 'hidden_activation.' + self.hidden_activation
-        hidden_act = self.temp(hidden_act_type, skipping=True, indentation=1)
+        hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
         output_act_type = 'output_activation.' + self.output_activation
-        output_act = self.temp(output_act_type, skipping=True, indentation=1)
+        output_act = self.temp(output_act_type, skipping=True, n_indents=1)
         return self.temp('class').format(
             class_name=self.class_name, method_name=self.method_name,
             method=method, n_features=self.n_inputs,

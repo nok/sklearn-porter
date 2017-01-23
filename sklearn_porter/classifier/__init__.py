@@ -3,13 +3,13 @@
 import os.path
 
 
-class Classifier(object):
+class Model(object):
 
     SUPPORTED_METHODS = {}
     TEMPLATES = {}
 
-    def __init__(
-            self, language='java', method_name='predict', class_name='Tmp'):
+    def __init__(self, language='java', method_name='predict',
+                 class_name='Tmp'):
         self.language = language
         self.method_name = method_name
         self.class_name = class_name
@@ -28,7 +28,7 @@ class Classifier(object):
                        'not supported for the given method.')
             raise AttributeError(err_msg)
 
-    def indent(self, text, indentation=1, skipping=False):
+    def indent(self, text, n_indents=1, skipping=False):
         """
         Indent text with single spaces.
 
@@ -36,7 +36,7 @@ class Classifier(object):
         ----------
         :param text : string
             The text which get a specific indentation.
-        :param indentation : int
+        :param n_indents : int
             The number of indentations.
         :param skipping : boolean
             Whether to skip the initial indentation.
@@ -53,7 +53,7 @@ class Classifier(object):
         if len(lines) == 1:
             if skipping:
                 return text.strip()
-            return indentation * space + text.strip()
+            return n_indents * space + text.strip()
 
         # Multiple lines:
         indented_lines = []
@@ -61,12 +61,12 @@ class Classifier(object):
             if skipping and idx is 0:
                 indented_lines.append(line)
             else:
-                line = indentation * space + line
+                line = n_indents * space + line
                 indented_lines.append(line)
         indented_text = '\n'.join(indented_lines)
         return indented_text
 
-    def temp(self, name, templates=None, indentation=None, skipping=False):
+    def temp(self, name, templates=None, n_indents=None, skipping=False):
         """
         Get specific template of chosen programming language.
 
@@ -76,7 +76,7 @@ class Classifier(object):
             The key name of the template.
         :param tempaltes : string
             The template with placeholders.
-        :param indentation : int
+        :param n_indents : int
             The number of indentations.
         :param skipping : boolean
             Whether to skip the initial indentation.
@@ -93,8 +93,8 @@ class Classifier(object):
         template = templates.get(key, None)
         if template is not None:
             if type(template) is str:
-                if indentation is not None:
-                    template = self.indent(template, indentation, skipping)
+                if n_indents is not None:
+                    template = self.indent(template, n_indents, skipping)
                 return template
             else:
                 keys = '.'.join(keys)
@@ -105,8 +105,8 @@ class Classifier(object):
                 'templates', self.language, name + '.txt')
             if os.path.isfile(path):
                 template = open(path, 'r').read()
-                if indentation is not None:
-                    template = self.indent(template, indentation, skipping)
+                if n_indents is not None:
+                    template = self.indent(template, n_indents, skipping)
                 return template
             else:
                 raise AttributeError('Template \'%s\' not found.' % (name))
