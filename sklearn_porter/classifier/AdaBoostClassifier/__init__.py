@@ -131,25 +131,25 @@ class AdaBoostClassifier(Model):
         :return : string
             The ported single tree as function or method.
         """
-        str = ''
+        out = ''
         if t[node] != -2.:
-            str += self.temp('if', n_indents=depth).format(
+            out += self.temp('if', n_indents=depth).format(
                 features[node], '<=', repr(t[node]))
             if l[node] != -1.:
-                str += self.create_branches(
+                out += self.create_branches(
                     l, r, t, value, features, l[node], depth + 1)
-            str += self.temp('else', n_indents=depth)
+            out += self.temp('else', n_indents=depth)
             if r[node] != -1.:
-                str += self.create_branches(
+                out += self.create_branches(
                     l, r, t, value, features, r[node], depth + 1)
-            str += self.temp('endif', n_indents=depth)
+            out += self.temp('endif', n_indents=depth)
         else:
             clazzes = []
             for i, val in enumerate(value[node][0]):
                 clazz = self.temp('arr', n_indents=depth).format(i, repr(val))
                 clazzes.append(clazz)
-            str += self.temp('join').join(clazzes) + self.temp('join')
-        return str
+            out += self.temp('join').join(clazzes) + self.temp('join')
+        return out
 
     def create_single_method(self, model_index, model):
         """
