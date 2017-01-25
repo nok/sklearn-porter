@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import sklearn
+from sklearn.tree.tree import DecisionTreeClassifier
 
-from .. import Model
+from ...Model import Model
 
 
 class RandomForestClassifier(Model):
@@ -61,8 +61,7 @@ class RandomForestClassifier(Model):
         """
 
         # Check type of base estimators:
-        if not isinstance(model.base_estimator,
-                          sklearn.tree.tree.DecisionTreeClassifier):
+        if not isinstance(model.base_estimator, DecisionTreeClassifier):
             msg = "The classifier doesn't support the given base estimator %s."
             raise ValueError(msg, model.base_estimator)
 

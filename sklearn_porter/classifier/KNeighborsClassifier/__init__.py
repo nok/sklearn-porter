@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .. import Model
+from ...Model import Model
 
 
 class KNeighborsClassifier(Model):

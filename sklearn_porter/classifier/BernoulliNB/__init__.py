@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from .. import Model
 import numpy as np
+
+from ...Model import Model
 
 
 class BernoulliNB(Model):

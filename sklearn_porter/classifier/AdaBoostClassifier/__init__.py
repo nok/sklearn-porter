@@ -2,7 +2,7 @@
 
 import sklearn
 
-from .. import Model
+from ...Model import Model
 
 
 class AdaBoostClassifier(Model):
