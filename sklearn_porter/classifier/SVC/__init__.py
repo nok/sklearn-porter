@@ -81,6 +81,7 @@ class SVC(Model):
         self.n_svs_rows = len(model.n_support_)
         self.coeffs = model.dual_coef_
         self.inters = model._intercept_
+        self.n_inters = len(model._intercept_)
         self.classes = model.classes_
         self.n_classes = len(model.classes_)
 
@@ -173,8 +174,8 @@ class SVC(Model):
         # Decicion:
         out += self.temp('starts').format(self.n_svs_rows)
         out += self.temp('ends').format(self.n_svs_rows)
-        out += self.temp('decicions').format(self.n_svs_rows)
-        out += self.temp('classes').format(self.n_classes)
+        out += self.temp('decicions').format(self.n_inters, self.n_svs_rows)
+        out += self.temp('classes').format(self.n_inters, self.n_classes)
         wrap = 0 if self.language in ['java', 'js', 'php'] else 1
         out = self.indent(out, n_indents=2-wrap)
         return self.temp('method', n_indents=1-wrap, skipping=True).format(

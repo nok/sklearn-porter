@@ -18,7 +18,7 @@ from sklearn.naive_bayes import BernoulliNB
 
 class Porter:
 
-    __version__ = '0.3.0'
+    __version__ = '0.3.1'
 
     def __init__(self, language="java", method_name='predict', class_name='Tmp',
                  with_details=False):
