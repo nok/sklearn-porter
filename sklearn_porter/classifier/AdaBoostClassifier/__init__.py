@@ -170,7 +170,8 @@ class AdaBoostClassifier(Model):
         feature_indices = []
         for i in model.tree_.feature:
             n_features = model.n_features_
-            feature_indices.append([str(j) for j in range(n_features)][i])
+            if self.n_features > 1 or (self.n_features == 1 and i >= 0):
+                feature_indices.append([str(j) for j in range(n_features)][i])
 
         tree_branches = self.create_branches(
             model.tree_.children_left, model.tree_.children_right,

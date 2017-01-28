@@ -140,7 +140,10 @@ class DecisionTreeClassifier(Model):
         """
         feature_indices = []
         for i in self.model.tree_.feature:
-            feature_indices.append([str(j) for j in range(self.n_features)][i])
+            n_features = self.n_features
+            if self.n_features > 1 or (self.n_features == 1 and i >= 0):
+                feature_indices.append([str(j) for j in range(n_features)][i])
+
         indentation = 1 if self.language in ['java', 'js', 'php'] else 0
         return self.create_branches(
             self.model.tree_.children_left,

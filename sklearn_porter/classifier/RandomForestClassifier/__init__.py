@@ -158,7 +158,9 @@ class RandomForestClassifier(Model):
         """
         indices = []
         for i in model.tree_.feature:
-            indices.append([str(j) for j in range(model.n_features_)][i])
+            n_features = model.n_features_
+            if self.n_features > 1 or (self.n_features == 1 and i >= 0):
+                indices.append([str(j) for j in range(n_features)][i])
 
         tree_branches = self.create_branches(
             model.tree_.children_left, model.tree_.children_right,
