@@ -5,6 +5,8 @@ import os.path
 
 class Model(object):
 
+    NL = '\n'
+
     SUPPORTED_METHODS = {}
     TEMPLATES = {}
 

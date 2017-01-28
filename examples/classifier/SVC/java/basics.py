@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from sklearn import svm
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_digits
 
 from sklearn_porter import Porter
 
 
-X, y = load_iris(return_X_y=True)
+X, y = load_digits(return_X_y=True)
 clf = svm.SVC(C=1., gamma=0.001, kernel='rbf', random_state=0)
 clf.fit(X, y)
+
+print(X[50])
 
 # Cheese!
 
@@ -29,18 +31,20 @@ class Tmp {
         // exp(-y|x-x'|^2)
         double[] kernels = new double[150];
         double kernel;
-        for (int i=0; i<150; i++) {
+        for (int i = 0; i < 150; i++) {
             kernel = 0.;
-            for (int j=0; j<4; j++) {
+            for (int j = 0; j < 4; j++) {
                 kernel += Math.pow(svs[i][j] - atts[j], 2);
             }
             kernels[i] = Math.exp(-0.001 * kernel);
         }
-        int[] n_svs = {50, 50, 50};int[] starts = new int[3];
-        for (int i=0; i<3; i++) {
-            if (i!=0) {
+
+        int[] n_svs = {50, 50, 50};
+        int[] starts = new int[3];
+        for (int i = 0; i < 3; i++) {
+            if (i != 0) {
                 int start = 0;
-                for (int j=0; j<i; j++) {
+                for (int j = 0; j < i; j++) {
                     start += n_svs[j];
                 }
                 starts[i] = start;
@@ -50,28 +54,30 @@ class Tmp {
         }
 
         int[] ends = new int[3];
-        for (int i=0; i<3; i++) {
+        for (int i = 0; i < 3; i++) {
             ends[i] = n_svs[i] + starts[i];
         }
 
         double[] decisions = new double[3];
         for (int i = 0, d = 0, l = 3; i < l; i++) {
             for (int j = i + 1; j < l; j++) {
-                double tmp1 = 0., tmp2 = 0.;
+                double tmp = 0.;
                 for (int k = starts[j]; k < ends[j]; k++) {
-                   tmp1 += kernels[k] * coeffs[i][k];
+                    tmp += coeffs[i][k] * kernels[k];
                 }
                 for (int k = starts[i]; k < ends[i]; k++) {
-                    tmp2 += kernels[k] * coeffs[j - 1][k];
+                    tmp += coeffs[j - 1][k] * kernels[k];
                 }
-                decisions[d] = tmp1 + tmp2 + inters[d++];
+                decisions[d] = tmp + inters[d];
+                d++;
             }
         }
 
         int[] votes = new int[3];
         for (int i = 0, d = 0, l = 3; i < l; i++) {
             for (int j = i + 1; j < l; j++) {
-                votes[d] = decisions[d++] > 0 ? i : j;
+                votes[d] = decisions[d] > 0 ? i : j;
+                d++;
             }
         }
 
@@ -80,7 +86,8 @@ class Tmp {
             amounts[votes[i]] += 1;
         }
 
-        int class_val = -1, class_idx = -1;
+        int class_val = -1,
+            class_idx = -1;
         for (int i = 0, l = 3; i < l; i++) {
             if (amounts[i] > class_val) {
                 class_val = amounts[i];

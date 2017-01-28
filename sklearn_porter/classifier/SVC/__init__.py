@@ -107,7 +107,13 @@ class SVC(Model):
         :return out : string
             The built method as string.
         """
-        str = '\n'
+        out = '\n'
+
+        # Number of support vectors:
+        n_svs = [self.temp('type').format(repr(v)) for v in self.svs_rows]
+        n_svs = ', '.join(n_svs)
+        out += self.temp('arr[]').format(type='int', name='n_svs', values=n_svs)
+        out += '\n'
 
         # Support vectors:
         vectors = []
@@ -116,10 +122,10 @@ class SVC(Model):
             _vectors = self.temp('arr').format(', '.join(_vectors))
             vectors.append(_vectors)
         vectors = ', '.join(vectors)
-        str += self.temp('arr[][]', skipping=True).format(
+        out += self.temp('arr[][]', skipping=True).format(
             type='double', name='svs', values=vectors,
             n=len(self.svs), m=self.n_svs)
-        str += '\n'
+        out += '\n'
 
         # Coefficients:
         coeffs = []
@@ -128,53 +134,51 @@ class SVC(Model):
             _coeffs = self.temp('arr').format(', '.join(_coeffs))
             coeffs.append(_coeffs)
         coeffs = ', '.join(coeffs)
-        str += self.temp('arr[][]').format(
+        out += self.temp('arr[][]').format(
             type='double', name='coeffs', values=coeffs,
             n=len(self.coeffs), m=len(self.coeffs[0]))
-        str += '\n'
+        out += '\n'
 
         # Interceptions:
         inters = [self.temp('type').format(repr(i)) for i in self.inters]
         inters = ', '.join(inters)
-        str += self.temp('arr[]').format(
+        out += self.temp('arr[]').format(
             type='double', name='inters', values=inters)
-        str += '\n'
+        out += '\n'
 
         # Classes:
         classes = [self.temp('type').format(repr(c)) for c in self.classes]
         classes = ', '.join(classes)
-        str += self.temp('arr[]').format(
+        out += self.temp('arr[]').format(
             type='int', name='classes', values=classes)
-        str += '\n'
+        out += '\n'
 
         # Kernels:
         if self.params['kernel'] == 'rbf':
-            str += self.temp('kernel.rbf').format(
+            out += self.temp('kernel.rbf').format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']))
         elif self.params['kernel'] == 'poly':
-            str += self.temp('kernel.poly').format(
+            out += self.temp('kernel.poly').format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']),
                 repr(self.params['coef0']), repr(self.params['degree']))
         elif self.params['kernel'] == 'sigmoid':
-            str += self.temp('kernel.sigmoid').format(
+            out += self.temp('kernel.sigmoid').format(
                 len(self.svs), self.n_svs, repr(self.params['gamma']),
                 repr(self.params['coef0']), repr(self.params['degree']))
         elif self.params['kernel'] == 'linear':
-            str += self.temp('kernel.linear').format(
+            out += self.temp('kernel.linear').format(
                 len(self.svs), self.n_svs)
+        out += '\n'
 
         # Decicion:
-        n_svs = [self.temp('type').format(repr(v)) for v in self.svs_rows]
-        n_svs = ', '.join(n_svs)
-        str += self.temp('arr[]').format(type='int', name='n_svs', values=n_svs)
-        str += self.temp('starts').format(self.n_svs_rows)
-        str += self.temp('ends').format(self.n_svs_rows)
-        str += self.temp('decicions').format(self.n_svs_rows)
-        str += self.temp('classes').format(self.n_classes)
+        out += self.temp('starts').format(self.n_svs_rows)
+        out += self.temp('ends').format(self.n_svs_rows)
+        out += self.temp('decicions').format(self.n_svs_rows)
+        out += self.temp('classes').format(self.n_classes)
         wrap = 0 if self.language in ['java', 'js', 'php'] else 1
-        str = self.indent(str, n_indents=2-wrap)
+        out = self.indent(out, n_indents=2-wrap)
         return self.temp('method', n_indents=1-wrap, skipping=True).format(
-            method_name=self.method_name, decicion=str)
+            method_name=self.method_name, decicion=out)
 
     def create_class(self, method):
         """
