@@ -9,7 +9,8 @@ from sklearn.utils import shuffle
 from sklearn_porter import Porter
 
 
-X, y = load_iris(return_X_y=True)
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
 
 X = shuffle(X, random_state=0)
 y = shuffle(y, random_state=0)

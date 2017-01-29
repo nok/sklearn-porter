@@ -5,7 +5,8 @@ from sklearn.datasets import load_iris
 from sklearn.externals import joblib
 
 
-X, y = load_iris(return_X_y=True)
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 

@@ -53,9 +53,9 @@ class RubyTest():
                     self.n_random_tests = int(n)
 
     def _init_data(self):
-        self.X, self.y = load_iris(return_X_y=True)
-        self.X = shuffle(self.X, random_state=0)
-        self.y = shuffle(self.y, random_state=0)
+        data = load_iris()
+        self.X = shuffle(data.data, random_state=0)
+        self.y = shuffle(data.target, random_state=0)
         self.n_features = len(self.X[0])
 
     def _port_model(self, clf):

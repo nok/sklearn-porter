@@ -1,14 +1,13 @@
 name: sklearn-porter
 dependencies:
-- libgcc=4.8.5=1
-- mkl=11.3.3=0
-- numpy=1.11.2=py27_0
-- openssl=1.0.2j=0
-- pip=8.1.2=py27_0
-- python=2.7.12=1
+- mkl=2017.0.1=0
+- numpy=1.11.3=py27_0
+- openssl=1.0.2k=0
+- pip=9.0.1=py27_1
+- python=2.7.13=0
 - readline=6.2=2
-- scikit-learn=0.18=np111py27_0
-- scipy=0.18.1=np111py27_0
+- scikit-learn=0.18.1=np111py27_1
+- scipy=0.18.1=np111py27_1
 - setuptools=27.2.0=py27_0
 - sqlite=3.13.0=0
 - tk=8.5.18=0

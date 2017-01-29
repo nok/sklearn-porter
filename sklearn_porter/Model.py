@@ -5,8 +5,6 @@ import os.path
 
 class Model(object):
 
-    NL = '\n'
-
     SUPPORTED_METHODS = {}
     TEMPLATES = {}
 
@@ -103,8 +101,9 @@ class Model(object):
                 return self.temp(keys, template, skipping=False)
         else:
             # TODO: Replace static path definition: 'classifier'
+            class_name = self.__class__.__name__
             path = os.path.join(
-                os.path.dirname(__file__), 'classifier', self.__class__.__name__,
+                os.path.dirname(__file__), 'classifier', class_name,
                 'templates', self.language, name + '.txt')
             if os.path.isfile(path):
                 template = open(path, 'r').read()
@@ -112,7 +111,7 @@ class Model(object):
                     template = self.indent(template, n_indents, skipping)
                 return template
             else:
-                raise AttributeError('Template \'%s\' not found.' % (name))
+                raise AttributeError('Template "%s" not found.' % name)
 
     def port(self, model):
         """

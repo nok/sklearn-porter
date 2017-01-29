@@ -6,7 +6,8 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn_porter import Porter
 
 
-X, y = load_iris(return_X_y=True)
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
 clf = ExtraTreesClassifier(n_estimators=15, random_state=0)
 clf.fit(X, y)
 

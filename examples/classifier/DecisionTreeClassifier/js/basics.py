@@ -6,7 +6,8 @@ from sklearn.datasets import load_iris
 from sklearn_porter import Porter
 
 
-X, y = load_iris(return_X_y=True)
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 

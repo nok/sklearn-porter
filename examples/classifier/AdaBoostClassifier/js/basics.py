@@ -7,7 +7,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn_porter import Porter
 
 
-X, y = load_iris(return_X_y=True)
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
 base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
 clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100,
                          random_state=0)

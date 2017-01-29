@@ -16,7 +16,7 @@ setup(
     packages=find_packages(exclude=["tests.*", "tests"]),
     include_package_data=True,
     version=VERSION,
-    description='Transpile trained scikit-learn models to a low-level programming language.',
+    description='Transpile trained scikit-learn models to C, Java, JavaScript and others.',
     author='Darius Morawiec',
     author_email='ping@nok.onl',
     url='https://github.com/nok/sklearn-porter/tree/stable',

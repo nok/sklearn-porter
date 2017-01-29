@@ -3,7 +3,6 @@
 import os
 import sys
 
-from sklearn.neural_network.multilayer_perceptron import MLPClassifier
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
 from sklearn.ensemble.forest import RandomForestClassifier
@@ -18,7 +17,7 @@ from sklearn.naive_bayes import BernoulliNB
 
 class Porter:
 
-    __version__ = '0.3.1'
+    __version__ = '0.3.2'
 
     def __init__(self, language="java", method_name='predict', class_name='Tmp',
                  with_details=False):
@@ -58,17 +57,17 @@ class Porter:
         :return : string
             The ported model as string.
         """
-        md_type, md_name = self.get_model_data(model)
-        md_path = '.'.join([md_type, md_name])  # e.g.: classifier.LinearSVC
+        cat, name = self.get_model_data(model)
+        path = '.'.join([cat, name])  # e.g.: classifier.LinearSVC
         level = -1 if sys.version_info < (3, 3) else 1
-        md_mod = __import__(md_path, globals(), locals(), [md_name], level)
-        klass = getattr(md_mod, md_name)
+        module = __import__(path, globals(), locals(), [name], level)
+        klass = getattr(module, name)
         instance = klass(language=self.language, method_name=self.method_name,
                          class_name=self.class_name)
-        ported_model = instance.port(model)
+        result = instance.port(model)
         if self.with_details:
-            return self.get_details(ported_model)
-        return ported_model
+            return self.get_details(result)
+        return result
 
     def get_details(self, model):
         """
@@ -93,36 +92,44 @@ class Porter:
             model : string
                 The ported model.
         """
-        filename = '%s.%s' % (self.class_name.lower(), self.language)
+
+        # Filename:
+        filename = self.class_name.lower()
         if self.language == 'java':
             filename = filename.capitalize()
+        filename = '%s.%s' % (filename, self.language)
 
+        # Commands:
         comp_cmd = ''  # compiling command
         exec_cmd = ''  # execution command
         if self.language is 'c':
+            class_name = self.class_name.lower()
             # gcc tmp.c -o tmp
-            comp_cmd = 'gcc %s -o %s' % (filename, self.class_name.lower())
+            comp_cmd = 'gcc %s -o %s' % (filename, class_name)
             # ./tmp
-            exec_cmd = os.path.join('.', self.class_name.lower())
+            exec_cmd = os.path.join('.', class_name)
         elif self.language is 'java':
             # javac Tmp.java
             comp_cmd = 'javac %s' % filename
             # java -classpath . Tmp
-            exec_cmd = 'java -classpath . %s' % self.class_name.capitalize()
+            class_name = self.class_name.capitalize()
+            exec_cmd = 'java -classpath . %s' % class_name
         elif self.language is 'js':
             # node tmp.js
             exec_cmd = 'node %s' % filename
         elif self.language is 'go':
+            # TODO: Add go-relevant commands
             pass
 
-        data = {
+        # Result:
+        result = {
             'language': self.language,
             'filename': filename,
             'compiling_cmd': comp_cmd,
             'execution_cmd': exec_cmd,
             'model': model,
         }
-        return data
+        return result
 
     @staticmethod
     def get_model_data(model):
@@ -136,15 +143,15 @@ class Porter:
 
         Returns
         -------
-        :return md_type : string ['regressor', 'classifier']
-            The model type.
+        :return cat : string ('regressor', 'classifier')
+            The model category.
 
-        :return md_name : string
+        :return name : string
             The name of the used algorithm.
         """
-        md_type = Porter.is_supported_model(model)
-        md_name = type(model).__name__
-        return md_type, md_name
+        cat = Porter.is_supported_model(model)
+        name = type(model).__name__
+        return cat, name
 
     @staticmethod
     def is_supported_classifier(model):
@@ -161,8 +168,9 @@ class Porter:
         :return : bool
             Whether the model is a supported classifier.
         """
-        return isinstance(model, (
-            MLPClassifier,
+
+        # Default classifiers:
+        supported_clfs = (
             DecisionTreeClassifier,
             AdaBoostClassifier,
             RandomForestClassifier,
@@ -173,7 +181,20 @@ class Porter:
             KNeighborsClassifier,
             GaussianNB,
             BernoulliNB,
-        ))
+        )
+
+        # Get version information:
+        import sklearn
+        version = sklearn.__version__.split('.')
+        major, minor = int(version[0]), int(version[1])
+
+        # MLPClassifier was new in version 0.18:
+        if major > 0 or (major == 0 and minor >= 18):  # version >= 0.18
+            from sklearn.neural_network.multilayer_perceptron import \
+                MLPClassifier
+            supported_clfs += (MLPClassifier, )
+
+        return isinstance(model, supported_clfs)
 
     @staticmethod
     def is_supported_regressor(model):
@@ -212,10 +233,15 @@ class Porter:
         --------
         onl.nok.sklearn.classifier.*, onl.nok.sklearn.regressor.*
         """
+
+        # Is the model a supported classifier?
         if Porter.is_supported_classifier(model):
             return 'classifier'
+
+        # Is the model a supported regressor?
         if Porter.is_supported_regressor(model):
-            return 'regressors'
+            return 'regressor'
+
         msg = 'The model is not an instance of '\
               'a supported classifier or regressor.'
         raise ValueError(msg)

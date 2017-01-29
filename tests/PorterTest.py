@@ -10,6 +10,7 @@ import os
 from sklearn.datasets import load_iris
 from sklearn.externals import joblib
 from sklearn.tree import tree
+from sklearn.utils import shuffle
 
 from sklearn_porter import Porter
 
@@ -50,7 +51,9 @@ class PorterTest(unittest.TestCase):
                     self.n_random_tests = int(n)
 
     def _train_model(self):
-        self.X, self.y = load_iris(return_X_y=True)
+        data = load_iris()
+        self.X = shuffle(data.data, random_state=0)
+        self.y = shuffle(data.target, random_state=0)
         self.n_features = len(self.X[0])
         self.clf = tree.DecisionTreeClassifier(random_state=0)
         self.clf.fit(self.X, self.y)

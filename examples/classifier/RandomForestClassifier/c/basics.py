@@ -6,7 +6,8 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn_porter import Porter
 
 
-X, y = load_iris(return_X_y=True)
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
 clf = RandomForestClassifier(n_estimators=15, max_depth=None,
                              min_samples_split=2, random_state=0)
 clf.fit(X, y)

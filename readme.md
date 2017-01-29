@@ -12,84 +12,80 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
 
 ## Machine learning algorithms
 
-### Classification
-
-The portable classifiers are listed in the following table:
-
 <table>
     <tbody>
         <tr>
-            <td width="34%"></td>
-            <td align="center" colspan="6" width="66%"><strong>Programming language</strong></td>
+            <td align="center" width="40%"><strong>Type</strong></td>
+            <td align="center" colspan="6" width="60%"><strong>Programming language</strong></td>
         </tr>
         <tr>
-            <td width="34%"><strong>Classifier</strong></td>
-            <td align="center" width="11%">C</td>
-            <td align="center" width="11%">Java</td>
-            <td align="center" width="11%">JavaScript</td>
-            <td align="center" width="11%">Go</td>
-            <td align="center" width="11%">PHP</td>
-            <td align="center" width="11%">Ruby</td>
+            <td align="center" width="40%">Classifier</td>
+            <td align="center" width="10%">C</td>
+            <td align="center" width="10%">Java</td>
+            <td align="center" width="10%">JavaScript</td>
+            <td align="center" width="10%">Go</td>
+            <td align="center" width="10%">PHP</td>
+            <td align="center" width="10%">Ruby</td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
-            <td align="center"><a href="examples/classifier/SVC/c/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/SVC/java/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/SVC/js/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/SVC/c/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/SVC/java/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/SVC/js/basics.py#L16">X</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/SVC/php/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/SVC/php/basics.py#L16">X</a></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.NuSVC.html">sklearn.svm.NuSVC</a></td>
-            <td align="center"><a href="examples/classifier/NuSVC/c/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/NuSVC/java/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/NuSVC/js/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/c/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/java/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/js/basics.py#L16">X</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/NuSVC/php/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/php/basics.py#L16">X</a></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/c/basics.py#L15">X</a> , <a href="examples/classifier/LinearSVC/c/compiling.py#L17">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/java/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/js/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/go/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/php/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/ruby/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/c/basics.py#L16">X</a> , <a href="examples/classifier/LinearSVC/c/compiling.py#L18">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/java/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/js/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/go/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/php/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/ruby/basics.py#L16">X</a></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/c/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/js/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/c/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/js/basics.py#L16">X</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/php/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/php/basics.py#L16">X</a></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></td>
-            <td align="center"><a href="examples/classifier/RandomForestClassifier/c/basics.py#L16">X</a></td>
-            <td align="center"><a href="examples/classifier/RandomForestClassifier/java/basics.py#L16">X</a></td>
-            <td align="center"><a href="examples/classifier/RandomForestClassifier/js/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/c/basics.py#L17">X</a></td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/java/basics.py#L17">X</a></td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/js/basics.py#L17">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
-            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/c/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/js/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/c/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/js/basics.py#L16">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/c/basics.py#L18">X</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/basics.py#L18">X</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/basics.py#L18">X</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/c/basics.py#L19">X</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/basics.py#L19">X</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/basics.py#L19">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -97,8 +93,8 @@ The portable classifiers are listed in the following table:
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">sklearn.neighbors.KNeighborsClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/KNeighborsClassifier/java/basics.py#L15">X</a></td>
-            <td align="center"><a href="examples/classifier/KNeighborsClassifier/js/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/KNeighborsClassifier/java/basics.py#L16">X</a></td>
+            <td align="center"><a href="examples/classifier/KNeighborsClassifier/js/basics.py#L16">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -106,8 +102,8 @@ The portable classifiers are listed in the following table:
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/MLPClassifier/java/basics.py#L28">X</a></td>
-            <td align="center"><a href="examples/classifier/MLPClassifier/js/basics.py#L28">X</a></td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/java/basics.py#L29">X</a></td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/js/basics.py#L29">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -115,7 +111,7 @@ The portable classifiers are listed in the following table:
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">sklearn.naive_bayes.GaussianNB</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/GaussianNB/java/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/GaussianNB/java/basics.py#L16">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -124,7 +120,7 @@ The portable classifiers are listed in the following table:
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">sklearn.naive_bayes.BernoulliNB</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/BernoulliNB/java/basics.py#L15">X</a></td>
+            <td align="center"><a href="examples/classifier/BernoulliNB/java/basics.py#L16">X</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -147,6 +143,19 @@ pip uninstall -y sklearn-porter
 pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/master
 ```
 
+## Minimum requirements
+
+```
+- python>=2.7.3
+- scikit-learn>=0.14.1
+```
+
+If you want to transpile a multilayer perceptron (<a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a>), you have to upgrade the scikit-learn package:
+
+```
+- scikit-learn>=0.18.0
+```
+
 
 ## Usage
 
@@ -158,17 +167,19 @@ Either you use the porter as [imported module](#module) in your application or y
 This example shows how you can port a decision tree model from the [official user guide](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
 
 ```python
-from sklearn.tree import tree
 from sklearn.datasets import load_iris
-
+from sklearn.tree import tree
 from sklearn_porter import Porter
 
-# Load data and train a classifier:
-X, y = load_iris(return_X_y=True)
+# Load data:
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
+
+# Train classifier:
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-# Port the classifier:
+# Transpile classifier:
 result = Porter(language='java').port(clf) 
 print(result)
 ```
@@ -181,12 +192,15 @@ The transpiled [result](examples/classifier/DecisionTreeClassifier/java/basics.p
 This example shows how you can port a model from the command line. First of all you have to store the model to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
 
 ```python
-from sklearn.tree import tree
 from sklearn.datasets import load_iris
+from sklearn.tree import tree
 from sklearn.externals import joblib
 
-# Load data and train a classifier:
-X, y = load_iris(return_X_y=True)
+# Load data:
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
+
+# Train classifier:
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 

@@ -6,7 +6,8 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn_porter import Porter
 
 
-X, y = load_iris(return_X_y=True)
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
 clf = BernoulliNB()
 clf.fit(X, y)
 
