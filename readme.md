@@ -184,7 +184,7 @@ result = Porter(language='java').port(clf)
 print(result)
 ```
 
-The transpiled [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L19-L99) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
+The transpiled [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L20-L100) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
 
 
 ### Command-line interface
