@@ -1,21 +1,22 @@
 #!/usr/bin/env bash
 
-# Previous requirements:
+# Requirements:
 # pip install twine
 
-# ----------------------
-
+# Environment:
 source activate sklearn-porter
+
+# Target (e.g.: pypitest, pypi):
+env=pypitest
+if [[ $# -eq 1 ]] ; then
+    env=$1
+fi
+
+# Version:
+ver=`python -c "from sklearn_porter.Porter import Porter; print(Porter.__version__);"`
+
+# Package:
 python setup.py sdist bdist_wheel
-
-# Env: Test:
-twine register dist/sklearn-porter-X.X.X.tar.gz -r pypitest
-twine register dist/sklearn_porter-X.X.X-py2-none-any.whl -r pypitest
-twine upload dist/* -r pypitest
-# https://testpypi.python.org/pypi?:action=display&name=sklearn-porter
-
-# Env: Production:
-# twine register dist/sklearn-porter-X.X.X.tar.gz -r pypi
-# twine register dist/sklearn_porter-X.X.X-py2-none-any.whl -r pypi
-# twine upload dist/* -r pypi
-# https://pypi.python.org/pypi?:action=display&name=sklearn-porter
+twine register dist/sklearn-porter-$ver.tar.gz -r $env
+twine register dist/sklearn_porter-$ver-py2-none-any.whl -r $env
+twine upload dist/* -r $env
