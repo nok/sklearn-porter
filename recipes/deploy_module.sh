@@ -4,19 +4,26 @@
 # pip install twine
 
 # Environment:
-source activate sklearn-porter
-
-# Target (e.g.: pypitest, pypi):
-env=pypitest
-if [[ $# -eq 1 ]] ; then
-    env=$1
-fi
+name=sklearn-porter
+anaconda_env=sklearn-porter
+source activate $anaconda_env
 
 # Version:
-ver=`python -c "from sklearn_porter.Porter import Porter; print(Porter.__version__);"`
+version=`python -c "from sklearn_porter.Porter import Porter; print(Porter.__version__);"`
+
+# Target (e.g.: pypitest, pypi):
+target=pypitest
+if [[ $# -eq 1 ]] ; then
+    target=$1
+fi
 
 # Package:
 python setup.py sdist bdist_wheel
-twine register dist/sklearn-porter-$ver.tar.gz -r $env
-twine register dist/sklearn_porter-$ver-py2-none-any.whl -r $env
-twine upload dist/* -r $env
+twine register dist/sklearn-porter-$version.tar.gz -r $target
+twine register dist/sklearn_porter-$version-py2-none-any.whl -r $target
+
+read -r -p "Upload $name@$version to '$target'? [y/N] " response
+if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
+then
+    twine upload dist/* -r $target
+fi
