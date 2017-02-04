@@ -23,7 +23,9 @@ def main():
     parser.add_argument(
         '--output', '-o',
         required=False,
-        help='Set the destination directory.')
+        help=(
+            'Set the destination directory, '
+            'where the transpiled model will be stored.'))
     parser.add_argument(
         '--language', '-l',
         choices=['c', 'java', 'js', 'go', 'php', 'ruby'],
