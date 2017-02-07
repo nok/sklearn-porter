@@ -245,10 +245,10 @@ python -m sklearn_porter -h
 
 ### Environment
 
-Install the required [environment modules](environment.yml) by executing the script [create_env.sh](recipes/create_env.sh):
+Install the required [environment modules](environment.yml) by executing the script [environment.sh](recipes/environment.sh):
 
 ```sh
-./recipes/create_env.sh
+./recipes/environment.sh
 ```
 
 ```sh
@@ -262,10 +262,10 @@ Furthermore you need to install [Node.js](https://nodejs.org) (`>=6`), [Java](ht
 
 ### Testing
 
-The tests cover module functions as well as matching predictions of transpiled models. Run [all tests](tests) by executing the script [run_tests.sh](recipes/run_tests.sh):
+The tests cover module functions as well as matching predictions of transpiled models. Run [all tests](tests) by executing the script [tests.sh](recipes/tests.sh):
 
 ```sh
-./recipes/run_tests.sh
+./recipes/tests.sh
 ```
 
 ```sh
