@@ -19,8 +19,8 @@ class Porter:
 
     __version__ = '0.3.2'
 
-    def __init__(self, language="java", method_name='predict', class_name='Tmp',
-                 with_details=False):
+    def __init__(self, language="java", method_name='predict',
+                 class_name='Tmp', with_details=False):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -62,7 +62,8 @@ class Porter:
         level = -1 if sys.version_info < (3, 3) else 1
         module = __import__(path, globals(), locals(), [name], level)
         klass = getattr(module, name)
-        instance = klass(language=self.language, method_name=self.method_name,
+        instance = klass(language=self.language,
+                         method_name=self.method_name,
                          class_name=self.class_name)
         result = instance.port(model)
         if self.with_details:

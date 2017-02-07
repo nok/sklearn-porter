@@ -25,7 +25,8 @@ def main():
         required=False,
         help=(
             'Set the destination directory, '
-            'where the transpiled model will be stored.'))
+            'where the transpiled model will be '
+            'stored.'))
     parser.add_argument(
         '--language', '-l',
         choices=['c', 'java', 'js', 'go', 'php', 'ruby'],
@@ -36,16 +37,17 @@ def main():
             '("c", "java", "js", "go", "php", "ruby").'))
     args = vars(parser.parse_args())
 
-    model_path = str(args['input'])
-    if model_path.endswith('.pkl') and os.path.isfile(model_path):
+    input_path = str(args['input'])
+    if input_path.endswith('.pkl') and os.path.isfile(input_path):
 
         # Load data:
         from sklearn.externals import joblib
-        raw_model = joblib.load(model_path)
+        model = joblib.load(input_path)
 
         # Port model:
-        porter = Porter(language=str(args['language']), with_details=True)
-        result = porter.port(raw_model)
+        language = str(args['language'])
+        porter = Porter(language=language, with_details=True)
+        result = porter.port(model)
         filename = result.get('filename')
 
         # Define destination path:
@@ -54,8 +56,7 @@ def main():
             dest_dir = str(args['output'])
             dest_path = os.path.join(dest_dir, filename)
         else:
-            dest_dir = model_path.split(os.sep)
-            # if len(model_path) > 1:
+            dest_dir = input_path.split(os.sep)
             del dest_dir[-1]
             dest_dir += [filename]
             dest_path = os.sep.join(dest_dir)
