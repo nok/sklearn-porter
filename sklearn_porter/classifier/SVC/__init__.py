@@ -176,9 +176,9 @@ class SVC(Model):
         out += self.temp('ends').format(self.n_svs_rows)
         out += self.temp('decicions').format(self.n_inters, self.n_svs_rows)
         out += self.temp('classes').format(self.n_inters, self.n_classes)
-        wrap = 0 if self.language in ['java', 'js', 'php'] else 1
-        out = self.indent(out, n_indents=2-wrap)
-        return self.temp('method', n_indents=1-wrap, skipping=True).format(
+        n_indents = 0 if self.language in ['java', 'js', 'php'] else 1
+        out = self.indent(out, n_indents=2-n_indents)
+        return self.temp('method', n_indents=1-n_indents, skipping=True).format(
             method_name=self.method_name, decicion=out)
 
     def create_class(self, method):

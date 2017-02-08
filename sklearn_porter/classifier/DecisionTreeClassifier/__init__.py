@@ -165,9 +165,9 @@ class DecisionTreeClassifier(Model):
         :return out : string
             The built method as string.
         """
-        indentation = 1 if self.language in ['java', 'js', 'php'] else 0
+        n_indents = 1 if self.language in ['java', 'js', 'php'] else 0
         branches = self.indent(self.create_tree(), n_indents=1)
-        return self.temp('method', n_indents=indentation, skipping=True)\
+        return self.temp('method', n_indents=n_indents, skipping=True)\
             .format(method_name=self.method_name, n_features=self.n_features,
                     n_classes=self.n_classes, branches=branches)
 

@@ -112,8 +112,8 @@ class BernoulliNB(Model):
         :return out : string
             The built method as string.
         """
-        indent = 1 if self.language in ['java'] else 0
-        return self.temp('method.predict', n_indents=indent,
+        n_indents = 1 if self.language in ['java'] else 0
+        return self.temp('method.predict', n_indents=n_indents,
                          skipping=True).format(**self.__dict__)
 
     def create_class(self, method):
