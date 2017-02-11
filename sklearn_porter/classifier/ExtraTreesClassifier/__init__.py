@@ -13,6 +13,6 @@ class ExtraTreesClassifier(RandomForestClassifier):
     """
 
     def __init__(
-            self, language='java', method_name='predict', class_name='Tmp'):
+            self, language='java', method_name='predict', class_name='Tmp', **kwargs):
         super(ExtraTreesClassifier, self).__init__(
             language, method_name, class_name)

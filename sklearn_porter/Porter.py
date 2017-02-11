@@ -57,15 +57,20 @@ class Porter:
         :return : string
             The ported model as string.
         """
-        cat, name = self.get_model_data(model)
-        path = '.'.join([cat, name])  # e.g.: classifier.LinearSVC
+        category, algorithm = self.get_model_data(model)
+
+        # Relative path:
+        path = '.'.join([category, algorithm])  # e.g.: classifier.LinearSVC
+
+        # The level for relative imports depends on the Python version:
         level = -1 if sys.version_info < (3, 3) else 1
-        module = __import__(path, globals(), locals(), [name], level)
-        klass = getattr(module, name)
-        instance = klass(language=self.language,
-                         method_name=self.method_name,
-                         class_name=self.class_name)
+
+        # Import class:
+        module = __import__(path, globals(), locals(), [algorithm], level)
+        _class = getattr(module, algorithm)
+        instance = _class(**self.__dict__)
         result = instance.port(model)
+
         if self.with_details:
             return self.get_details(result)
         return result

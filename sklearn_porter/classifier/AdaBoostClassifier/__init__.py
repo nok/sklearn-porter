@@ -46,7 +46,7 @@ class AdaBoostClassifier(Model):
     # @formatter:on
 
     def __init__(self, language='java', method_name='predict',
-                 class_name='Tmp'):
+                 class_name='Tmp', **kwargs):
         super(AdaBoostClassifier, self).__init__(
             language, method_name, class_name)
 

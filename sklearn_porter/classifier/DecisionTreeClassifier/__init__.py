@@ -52,7 +52,8 @@ class DecisionTreeClassifier(Model):
     # @formatter:on
 
     def __init__(
-            self, language='java', method_name='predict', class_name='Tmp'):
+            self, language='java', method_name='predict', class_name='Tmp',
+            **kwargs):
         super(DecisionTreeClassifier, self).__init__(
             language, method_name, class_name)
 
