@@ -14,41 +14,79 @@ from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
+from Model import Model
+
 
 class Porter:
+    __version__ = '0.4.0'
 
-    __version__ = '0.3.2'
-
-    def __init__(self, language="java", method_name='predict',
-                 class_name='Tmp', with_details=False):
+    def __init__(self, model, language="java", method='predict', *args):
         """
         Port a trained model to the syntax of a chosen programming language.
 
         Parameters
         ----------
         :param language : string (default='java')
-            The required syntax ['c', 'go', 'java', 'js'].
+            The required target programming language.
+            Set: ('c', 'go', 'java', 'js')
 
-        :param method_name : string (default='predict')
-            The name of the prediction method.
-
-        :param class_name : string (default='Tmp')
-            The name of the environment class.
-
-        :param with_details : bool (default=False)
-            Return additional useful information or not.
+        :param method : string (default='predict')
+            The name and type of the prediction method.
+            Set: ('predict', 'predict_proba')
         """
-        self.language = language
-        self.method_name = method_name
-        self.class_name = class_name
-        self.with_details = with_details
+        self.algorithm = type(model).__name__
+        self.algorithm_type = 'classifier'
 
-    def port(self, model):
+        # Import model class:
+        try:
+            pckg = '{algorithm_type}.{algorithm}'.format(**self.__dict__)
+            lvl = -1 if sys.version_info < (3, 3) else 1
+            clazz = __import__(pckg, globals(), locals(), [self.algorithm], lvl)
+            clazz = getattr(clazz, self.algorithm)
+        except ImportError:
+            err = "The given model '{algorithm}' isn't" \
+                  " supported.".format(**self.__dict__)
+            raise AttributeError(err)
+        inst = clazz(model, **self.__dict__)
+
+        # Target programming language:
+        language = str(language).strip().lower()
+        pwd = os.path.dirname(__file__)
+        temp_dir = os.path.join(pwd, self.algorithm_type, self.algorithm,
+                                'templates', language)
+        has_temp = os.path.isdir(temp_dir)
+        if not has_temp:
+            err = "The given target programming language" \
+                  " '{}' isn't supported.".format(language)
+            raise AttributeError(err)
+        self.target_language = language
+
+        # Prediction method:
+        has_meth = method in set(inst.SUPPORTED_METHODS)
+        if not has_meth:
+            err = "The given model method" \
+                  " '{}' isn't supported.".format(method)
+            raise AttributeError(err)
+        self.target_method = method
+        inst.target_method = method
+
+        self.model = inst
+
+    def export(self, class_name='Brain', method_name='predict'):
         """
         Port a trained model to the syntax of a chosen programming language.
 
         Parameters
         ----------
+        :param class_name : string (default='Brain')
+            The name for the ported class.
+
+        :param method_name : string (default='predict')
+            The name for the ported method.
+
+        :param with_details : bool (default=False)
+            Return additional useful information or not.
+
         :param model : scikit-learn model object
             An instance of a trained model (e.g. DecisionTreeClassifier).
 
@@ -57,23 +95,15 @@ class Porter:
         :return : string
             The ported model as string.
         """
-        category, algorithm = self.get_model_data(model)
+        self.class_name = class_name
+        self.method_name = method_name.
+        self.model.export(**self.__dict__)
 
-        # Relative path:
-        path = '.'.join([category, algorithm])  # e.g.: classifier.LinearSVC
+    def port(self, class_name='Brain', method_name='predict'):
+        self.export(**locals())
 
-        # The level for relative imports depends on the Python version:
-        level = -1 if sys.version_info < (3, 3) else 1
-
-        # Import class:
-        module = __import__(path, globals(), locals(), [algorithm], level)
-        _class = getattr(module, algorithm)
-        instance = _class(**self.__dict__)
-        result = instance.port(model)
-
-        if self.with_details:
-            return self.get_details(result)
-        return result
+    def predict(self, X, language='java'):
+        pass
 
     def get_details(self, model):
         """

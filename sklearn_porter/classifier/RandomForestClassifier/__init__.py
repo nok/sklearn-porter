@@ -15,6 +15,7 @@ class RandomForestClassifier(Model):
     """
 
     SUPPORTED_METHODS = ['predict']
+    SUPPORTED_LANGUAGES = ['c', 'java', 'js']
 
     # @formatter:off
     TEMPLATES = {
@@ -45,10 +46,29 @@ class RandomForestClassifier(Model):
     }
     # @formatter:on
 
-    def __init__(
-            self, language='java', method_name='predict', class_name='Tmp', **kwargs):
-        super(RandomForestClassifier, self).__init__(language, method_name,
-                                                     class_name)
+    def __init__(self, model, target_language='java', target_method='predict',
+                 **kwargs):
+        super(RandomForestClassifier, self).__init__(model,
+                                                     target_language=target_language,
+                                                     target_method=target_method,
+                                                     **kwargs)
+        # Check type of base estimators:
+        if not isinstance(model.base_estimator, DecisionTreeClassifier):
+            msg = "The classifier doesn't support the given base estimator %s."
+            raise ValueError(msg, model.base_estimator)
+
+        # Check number of base estimators:
+        if not model.n_estimators > 0:
+            msg = "The classifier hasn't any base estimators."
+            raise ValueError(msg)
+
+        self.n_classes = model.n_classes_
+
+    def do_valid_checks(self):
+        pass
+
+    def export(self, **kwargs):
+        pass
 
     def port(self, model):
         """
@@ -60,15 +80,6 @@ class RandomForestClassifier(Model):
             An instance of a trained AdaBoostClassifier model.
         """
 
-        # Check type of base estimators:
-        if not isinstance(model.base_estimator, DecisionTreeClassifier):
-            msg = "The classifier doesn't support the given base estimator %s."
-            raise ValueError(msg, model.base_estimator)
-
-        # Check number of base estimators:
-        if not model.n_estimators > 0:
-            msg = "The classifier hasn't any base estimators."
-            raise ValueError(msg)
 
         self.model = model
         self.n_classes = model.n_classes_

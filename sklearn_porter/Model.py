@@ -8,12 +8,36 @@ class Model(object):
     SUPPORTED_METHODS = {}
     TEMPLATES = {}
 
-    def __init__(self, language='java', method_name='predict',
-                 class_name='Tmp', **kwargs):
-        self.language = language
-        self.method_name = method_name
-        self.class_name = class_name
-        self.check_support()
+    def __init__(self, model, **kwargs):
+
+        # if self.has_model_support(model):
+        #     self.data = model
+
+        # if self.has_language_support(language):
+        #     self.language = language
+
+        # self.language = language
+        # self.method_name = method_name
+        # self.class_name = class_name
+        # self.check_support()
+
+        print(kwargs)
+        self.model = model
+
+    def export(self, **kwargs):
+        pass
+
+    def has_language_support(self, language):
+        language = str(language).lower()
+
+        print(self.__class__)
+        print(self.__class__.TEMPLATES.keys())
+
+        if language not in self.__class__.TEMPLATES.keys():
+            error = "The given target programming language '{}'" \
+                    " is not supported for the given method."
+            error = error.format(language)
+            raise AttributeError(error)
 
     def check_support(self):
         """Check template and programming language support."""
