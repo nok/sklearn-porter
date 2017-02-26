@@ -72,7 +72,7 @@ class Porter:
 
         self.model = inst
 
-    def export(self, class_name='Brain', method_name='predict'):
+    def export(self, class_name='Brain', method_name='predict', details=False):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -96,13 +96,22 @@ class Porter:
             The ported model as string.
         """
         self.class_name = class_name
-        self.method_name = method_name.
+        self.method_name = method_name
         self.model.export(**self.__dict__)
 
-    def port(self, class_name='Brain', method_name='predict'):
-        self.export(**locals())
+    def port(self, class_name='Brain', method_name='predict', details=False):
+        return self.export(**locals())
 
-    def predict(self, X, language='java'):
+    def predict(self, X, class_name='Brain', method_name='predict'):
+        # 1. export with details
+        # 2. compilation
+        # 3. run predictions
+        pass
+
+    def predict_proba(self, X, class_name='Brain', method_name='predict'):
+        # 1. export with details
+        # 2. compilation
+        # 3. run predictions
         pass
 
     def get_details(self, model):
