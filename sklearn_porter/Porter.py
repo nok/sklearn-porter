@@ -28,11 +28,11 @@ class Porter:
         ----------
         :param language : string (default='java')
             The required target programming language.
-            Set: ('c', 'go', 'java', 'js')
+            Set: ['c', 'go', 'java', 'js', 'php', 'ruby']
 
         :param method : string (default='predict')
             The name and type of the prediction method.
-            Set: ('predict', 'predict_proba')
+            Set: ['predict']
         """
         self.algorithm = type(model).__name__
         self.algorithm_type = 'classifier'
@@ -47,30 +47,30 @@ class Porter:
             err = "The given model '{algorithm}' isn't" \
                   " supported.".format(**self.__dict__)
             raise AttributeError(err)
-        inst = clazz(model, **self.__dict__)
+        instance = clazz(model, **self.__dict__)
 
         # Target programming language:
         language = str(language).strip().lower()
         pwd = os.path.dirname(__file__)
-        temp_dir = os.path.join(pwd, self.algorithm_type, self.algorithm,
-                                'templates', language)
-        has_temp = os.path.isdir(temp_dir)
-        if not has_temp:
+        template_dir = os.path.join(pwd, self.algorithm_type, self.algorithm,
+                                    'templates', language)
+        has_template = os.path.isdir(template_dir)
+        if not has_template:
             err = "The given target programming language" \
                   " '{}' isn't supported.".format(language)
             raise AttributeError(err)
         self.target_language = language
 
         # Prediction method:
-        has_meth = method in set(inst.SUPPORTED_METHODS)
-        if not has_meth:
+        has_method = method in set(instance.SUPPORTED_METHODS)
+        if not has_method:
             err = "The given model method" \
                   " '{}' isn't supported.".format(method)
             raise AttributeError(err)
         self.target_method = method
-        inst.target_method = method
+        instance.target_method = method
 
-        self.model = inst
+        self.model = instance
 
     def export(self, class_name='Brain', method_name='predict', details=False):
         """
@@ -84,11 +84,8 @@ class Porter:
         :param method_name : string (default='predict')
             The name for the ported method.
 
-        :param with_details : bool (default=False)
-            Return additional useful information or not.
-
-        :param model : scikit-learn model object
-            An instance of a trained model (e.g. DecisionTreeClassifier).
+        :param details : bool (default=False)
+            Return additional data for compiling and execution.
 
         Returns
         -------
@@ -103,78 +100,41 @@ class Porter:
         return self.export(**locals())
 
     def predict(self, X, class_name='Brain', method_name='predict'):
-        # 1. export with details
-        # 2. compilation
+        comp_cmd, exec_cmd = self._build_commands()
+        # 2. compiling
         # 3. run predictions
         pass
 
-    def predict_proba(self, X, class_name='Brain', method_name='predict'):
-        # 1. export with details
-        # 2. compilation
-        # 3. run predictions
-        pass
-
-    def get_details(self, model):
-        """
-        Get additional and useful information.
-
-        Parameters
-        ----------
-        :param model : scikit-learn model object
-            An instance of a trained model (e.g. DecisionTreeClassifier()).
-
-        Returns
-        -------
-        :return data : dict
-            language : string
-                The target programming language.
-            filename : string
-                A valid filename.
-            compiling_cmd : string
-                The command to compile the ported model.
-            execution_cmd : string
-                The command to execute the ported model (after compiling).
-            model : string
-                The ported model.
-        """
+    def _build_commands(self):
+        class_name = self.class_name
 
         # Filename:
-        filename = self.class_name.lower()
-        if self.language == 'java':
+        filename = class_name.lower()
+        if self.target_language == 'java':
             filename = filename.capitalize()
-        filename = '%s.%s' % (filename, self.language)
+        filename = '{}.{}'.format(filename, self.target_language)
 
-        # Commands:
-        comp_cmd = ''  # compiling command
-        exec_cmd = ''  # execution command
-        if self.language is 'c':
-            class_name = self.class_name.lower()
-            # gcc tmp.c -o tmp
-            comp_cmd = 'gcc %s -o %s' % (filename, class_name)
-            # ./tmp
-            exec_cmd = os.path.join('.', class_name)
-        elif self.language is 'java':
-            # javac Tmp.java
-            comp_cmd = 'javac %s' % filename
-            # java -classpath . Tmp
-            class_name = self.class_name.capitalize()
-            exec_cmd = 'java -classpath . %s' % class_name
-        elif self.language is 'js':
-            # node tmp.js
-            exec_cmd = 'node %s' % filename
-        elif self.language is 'go':
-            # TODO: Add go-relevant commands
-            pass
-
-        # Result:
-        result = {
-            'language': self.language,
-            'filename': filename,
-            'compiling_cmd': comp_cmd,
-            'execution_cmd': exec_cmd,
-            'model': model,
+        # Compiling command:
+        comps = {
+            # gcc brain.c -o brain
+            'c': 'gcc {} -o {}'.format(filename, self.class_name.lower()),
+            # javac Brain.java
+            'java': 'javac {}'.format(filename)
         }
-        return result
+        comp_cmd = comps.get(self.target_language, '')
+
+        # Execution command:
+        execs = {
+            # ./brain
+            'c': os.path.join('.', self.class_name.lower()),
+            # java -classpath . Brain
+            'java': 'java -classpath . {}'.format(self.class_name.capitalize()),
+            # node brain.js
+            'js': 'node {}'.format(filename)
+            # TODO: Add go exec command
+        }
+        exec_cmd = execs.get(self.target_language, '')
+        return comp_cmd, exec_cmd
 
     @staticmethod
     def get_model_data(model):
