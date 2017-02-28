@@ -68,7 +68,7 @@ class RandomForestClassifier(Model):
         pass
 
     def export(self, **kwargs):
-        pass
+        return '123'
 
     def port(self, model):
         """

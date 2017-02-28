@@ -8,7 +8,10 @@ class Model(object):
     SUPPORTED_METHODS = {}
     TEMPLATES = {}
 
-    def __init__(self, model, **kwargs):
+    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
+
+        self.target_language = str(target_language)
+        self.target_method = str(target_method)
 
         # if self.has_model_support(model):
         #     self.data = model
@@ -71,7 +74,7 @@ class Model(object):
             The indented text.
         """
         lines = text.splitlines()
-        space = self.TEMPLATES.get(self.language).get('indent', ' ')
+        space = self.TEMPLATES.get(self.target_language).get('indent', ' ')
 
         # Single line:
         if len(lines) == 1:
@@ -111,7 +114,7 @@ class Model(object):
             The wanted template string.
         """
         if templates is None:
-            templates = self.TEMPLATES.get(self.language)
+            templates = self.TEMPLATES.get(self.target_language)
         keys = name.split('.')
         key = keys.pop(0).lower()
         template = templates.get(key, None)
@@ -128,7 +131,7 @@ class Model(object):
             class_name = self.__class__.__name__
             path = os.path.join(
                 os.path.dirname(__file__), 'classifier', class_name,
-                'templates', self.language, name + '.txt')
+                'templates', self.target_language, name + '.txt')
             if os.path.isfile(path):
                 template = open(path, 'r').read()
                 if n_indents is not None:

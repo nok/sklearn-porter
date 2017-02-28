@@ -2,6 +2,7 @@
 
 import os
 import sys
+import subprocess
 
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
@@ -14,13 +15,11 @@ from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
-from Model import Model
-
 
 class Porter:
     __version__ = '0.4.0'
 
-    def __init__(self, model, language="java", method='predict', *args):
+    def __init__(self, model, language='java', method='predict', *args):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -37,16 +36,46 @@ class Porter:
         self.algorithm = type(model).__name__
         self.algorithm_type = 'classifier'
 
+        from sklearn import __version__ as sklearn_version
+        version = sklearn_version.split('.')
+        major, minor = int(version[0]), int(version[1])
+
+        # scikit-learn version < 0.18.0
+        methods = (
+            AdaBoostClassifier,
+            BernoulliNB,
+            DecisionTreeClassifier,
+            ExtraTreesClassifier,
+            GaussianNB,
+            KNeighborsClassifier,
+            LinearSVC,
+            NuSVC,
+            RandomForestClassifier,
+            SVC,
+        )
+
+        # scikit-learn version >= 0.18.0
+        if major > 0 or (major == 0 and minor >= 18):
+            from sklearn.neural_network.multilayer_perceptron \
+                import MLPClassifier
+            methods += (MLPClassifier, )
+
+        if not isinstance(model, methods):
+            error = "The given model '{algorithm}' isn't" \
+                    " supported.".format(**self.__dict__)
+            raise ValueError(error)
+
         # Import model class:
         try:
-            pckg = '{algorithm_type}.{algorithm}'.format(**self.__dict__)
-            lvl = -1 if sys.version_info < (3, 3) else 1
-            clazz = __import__(pckg, globals(), locals(), [self.algorithm], lvl)
+            package = '{algorithm_type}.{algorithm}'.format(**self.__dict__)
+            level = -1 if sys.version_info < (3, 3) else 1
+            clazz = __import__(package, globals(), locals(),
+                               [self.algorithm], level)
             clazz = getattr(clazz, self.algorithm)
         except ImportError:
-            err = "The given model '{algorithm}' isn't" \
-                  " supported.".format(**self.__dict__)
-            raise AttributeError(err)
+            error = "The given model '{algorithm}' isn't" \
+                    " supported.".format(**self.__dict__)
+            raise AttributeError(error)
         instance = clazz(model, **self.__dict__)
 
         # Target programming language:
@@ -56,23 +85,23 @@ class Porter:
                                     'templates', language)
         has_template = os.path.isdir(template_dir)
         if not has_template:
-            err = "The given target programming language" \
-                  " '{}' isn't supported.".format(language)
-            raise AttributeError(err)
+            error = "The given target programming language" \
+                    " '{}' isn't supported.".format(language)
+            raise AttributeError(error)
         self.target_language = language
 
         # Prediction method:
         has_method = method in set(instance.SUPPORTED_METHODS)
         if not has_method:
-            err = "The given model method" \
-                  " '{}' isn't supported.".format(method)
-            raise AttributeError(err)
+            error = "The given model method" \
+                    " '{}' isn't supported.".format(method)
+            raise AttributeError(error)
         self.target_method = method
         instance.target_method = method
 
         self.model = instance
 
-    def export(self, class_name='Brain', method_name='predict', details=False):
+    def export(self, class_name='Brain', method_name='predict', details=False, **kwargs):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -92,161 +121,123 @@ class Porter:
         :return : string
             The ported model as string.
         """
-        self.class_name = class_name
-        self.method_name = method_name
-        self.model.export(**self.__dict__)
+        class_name = str(class_name).strip()
+        method_name = str(method_name).strip()
+
+        model = self.model.export(class_name=class_name, method_name=method_name)
+
+        print('model', model)
+
+        if not details:
+            return str(model)
+
+        filename = self._build_filename(self.class_name)
+        compilation_cmd, execution_cmd = self._build_commands(filename)
+        return str(model), compilation_cmd, execution_cmd
 
     def port(self, class_name='Brain', method_name='predict', details=False):
         return self.export(**locals())
 
-    def predict(self, X, class_name='Brain', method_name='predict'):
-        comp_cmd, exec_cmd = self._build_commands()
-        # 2. compiling
-        # 3. run predictions
-        pass
+    def predict(self, X, class_name='Brain', method_name='predict',
+                tnp_dir='tmp', keep_tmp_dir=False):
+        has_method = 'predict' in set(self.model.SUPPORTED_METHODS)
+        if not has_method:
+            error = "The given model method" \
+                    " '{}' isn't supported.".format('predict')
+            raise AttributeError(error)
 
-    def _build_commands(self):
-        class_name = self.class_name
+        # options = locals()
+        # options.update({'details': True})
+        model, comp_cmd, exec_cmd = self.export(class_name=class_name,
+                                                method_name=method_name,
+                                                details=True)
+        subprocess.call(['rm', tnp_dir])
+        subprocess.call(['mkdir', tnp_dir])
+        cd_cmd = ['cd', tnp_dir]
+
+        filename = self._build_filename(class_name)
+        target_file = os.path.join(tnp_dir, filename)
+        with open(target_file, 'w') as f:
+            f.write(model)
+
+        if comp_cmd is not None:
+            subprocess.call(cd_cmd + ['&&'] + comp_cmd.split(' '))
+        if exec_cmd is not None:
+            subprocess.call(cd_cmd)
+            exec_cmd = [exec_cmd] + [str(f).strip() for f in X]
+            pred = subprocess.check_output(exec_cmd, stderr=subprocess.STDOUT)
+            pred = int(pred)
+
+        if not keep_tmp_dir:
+            subprocess.call(['rm', tnp_dir])
+
+        return pred
+
+    @staticmethod
+    def _dependencies(self, language):
+        language = str(language).lower().strip()
+        dependencies = {
+            'c': ['gcc'],
+            'java': ['java', 'javac'],
+            'js': ['node'],
+            # 'go': [],
+            'php': ['php'],
+            'ruby': ['ruby']
+        }
+        dependencies = dependencies.get(language) + ['mkdir', 'rm']
+        test_cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
+        for exe in dependencies:
+            cmd = test_cmd.format(exe)
+            available = subprocess.check_output(cmd,shell=True,
+                                                stderr=subprocess.STDOUT)
+            available = available.strip() is '1'
+            if not available:
+                error = "The required application '{0}'" \
+                        " isn't available.".format(exe)
+                raise SystemError(error)
+        return True
+
+    def _build_filename(self, class_name):
+        language = self.target_language
+
+        # Name:
+        name = class_name.lower()
+        if language == 'java':
+            name = name.capitalize()
+
+        # Suffix:
+        suffix = {
+            'c': 'c', 'java': 'java', 'js': 'js',
+            'go': 'go', 'php': 'php', 'ruby': 'rb'
+        }
+        suffix = suffix.get(language, language)
 
         # Filename:
-        filename = class_name.lower()
-        if self.target_language == 'java':
-            filename = filename.capitalize()
-        filename = '{}.{}'.format(filename, self.target_language)
+        return '{}.{}'.format(name, suffix)
 
-        # Compiling command:
-        comps = {
+    def _build_commands(self, filename):
+        class_name = self.class_name
+        language = self.target_language
+
+        # Get compiling command:
+        compilation_variants = {
             # gcc brain.c -o brain
-            'c': 'gcc {} -o {}'.format(filename, self.class_name.lower()),
+            'c': 'gcc {} -lm -o {}'.format(filename, class_name.lower()),
             # javac Brain.java
             'java': 'javac {}'.format(filename)
         }
-        comp_cmd = comps.get(self.target_language, '')
+        compilation_cmd = compilation_variants.get(language, None)
 
-        # Execution command:
-        execs = {
+        # Build execution command:
+        execution_variants = {
             # ./brain
-            'c': os.path.join('.', self.class_name.lower()),
+            'c': os.path.join('.', class_name.lower()),
             # java -classpath . Brain
-            'java': 'java -classpath . {}'.format(self.class_name.capitalize()),
+            'java': 'java -classpath . {}'.format(class_name.capitalize()),
             # node brain.js
             'js': 'node {}'.format(filename)
             # TODO: Add go exec command
         }
-        exec_cmd = execs.get(self.target_language, '')
-        return comp_cmd, exec_cmd
+        execution_cmd = execution_variants.get(language, None)
 
-    @staticmethod
-    def get_model_data(model):
-        """
-        Get data of the assigned model.
-
-        Parameters
-        ----------
-        :param model : scikit-learn model object
-            An instance of a trained model (e.g. DecisionTreeClassifier()).
-
-        Returns
-        -------
-        :return cat : string ('regressor', 'classifier')
-            The model category.
-
-        :return name : string
-            The name of the used algorithm.
-        """
-        cat = Porter.is_supported_model(model)
-        name = type(model).__name__
-        return cat, name
-
-    @staticmethod
-    def is_supported_classifier(model):
-        """
-        Check whether the model is a convertible classifier.
-
-        Parameters
-        ----------
-        :param model : scikit-learn model object
-            An instance of a trained model (e.g. DecisionTreeClassifier()).
-
-        Returns
-        -------
-        :return : bool
-            Whether the model is a supported classifier.
-        """
-
-        # Default classifiers:
-        supported_clfs = (
-            DecisionTreeClassifier,
-            AdaBoostClassifier,
-            RandomForestClassifier,
-            ExtraTreesClassifier,
-            LinearSVC,
-            SVC,
-            NuSVC,
-            KNeighborsClassifier,
-            GaussianNB,
-            BernoulliNB,
-        )
-
-        # Get version information:
-        import sklearn
-        version = sklearn.__version__.split('.')
-        major, minor = int(version[0]), int(version[1])
-
-        # MLPClassifier was new in version 0.18:
-        if major > 0 or (major == 0 and minor >= 18):  # version >= 0.18
-            from sklearn.neural_network.multilayer_perceptron import \
-                MLPClassifier
-            supported_clfs += (MLPClassifier, )
-
-        return isinstance(model, supported_clfs)
-
-    @staticmethod
-    def is_supported_regressor(model):
-        """
-        Check whether the model is a convertible classifier.
-
-        Parameters
-        ----------
-        :param model : scikit-learn model object
-            An instance of a trained model (e.g. DecisionTreeClassifier()).
-
-        Returns
-        -------
-        :return : bool
-            Whether the model is a supported regressor.
-        """
-        # return isinstance(model, ())
-        return False
-
-    @staticmethod
-    def is_supported_model(model):
-        """
-        Check whether the model is a convertible classifier or regressor.
-
-        Parameters
-        ----------
-        :param model : scikit-learn model object
-            An instance of a trained model (e.g. DecisionTreeClassifier()).
-
-        Returns
-        -------
-        :return : bool
-            Whether the model is a supported model.
-
-        See also
-        --------
-        onl.nok.sklearn.classifier.*, onl.nok.sklearn.regressor.*
-        """
-
-        # Is the model a supported classifier?
-        if Porter.is_supported_classifier(model):
-            return 'classifier'
-
-        # Is the model a supported regressor?
-        if Porter.is_supported_regressor(model):
-            return 'regressor'
-
-        msg = 'The model is not an instance of '\
-              'a supported classifier or regressor.'
-        raise ValueError(msg)
+        return compilation_cmd, execution_cmd

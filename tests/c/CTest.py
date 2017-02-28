@@ -13,7 +13,7 @@ from sklearn.utils import shuffle
 class CTest():
 
     LANGUAGE = 'c'
-    TEST_DEPENDENCIES = ['mkdir', 'rm', 'java', 'javac']
+    TEST_DEPENDENCIES = ['mkdir', 'gcc']
 
     # noinspection PyPep8Naming
     def setUp(self):
