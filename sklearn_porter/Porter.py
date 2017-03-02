@@ -19,7 +19,7 @@ from sklearn.naive_bayes import BernoulliNB
 class Porter:
     __version__ = '0.4.0'
 
-    def __init__(self, model, language='java', method='predict', *args):
+    def __init__(self, model, language='java', method='predict', **kwargs):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -33,55 +33,33 @@ class Porter:
             The name and type of the prediction method.
             Set: ['predict']
         """
-        self.algorithm = type(model).__name__
-        self.algorithm_type = 'classifier'
-
-        from sklearn import __version__ as sklearn_version
-        version = sklearn_version.split('.')
-        major, minor = int(version[0]), int(version[1])
-
-        # scikit-learn version < 0.18.0
-        methods = (
-            AdaBoostClassifier,
-            BernoulliNB,
-            DecisionTreeClassifier,
-            ExtraTreesClassifier,
-            GaussianNB,
-            KNeighborsClassifier,
-            LinearSVC,
-            NuSVC,
-            RandomForestClassifier,
-            SVC,
-        )
-
-        # scikit-learn version >= 0.18.0
-        if major > 0 or (major == 0 and minor >= 18):
-            from sklearn.neural_network.multilayer_perceptron \
-                import MLPClassifier
-            methods += (MLPClassifier, )
-
-        if not isinstance(model, methods):
-            error = "The given model '{algorithm}' isn't" \
-                    " supported.".format(**self.__dict__)
-            raise ValueError(error)
+        self.model = model
+        shared_properties = ('algo_name', 'algo_type')
+        for prop in shared_properties:
+            key = prop.lower()
+            if hasattr(self, key):
+                setattr(self, key, getattr(self, key))
 
         # Import model class:
         try:
-            package = '{algorithm_type}.{algorithm}'.format(**self.__dict__)
+            package = '{algo_type}.{algo_name}'.format(**self.__dict__)
             level = -1 if sys.version_info < (3, 3) else 1
             clazz = __import__(package, globals(), locals(),
-                               [self.algorithm], level)
-            clazz = getattr(clazz, self.algorithm)
+                               [self.algo_name], level)
+            clazz = getattr(clazz, self.algo_name)
         except ImportError:
-            error = "The given model '{algorithm}' isn't" \
+            error = "The given model '{algo_name}' isn't" \
                     " supported.".format(**self.__dict__)
             raise AttributeError(error)
-        instance = clazz(model, **self.__dict__)
+
+        self.algorithm = clazz(**self.__dict__)
+
+        exit()  # TODO: Remove exit()
 
         # Target programming language:
         language = str(language).strip().lower()
         pwd = os.path.dirname(__file__)
-        template_dir = os.path.join(pwd, self.algorithm_type, self.algorithm,
+        template_dir = os.path.join(pwd, self.algo_type, self.algo_name,
                                     'templates', language)
         has_template = os.path.isdir(template_dir)
         if not has_template:
@@ -99,7 +77,44 @@ class Porter:
         self.target_method = method
         instance.target_method = method
 
-        self.model = instance
+        self.algorithm = instance
+
+    @property
+    def algo_name(self):
+        return str(type(self.model).__name__)
+
+    @property
+    def algo_type(self):
+        if not isinstance(self.model, self.classifiers):
+            error = "The given model '{algorithm}' isn't" \
+                    " supported.".format(**self.__dict__)
+            raise ValueError(error)
+        else:
+            return 'classifier'
+
+    @property
+    def classifiers(self):
+        classifiers = (  # sklearn version < 0.18.0
+            AdaBoostClassifier,
+            BernoulliNB,
+            DecisionTreeClassifier,
+            ExtraTreesClassifier,
+            GaussianNB,
+            KNeighborsClassifier,
+            LinearSVC,
+            NuSVC,
+            RandomForestClassifier,
+            SVC,
+        )
+        from sklearn import __version__ as version  # sklearn version >= 0.18.0
+        version = version.split('.')
+        version = [int(v) for v in version]
+        major, minor = version[0], version[1]
+        if major > 0 or (major == 0 and minor >= 18):
+            from sklearn.neural_network.multilayer_perceptron \
+                import MLPClassifier
+            classifiers += (MLPClassifier, )
+        return classifiers
 
     def export(self, class_name='Brain', method_name='predict', details=False, **kwargs):
         """
