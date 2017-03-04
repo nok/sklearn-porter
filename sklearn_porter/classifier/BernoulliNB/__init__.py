@@ -2,10 +2,10 @@
 
 import numpy as np
 
-from ...Model import Model
+from ...Algorithm import Algorithm
 
 
-class BernoulliNB(Model):
+class BernoulliNB(Algorithm):
     """
     See also
     --------

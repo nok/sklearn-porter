@@ -2,10 +2,10 @@
 
 from sklearn.tree.tree import DecisionTreeClassifier
 
-from ...Model import Model
+from ...Algorithm import Algorithm
 
 
-class RandomForestClassifier(Model):
+class RandomForestClassifier(Algorithm):
     """
     See also
     --------

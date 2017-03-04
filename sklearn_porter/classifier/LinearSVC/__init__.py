@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...Model import Model
+from ...Algorithm import Algorithm
 
 
-class LinearSVC(Model):
+class LinearSVC(Algorithm):
     """
     See also
     --------

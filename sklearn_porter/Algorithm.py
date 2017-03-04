@@ -3,7 +3,7 @@
 import os.path
 
 
-class Model(object):
+class Algorithm(object):
 
     SUPPORTED_METHODS = {}
     TEMPLATES = {}

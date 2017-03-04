@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from ...Model import Model
+from ...Algorithm import Algorithm
 import numpy as np
 
 np.set_printoptions(precision=15)
 
 
-class MLPClassifier(Model):
+class MLPClassifier(Algorithm):
     """
     See also
     --------
