@@ -9,7 +9,6 @@ class Algorithm(object):
     TEMPLATES = {}
 
     def __init__(self, model, target_language='java', target_method='predict', **kwargs):
-
         self.target_language = str(target_language)
         self.target_method = str(target_method)
 

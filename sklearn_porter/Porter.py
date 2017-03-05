@@ -2,7 +2,7 @@
 
 import os
 import sys
-import subprocess
+import subprocess as subp
 
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
@@ -34,6 +34,9 @@ class Porter:
             Set: ['predict']
         """
         self.model = model
+        self.target_language = language
+        self.target_method = method
+
         shared_properties = ('algo_name', 'algo_type')
         for prop in shared_properties:
             key = prop.lower()
@@ -52,9 +55,7 @@ class Porter:
                     " supported.".format(**self.__dict__)
             raise AttributeError(error)
 
-        self.algorithm = clazz(**self.__dict__)
-
-        exit()  # TODO: Remove exit()
+        algorithm = clazz(**self.__dict__)
 
         # Target programming language:
         language = str(language).strip().lower()
@@ -69,31 +70,35 @@ class Porter:
         self.target_language = language
 
         # Prediction method:
-        has_method = method in set(instance.SUPPORTED_METHODS)
+        has_method = method in set(algorithm.SUPPORTED_METHODS)
         if not has_method:
             error = "The given model method" \
                     " '{}' isn't supported.".format(method)
             raise AttributeError(error)
         self.target_method = method
-        instance.target_method = method
+        algorithm.target_method = method
 
-        self.algorithm = instance
+        self.algorithm = algorithm
 
     @property
     def algo_name(self):
+        """Get the algorithm class name."""
         return str(type(self.model).__name__)
 
     @property
     def algo_type(self):
-        if not isinstance(self.model, self.classifiers):
-            error = "The given model '{algorithm}' isn't" \
-                    " supported.".format(**self.__dict__)
-            raise ValueError(error)
-        else:
+        """Get algorithm type, which is either a classifier or regressor."""
+        if isinstance(self.model, self.classifiers):
             return 'classifier'
+        # if isinstance(self.model, self.regressors):
+        #     return 'regressor'
+        error = "The given model '{model}' isn't" \
+                " supported.".format(**self.__dict__)
+        raise ValueError(error)
 
     @property
     def classifiers(self):
+        """List of supported classifiers."""
         classifiers = (  # sklearn version < 0.18.0
             AdaBoostClassifier,
             BernoulliNB,
@@ -116,7 +121,9 @@ class Porter:
             classifiers += (MLPClassifier, )
         return classifiers
 
-    def export(self, class_name='Brain', method_name='predict', details=False, **kwargs):
+    def export(self, class_name='Brain',
+               method_name='predict',
+               details=False, **kwargs):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -138,59 +145,78 @@ class Porter:
         """
         class_name = str(class_name).strip()
         method_name = str(method_name).strip()
+        language = self.target_language
 
-        model = self.model.export(class_name=class_name, method_name=method_name)
+        print('LANG', language)
 
-        print('model', model)
 
+        transpiled_model = self.algorithm.export(class_name=class_name,
+                                                 method_name=method_name)
         if not details:
-            return str(model)
+            return transpiled_model
 
-        filename = self._build_filename(self.class_name)
-        compilation_cmd, execution_cmd = self._build_commands(filename)
-        return str(model), compilation_cmd, execution_cmd
+        filename = self._build_filename(class_name)
+        comp_cmd, exec_cmd = self._build_commands(filename, class_name, language)
+        output = {
+            'model': transpiled_model,
+            'filename': filename,
+            'class_name': class_name,
+            'method_name': method_name,
+            'cmd': {
+                'compilation': comp_cmd,
+                'execution': exec_cmd
+            },
+            'algorithm': {
+                'type': self.algo_type,
+                'name': self.algo_name
+            }
+        }
+        return output
 
     def port(self, class_name='Brain', method_name='predict', details=False):
-        return self.export(**locals())
+        loc = locals()
+        loc.pop('self')
+        return self.export(**loc)
 
     def predict(self, X, class_name='Brain', method_name='predict',
                 tnp_dir='tmp', keep_tmp_dir=False):
-        has_method = 'predict' in set(self.model.SUPPORTED_METHODS)
+        has_method = 'predict' in set(self.algorithm.SUPPORTED_METHODS)
         if not has_method:
             error = "The given model method" \
                     " '{}' isn't supported.".format('predict')
             raise AttributeError(error)
-
-        # options = locals()
-        # options.update({'details': True})
-        model, comp_cmd, exec_cmd = self.export(class_name=class_name,
-                                                method_name=method_name,
-                                                details=True)
-        subprocess.call(['rm', tnp_dir])
-        subprocess.call(['mkdir', tnp_dir])
-        cd_cmd = ['cd', tnp_dir]
+        details = self.export(class_name=class_name, method_name=method_name,
+                              details=True)
+        subp.call(['rm', '-rf', tnp_dir])
+        subp.call(['mkdir', tnp_dir])
 
         filename = self._build_filename(class_name)
         target_file = os.path.join(tnp_dir, filename)
         with open(target_file, 'w') as f:
-            f.write(model)
+            transpiled_model = details.get('model')
+            f.write(transpiled_model)
 
+        comp_cmd = details.get('cmd').get('compilation')
         if comp_cmd is not None:
-            subprocess.call(cd_cmd + ['&&'] + comp_cmd.split(' '))
+            comp_cmd = str(comp_cmd).split()
+            subp.call(comp_cmd, cwd=tnp_dir)
+
+        prediction = -1  # default value
+        exec_cmd = details.get('cmd').get('execution')
+        exec_cmd = str(exec_cmd).split()
         if exec_cmd is not None:
-            subprocess.call(cd_cmd)
-            exec_cmd = [exec_cmd] + [str(f).strip() for f in X]
-            pred = subprocess.check_output(exec_cmd, stderr=subprocess.STDOUT)
-            pred = int(pred)
+            full_exec_cmd = exec_cmd + [str(f).strip() for f in X]
+            prediction = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
+                                           cwd=tnp_dir)
+            prediction = int(prediction)
 
         if not keep_tmp_dir:
-            subprocess.call(['rm', tnp_dir])
+            subp.call(['rm', '-rf', tnp_dir])
 
-        return pred
+        return prediction
 
     @staticmethod
-    def _dependencies(self, language):
-        language = str(language).lower().strip()
+    def _dependencies(language):
         dependencies = {
             'c': ['gcc'],
             'java': ['java', 'javac'],
@@ -203,8 +229,7 @@ class Porter:
         test_cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
         for exe in dependencies:
             cmd = test_cmd.format(exe)
-            available = subprocess.check_output(cmd,shell=True,
-                                                stderr=subprocess.STDOUT)
+            available = subp.check_output(cmd, shell=True, stderr=subp.STDOUT)
             available = available.strip() is '1'
             if not available:
                 error = "The required application '{0}'" \
@@ -230,10 +255,7 @@ class Porter:
         # Filename:
         return '{}.{}'.format(name, suffix)
 
-    def _build_commands(self, filename):
-        class_name = self.class_name
-        language = self.target_language
-
+    def _build_commands(self, filename, class_name, language):
         # Get compiling command:
         compilation_variants = {
             # gcc brain.c -o brain
