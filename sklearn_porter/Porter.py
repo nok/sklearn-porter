@@ -34,33 +34,30 @@ class Porter:
             Set: ['predict']
         """
         self.model = model
-        self.target_language = language
-        self.target_method = method
 
-        shared_properties = ('algo_name', 'algo_type')
+        shared_properties = ('algorithm_name', 'algorithm_type')
         for prop in shared_properties:
-            key = prop.lower()
-            if hasattr(self, key):
-                setattr(self, key, getattr(self, key))
+            if hasattr(self, prop):
+                setattr(self, prop, getattr(self, prop))
 
         # Import model class:
+        package = '{algorithm_type}.' \
+                  '{algorithm_name}'.format(**self.__dict__)
+        level = -1 if sys.version_info < (3, 3) else 1
         try:
-            package = '{algo_type}.{algo_name}'.format(**self.__dict__)
-            level = -1 if sys.version_info < (3, 3) else 1
             clazz = __import__(package, globals(), locals(),
-                               [self.algo_name], level)
-            clazz = getattr(clazz, self.algo_name)
+                               [self.algorithm_name], level)
+            clazz = getattr(clazz, self.algorithm_name)
         except ImportError:
-            error = "The given model '{algo_name}' isn't" \
-                    " supported.".format(**self.__dict__)
+            error = "The given model '{algorithm_name}' " \
+                    "isn't supported.".format(**self.__dict__)
             raise AttributeError(error)
 
-        algorithm = clazz(**self.__dict__)
-
-        # Target programming language:
+        # Set target programming language:
         language = str(language).strip().lower()
         pwd = os.path.dirname(__file__)
-        template_dir = os.path.join(pwd, self.algo_type, self.algo_name,
+        template_dir = os.path.join(pwd, self.algorithm_type,
+                                    self.algorithm_name,
                                     'templates', language)
         has_template = os.path.isdir(template_dir)
         if not has_template:
@@ -69,24 +66,27 @@ class Porter:
             raise AttributeError(error)
         self.target_language = language
 
-        # Prediction method:
-        has_method = method in set(algorithm.SUPPORTED_METHODS)
+        # Set target prediction method:
+        has_method = method in set(getattr(clazz, 'SUPPORTED_METHODS'))
         if not has_method:
             error = "The given model method" \
                     " '{}' isn't supported.".format(method)
             raise AttributeError(error)
         self.target_method = method
-        algorithm.target_method = method
 
-        self.algorithm = algorithm
+        # Create instance with all parameters:
+        self.algorithm = clazz(**self.__dict__)
+
+        self.tested_env_dependencies = False
+
 
     @property
-    def algo_name(self):
+    def algorithm_name(self):
         """Get the algorithm class name."""
         return str(type(self.model).__name__)
 
     @property
-    def algo_type(self):
+    def algorithm_type(self):
         """Get algorithm type, which is either a classifier or regressor."""
         if isinstance(self.model, self.classifiers):
             return 'classifier'
@@ -143,22 +143,18 @@ class Porter:
         :return : string
             The ported model as string.
         """
-        class_name = str(class_name).strip()
-        method_name = str(method_name).strip()
-        language = self.target_language
-
-        print('LANG', language)
-
-
-        transpiled_model = self.algorithm.export(class_name=class_name,
-                                                 method_name=method_name)
+        model = self.algorithm.export(class_name=class_name,
+                                      method_name=method_name)
         if not details:
-            return transpiled_model
+            return model
 
-        filename = self._build_filename(class_name)
-        comp_cmd, exec_cmd = self._build_commands(filename, class_name, language)
+        language = self.target_language
+        filename = Porter.get_filename(class_name, language)
+        comp_cmd, exec_cmd = Porter.get_commands(filename,
+                                                 class_name,
+                                                 language)
         output = {
-            'model': transpiled_model,
+            'model': model,
             'filename': filename,
             'class_name': class_name,
             'method_name': method_name,
@@ -167,8 +163,8 @@ class Porter:
                 'execution': exec_cmd
             },
             'algorithm': {
-                'type': self.algo_type,
-                'name': self.algo_name
+                'type': self.algorithm_type,
+                'name': self.algorithm_name
             }
         }
         return output
@@ -180,17 +176,21 @@ class Porter:
 
     def predict(self, X, class_name='Brain', method_name='predict',
                 tnp_dir='tmp', keep_tmp_dir=False):
+        if not self.tested_env_dependencies:
+            Porter.test_dependencies(self.target_language)
+
         has_method = 'predict' in set(self.algorithm.SUPPORTED_METHODS)
         if not has_method:
             error = "The given model method" \
                     " '{}' isn't supported.".format('predict')
             raise AttributeError(error)
-        details = self.export(class_name=class_name, method_name=method_name,
+        details = self.export(class_name=class_name,
+                              method_name=method_name,
                               details=True)
         subp.call(['rm', '-rf', tnp_dir])
         subp.call(['mkdir', tnp_dir])
 
-        filename = self._build_filename(class_name)
+        filename = Porter.get_filename(class_name, self.target_language)
         target_file = os.path.join(tnp_dir, filename)
         with open(target_file, 'w') as f:
             transpiled_model = details.get('model')
@@ -216,8 +216,11 @@ class Porter:
         return prediction
 
     @staticmethod
-    def _dependencies(language):
-        dependencies = {
+    def test_dependencies(language):
+        lang = str(language)
+
+        # Dependencies:
+        depends = {
             'c': ['gcc'],
             'java': ['java', 'javac'],
             'js': ['node'],
@@ -225,11 +228,14 @@ class Porter:
             'php': ['php'],
             'ruby': ['ruby']
         }
-        dependencies = dependencies.get(language) + ['mkdir', 'rm']
-        test_cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
-        for exe in dependencies:
-            cmd = test_cmd.format(exe)
-            available = subp.check_output(cmd, shell=True, stderr=subp.STDOUT)
+        all_depends = depends.get(lang) + ['mkdir', 'rm']
+
+        # Test:
+        cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
+        for exe in all_depends:
+            cmd = cmd.format(exe)
+            available = subp.check_output(cmd, shell=True,
+                                          stderr=subp.STDOUT)
             available = available.strip() is '1'
             if not available:
                 error = "The required application '{0}'" \
@@ -237,11 +243,12 @@ class Porter:
                 raise SystemError(error)
         return True
 
-    def _build_filename(self, class_name):
-        language = self.target_language
+    @staticmethod
+    def get_filename(class_name, language):
+        name = str(class_name).lower()
+        lang = str(language)
 
         # Name:
-        name = class_name.lower()
         if language == 'java':
             name = name.capitalize()
 
@@ -250,31 +257,39 @@ class Porter:
             'c': 'c', 'java': 'java', 'js': 'js',
             'go': 'go', 'php': 'php', 'ruby': 'rb'
         }
-        suffix = suffix.get(language, language)
+        suffix = suffix.get(lang, lang)
 
         # Filename:
         return '{}.{}'.format(name, suffix)
 
-    def _build_commands(self, filename, class_name, language):
-        # Get compiling command:
-        compilation_variants = {
+    @staticmethod
+    def get_commands(filename, class_name, language):
+        cname = str(class_name).lower()
+        fname = str(filename)
+        lang = str(language)
+
+        # Compilation variants:
+        comp_vars = {
             # gcc brain.c -o brain
-            'c': 'gcc {} -lm -o {}'.format(filename, class_name.lower()),
+            'c': 'gcc {} -lm -o {}'.format(fname, cname),
             # javac Brain.java
-            'java': 'javac {}'.format(filename)
+            'java': 'javac {}'.format(fname)
         }
-        compilation_cmd = compilation_variants.get(language, None)
+        comp_cmd = comp_vars.get(lang, None)
 
-        # Build execution command:
-        execution_variants = {
+        # Execution variants:
+        exec_vars = {
             # ./brain
-            'c': os.path.join('.', class_name.lower()),
+            'c': os.path.join('.', cname),
             # java -classpath . Brain
-            'java': 'java -classpath . {}'.format(class_name.capitalize()),
+            'java': 'java -classpath . {}'.format(cname.capitalize()),
             # node brain.js
-            'js': 'node {}'.format(filename)
-            # TODO: Add go exec command
+            'js': 'node {}'.format(fname),
+            # php -f brain.php
+            'php': 'php -f {}'.format(fname),
+            # ruby brain.rb
+            'ruby': 'ruby {}'.format(fname)
         }
-        execution_cmd = execution_variants.get(language, None)
+        exec_cmd = exec_vars.get(lang, None)
 
-        return compilation_cmd, execution_cmd
+        return comp_cmd, exec_cmd
