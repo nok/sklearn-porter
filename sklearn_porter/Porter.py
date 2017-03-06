@@ -178,49 +178,58 @@ class Porter:
 
     def predict(self, X, class_name='Brain', method_name='predict',
                 tnp_dir='tmp', keep_tmp_dir=False):
+        # Dependencies:
         if not self.tested_env_dependencies:
             Porter.test_dependencies(self.target_language)
 
-        has_method = 'predict' in set(self.algorithm.SUPPORTED_METHODS)
-        if not has_method:
+        # Support:
+        if 'predict' not in set(self.algorithm.SUPPORTED_METHODS):
             error = "The given model method" \
                     " '{}' isn't supported.".format('predict')
             raise AttributeError(error)
-        details = self.export(class_name=class_name,
-                              method_name=method_name,
-                              details=True)
+
+        # Cleanup:
         subp.call(['rm', '-rf', tnp_dir])
         subp.call(['mkdir', tnp_dir])
 
+        # Transpiled model:
+        details = self.export(class_name=class_name,
+                              method_name=method_name,
+                              details=True)
         filename = Porter.get_filename(class_name, self.target_language)
         target_file = os.path.join(tnp_dir, filename)
         with open(target_file, 'w') as f:
-            transpiled_model = details.get('model')
-            f.write(transpiled_model)
+            f.write(details.get('model'))
 
+        # Compilation command:
         comp_cmd = details.get('cmd').get('compilation')
         if comp_cmd is not None:
             comp_cmd = str(comp_cmd).split()
             subp.call(comp_cmd, cwd=tnp_dir)
 
-        y = None  # default value
+        # Execution command:
         exec_cmd = details.get('cmd').get('execution')
         exec_cmd = str(exec_cmd).split()
-        if exec_cmd is not None:
 
-            if len(X.shape) == 1:
-                full_exec_cmd = exec_cmd + [str(f).strip() for f in X]
+        y = None
+
+        # Single feature set:
+        if exec_cmd is not None and len(X.shape) == 1:
+            full_exec_cmd = exec_cmd + [str(f).strip() for f in X]
+            pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
+                                     cwd=tnp_dir)
+            y = int(pred)
+
+        # Multiple feature sets:
+        if exec_cmd is not None and len(X.shape) > 1:
+            y = np.empty(X.shape[0], dtype=int)
+            for idx, x in enumerate(X):
+                full_exec_cmd = exec_cmd + [str(f).strip() for f in x]
                 pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
                                          cwd=tnp_dir)
-                y = int(pred)
-            else:
-                y = np.array([])
-                for x in X:
-                    full_exec_cmd = exec_cmd + [str(f).strip() for f in x]
-                    pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
-                                             cwd=tnp_dir)
-                    y = np.append(y, int(pred))
+                y[idx] = int(pred)
 
+        # Cleanup:
         if not keep_tmp_dir:
             subp.call(['rm', '-rf', tnp_dir])
 
