@@ -4,6 +4,8 @@ import os
 import sys
 import subprocess as subp
 
+import numpy as np
+
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
 from sklearn.ensemble.forest import RandomForestClassifier
@@ -201,19 +203,28 @@ class Porter:
             comp_cmd = str(comp_cmd).split()
             subp.call(comp_cmd, cwd=tnp_dir)
 
-        prediction = -1  # default value
+        y = None  # default value
         exec_cmd = details.get('cmd').get('execution')
         exec_cmd = str(exec_cmd).split()
         if exec_cmd is not None:
-            full_exec_cmd = exec_cmd + [str(f).strip() for f in X]
-            prediction = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
-                                           cwd=tnp_dir)
-            prediction = int(prediction)
+
+            if len(X.shape) == 1:
+                full_exec_cmd = exec_cmd + [str(f).strip() for f in X]
+                pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
+                                         cwd=tnp_dir)
+                y = int(pred)
+            else:
+                y = np.array([])
+                for x in X:
+                    full_exec_cmd = exec_cmd + [str(f).strip() for f in x]
+                    pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
+                                             cwd=tnp_dir)
+                    y = np.append(y, int(pred))
 
         if not keep_tmp_dir:
             subp.call(['rm', '-rf', tnp_dir])
 
-        return prediction
+        return y
 
     @staticmethod
     def test_dependencies(language):
