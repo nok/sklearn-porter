@@ -23,17 +23,19 @@ class Porter:
 
     def __init__(self, model, language='java', method='predict', **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained model to the syntax of a chosen
+        programming language.
 
         Parameters
         ----------
-        :param language : string (default='java')
-            The required target programming language.
-            Set: ['c', 'go', 'java', 'js', 'php', 'ruby']
+        model : sklearn.base.BaseEstimator
+            A trained scikit-learn model.
 
-        :param method : string (default='predict')
-            The name and type of the prediction method.
-            Set: ['predict']
+        language : {'c', 'go', 'java', 'js', 'php', 'ruby'}, default 'java'
+            The required target programming language.
+
+        method : {'predict', 'predict_proba'}, default 'predict'
+            The target prediction method.
         """
         self.model = model
 
@@ -84,24 +86,46 @@ class Porter:
 
     @property
     def algorithm_name(self):
-        """Get the algorithm class name."""
-        return str(type(self.model).__name__)
+        """
+        Get the algorithm class name.
+
+        Returns
+        -------
+        name : string
+            The class name of the used algorithm.
+        """
+        name = str(type(self.model).__name__)
+        return name
 
     @property
     def algorithm_type(self):
-        """Get algorithm type, which is either a classifier or regressor."""
+        """
+        Get the algorithm type.
+
+        Returns
+        -------
+        type : {'classifier', 'regressor'}
+            The type oof the used algorithm.
+        """
         if isinstance(self.model, self.classifiers):
             return 'classifier'
-        # if isinstance(self.model, self.regressors):
-        #     return 'regressor'
         error = "The given model '{model}' isn't" \
                 " supported.".format(**self.__dict__)
         raise ValueError(error)
 
     @property
     def classifiers(self):
-        """List of supported classifiers."""
-        classifiers = (  # sklearn version < 0.18.0
+        """
+        Get a set of supported classifiers.
+
+        Returns
+        -------
+        classifiers : {set}
+            The supported classifiers.
+        """
+
+        # sklearn version < 0.18.0
+        classifiers = (
             AdaBoostClassifier,
             BernoulliNB,
             DecisionTreeClassifier,
@@ -113,7 +137,9 @@ class Porter:
             RandomForestClassifier,
             SVC,
         )
-        from sklearn import __version__ as version  # sklearn version >= 0.18.0
+
+        # sklearn version >= 0.18.0
+        from sklearn import __version__ as version
         version = version.split('.')
         version = [int(v) for v in version]
         major, minor = version[0], version[1]
@@ -121,29 +147,33 @@ class Porter:
             from sklearn.neural_network.multilayer_perceptron \
                 import MLPClassifier
             classifiers += (MLPClassifier, )
+
         return classifiers
 
     def export(self, class_name='Brain',
                method_name='predict',
                details=False, **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Transpile a trained model to the syntax of a
+        chosen programming language.
 
         Parameters
         ----------
-        :param class_name : string (default='Brain')
+        class_name : string, default 'Brain'
             The name for the ported class.
 
-        :param method_name : string (default='predict')
+        method_name : string, default 'predict'
             The name for the ported method.
 
-        :param details : bool (default=False)
-            Return additional data for compiling and execution.
+        details : bool, default False
+            Return additional data for the compilation
+            and execution.
 
         Returns
         -------
-        :return : string
-            The ported model as string.
+        model : {mix}
+            The ported model as string or a dictionary
+            with further information.
         """
         model = self.algorithm.export(class_name=class_name,
                                       method_name=method_name)
@@ -171,13 +201,65 @@ class Porter:
         }
         return output
 
-    def port(self, class_name='Brain', method_name='predict', details=False):
+    def port(self, class_name='Brain',
+             method_name='predict',
+             details=False):
+        """
+        Transpile a trained model to the syntax of a
+        chosen programming language.
+
+        Parameters
+        ----------
+        class_name : string, default 'Brain'
+            The name for the ported class.
+
+        method_name : string, default 'predict'
+            The name for the ported method.
+
+        details : bool, default False
+            Return additional data for the compilation
+            and execution.
+
+        Returns
+        -------
+        model : {mix}
+            The ported model as string or a dictionary
+            with further information.
+        """
         loc = locals()
         loc.pop('self')
         return self.export(**loc)
 
     def predict(self, X, class_name='Brain', method_name='predict',
                 tnp_dir='tmp', keep_tmp_dir=False):
+        """
+        Predict using the transpiled model.
+
+        Parameters
+        ----------
+        X : {array-like}, shape (n_features) or (n_samples, n_features)
+            The input data.
+
+        class_name : string, default 'Brain'
+            The name for the ported class.
+
+        method_name : string, default 'predict'
+            The name for the ported method.
+
+        tnp_dir : string, default 'tmp'
+            The path to the temporary directory for
+            storing the transpiled (and compiled) model.
+
+        keep_tmp_dir : bool, default False
+            Whether to delete the temporary directory
+            or not.
+
+        Returns
+        -------
+            y : int or array-like, shape (n_samples,)
+            The predicted class or classes.
+        """
+
         # Dependencies:
         if not self.tested_env_dependencies:
             Porter.test_dependencies(self.target_language)
@@ -237,6 +319,15 @@ class Porter:
 
     @staticmethod
     def test_dependencies(language):
+        """
+        Check all target programming and operating
+        system dependencies.
+
+        Parameters
+        ----------
+        language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
+            The target programming language.
+        """
         lang = str(language)
 
         # Dependencies:
@@ -261,10 +352,25 @@ class Porter:
                 error = "The required application '{0}'" \
                         " isn't available.".format(exe)
                 raise SystemError(error)
-        return True
 
     @staticmethod
     def get_filename(class_name, language):
+        """
+        Generate the specific filename.
+
+        Parameters
+        ----------
+        class_name : str
+            The used class name.
+
+        language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
+            The target programming language.
+
+        Returns
+        -------
+            filename : str
+            The generated filename.
+        """
         name = str(class_name).lower()
         lang = str(language)
 
@@ -284,6 +390,26 @@ class Porter:
 
     @staticmethod
     def get_commands(filename, class_name, language):
+        """
+        Generate the related compilation and
+        execution commands.
+
+        Parameters
+        ----------
+        filename : str
+            The used filename.
+
+        class_name : str
+            The used class name.
+
+        language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
+            The target programming language.
+
+        Returns
+        -------
+            comp_cmd, exec_cmd : (str, str)
+            The compilation and execution command.
+        """
         cname = str(class_name).lower()
         fname = str(filename)
         lang = str(language)
