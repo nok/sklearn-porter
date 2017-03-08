@@ -8,7 +8,8 @@ class Algorithm(object):
     SUPPORTED_METHODS = {}
     TEMPLATES = {}
 
-    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
+    def __init__(self, model, target_language='java',
+                 target_method='predict', **kwargs):
         self.target_language = str(target_language)
         self.target_method = str(target_method)
 
@@ -22,9 +23,6 @@ class Algorithm(object):
         # self.method_name = method_name
         # self.class_name = class_name
         # self.check_support()
-
-        print(kwargs)
-        self.model = model
 
     def export(self, **kwargs):
         pass
