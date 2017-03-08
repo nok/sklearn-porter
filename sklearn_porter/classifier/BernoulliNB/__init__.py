@@ -26,20 +26,9 @@ class BernoulliNB(Template):
     }
     # @formatter:on
 
-    def __init__(self, language='java', method_name='predict',
-                 class_name='Tmp', **kwargs):
-        super(BernoulliNB, self).__init__(language, method_name, class_name)
-
-    def port(self, model):
-        """
-        Port a trained model to the syntax of a chosen programming language.
-
-        Parameters
-        ----------
-        :param model : GaussianNB
-            An instance of a trained GaussianNB classifier.
-        """
-        super(BernoulliNB, self).port(model)
+    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
+        super(BernoulliNB, self).__init__(model, target_language=target_language, target_method=target_method, **kwargs)
+        self.model = model
 
         # self.n_features = len(model.sigma_[0])
         self.n_classes = len(model.classes_)
@@ -89,6 +78,17 @@ class BernoulliNB(Template):
                                                      name='delProbs',
                                                      values=probs)
 
+    def export(self, class_name, method_name):
+        """
+        Port a trained model to the syntax of a chosen programming language.
+
+        Parameters
+        ----------
+        :param model : GaussianNB
+            An instance of a trained GaussianNB classifier.
+        """
+        self.class_name = class_name
+        self.method_name = method_name
         if self.method_name == 'predict':
             return self.predict()
 
@@ -112,7 +112,7 @@ class BernoulliNB(Template):
         :return out : string
             The built method as string.
         """
-        n_indents = 1 if self.language in ['java'] else 0
+        n_indents = 1 if self.target_language in ['java'] else 0
         return self.temp('method.predict', n_indents=n_indents,
                          skipping=True).format(**self.__dict__)
 

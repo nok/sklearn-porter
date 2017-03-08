@@ -47,20 +47,11 @@ class SVC(Template):
     }
     # @formatter:on
 
-    def __init__(
-            self, language='java', method_name='predict', class_name='Tmp', **kwargs):
-        super(SVC, self).__init__(language, method_name, class_name)
-
-    def port(self, model):
-        """
-        Port a trained model to the syntax of a chosen programming language.
-
-        Parameters
-        ----------
-        :param model : SVC
-            An instance of a trained SVC classifier.
-        """
-        super(SVC, self).port(model)
+    def __init__(self, model, target_language='java', target_method='predict',
+                 **kwargs):
+        super(SVC, self).__init__(model, target_language=target_language,
+                                  target_method=target_method, **kwargs)
+        self.model = model
 
         params = model.get_params()
         # Check kernel type:
@@ -85,7 +76,18 @@ class SVC(Template):
         self.classes = model.classes_
         self.n_classes = len(model.classes_)
 
-        if self.method_name == 'predict':
+    def export(self, class_name, method_name):
+        """
+        Port a trained model to the syntax of a chosen programming language.
+
+        Parameters
+        ----------
+        :param model : SVC
+            An instance of a trained SVC classifier.
+        """
+        self.class_name = class_name
+        self.method_name = method_name
+        if self.target_method == 'predict':
             return self.predict()
 
     def predict(self):
@@ -176,7 +178,7 @@ class SVC(Template):
         out += self.temp('ends').format(self.n_svs_rows)
         out += self.temp('decicions').format(self.n_inters, self.n_svs_rows)
         out += self.temp('classes').format(self.n_inters, self.n_classes)
-        n_indents = 0 if self.language in ['java', 'js', 'php'] else 1
+        n_indents = 0 if self.target_language in ['java', 'js', 'php'] else 1
         out = self.indent(out, n_indents=2-n_indents)
         return self.temp('method', n_indents=1-n_indents, skipping=True).format(
             method_name=self.method_name, decicion=out)

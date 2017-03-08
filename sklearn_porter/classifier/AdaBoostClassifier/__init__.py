@@ -45,20 +45,9 @@ class AdaBoostClassifier(Template):
     }
     # @formatter:on
 
-    def __init__(self, language='java', method_name='predict',
-                 class_name='Tmp', **kwargs):
-        super(AdaBoostClassifier, self).__init__(
-            language, method_name, class_name)
-
-    def port(self, model):
-        """
-        Port a trained model to the syntax of a chosen programming language.
-
-        Parameters
-        ----------
-        :param model : AdaBoostClassifier
-            An instance of a trained AdaBoostClassifier model.
-        """
+    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
+        super(AdaBoostClassifier, self).__init__(model, target_language=target_language, target_method=target_method, **kwargs)
+        self.model = model
 
         # Check the used algorithm type:
         if model.algorithm not in ('SAMME.R'):
@@ -91,7 +80,18 @@ class AdaBoostClassifier(Template):
                 self.n_estimators += 1
                 self.n_features = self.model.estimators_[idx].n_features_
 
-        if self.method_name == 'predict':
+    def export(self, class_name, method_name):
+        """
+        Port a trained model to the syntax of a chosen programming language.
+
+        Parameters
+        ----------
+        :param model : AdaBoostClassifier
+            An instance of a trained AdaBoostClassifier model.
+        """
+        self.class_name = class_name
+        self.method_name = method_name
+        if self.target_method == 'predict':
             return self.predict()
 
     def predict(self):
@@ -217,7 +217,7 @@ class AdaBoostClassifier(Template):
         fns = '\n'.join(fns)
 
         # Merge generated content:
-        n_indents = 1 if self.language in ['java', 'js'] else 0
+        n_indents = 1 if self.target_language in ['java', 'js'] else 0
         method = self.temp('method').format(
             fns, self.method_name, self.n_estimators, self.n_classes, fn_names)
         method = self.indent(method, n_indents=n_indents, skipping=True)

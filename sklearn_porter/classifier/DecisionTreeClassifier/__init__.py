@@ -51,15 +51,11 @@ class DecisionTreeClassifier(Template):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java',
-                 target_method='predict', **kwargs):
-        super(DecisionTreeClassifier, self).__init__(
-            model, target_language=target_language,
-            target_method=target_method, **kwargs)
+    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
+        super(DecisionTreeClassifier, self).__init__(model, target_language=target_language, target_method=target_method, **kwargs)
         self.model = model
         self.n_features = model.n_features_
         self.n_classes = model.n_classes_
-
 
     def export(self, class_name, method_name):
         """
@@ -70,7 +66,8 @@ class DecisionTreeClassifier(Template):
         :param model : DecisionTreeClassifier
             An instance of a trained DecisionTreeClassifier classifier.
         """
-
+        self.class_name = class_name
+        self.method_name = method_name
         if self.target_method == 'predict':
             return self.predict(class_name, method_name)
 
@@ -83,7 +80,6 @@ class DecisionTreeClassifier(Template):
         :return: out : string
             The ported predict method.
         """
-
         method = self.create_method(class_name, method_name)
         return self.create_class(method, class_name, method_name)
 

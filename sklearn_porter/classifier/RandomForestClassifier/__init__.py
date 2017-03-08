@@ -46,12 +46,10 @@ class RandomForestClassifier(Template):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java', target_method='predict',
-                 **kwargs):
-        super(RandomForestClassifier, self).__init__(model,
-                                                     target_language=target_language,
-                                                     target_method=target_method,
-                                                     **kwargs)
+    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
+        super(RandomForestClassifier, self).__init__(model, target_language=target_language, target_method=target_method, **kwargs)
+        self.model = model
+
         # Check type of base estimators:
         if not isinstance(model.base_estimator, DecisionTreeClassifier):
             msg = "The classifier doesn't support the given base estimator %s."
@@ -63,14 +61,14 @@ class RandomForestClassifier(Template):
             raise ValueError(msg)
 
         self.n_classes = model.n_classes_
+        self.models = []
+        self.n_estimators = 0
+        for idx in range(self.model.n_estimators):
+            self.models.append(self.model.estimators_[idx])
+            self.n_estimators += 1
+            self.n_features = self.model.estimators_[idx].n_features_
 
-    def do_valid_checks(self):
-        pass
-
-    def export(self, **kwargs):
-        return '123'
-
-    def port(self, model):
+    def export(self, class_name, method_name):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -79,17 +77,8 @@ class RandomForestClassifier(Template):
         :param model : AdaBoostClassifier
             An instance of a trained AdaBoostClassifier model.
         """
-
-
-        self.model = model
-        self.n_classes = model.n_classes_
-        self.models = []
-        self.n_estimators = 0
-        for idx in range(self.model.n_estimators):
-            self.models.append(self.model.estimators_[idx])
-            self.n_estimators += 1
-            self.n_features = self.model.estimators_[idx].n_features_
-
+        self.class_name = class_name
+        self.method_name = method_name
         if self.method_name == 'predict':
             return self.predict()
 
@@ -216,7 +205,7 @@ class RandomForestClassifier(Template):
         fns = '\n'.join(fns)
 
         # Merge generated content:
-        n_indents = 1 if self.language in ['java', 'js'] else 0
+        n_indents = 1 if self.target_language in ['java', 'js'] else 0
         method = self.temp('method').format(
             fns, self.method_name, self.n_estimators, self.n_classes, fn_names)
         method = self.indent(method, n_indents=n_indents, skipping=True)
