@@ -26,7 +26,7 @@ clf.fit(X_train, y_train)
 
 # Cheese!
 
-result = Porter(language='js').port(clf)
+result = Porter(clf, language='js').export()
 print(result)
 
 """

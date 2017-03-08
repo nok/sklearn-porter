@@ -13,7 +13,7 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter(language='php').port(clf)
+result = Porter(clf, language='php').export()
 print(result)
 
 """

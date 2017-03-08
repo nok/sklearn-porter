@@ -13,8 +13,8 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter().port(clf)
-# model = Porter(language='java').port(clf)
+result = Porter(clf).export()
+# model = Porter(clf, language='java').export()
 print(result)
 
 """

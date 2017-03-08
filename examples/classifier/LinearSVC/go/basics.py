@@ -13,7 +13,7 @@ clf.fit(X, y)
 
 # Cheese!
 
-model = Porter(language='go').port(clf)
+model = Porter(clf, language='go').export()
 print(model)
 
 """

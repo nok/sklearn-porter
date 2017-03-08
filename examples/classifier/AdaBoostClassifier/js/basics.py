@@ -16,7 +16,7 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter(language='js').port(clf)
+result = Porter(clf, language='js').export()
 print(result)
 
 """

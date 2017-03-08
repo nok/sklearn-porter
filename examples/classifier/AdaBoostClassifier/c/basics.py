@@ -16,7 +16,7 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter(language='c').port(clf)
+result = Porter(clf, language='c').export()
 print(result)
 
 """

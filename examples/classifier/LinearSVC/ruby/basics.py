@@ -13,7 +13,7 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter(language='ruby').port(clf)
+result = Porter(clf, language='ruby').export()
 print(result)
 
 """

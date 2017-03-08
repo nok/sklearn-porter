@@ -185,7 +185,7 @@ class Porter:
                                                  class_name,
                                                  language)
         output = {
-            'model': model,
+            'model': str(model),
             'filename': filename,
             'class_name': class_name,
             'method_name': method_name,
