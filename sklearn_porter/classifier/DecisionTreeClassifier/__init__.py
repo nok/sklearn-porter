@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...Algorithm import Algorithm
+from ...Template import Template
 
 
-class DecisionTreeClassifier(Algorithm):
+class DecisionTreeClassifier(Template):
     """
     See also
     --------
@@ -51,13 +51,15 @@ class DecisionTreeClassifier(Algorithm):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
-        super(DecisionTreeClassifier, self).__init__(model,
-                                                     target_language=target_language,
-                                                     target_method=target_method,
-                                                     **kwargs)
+    def __init__(self, model, target_language='java',
+                 target_method='predict', **kwargs):
+        super(DecisionTreeClassifier, self).__init__(
+            model, target_language=target_language,
+            target_method=target_method, **kwargs)
+        self.model = model
         self.n_features = model.n_features_
         self.n_classes = model.n_classes_
+
 
     def export(self, class_name, method_name):
         """

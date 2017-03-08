@@ -79,10 +79,9 @@ class Porter:
         self.target_method = method
 
         # Create instance with all parameters:
-        self.algorithm = clazz(**self.__dict__)
+        self.template = clazz(**self.__dict__)
 
         self.tested_env_dependencies = False
-
 
     @property
     def algorithm_name(self):
@@ -175,7 +174,7 @@ class Porter:
             The ported model as string or a dictionary
             with further information.
         """
-        model = self.algorithm.export(class_name=class_name,
+        model = self.template.export(class_name=class_name,
                                       method_name=method_name)
         if not details:
             return model
@@ -265,7 +264,7 @@ class Porter:
             Porter.test_dependencies(self.target_language)
 
         # Support:
-        if 'predict' not in set(self.algorithm.SUPPORTED_METHODS):
+        if 'predict' not in set(self.template.SUPPORTED_METHODS):
             error = "The given model method" \
                     " '{}' isn't supported.".format('predict')
             raise AttributeError(error)

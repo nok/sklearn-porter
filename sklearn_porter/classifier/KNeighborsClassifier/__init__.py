@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...Algorithm import Algorithm
+from ...Template import Template
 
 
-class KNeighborsClassifier(Algorithm):
+class KNeighborsClassifier(Template):
     """
     See also
     --------

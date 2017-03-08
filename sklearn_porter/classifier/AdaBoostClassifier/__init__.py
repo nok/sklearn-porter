@@ -2,10 +2,10 @@
 
 import sklearn
 
-from ...Algorithm import Algorithm
+from ...Template import Template
 
 
-class AdaBoostClassifier(Algorithm):
+class AdaBoostClassifier(Template):
     """
     See also
     --------

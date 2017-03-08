@@ -3,7 +3,7 @@
 import os.path
 
 
-class Algorithm(object):
+class Template(object):
 
     SUPPORTED_METHODS = {}
     TEMPLATES = {}
@@ -146,4 +146,5 @@ class Algorithm(object):
         :param model : scikit-learn model object
             An instance of a trained model (e.g. DecisionTreeClassifier).
         """
-        self.model = model
+        # self.model = model
+        pass

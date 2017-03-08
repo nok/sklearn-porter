@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...Algorithm import Algorithm
+from ...Template import Template
 
 
-class LinearSVC(Algorithm):
+class LinearSVC(Template):
     """
     See also
     --------

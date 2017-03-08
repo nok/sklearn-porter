@@ -2,10 +2,10 @@
 
 import numpy as np
 
-from ...Algorithm import Algorithm
+from ...Template import Template
 
 
-class BernoulliNB(Algorithm):
+class BernoulliNB(Template):
     """
     See also
     --------
