@@ -14,9 +14,8 @@ class SVCTest(PhpTest, unittest.TestCase):
 
     def setUp(self):
         super(SVCTest, self).setUp()
-        self.porter = Porter(language='php')
-        clf = NuSVC(kernel='rbf', gamma=0.001, random_state=0)
-        self._port_model(clf)
+        mdl = NuSVC(kernel='rbf', gamma=0.001, random_state=0)
+        self._port_model(mdl)
 
     def tearDown(self):
         super(SVCTest, self).tearDown()

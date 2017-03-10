@@ -14,12 +14,11 @@ class MLPClassifierTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(MLPClassifierTest, self).setUp()
-        self.porter = Porter(language='java')
-        clf = MLPClassifier(
+        mdl = MLPClassifier(
             activation='identity', hidden_layer_sizes=50,
             max_iter=500, alpha=1e-4, solver='sgd', tol=1e-4,
             random_state=1, learning_rate_init=.1)
-        self._port_model(clf)
+        self._port_model(mdl)
 
     def tearDown(self):
         super(MLPClassifierTest, self).tearDown()

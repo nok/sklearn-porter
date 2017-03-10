@@ -9,6 +9,8 @@ import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.utils import shuffle
 
+from sklearn_porter import Porter
+
 
 class JavaTest():
 
@@ -67,7 +69,7 @@ class JavaTest():
         filename = self.tmp_fn + '.java'
         path = os.path.join('temp', filename)
         with open(path, 'w') as f:
-            f.write(self.porter.port(self.clf))
+            f.write(Porter(self.clf, language='java').export(class_name='Tmp'))
         subp.call(['javac', path])  # $ javac temp/Tmp.java
         self._start_test()
 
@@ -100,7 +102,7 @@ class JavaTest():
 
     def make_pred_in_java(self, features):
         # $ java -classpath temp <temp_filename> <features>
-        cmd = ['java', '-classpath', 'temp', self.tmp_fn]
+        cmd = ['java', '-classpath', 'temp', self.tmp_fn.capitalize()]
         args = [str(f).strip() for f in features]
         cmd += args
         pred = subp.check_output(cmd, stderr=subp.STDOUT)

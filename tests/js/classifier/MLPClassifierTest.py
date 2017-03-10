@@ -14,21 +14,20 @@ class MLPClassifierTest(JavaScriptTest, unittest.TestCase):
 
     def setUp(self):
         super(MLPClassifierTest, self).setUp()
-        self.porter = Porter(language='js')
-        clf = MLPClassifier(
+        mdl = MLPClassifier(
             activation='identity', hidden_layer_sizes=50,
             max_iter=500, alpha=1e-4, solver='sgd', tol=1e-4,
             random_state=1, learning_rate_init=.1)
-        self._port_model(clf)
+        self._port_model(mdl)
 
     def tearDown(self):
         super(MLPClassifierTest, self).tearDown()
 
     def test_hidden_activation_function_relu(self):
-        clf = MLPClassifier(
+        mdl = MLPClassifier(
             activation='relu', hidden_layer_sizes=50,
             learning_rate_init=.1)
-        self._port_model(clf)
+        self._port_model(mdl)
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
@@ -40,10 +39,10 @@ class MLPClassifierTest(JavaScriptTest, unittest.TestCase):
         self.assertListEqual(py_preds, java_preds)
 
     def test_hidden_activation_function_identity(self):
-        clf = MLPClassifier(
+        mdl = MLPClassifier(
             activation='identity', hidden_layer_sizes=50,
             learning_rate_init=.1)
-        self._port_model(clf)
+        self._port_model(mdl)
         java_preds, py_preds = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)

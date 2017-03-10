@@ -12,9 +12,8 @@ class DecisionTreeClassifierTest(PhpTest, unittest.TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierTest, self).setUp()
-        self.porter = Porter(language='php')
-        clf = DecisionTreeClassifier(random_state=0)
-        self._port_model(clf)
+        mdl = DecisionTreeClassifier(random_state=0)
+        self._port_model(mdl)
 
     def tearDown(self):
         super(DecisionTreeClassifierTest, self).tearDown()

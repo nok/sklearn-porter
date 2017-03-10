@@ -9,6 +9,8 @@ import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.utils import shuffle
 
+from sklearn_porter import Porter
+
 
 class RubyTest():
 
@@ -67,7 +69,7 @@ class RubyTest():
         filename = self.tmp_fn + '.rb'
         path = os.path.join('temp', filename)
         with open(path, 'w') as f:
-            f.write(self.porter.port(self.clf))
+            f.write(Porter(self.clf, language='ruby').export())
         self._start_test()
 
     def _clear_model(self):

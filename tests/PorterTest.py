@@ -42,7 +42,7 @@ class PorterTest(unittest.TestCase):
                 self.fail(err_msg)
 
     def _init_test(self):
-        self.tmp_fn = 'Tmp'
+        self.tmp_fn = 'Brain'
         self.n_random_tests = 150
         if 'N_RANDOM_TESTS' in set(os.environ):
             n = os.environ.get('N_RANDOM_TESTS')
@@ -71,9 +71,8 @@ class PorterTest(unittest.TestCase):
         filename = '%s.java' % self.tmp_fn
         path = os.path.join('temp', filename)
         with open(path, 'w') as f:
-            porter = Porter(method_name='predict', class_name=self.tmp_fn)
-            ported_model = porter.port(self.clf)
-            f.write(ported_model)
+            out = Porter(self.clf).export(method_name='predict', class_name=self.tmp_fn)
+            f.write(out)
         subp.call(['javac', path])  # $ javac temp/Tmp.java
 
     def _clear_model(self):
@@ -83,20 +82,13 @@ class PorterTest(unittest.TestCase):
 
     def test_porter_args_method(self):
         """Test invalid method name."""
-        args = dict(method_name='random')
-        porter = Porter(args)
-        self.assertRaises(AttributeError, lambda: porter.port(self.clf))
+        args = dict(method='random')
+        self.assertRaises(AttributeError, lambda: Porter(self.clf, args))
 
     def test_porter_args_language(self):
         """Test invalid programming language."""
-        args = dict(method_name='predict', language='random')
-        porter = Porter(args)
-        self.assertRaises(AttributeError, lambda: porter.port(self.clf))
-
-    def test_data_type(self):
-        """Test invalid scikit-learn model."""
-        porter = Porter()
-        self.assertRaises(ValueError, porter.port, '')
+        args = dict(method='predict', language='random')
+        self.assertRaises(AttributeError, lambda: Porter(self.clf, args))
 
     def test_python_command_execution(self):
         """Test command line execution."""
@@ -111,6 +103,9 @@ class PorterTest(unittest.TestCase):
         pkl_path = os.path.join('temp', filename)
         joblib.dump(self.clf, pkl_path)
         # Port model:
+
+        print('pkl_path', pkl_path)
+
         cmd = ['python', '-m', 'sklearn_porter', '-i', pkl_path]
         subp.call(cmd)
         # Compare file contents:

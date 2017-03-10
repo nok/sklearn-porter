@@ -12,8 +12,8 @@ class GaussianNBTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(GaussianNBTest, self).setUp()
-        self.porter = Porter(language='java')
-        self._port_model(GaussianNB())
+        mdl = GaussianNB()
+        self._port_model(mdl)
 
     def tearDown(self):
         super(GaussianNBTest, self).tearDown()

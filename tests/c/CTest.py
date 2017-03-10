@@ -9,6 +9,8 @@ import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.utils import shuffle
 
+from sklearn_porter import Porter
+
 
 class CTest():
 
@@ -67,7 +69,7 @@ class CTest():
         filename = self.tmp_fn + '.c'
         path = os.path.join('temp', filename)
         with open(path, 'w') as f:
-            f.write(self.porter.port(self.clf))
+            f.write(Porter(self.clf, language='c').export())
         # $ gcc temp/tmp.c -o temp/tmp
         subp.call(['gcc', path, '-lm', '-o', 'temp/' + self.tmp_fn])
         self._start_test()
