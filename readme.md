@@ -180,7 +180,7 @@ clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
 # Transpile classifier:
-result = Porter(language='java').port(clf) 
+result = Porter(clf, language='java').export()
 print(result)
 ```
 
