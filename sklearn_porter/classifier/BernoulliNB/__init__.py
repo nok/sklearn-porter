@@ -89,7 +89,7 @@ class BernoulliNB(Template):
         """
         self.class_name = class_name
         self.method_name = method_name
-        if self.method_name == 'predict':
+        if self.target_method == 'predict':
             return self.predict()
 
     def predict(self):
