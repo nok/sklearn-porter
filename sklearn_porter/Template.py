@@ -13,61 +13,22 @@ class Template(object):
         self.target_language = str(target_language)
         self.target_method = str(target_method)
 
-        # if self.has_model_support(model):
-        #     self.data = model
-
-        # if self.has_language_support(language):
-        #     self.language = language
-
-        # self.language = language
-        # self.method_name = method_name
-        # self.class_name = class_name
-        # self.check_support()
-
-    def export(self, **kwargs):
-        pass
-
-    def has_language_support(self, language):
-        language = str(language).lower()
-
-        print(self.__class__)
-        print(self.__class__.TEMPLATES.keys())
-
-        if language not in self.__class__.TEMPLATES.keys():
-            error = "The given target programming language '{}'" \
-                    " is not supported for the given method."
-            error = error.format(language)
-            raise AttributeError(error)
-
-    def check_support(self):
-        """Check template and programming language support."""
-
-        if self.method_name not in self.__class__.SUPPORTED_METHODS:
-            err_msg = ('The given method is not supported '
-                       'by the chosen classifier.')
-            raise AttributeError(err_msg)
-
-        if self.language not in self.__class__.TEMPLATES.keys():
-            err_msg = ('The given programming language is '
-                       'not supported for the given method.')
-            raise AttributeError(err_msg)
-
     def indent(self, text, n_indents=1, skipping=False):
         """
         Indent text with single spaces.
 
         Parameters
         ----------
-        :param text : string
+        text : string
             The text which get a specific indentation.
-        :param n_indents : int
+        n_indents : int, default: 1
             The number of indentations.
-        :param skipping : boolean
+        skipping : boolean, default: False
             Whether to skip the initial indentation.
 
         Returns
         -------
-        :return : string
+        return : string
             The indented text.
         """
         lines = text.splitlines()
@@ -92,22 +53,23 @@ class Template(object):
 
     def temp(self, name, templates=None, n_indents=None, skipping=False):
         """
-        Get specific template of chosen programming language.
+        Get specific template of chosen
+        programming language.
 
         Parameters
         ----------
-        :param name : string
+        param name : string
             The key name of the template.
-        :param tempaltes : string
+        param templates : string, default: None
             The template with placeholders.
-        :param n_indents : int
+        param n_indents : int, default: None
             The number of indentations.
-        :param skipping : boolean
+        param skipping : bool, default: False
             Whether to skip the initial indentation.
 
         Returns
         -------
-        :return : string
+        return : string
             The wanted template string.
         """
         if templates is None:
@@ -135,16 +97,5 @@ class Template(object):
                     template = self.indent(template, n_indents, skipping)
                 return template
             else:
-                raise AttributeError('Template "%s" not found.' % name)
-
-    def port(self, model):
-        """
-        Port a trained model in the syntax of a specific programming language.
-
-        Parameters
-        ----------
-        :param model : scikit-learn model object
-            An instance of a trained model (e.g. DecisionTreeClassifier).
-        """
-        # self.model = model
-        pass
+                err = "Template '{}' wasn't found.".format(name)
+                raise AttributeError(err)
