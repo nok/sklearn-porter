@@ -47,7 +47,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/c/basics.py#L16">X</a> , <a href="examples/classifier/LinearSVC/c/compiling.py#L18">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/c/basics.py#L16">X</a> , <a href="examples/classifier/LinearSVC/c/compilation.py#L18">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/java/basics.py#L16">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/js/basics.py#L16">X</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/go/basics.py#L16">X</a></td>

@@ -25,7 +25,7 @@ var Neighbor = function(clazz, dist) {
     this.dist = dist;
 };
 
-var Tmp = function(atts) {
+var Brain = function(atts) {
 
     var compDist = function(temp, cand, q) {
         var dist = 0.,
@@ -86,10 +86,7 @@ var Tmp = function(atts) {
                 dists.push(new Neighbor(y[i], compDist(X[i], atts, power)));
             }
             dists.sort(function compare(n1, n2) {
-                if (n1.dist < n2.dist) {
-                    return -1;
-                }
-                return 1;
+                return (n1.dist < n2.dist) ? -1 : 1;
             });
             for (i = 0; i < nNeighbors; i++) {
                 classes[dists[i].clazz]++;
@@ -110,7 +107,7 @@ var Tmp = function(atts) {
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv.length - 2 == 4) {
         var argv = process.argv.slice(2);
-        var prediction = new Tmp().predict(argv);
+        var prediction = new Brain().predict(argv);
         console.log(prediction);
     }
 }

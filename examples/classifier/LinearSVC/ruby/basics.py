@@ -17,7 +17,7 @@ result = Porter(clf, language='ruby').export()
 print(result)
 
 """
-class Tmp
+class Brain
 
     def self.predict (atts)
 
@@ -44,6 +44,6 @@ class Tmp
 end
 
 if ARGV.length == 4
-    puts Tmp.predict(ARGV)
+    puts Brain.predict(ARGV)
 end
 """

@@ -20,7 +20,7 @@ print(result)
 """
 import java.util.*;
 
-class Tmp {
+class Brain {
 
     private static class Neighbor {
         Integer clazz;
@@ -75,7 +75,7 @@ class Tmp {
             double minDist = Double.POSITIVE_INFINITY;
             double curDist;
             for (int i = 0; i < nTemplates; i++) {
-                curDist = Tmp.compDist(X[i], atts, power);
+                curDist = Brain.compDist(X[i], atts, power);
                 if (curDist <= minDist) {
                     minDist = curDist;
                     classIdx = y[i];
@@ -85,7 +85,7 @@ class Tmp {
             int[] classes = new int[nClasses];
             ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
             for (int i = 0; i < nTemplates; i++) {
-                dists.add(new Neighbor(y[i], Tmp.compDist(X[i], atts, power)));
+                dists.add(new Neighbor(y[i], Brain.compDist(X[i], atts, power)));
             }
             Collections.sort(dists, new Comparator<Neighbor>() {
                 @Override
@@ -113,7 +113,7 @@ class Tmp {
             for (int i = 0, l = args.length; i < l; i++) {
                 atts[i] = Double.parseDouble(args[i]);
             }
-            System.out.println(Tmp.predict(atts));
+            System.out.println(Brain.predict(atts));
         }
     }
 }

@@ -20,7 +20,7 @@ result = Porter(clf, language='js').export()
 print(result)
 
 """
-var Tmp = function(atts) {
+var Brain = function(atts) {
 
     var predict_0 = function(atts) {
         var classes = new Array(3);
@@ -270,7 +270,7 @@ var Tmp = function(atts) {
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv.length - 2 == 4) {
         var argv = process.argv.slice(2);
-        var prediction = new Tmp().predict(argv);
+        var prediction = new Brain().predict(argv);
         console.log(prediction);
     }
 }

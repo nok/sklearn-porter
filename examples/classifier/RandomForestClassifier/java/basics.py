@@ -19,7 +19,7 @@ result = Porter(clf).port()
 print(result)
 
 """
-class Tmp {
+class Brain {
     public static int predict_00(float[] atts) {
         int[] classes = new int[3];
 
@@ -72,6 +72,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_01(float[] atts) {
         int[] classes = new int[3];
 
@@ -130,6 +131,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_02(float[] atts) {
         int[] classes = new int[3];
 
@@ -200,6 +202,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_03(float[] atts) {
         int[] classes = new int[3];
 
@@ -282,6 +285,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_04(float[] atts) {
         int[] classes = new int[3];
 
@@ -334,6 +338,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_05(float[] atts) {
         int[] classes = new int[3];
 
@@ -398,6 +403,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_06(float[] atts) {
         int[] classes = new int[3];
 
@@ -456,6 +462,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_07(float[] atts) {
         int[] classes = new int[3];
 
@@ -520,6 +527,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_08(float[] atts) {
         int[] classes = new int[3];
 
@@ -590,6 +598,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_09(float[] atts) {
         int[] classes = new int[3];
 
@@ -648,6 +657,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_10(float[] atts) {
         int[] classes = new int[3];
 
@@ -718,6 +728,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_11(float[] atts) {
         int[] classes = new int[3];
 
@@ -782,6 +793,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_12(float[] atts) {
         int[] classes = new int[3];
 
@@ -840,6 +852,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_13(float[] atts) {
         int[] classes = new int[3];
 
@@ -904,6 +917,7 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict_14(float[] atts) {
         int[] classes = new int[3];
 
@@ -950,24 +964,25 @@ class Tmp {
         }
         return class_idx;
     }
+
     public static int predict(float[] atts) {
         int n_classes = 3;
         int[] classes = new int[n_classes];
-        classes[Tmp.predict_00(atts)]++;
-        classes[Tmp.predict_01(atts)]++;
-        classes[Tmp.predict_02(atts)]++;
-        classes[Tmp.predict_03(atts)]++;
-        classes[Tmp.predict_04(atts)]++;
-        classes[Tmp.predict_05(atts)]++;
-        classes[Tmp.predict_06(atts)]++;
-        classes[Tmp.predict_07(atts)]++;
-        classes[Tmp.predict_08(atts)]++;
-        classes[Tmp.predict_09(atts)]++;
-        classes[Tmp.predict_10(atts)]++;
-        classes[Tmp.predict_11(atts)]++;
-        classes[Tmp.predict_12(atts)]++;
-        classes[Tmp.predict_13(atts)]++;
-        classes[Tmp.predict_14(atts)]++;
+        classes[Brain.predict_00(atts)]++;
+        classes[Brain.predict_01(atts)]++;
+        classes[Brain.predict_02(atts)]++;
+        classes[Brain.predict_03(atts)]++;
+        classes[Brain.predict_04(atts)]++;
+        classes[Brain.predict_05(atts)]++;
+        classes[Brain.predict_06(atts)]++;
+        classes[Brain.predict_07(atts)]++;
+        classes[Brain.predict_08(atts)]++;
+        classes[Brain.predict_09(atts)]++;
+        classes[Brain.predict_10(atts)]++;
+        classes[Brain.predict_11(atts)]++;
+        classes[Brain.predict_12(atts)]++;
+        classes[Brain.predict_13(atts)]++;
+        classes[Brain.predict_14(atts)]++;
 
         int class_idx = 0;
         int class_val = classes[0];
@@ -986,7 +1001,7 @@ class Tmp {
             for (int i = 0, l = args.length; i < l; i++) {
                 atts[i] = Float.parseFloat(args[i]);
             }
-            System.out.println(Tmp.predict(atts));
+            System.out.println(Brain.predict(atts));
         }
     }
 }

@@ -18,7 +18,7 @@ result = Porter(clf).export()
 print(result)
 
 """
-class Tmp {
+class Brain {
 
     public static int predict(float[] atts) {
 
@@ -102,7 +102,7 @@ class Tmp {
             for (int i = 0, l = args.length; i < l; i++) {
                 atts[i] = Float.parseFloat(args[i]);
             }
-            System.out.println(Tmp.predict(atts));
+            System.out.println(Brain.predict(atts));
         }
     }
 }

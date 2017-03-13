@@ -28,7 +28,7 @@ int predict (float atts[4]) {
 
     double class_val = -INFINITY;
     int class_idx = -1;
-    int i = 0, j = 0;
+    int i, j;
     for (i = 0; i < 3; i++) {
         double prob = 0.;
         for (j = 0; j < 4; j++) {
@@ -44,7 +44,7 @@ int predict (float atts[4]) {
 
 int main(int argc, const char * argv[]) {
     float atts[argc-1];
-    int i = 0;
+    int i;
     for (i = 1; i < argc; i++) {
         atts[i-1] = atof(argv[i]);
     }
