@@ -38,6 +38,7 @@ class Porter:
             The target prediction method.
         """
         self.model = model
+        self.output = ''
 
         shared_properties = ('algorithm_name', 'algorithm_type')
         for prop in shared_properties:
@@ -174,10 +175,11 @@ class Porter:
             The ported model as string or a dictionary
             with further information.
         """
-        model = self.template.export(class_name=class_name,
+        output = self.template.export(class_name=class_name,
                                       method_name=method_name)
+        self.output = output
         if not details:
-            return model
+            return output
 
         language = self.target_language
         filename = Porter.get_filename(class_name, language)
@@ -185,7 +187,7 @@ class Porter:
                                                  class_name,
                                                  language)
         output = {
-            'model': str(model),
+            'model': str(output),
             'filename': filename,
             'class_name': class_name,
             'method_name': method_name,
