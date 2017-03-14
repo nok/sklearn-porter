@@ -140,7 +140,7 @@ class Porter:
 
         # sklearn version >= 0.18.0
         from sklearn import __version__ as version
-        version = version.split('.')
+        version = str(version).split('.')
         version = [int(v) for v in version]
         major, minor = version[0], version[1]
         if major > 0 or (major == 0 and minor >= 18):
