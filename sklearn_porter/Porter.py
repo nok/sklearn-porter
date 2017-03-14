@@ -5,6 +5,7 @@ import sys
 import subprocess as subp
 
 import numpy as np
+from sklearn.metrics import accuracy_score
 
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
@@ -318,6 +319,35 @@ class Porter:
             subp.call(['rm', '-rf', tnp_dir])
 
         return y
+
+    def predict_score(self, X, normalize=True):
+        """
+        Compute the accuracy of the ported classifier.
+
+        Parameters
+        ----------
+        X : ndarray, shape (n_samples, n_features)
+            Input data.
+
+        normalize : bool, optional (default=True)
+            If ``False``, return the number of correctly classified samples.
+            Otherwise, return the fraction of correctly classified samples.
+
+        Returns
+        -------
+        score : float
+            If ``normalize == True``, return the correctly classified samples
+            (float), else it returns the number of correctly classified samples
+            (int).
+            The best performance is 1 with ``normalize == True`` and the number
+            of samples with ``normalize == False``.
+        """
+        X = np.array(X)
+        if not X.ndim > 1:
+            X = np.array([X])
+        y_true = self.model.predict(X)
+        y_pred = self.predict(X)
+        return accuracy_score(y_true, y_pred, normalize=normalize)
 
     @staticmethod
     def test_dependencies(language):
