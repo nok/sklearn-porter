@@ -264,6 +264,7 @@ class Porter:
         # Dependencies:
         if not self.tested_env_dependencies:
             Porter.test_dependencies(self.target_language)
+            self.tested_env_dependencies = True
 
         # Support:
         if 'predict' not in set(self.template.SUPPORTED_METHODS):
