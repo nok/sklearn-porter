@@ -171,6 +171,7 @@ from sklearn.datasets import load_iris
 from sklearn.tree import tree
 from sklearn_porter import Porter
 
+
 # Load data:
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
@@ -179,9 +180,9 @@ X, y = iris_data.data, iris_data.target
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-# Transpile classifier:
-result = Porter(clf, language='java').export()
-print(result)
+# Port model:
+output = Porter(clf, language='java').export()
+print(output)
 ```
 
 The transpiled [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L20-L100) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
