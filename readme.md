@@ -164,13 +164,14 @@ Either you use the porter as [imported module](#module) in your application or y
 
 ### Module
 
+#### Export
+
 This example shows how you can port a decision tree model from the [official user guide](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
 
 ```python
 from sklearn.datasets import load_iris
 from sklearn.tree import tree
 from sklearn_porter import Porter
-
 
 # Load data:
 iris_data = load_iris()
@@ -180,12 +181,31 @@ X, y = iris_data.data, iris_data.target
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-# Port model:
+# Export model:
 output = Porter(clf, language='java').export()
 print(output)
 ```
 
 The transpiled [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L20-L100) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
+
+#### Prediction
+
+Furthermore you can run the predictions in the target programming language:
+
+```python
+porter = Porter(clf, language='java').export()
+preds = porter.predict(X)
+```
+
+#### Accuracy
+
+Nevertheless you should compute the accuracy between the original and the ported model:
+
+```python
+porter = Porter(clf, language='java').export()
+accuracy = porter.predict_test(X)
+# 1.0
+```
 
 
 ### Command-line interface
