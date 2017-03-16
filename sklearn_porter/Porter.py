@@ -320,7 +320,7 @@ class Porter:
 
         return y
 
-    def predict_score(self, X, normalize=True):
+    def predict_test(self, X, normalize=True):
         """
         Compute the accuracy of the ported classifier.
 

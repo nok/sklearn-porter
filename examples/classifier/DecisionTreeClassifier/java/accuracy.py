@@ -15,11 +15,11 @@ clf.fit(X, y)
 
 porter = Porter(clf)
 
-accuracy = porter.predict_score([1.0, 2.0, 3.0, 4.0])
+accuracy = porter.predict_test([1.0, 2.0, 3.0, 4.0])
 print(accuracy)  # 1.0
 
-accuracy = porter.predict_score(X[0])
+accuracy = porter.predict_test(X[0])
 print(accuracy)  # 1.0
 
-accuracy = porter.predict_score(X)
+accuracy = porter.predict_test(X)
 print(accuracy)  # 1.0
