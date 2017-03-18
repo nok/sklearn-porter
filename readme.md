@@ -193,7 +193,7 @@ The transpiled [result](examples/classifier/DecisionTreeClassifier/java/basics.p
 Furthermore you can run the prediction in the target programming language:
 
 ```python
-porter = Porter(clf, language='java').export()
+porter = Porter(clf, language='java')
 preds = porter.predict(X)
 ```
 
@@ -202,7 +202,7 @@ preds = porter.predict(X)
 Nevertheless you should compute the accuracy between the original and the ported model:
 
 ```python
-porter = Porter(clf, language='java').export()
+porter = Porter(clf, language='java')
 accuracy = porter.predict_test(X)  # 1.0
 ```
 
