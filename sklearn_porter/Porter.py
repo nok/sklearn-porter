@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import unicode_literals
+
 import os
 import sys
 import subprocess as subp
@@ -41,15 +43,25 @@ class Porter:
         self.model = model
         self.output = ''
 
-        shared_properties = ('algorithm_name', 'algorithm_type')
-        for prop in shared_properties:
-            if hasattr(self, prop):
-                setattr(self, prop, getattr(self, prop))
+        # Algorithm name:
+        self.algorithm_name = str(type(self.model).__name__)
+
+        # Algorithm type:
+        if isinstance(self.model, self.classifiers):
+            self.algorithm_type = 'classifier'
+        else:
+            error = "The given model '{model}' isn't" \
+                    " supported.".format(**self.__dict__)
+            raise ValueError(error)
 
         # Import model class:
-        package = '{algorithm_type}.' \
-                  '{algorithm_name}'.format(**self.__dict__)
-        level = -1 if sys.version_info < (3, 3) else 1
+        if sys.version_info < (3, 3):
+            package = '{algorithm_type}.{algorithm_name}'
+            level = -1
+        else:
+            package = 'sklearn_porter.{algorithm_type}.{algorithm_name}'
+            level = 0
+        package = package.format(**self.__dict__)
         try:
             clazz = __import__(package, globals(), locals(),
                                [self.algorithm_name], level)
@@ -84,35 +96,6 @@ class Porter:
         self.template = clazz(**self.__dict__)
 
         self.tested_env_dependencies = False
-
-    @property
-    def algorithm_name(self):
-        """
-        Get the algorithm class name.
-
-        Returns
-        -------
-        name : string
-            The class name of the used algorithm.
-        """
-        name = str(type(self.model).__name__)
-        return name
-
-    @property
-    def algorithm_type(self):
-        """
-        Get the algorithm type.
-
-        Returns
-        -------
-        type : {'classifier', 'regressor'}
-            The type oof the used algorithm.
-        """
-        if isinstance(self.model, self.classifiers):
-            return 'classifier'
-        error = "The given model '{model}' isn't" \
-                " supported.".format(**self.__dict__)
-        raise ValueError(error)
 
     @property
     def classifiers(self):
@@ -377,10 +360,12 @@ class Porter:
         cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
         for exe in all_depends:
             cmd = cmd.format(exe)
-            available = subp.check_output(cmd, shell=True,
-                                          stderr=subp.STDOUT)
-            available = available.strip() is '1'
-            if not available:
+            status = subp.check_output(cmd, shell=True,
+                                       stderr=subp.STDOUT)
+            if sys.version_info >= (3, 3) and isinstance(status, bytes):
+                status = status.decode('utf-8')
+            status = str(status).strip()
+            if status != '1':
                 error = "The required application '{0}'" \
                         " isn't available.".format(exe)
                 raise SystemError(error)
