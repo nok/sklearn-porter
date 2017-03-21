@@ -200,8 +200,8 @@ clf.fit(X, y)
 # Prediction(s):
 porter = Porter(clf, language='java')
 preds = porter.predict(X)
-preds = porter.predict(X[1])
-preds = porter.predict([1., 2., 3., 4.])
+pred = porter.predict(X[0])
+pred = porter.predict([1., 2., 3., 4.])
 ```
 
 ### Accuracy
