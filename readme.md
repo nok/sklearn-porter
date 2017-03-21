@@ -184,7 +184,7 @@ The exported [result](examples/classifier/DecisionTreeClassifier/java/basics.py#
 
 ### Prediction
 
-Or run prediction(s) in the target programming language directly:
+Or run the prediction(s) in the target programming language directly:
 
 ```python
 from sklearn.datasets import load_iris
