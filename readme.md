@@ -159,51 +159,70 @@ If you want to transpile a multilayer perceptron (<a href="http://scikit-learn.o
 
 ## Usage
 
-Either you use the porter as [imported module](#module) in your application or you use the [command-line interface](#cli). 
+### Export
 
-
-### Module
-
-#### Export
-
-This example shows how you can port a decision tree model from the [official user guide](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
+The following example shows how you can port a [decision tree model](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
 
 ```python
 from sklearn.datasets import load_iris
 from sklearn.tree import tree
 from sklearn_porter import Porter
 
-# Load data:
+# Load data and train the classifier:
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
-
-# Train classifier:
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-# Export model:
-output = Porter(clf, language='java').export()
+# Export:
+porter = Porter(clf, language='java')
+output = porter.export()
 print(output)
 ```
 
-The transpiled [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L20-L100) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the model.
+The exported [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L20-L100) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
 
-#### Prediction
+### Prediction
 
-Furthermore you can run the prediction in the target programming language:
+Or run prediction(s) in the target programming language directly:
 
 ```python
+from sklearn.datasets import load_iris
+from sklearn.tree import tree
+from sklearn_porter import Porter
+
+# Load data and train the classifier:
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
+clf = tree.DecisionTreeClassifier()
+clf.fit(X, y)
+
+# Prediction(s):
 porter = Porter(clf, language='java')
 preds = porter.predict(X)
+preds = porter.predict(X[1])
+preds = porter.predict([1., 2., 3., 4.])
 ```
 
-#### Accuracy
+### Accuracy
 
-Nevertheless you should compute the accuracy between the original and the ported model:
+Test the accuracy between the original and the ported estimator:
 
 ```python
+from sklearn.datasets import load_iris
+from sklearn.tree import tree
+from sklearn_porter import Porter
+
+# Load data and train the classifier:
+iris_data = load_iris()
+X, y = iris_data.data, iris_data.target
+clf = tree.DecisionTreeClassifier()
+clf.fit(X, y)
+
+# Accuracy:
 porter = Porter(clf, language='java')
-accuracy = porter.predict_test(X)  # 1.0
+accuracy = porter.predict_test(X)
+print(accuracy) # 1.0
 ```
 
 ### Command-line interface
@@ -215,15 +234,13 @@ from sklearn.datasets import load_iris
 from sklearn.tree import tree
 from sklearn.externals import joblib
 
-# Load data:
+# Load data and train the classifier:
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
-
-# Train classifier:
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-# Save the classifier:
+# Extract estimator:
 joblib.dump(clf, 'model.pkl')
 ```
 
