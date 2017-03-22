@@ -12,8 +12,8 @@ class DecisionTreeClassifierTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierTest, self).setUp()
-        self.porter = Porter(language='java')
-        self._port_model(DecisionTreeClassifier(random_state=0))
+        mdl = DecisionTreeClassifier(random_state=0)
+        self._port_model(mdl)
 
     def tearDown(self):
         super(DecisionTreeClassifierTest, self).tearDown()

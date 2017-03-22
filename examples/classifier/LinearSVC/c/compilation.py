@@ -15,19 +15,19 @@ clf.fit(X, y)
 
 # Cheese!
 
-data = Porter(language='c', with_details=True).port(clf)
+data = Porter(clf, language='c').export(details=True)
 
 # Save model:
-with open(data.get('filename'), 'w') as file:
-    file.write(data.get('model'))
+with open(data.get('filename'), 'w') as f:
+    f.write(data.get('model'))
 
 # Compile model:
-command = data.get('compiling_cmd')
+command = data.get('cmd').get('compilation')
 subp.call(command, shell=True)
 
 # Use the model:
 features = ' '.join([repr(x) for x in X[0]])
-command = '%s %s' % (data.get('execution_cmd'), features)
+command = '%s %s' % (data.get('cmd').get('execution'), features)
 prediction = subp.check_output(command, shell=True)
 
 print('Ported classifier: %s' % prediction)  # class: 0

@@ -46,9 +46,9 @@ def main():
 
         # Port model:
         language = str(args['language'])
-        porter = Porter(language=language, with_details=True)
-        result = porter.port(model)
-        filename = result.get('filename')
+        porter = Porter(model, language=language)
+        details = porter.export(details=True)
+        filename = details.get('filename')
 
         # Define destination path:
         dest_dir = str(args['output'])
@@ -63,7 +63,7 @@ def main():
 
         # Save transpiled model:
         with open(dest_path, 'w') as f:
-            f.write(result.get('model'))
+            f.write(details.get('model'))
     else:
         raise ValueError('No valid model in pickle format was found.')
 

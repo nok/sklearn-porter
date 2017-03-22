@@ -13,13 +13,13 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter(language='php').port(clf)
+result = Porter(clf, language='php').export()
 print(result)
 
 """
 <?php
 
-class Tmp {
+class Brain {
 
     public static function predict($atts) {
         if (sizeof($atts) != 4) { return -1; }
@@ -48,7 +48,7 @@ class Tmp {
                         $classes[1] = 0;
                         $classes[2] = 3;
                     } else {
-                        if ($atts[0] <= 6.9499998092651367) {
+                        if ($atts[2] <= 5.4499998092651367) {
                             $classes[0] = 0;
                             $classes[1] = 2;
                             $classes[2] = 0;
@@ -61,14 +61,14 @@ class Tmp {
                 }
             } else {
                 if ($atts[2] <= 4.8500003814697266) {
-                    if ($atts[1] <= 3.0999999046325684) {
-                        $classes[0] = 0;
-                        $classes[1] = 0;
-                        $classes[2] = 2;
-                    } else {
+                    if ($atts[0] <= 5.9499998092651367) {
                         $classes[0] = 0;
                         $classes[1] = 1;
                         $classes[2] = 0;
+                    } else {
+                        $classes[0] = 0;
+                        $classes[1] = 0;
+                        $classes[2] = 2;
                     }
                 } else {
                     $classes[0] = 0;
@@ -94,7 +94,7 @@ class Tmp {
 
 if ($argc > 1) {
     array_shift($argv);
-    $prediction = Tmp::predict($argv);
+    $prediction = Brain::predict($argv);
     fwrite(STDOUT, $prediction);
 }
 """

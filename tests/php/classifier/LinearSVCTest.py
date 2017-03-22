@@ -12,8 +12,8 @@ class LinearSVCTest(PhpTest, unittest.TestCase):
 
     def setUp(self):
         super(LinearSVCTest, self).setUp()
-        self.porter = Porter(language='php')
-        self._port_model(LinearSVC(C=1., random_state=0))
+        mdl = LinearSVC(C=1., random_state=0)
+        self._port_model(mdl)
 
     def tearDown(self):
         super(LinearSVCTest, self).tearDown()

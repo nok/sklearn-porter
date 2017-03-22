@@ -13,18 +13,18 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter().port(clf)
-# result = Porter(language='java').port(clf)
+result = Porter(clf).export()
+# result = Porter(clf, language='java').export()
 print(result)
 
 """
-class Tmp {
+class Brain {
 
     public static int predict(float[] atts) {
         if (atts.length != 4) { return -1; }
         int[] classes = new int[3];
 
-        if (atts[2] <= 2.4500000476837158) {
+        if (atts[3] <= 0.80000001192092896) {
             classes[0] = 50;
             classes[1] = 0;
             classes[2] = 0;
@@ -46,7 +46,7 @@ class Tmp {
                         classes[1] = 0;
                         classes[2] = 3;
                     } else {
-                        if (atts[2] <= 5.4499998092651367) {
+                        if (atts[0] <= 6.9499998092651367) {
                             classes[0] = 0;
                             classes[1] = 2;
                             classes[2] = 0;
@@ -59,14 +59,14 @@ class Tmp {
                 }
             } else {
                 if (atts[2] <= 4.8500003814697266) {
-                    if (atts[1] <= 3.0999999046325684) {
-                        classes[0] = 0;
-                        classes[1] = 0;
-                        classes[2] = 2;
-                    } else {
+                    if (atts[0] <= 5.9499998092651367) {
                         classes[0] = 0;
                         classes[1] = 1;
                         classes[2] = 0;
+                    } else {
+                        classes[0] = 0;
+                        classes[1] = 0;
+                        classes[2] = 2;
                     }
                 } else {
                     classes[0] = 0;
@@ -93,7 +93,7 @@ class Tmp {
             for (int i = 0, l = args.length; i < l; i++) {
                 atts[i] = Float.parseFloat(args[i]);
             }
-            System.out.println(Tmp.predict(atts));
+            System.out.println(Brain.predict(atts));
         }
     }
 }

@@ -12,9 +12,8 @@ class RandomForestClassifierTest(CTest, unittest.TestCase):
 
     def setUp(self):
         super(RandomForestClassifierTest, self).setUp()
-        self.porter = Porter(language='c')
-        clf = RandomForestClassifier(n_estimators=100, random_state=0)
-        self._port_model(clf)
+        mdl = RandomForestClassifier(n_estimators=100, random_state=0)
+        self._port_model(mdl)
 
     def tearDown(self):
         super(RandomForestClassifierTest, self).tearDown()

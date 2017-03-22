@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from ...Model import Model
+from ...Template import Template
 import numpy as np
 
 np.set_printoptions(precision=15)
 
 
-class MLPClassifier(Model):
+class MLPClassifier(Template):
     """
     See also
     --------
@@ -40,30 +40,9 @@ class MLPClassifier(Model):
     }
     # @formatter:on
 
-    def __init__(
-            self, language='java', method_name='predict', class_name='Tmp'):
-        super(MLPClassifier, self).__init__(language, method_name, class_name)
-
-    @property
-    def hidden_activation_functions(self):
-        """Get list of supported activation functions for the hidden layers."""
-        return ['relu', 'identity']  # 'tanh' and 'logistic' fails in tests
-
-    @property
-    def output_activation_functions(self):
-        """Get list of supported activation functions for the output layer."""
-        return ['softmax']  # 'logistic' fails in tests
-
-    def port(self, model):
-        """
-        Port a trained model to the syntax of a chosen programming language.
-
-        Parameters
-        ----------
-        :param model : MLPClassifier
-            An instance of a trained MLPClassifier classifier.
-        """
-        super(self.__class__, self).port(model)
+    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
+        super(MLPClassifier, self).__init__(model, target_language=target_language, target_method=target_method, **kwargs)
+        self.model = model
 
         # Activation function ('identity', 'logistic', 'tanh' or 'relu'):
         self.hidden_activation = self.model.activation
@@ -97,7 +76,28 @@ class MLPClassifier(Model):
         # Bias:
         self.intercepts = self.model.intercepts_
 
-        if self.method_name == 'predict':
+    @property
+    def hidden_activation_functions(self):
+        """Get list of supported activation functions for the hidden layers."""
+        return ['relu', 'identity']  # 'tanh' and 'logistic' fails in tests
+
+    @property
+    def output_activation_functions(self):
+        """Get list of supported activation functions for the output layer."""
+        return ['softmax']  # 'logistic' fails in tests
+
+    def export(self, class_name, method_name):
+        """
+        Port a trained model to the syntax of a chosen programming language.
+
+        Parameters
+        ----------
+        :param model : MLPClassifier
+            An instance of a trained MLPClassifier classifier.
+        """
+        self.class_name = class_name
+        self.method_name = method_name
+        if self.target_method == 'predict':
             return self.predict()
 
     def predict(self):

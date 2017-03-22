@@ -14,12 +14,11 @@ class MLPClassifierTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(MLPClassifierTest, self).setUp()
-        self.porter = Porter(language='java')
-        clf = MLPClassifier(
+        mdl = MLPClassifier(
             activation='identity', hidden_layer_sizes=50,
             max_iter=500, alpha=1e-4, solver='sgd', tol=1e-4,
             random_state=1, learning_rate_init=.1)
-        self._port_model(clf)
+        self._port_model(mdl)
 
     def tearDown(self):
         super(MLPClassifierTest, self).tearDown()
@@ -29,30 +28,30 @@ class MLPClassifierTest(JavaTest, unittest.TestCase):
             activation='relu', hidden_layer_sizes=50,
             learning_rate_init=.1)
         self._port_model(clf)
-        java_preds, py_preds = [], []
+        Y, Y_py = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(30):
             x = [random.uniform(min_vals[f], max_vals[f])
                  for f in range(self.n_features)]
-            java_preds.append(self.make_pred_in_java(x))
-            py_preds.append(self.make_pred_in_py(x))
-        self.assertListEqual(py_preds, java_preds)
+            Y.append(self.make_pred_in_custom(x))
+            Y_py.append(self.make_pred_in_py(x))
+        self.assertListEqual(Y, Y_py)
 
     def test_hidden_activation_function_identity(self):
         clf = MLPClassifier(
             activation='identity', hidden_layer_sizes=50,
             learning_rate_init=.1)
         self._port_model(clf)
-        java_preds, py_preds = [], []
+        Y, Y_py = [], []
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(30):
             x = [random.uniform(min_vals[f], max_vals[f])
                  for f in range(self.n_features)]
-            java_preds.append(self.make_pred_in_java(x))
-            py_preds.append(self.make_pred_in_py(x))
-        self.assertListEqual(py_preds, java_preds)
+            Y.append(self.make_pred_in_custom(x))
+            Y_py.append(self.make_pred_in_py(x))
+        self.assertListEqual(Y, Y_py)
 
     # def test_hidden_activation_function_tanh(self):
     #     clf = MLPClassifier(

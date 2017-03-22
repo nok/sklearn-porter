@@ -12,9 +12,8 @@ class LinearSVCTest(JavaScriptTest, unittest.TestCase):
 
     def setUp(self):
         super(LinearSVCTest, self).setUp()
-        self.porter = Porter(language='js')
-        clf = LinearSVC(C=1., random_state=0)
-        self._port_model(clf)
+        mdl = LinearSVC(C=1., random_state=0)
+        self._port_model(mdl)
 
     def tearDown(self):
         super(LinearSVCTest, self).tearDown()

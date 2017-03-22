@@ -11,7 +11,5 @@ class NuSVC(SVC):
 
     http://scikit-learn.org/0.18/modules/generated/sklearn.svm.NuSVC.html
     """
-
-    def __init__(
-            self, language='java', method_name='predict', class_name='Tmp'):
-        super(NuSVC, self).__init__(language, method_name, class_name)
+    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
+        super(NuSVC, self).__init__(model, target_language=target_language, target_method=target_method, **kwargs)

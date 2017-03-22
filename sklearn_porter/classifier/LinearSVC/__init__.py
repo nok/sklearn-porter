@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...Model import Model
+from ...Template import Template
 
 
-class LinearSVC(Model):
+class LinearSVC(Template):
     """
     See also
     --------
@@ -61,11 +61,15 @@ class LinearSVC(Model):
     }
     # @formatter:on
 
-    def __init__(
-            self, language='java', method_name='predict', class_name='Tmp'):
-        super(LinearSVC, self).__init__(language, method_name, class_name)
+    def __init__(self, model, target_language='java', target_method='predict',
+                 **kwargs):
+        super(LinearSVC, self).__init__(model, target_language=target_language,
+                                        target_method=target_method, **kwargs)
+        self.model = model
+        self.n_features = len(model.coef_[0])
+        self.n_classes = len(model.classes_)
 
-    def port(self, model):
+    def export(self, class_name, method_name):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -74,12 +78,9 @@ class LinearSVC(Model):
         :param model : LinearSVC
             An instance of a trained LinearSVC classifier.
         """
-        super(self.__class__, self).port(model)
-
-        self.n_features = len(self.model.coef_[0])
-        self.n_classes = len(self.model.classes_)
-
-        if self.method_name == 'predict':
+        self.method_name = method_name
+        self.class_name = class_name
+        if self.target_method == 'predict':
             return self.predict()
 
     def predict(self):

@@ -13,7 +13,7 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter(language='c').port(clf)
+result = Porter(clf, language='c').export()
 print(result)
 
 """
@@ -25,7 +25,7 @@ int predict(float atts[3]) {
 
     int classes[3];
 
-    if (atts[2] <= 2.4500000476837158) {
+    if (atts[3] <= 0.80000001192092896) {
         classes[0] = 50;
         classes[1] = 0;
         classes[2] = 0;
@@ -47,7 +47,7 @@ int predict(float atts[3]) {
                     classes[1] = 0;
                     classes[2] = 3;
                 } else {
-                    if (atts[0] <= 6.9499998092651367) {
+                    if (atts[2] <= 5.4499998092651367) {
                         classes[0] = 0;
                         classes[1] = 2;
                         classes[2] = 0;

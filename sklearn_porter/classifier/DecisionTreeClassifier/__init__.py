@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...Model import Model
+from ...Template import Template
 
 
-class DecisionTreeClassifier(Model):
+class DecisionTreeClassifier(Template):
     """
     See also
     --------
@@ -51,12 +51,13 @@ class DecisionTreeClassifier(Model):
     }
     # @formatter:on
 
-    def __init__(
-            self, language='java', method_name='predict', class_name='Tmp'):
-        super(DecisionTreeClassifier, self).__init__(
-            language, method_name, class_name)
+    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
+        super(DecisionTreeClassifier, self).__init__(model, target_language=target_language, target_method=target_method, **kwargs)
+        self.model = model
+        self.n_features = model.n_features_
+        self.n_classes = model.n_classes_
 
-    def port(self, model):
+    def export(self, class_name, method_name):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -65,13 +66,12 @@ class DecisionTreeClassifier(Model):
         :param model : DecisionTreeClassifier
             An instance of a trained DecisionTreeClassifier classifier.
         """
-        super(self.__class__, self).port(model)
-        self.n_features = model.n_features_
-        self.n_classes = model.n_classes_
-        if self.method_name == 'predict':
-            return self.predict()
+        self.class_name = class_name
+        self.method_name = method_name
+        if self.target_method == 'predict':
+            return self.predict(class_name, method_name)
 
-    def predict(self):
+    def predict(self, class_name, method_name):
         """
         Port the predict method.
 
@@ -80,7 +80,8 @@ class DecisionTreeClassifier(Model):
         :return: out : string
             The ported predict method.
         """
-        return self.create_class(self.create_method())
+        method = self.create_method(class_name, method_name)
+        return self.create_class(method, class_name, method_name)
 
     def create_branches(self, l, r, t, value, features, node, depth):
         """
@@ -148,7 +149,7 @@ class DecisionTreeClassifier(Model):
             if self.n_features > 1 or (self.n_features == 1 and i >= 0):
                 feature_indices.append([str(j) for j in range(n_features)][i])
 
-        indentation = 1 if self.language in ['java', 'js', 'php'] else 0
+        indentation = 1 if self.target_language in ['java', 'js', 'php'] else 0
         return self.create_branches(
             self.model.tree_.children_left,
             self.model.tree_.children_right,
@@ -156,7 +157,7 @@ class DecisionTreeClassifier(Model):
             self.model.tree_.value,
             feature_indices, 0, indentation)
 
-    def create_method(self):
+    def create_method(self, class_name, method_name):
         """
         Build the model method or function.
 
@@ -165,13 +166,13 @@ class DecisionTreeClassifier(Model):
         :return out : string
             The built method as string.
         """
-        n_indents = 1 if self.language in ['java', 'js', 'php'] else 0
+        n_indents = 1 if self.target_language in ['java', 'js', 'php'] else 0
         branches = self.indent(self.create_tree(), n_indents=1)
         return self.temp('method', n_indents=n_indents, skipping=True)\
-            .format(method_name=self.method_name, n_features=self.n_features,
+            .format(method_name=method_name, n_features=self.n_features,
                     n_classes=self.n_classes, branches=branches)
 
-    def create_class(self, method):
+    def create_class(self, method, class_name, method_name):
         """
         Build the model class.
 
@@ -181,5 +182,5 @@ class DecisionTreeClassifier(Model):
             The built class as string.
         """
         return self.temp('class').format(
-            class_name=self.class_name, method_name=self.method_name,
+            class_name=class_name, method_name=method_name,
             n_features=self.n_features, method=method)

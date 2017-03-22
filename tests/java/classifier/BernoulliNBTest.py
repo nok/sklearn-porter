@@ -12,8 +12,8 @@ class BernoulliNBTest(JavaTest, unittest.TestCase):
 
     def setUp(self):
         super(BernoulliNBTest, self).setUp()
-        self.porter = Porter(language='java')
-        self._port_model(BernoulliNB())
+        mdl = BernoulliNB()
+        self._port_model(mdl)
 
     def tearDown(self):
         super(BernoulliNBTest, self).tearDown()

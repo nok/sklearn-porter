@@ -16,12 +16,12 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter().port(clf)
-# result = Porter(language='java').port(clf)
+result = Porter(clf).export()
+# result = Porter(clf, language='java').export(clf)
 print(result)
 
 """
-class Tmp {
+class Brain {
     public static double[] predict_0(float[] atts) {
         double[] classes = new double[3];
 
@@ -219,10 +219,10 @@ class Tmp {
         int n_classes = 3;
 
         double[][] preds = new double[n_estimators][];
-        preds[0] = Tmp.predict_0(atts);
-        preds[1] = Tmp.predict_1(atts);
-        preds[2] = Tmp.predict_2(atts);
-        preds[3] = Tmp.predict_3(atts);
+        preds[0] = Brain.predict_0(atts);
+        preds[1] = Brain.predict_1(atts);
+        preds[2] = Brain.predict_2(atts);
+        preds[3] = Brain.predict_3(atts);
 
         int i, j;
         double normalizer, sum;
@@ -272,7 +272,7 @@ class Tmp {
             for (int i = 0, l = args.length; i < l; i++) {
                 atts[i] = Float.parseFloat(args[i]);
             }
-            System.out.println(Tmp.predict(atts));
+            System.out.println(Brain.predict(atts));
         }
     }
 }

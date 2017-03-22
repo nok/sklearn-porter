@@ -13,12 +13,12 @@ clf.fit(X, y)
 
 # Cheese!
 
-result = Porter().port(clf)
-# result = Porter(language='java').port(clf)
+result = Porter(clf).export()
+# result = Porter(clf, language='java').export()
 print(result)
 
 """
-class Tmp {
+class Brain {
 
     public static int predict(double[] atts) {
         if (atts.length != 4) {
@@ -62,7 +62,7 @@ class Tmp {
             for (int i = 0, l = args.length; i < l; i++) {
                 atts[i] = Double.parseDouble(args[i]);
             }
-            System.out.println(Tmp.predict(atts));
+            System.out.println(Brain.predict(atts));
         }
     }
 }
