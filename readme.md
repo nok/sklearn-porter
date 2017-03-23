@@ -187,21 +187,13 @@ The exported [result](examples/classifier/DecisionTreeClassifier/java/basics.py#
 Or run the prediction(s) in the target programming language directly:
 
 ```python
-from sklearn.datasets import load_iris
-from sklearn.tree import tree
-from sklearn_porter import Porter
-
-# Load data and train the classifier:
-iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
-clf = tree.DecisionTreeClassifier()
-clf.fit(X, y)
+# ...
 
 # Prediction(s):
 porter = Porter(clf, language='java')
-preds = porter.predict(X)
-pred = porter.predict(X[0])
-pred = porter.predict([1., 2., 3., 4.])
+Y_preds = porter.predict(X)
+y_pred = porter.predict(X[0])
+y_pred = porter.predict([1., 2., 3., 4.])
 ```
 
 ### Accuracy
@@ -209,15 +201,7 @@ pred = porter.predict([1., 2., 3., 4.])
 Test the accuracy between the original and the ported estimator:
 
 ```python
-from sklearn.datasets import load_iris
-from sklearn.tree import tree
-from sklearn_porter import Porter
-
-# Load data and train the classifier:
-iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
-clf = tree.DecisionTreeClassifier()
-clf.fit(X, y)
+# ...
 
 # Accuracy:
 porter = Porter(clf, language='java')
@@ -230,15 +214,7 @@ print(accuracy) # 1.0
 This example shows how you can port a model from the command line. First of all you have to store the model to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
 
 ```python
-from sklearn.datasets import load_iris
-from sklearn.tree import tree
-from sklearn.externals import joblib
-
-# Load data and train the classifier:
-iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
-clf = tree.DecisionTreeClassifier()
-clf.fit(X, y)
+# ...
 
 # Extract estimator:
 joblib.dump(clf, 'model.pkl')
