@@ -3,8 +3,12 @@
 import os
 from setuptools import setup, find_packages
 
-from sklearn_porter import Porter
-version = Porter.__version__
+
+fname = os.path.join('.', 'sklearn_porter', '__version__.txt')
+version = open(fname).readlines().pop()
+if isinstance(version, bytes):
+    version = version.decode('utf-8')
+version = str(version).strip()
 
 path = os.path.abspath(os.path.dirname(__file__))
 with open(os.path.join(path, 'requirements.txt')) as f:
