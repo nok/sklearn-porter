@@ -22,7 +22,14 @@ from sklearn.naive_bayes import BernoulliNB
 
 
 class Porter:
-    __version__ = '0.4.0'
+
+    # Version:
+    _version_path = str(os.path.join(os.path.dirname(__file__),
+                                     '__version__.txt'))
+    _version = open(_version_path).readlines().pop()
+    if isinstance(_version, bytes):
+        _version = _version.decode('utf-8')
+    __version__ = str(_version).strip()
 
     def __init__(self, model, language='java', method='predict', **kwargs):
         """

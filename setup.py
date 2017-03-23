@@ -4,16 +4,20 @@ import os
 from setuptools import setup, find_packages
 
 
-fname = os.path.join('.', 'sklearn_porter', '__version__.txt')
-version = open(fname).readlines().pop()
+path = os.path.abspath(os.path.dirname(__file__))
+
+# Version:
+version_path = str(os.path.join(path, 'sklearn_porter', '__version__.txt'))
+version = open(version_path).readlines().pop()
 if isinstance(version, bytes):
     version = version.decode('utf-8')
 version = str(version).strip()
 
-path = os.path.abspath(os.path.dirname(__file__))
-with open(os.path.join(path, 'requirements.txt')) as f:
+# Requirements:
+requirements_path = os.path.join(path, 'requirements.txt')
+with open(requirements_path) as f:
     all_reqs = f.read().split('\n')
-install_requires = [x.strip() for x in all_reqs if 'git+' not in x]
+requirements = [x.strip() for x in all_reqs if 'git+' not in x]
 
 setup(
     name='sklearn-porter',
@@ -34,7 +38,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
     ],
-    install_requires=install_requires,
+    install_requires=requirements,
     keywords=['sklearn', 'scikit-learn'],
     license='MIT',
 )
