@@ -6,7 +6,11 @@
 # Environment:
 name=sklearn-porter
 anaconda_env=sklearn-porter
+
+# Environment
 source activate $anaconda_env
+rm -rf ./build/*
+rm -rf ./dist/*
 
 # Version:
 version=`python -c "from sklearn_porter.Porter import Porter; print(Porter.__version__);"`
@@ -18,12 +22,12 @@ if [[ $# -eq 1 ]] ; then
 fi
 
 # Package:
-python setup.py sdist bdist_wheel
-twine register dist/sklearn-porter-$version.tar.gz -r $target
-twine register dist/sklearn_porter-$version-py2-none-any.whl -r $target
+python ./setup.py sdist bdist_wheel
+twine register ./dist/$name-$version.tar.gz -r $target
+twine register ./dist/$name-$version-py2-none-any.whl -r $target
 
 read -r -p "Upload $name@$version to '$target'? [y/N] " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
 then
-    twine upload dist/* -r $target
+    twine upload ./dist/* -r $target
 fi
