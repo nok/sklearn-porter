@@ -121,7 +121,10 @@ class LinearSVC(Template):
         inters = self.temp('arr[]').format(
             name='inters', values=inters, n=self.n_classes)
 
-        return self.temp('method', n_indents=1, skipping=True).format(
+        # Indentation
+        n_indents = 0 if self.target_language in ['c', 'go'] else 1
+
+        return self.temp('method', n_indents=n_indents, skipping=True).format(
             name=self.method_name, n_features=self.n_features,
             n_classes=self.n_classes, coefficients=coefs,
             intercepts=inters)
