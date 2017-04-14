@@ -81,24 +81,27 @@ class LinearSVC(Template):
         self.n_features = len(model.coef_[0])
         self.n_classes = len(model.classes_)
 
-    def export(self, class_name, method_name):
+    def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
         Port a trained model to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string
+        :param class_name: string, default: 'Brain'
             The name of the class in the returned result.
-        :param method_name: string
+        :param method_name: string, default: 'predict'
             The name of the method in the returned result.
+        :param use_repr : bool, default True
+            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
-        self.method_name = method_name
         self.class_name = class_name
+        self.method_name = method_name
+        self.use_repr = use_repr
         if self.target_method == 'predict':
             return self.predict()
 
@@ -126,7 +129,7 @@ class LinearSVC(Template):
         # Coefficients:
         coefs = []
         for idx, coef in enumerate(self.model.coef_):
-            tmp = [self.temp('type').format(repr(c)) for c in coef]
+            tmp = [self.temp('type').format(self.repr(c)) for c in coef]
             tmp = self.temp('arr').format(', '.join(tmp))
             coefs.append(tmp)
         coefs = ', '.join(coefs)
@@ -135,7 +138,7 @@ class LinearSVC(Template):
 
         # Intercepts:
         inters = self.model.intercept_
-        inters = [self.temp('type').format(repr(i)) for i in inters]
+        inters = [self.temp('type').format(self.repr(i)) for i in inters]
         inters = ', '.join(inters)
         inters = self.temp('arr[]').format(
             name='inters', values=inters, n=self.n_classes)

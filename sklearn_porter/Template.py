@@ -86,8 +86,8 @@ class Template(object):
                 keys = '.'.join(keys)
                 return self.temp(keys, template, skipping=False)
         else:
-            # TODO: Replace static path definition: 'classifier'
             class_name = self.__class__.__name__
+            # TODO: Replace static path definition: 'classifier':
             path = os.path.join(
                 os.path.dirname(__file__), 'classifier', class_name,
                 'templates', self.target_language, name + '.txt')
@@ -99,3 +99,9 @@ class Template(object):
             else:
                 err = "Template '{}' wasn't found.".format(name)
                 raise AttributeError(err)
+
+    def repr(self, val):
+        if 'use_repr' in self.__dict__.keys() and bool(self.use_repr) is True:
+            return repr(val)
+        else:
+            return val

@@ -88,16 +88,18 @@ class SVC(Template):
         self.classes = model.classes_
         self.n_classes = len(model.classes_)
 
-    def export(self, class_name, method_name):
+    def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
         Port a trained model to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string
+        :param class_name: string, default: 'Brain'
             The name of the class in the returned result.
-        :param method_name: string
+        :param method_name: string, default: 'predict'
             The name of the method in the returned result.
+        :param use_repr : bool, default True
+            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
@@ -106,6 +108,7 @@ class SVC(Template):
         """
         self.class_name = class_name
         self.method_name = method_name
+        self.use_repr = use_repr
         if self.target_method == 'predict':
             return self.predict()
 
@@ -132,7 +135,7 @@ class SVC(Template):
         out = '\n'
 
         # Number of support vectors:
-        n_svs = [self.temp('type').format(repr(v)) for v in self.svs_rows]
+        n_svs = [self.temp('type').format(self.repr(v)) for v in self.svs_rows]
         n_svs = ', '.join(n_svs)
         out += self.temp('arr[]').format(type='int', name='n_svs', values=n_svs)
         out += '\n'
@@ -140,7 +143,7 @@ class SVC(Template):
         # Support vectors:
         vectors = []
         for vidx, vector in enumerate(self.svs):
-            _vectors = [self.temp('type').format(repr(v)) for v in vector]
+            _vectors = [self.temp('type').format(self.repr(v)) for v in vector]
             _vectors = self.temp('arr').format(', '.join(_vectors))
             vectors.append(_vectors)
         vectors = ', '.join(vectors)
@@ -152,7 +155,7 @@ class SVC(Template):
         # Coefficients:
         coeffs = []
         for cidx, coeff in enumerate(self.coeffs):
-            _coeffs = [self.temp('type').format(repr(c)) for c in coeff]
+            _coeffs = [self.temp('type').format(self.repr(c)) for c in coeff]
             _coeffs = self.temp('arr').format(', '.join(_coeffs))
             coeffs.append(_coeffs)
         coeffs = ', '.join(coeffs)
@@ -162,14 +165,14 @@ class SVC(Template):
         out += '\n'
 
         # Interceptions:
-        inters = [self.temp('type').format(repr(i)) for i in self.inters]
+        inters = [self.temp('type').format(self.repr(i)) for i in self.inters]
         inters = ', '.join(inters)
         out += self.temp('arr[]').format(
             type='double', name='inters', values=inters)
         out += '\n'
 
         # Classes:
-        classes = [self.temp('type').format(repr(c)) for c in self.classes]
+        classes = [self.temp('type').format(self.repr(c)) for c in self.classes]
         classes = ', '.join(classes)
         out += self.temp('arr[]').format(
             type='int', name='classes', values=classes)
@@ -178,15 +181,20 @@ class SVC(Template):
         # Kernels:
         if self.params['kernel'] == 'rbf':
             out += self.temp('kernel.rbf').format(
-                len(self.svs), self.n_svs, repr(self.params['gamma']))
+                len(self.svs), self.n_svs,
+                self.repr(self.params['gamma']))
         elif self.params['kernel'] == 'poly':
             out += self.temp('kernel.poly').format(
-                len(self.svs), self.n_svs, repr(self.params['gamma']),
-                repr(self.params['coef0']), repr(self.params['degree']))
+                len(self.svs), self.n_svs,
+                self.repr(self.params['gamma']),
+                self.repr(self.params['coef0']),
+                self.repr(self.params['degree']))
         elif self.params['kernel'] == 'sigmoid':
             out += self.temp('kernel.sigmoid').format(
-                len(self.svs), self.n_svs, repr(self.params['gamma']),
-                repr(self.params['coef0']), repr(self.params['degree']))
+                len(self.svs), self.n_svs,
+                self.repr(self.params['gamma']),
+                self.repr(self.params['coef0']),
+                self.repr(self.params['degree']))
         elif self.params['kernel'] == 'linear':
             out += self.temp('kernel.linear').format(
                 len(self.svs), self.n_svs)

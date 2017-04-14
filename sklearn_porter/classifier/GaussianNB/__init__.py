@@ -49,7 +49,7 @@ class GaussianNB(Template):
         self.n_classes = len(model.classes_)
 
         # Create class prior probabilities:
-        priors = [self.temp('type').format(repr(c)) for c in
+        priors = [self.temp('type').format(self.repr(c)) for c in
                   self.model.class_prior_]
         priors = ', '.join(priors)
         self.priors = self.temp('arr[]').format(type='double', name='priors',
@@ -58,7 +58,7 @@ class GaussianNB(Template):
         # Create sigmas:
         sigmas = []
         for sigma in self.model.sigma_:
-            tmp = [self.temp('type').format(repr(s)) for s in sigma]
+            tmp = [self.temp('type').format(self.repr(s)) for s in sigma]
             tmp = self.temp('arr').format(', '.join(tmp))
             sigmas.append(tmp)
         sigmas = ', '.join(sigmas)
@@ -68,23 +68,25 @@ class GaussianNB(Template):
         # Create thetas:
         thetas = []
         for theta in self.model.theta_:
-            tmp = [self.temp('type').format(repr(t)) for t in theta]
+            tmp = [self.temp('type').format(self.repr(t)) for t in theta]
             tmp = self.temp('arr').format(', '.join(tmp))
             thetas.append(tmp)
         thetas = ', '.join(thetas)
         self.thetas = self.temp('arr[][]').format(type='double', name='thetas',
                                                   values=thetas)
 
-    def export(self, class_name, method_name):
+    def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
         Port a trained model to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string
+        :param class_name: string, default: 'Brain'
             The name of the class in the returned result.
-        :param method_name: string
+        :param method_name: string, default: 'predict'
             The name of the method in the returned result.
+        :param use_repr : bool, default True
+            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
@@ -93,6 +95,7 @@ class GaussianNB(Template):
         """
         self.class_name = class_name
         self.method_name = method_name
+        self.use_repr = use_repr
         if self.target_method == 'predict':
             return self.predict()
 

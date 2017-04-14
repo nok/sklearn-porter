@@ -95,16 +95,18 @@ class AdaBoostClassifier(Template):
                 self.n_estimators += 1
                 self.n_features = self.model.estimators_[idx].n_features_
 
-    def export(self, class_name, method_name):
+    def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
         Port a trained model to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string
+        :param class_name: string, default: 'Brain'
             The name of the class in the returned result.
-        :param method_name: string
+        :param method_name: string, default: 'predict'
             The name of the method in the returned result.
+        :param use_repr : bool, default True
+            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
@@ -113,6 +115,7 @@ class AdaBoostClassifier(Template):
         """
         self.class_name = class_name
         self.method_name = method_name
+        self.use_repr = use_repr
         if self.target_method == 'predict':
             return self.predict()
 
@@ -157,7 +160,7 @@ class AdaBoostClassifier(Template):
         if t[node] != -2.:
             out += '\n'
             out += self.temp('if', n_indents=depth).format(
-                features[node], '<=', repr(t[node]))
+                features[node], '<=', self.repr(t[node]))
             if l[node] != -1.:
                 out += self.create_branches(
                     l, r, t, value, features, l[node], depth + 1)
@@ -171,7 +174,8 @@ class AdaBoostClassifier(Template):
         else:
             clazzes = []
             for i, val in enumerate(value[node][0]):
-                clazz = self.temp('arr', n_indents=depth).format(i, repr(val))
+                clazz = self.temp('arr', n_indents=depth).format(
+                    i, self.repr(val))
                 clazz = '\n' + clazz
                 clazzes.append(clazz)
             out += self.temp('join').join(clazzes) + self.temp('join')

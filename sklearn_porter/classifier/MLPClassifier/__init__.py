@@ -101,16 +101,18 @@ class MLPClassifier(Template):
         """Get list of supported activation functions for the output layer."""
         return ['softmax']  # 'logistic' fails in tests
 
-    def export(self, class_name, method_name):
+    def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
         Port a trained model to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string
+        :param class_name: string, default: 'Brain'
             The name of the class in the returned result.
-        :param method_name: string
+        :param method_name: string, default: 'predict'
             The name of the method in the returned result.
+        :param use_repr : bool, default True
+            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
@@ -119,6 +121,7 @@ class MLPClassifier(Template):
         """
         self.class_name = class_name
         self.method_name = method_name
+        self.use_repr = use_repr
         if self.target_method == 'predict':
             return self.predict()
 
@@ -154,7 +157,7 @@ class MLPClassifier(Template):
         for layer in self.coefficients:
             layer_weights = []
             for weights in layer:
-                weights = ', '.join([repr(w) for w in weights])
+                weights = ', '.join([self.repr(w) for w in weights])
                 layer_weights.append(self.temp('arr').format(weights))
             layer_weights = ', '.join(layer_weights)
             coefficients.append(self.temp('arr').format(layer_weights))
@@ -198,7 +201,7 @@ class MLPClassifier(Template):
         Concatenate all intercepts of the classifier.
         """
         for layer in self.intercepts:
-            inter = ', '.join([repr(b) for b in layer])
+            inter = ', '.join([self.repr(b) for b in layer])
             yield self.temp('arr').format(inter)
 
     def _get_activations(self):

@@ -53,7 +53,7 @@ class BernoulliNB(Template):
         # jll += self.class_log_prior_ + neg_prob.sum(axis=1)
 
         # Create class prior probabilities:
-        priors = [self.temp('type').format(repr(p)) for p in
+        priors = [self.temp('type').format(self.repr(p)) for p in
                   model.class_log_prior_]
         priors = ', '.join(priors)
         self.priors = self.temp('arr[]').format(type='double', name='priors',
@@ -74,7 +74,7 @@ class BernoulliNB(Template):
         neg_prob = np.log(1 - np.exp(model.feature_log_prob_))
         probs = []
         for prob in neg_prob:
-            tmp = [self.temp('type').format(repr(p)) for p in prob]
+            tmp = [self.temp('type').format(self.repr(p)) for p in prob]
             tmp = self.temp('arr').format(', '.join(tmp))
             probs.append(tmp)
         probs = ', '.join(probs)
@@ -85,7 +85,7 @@ class BernoulliNB(Template):
         delta_probs = (model.feature_log_prob_ - neg_prob).T
         probs = []
         for prob in delta_probs:
-            tmp = [self.temp('type').format(repr(p)) for p in prob]
+            tmp = [self.temp('type').format(self.repr(p)) for p in prob]
             tmp = self.temp('arr').format(', '.join(tmp))
             probs.append(tmp)
         probs = ', '.join(probs)
@@ -93,16 +93,18 @@ class BernoulliNB(Template):
                                                      name='delProbs',
                                                      values=probs)
 
-    def export(self, class_name, method_name):
+    def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
         Port a trained model to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string
+        :param class_name: string, default: 'Brain'
             The name of the class in the returned result.
-        :param method_name: string
+        :param method_name: string, default: 'predict'
             The name of the method in the returned result.
+        :param use_repr : bool, default True
+            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
@@ -111,6 +113,7 @@ class BernoulliNB(Template):
         """
         self.class_name = class_name
         self.method_name = method_name
+        self.use_repr = use_repr
         if self.target_method == 'predict':
             return self.predict()
 
