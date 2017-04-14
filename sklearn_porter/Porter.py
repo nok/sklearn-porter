@@ -219,7 +219,7 @@ class Porter:
             with further information.
         """
         loc = locals()
-        loc.pop('self')
+        loc.pop(str('self'))
         return self.export(**loc)
 
     def predict(self, X, class_name='Brain', method_name='predict',
@@ -273,7 +273,7 @@ class Porter:
                               details=True)
         filename = Porter.get_filename(class_name, self.target_language)
         target_file = os.path.join(tnp_dir, filename)
-        with open(target_file, 'w') as f:
+        with open(target_file, str('w')) as f:
             f.write(details.get('model'))
 
         # Compilation command:

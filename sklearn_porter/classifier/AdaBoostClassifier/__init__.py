@@ -45,8 +45,23 @@ class AdaBoostClassifier(Template):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java', target_method='predict', **kwargs):
-        super(AdaBoostClassifier, self).__init__(model, target_language=target_language, target_method=target_method, **kwargs)
+    def __init__(self, model, target_language='java',
+                 target_method='predict', **kwargs):
+        """
+        Port a trained model to the syntax of a chosen programming language.
+
+        Parameters
+        ----------
+        :param model : AdaBoostClassifier
+            An instance of a trained AdaBoostClassifier model.
+        :param target_language : string
+            The target programming language.
+        :param target_method : string
+            The target method of the estimator.
+        """
+        super(AdaBoostClassifier, self).__init__(
+            model, target_language=target_language,
+            target_method=target_method, **kwargs)
         self.model = model
 
         # Check the used algorithm type:
@@ -86,8 +101,15 @@ class AdaBoostClassifier(Template):
 
         Parameters
         ----------
-        :param model : AdaBoostClassifier
-            An instance of a trained AdaBoostClassifier model.
+        :param class_name: string
+            The name of the class in the returned result.
+        :param method_name: string
+            The name of the method in the returned result.
+
+        Returns
+        -------
+        :return : string
+            The transpiled algorithm with the defined placeholders.
         """
         self.class_name = class_name
         self.method_name = method_name
@@ -96,12 +118,12 @@ class AdaBoostClassifier(Template):
 
     def predict(self):
         """
-        Port the predict method.
+        Transpile the predict method.
 
         Returns
         -------
-        :return: out : string
-            The ported predict method as string.
+        :return : string
+            The transpiled predict method as string.
         """
         return self.create_class(self.create_method())
 
