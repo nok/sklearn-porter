@@ -142,7 +142,7 @@ class Porter:
         return classifiers
 
     def export(self, class_name='Brain', method_name='predict',
-               use_repr=True, use_file=False, details=False, **kwargs):
+               use_repr=True, details=False, **kwargs):
         """
         Transpile a trained model to the syntax of a
         chosen programming language.
@@ -173,8 +173,7 @@ class Porter:
         """
         output = self.template.export(class_name=class_name,
                                       method_name=method_name,
-                                      use_repr=use_repr,
-                                      use_file=use_file)
+                                      use_repr=use_repr)
         self.output = output
         if not details:
             return output
