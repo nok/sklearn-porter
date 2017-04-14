@@ -88,7 +88,8 @@ class SVC(Template):
         self.classes = model.classes_
         self.n_classes = len(model.classes_)
 
-    def export(self, class_name="Brain", method_name="predict", use_repr=True):
+    def export(self, class_name="Brain", method_name="predict",
+               use_repr=True, use_file=False):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -100,6 +101,8 @@ class SVC(Template):
             The name of the method in the returned result.
         :param use_repr : bool, default True
             Whether to use repr() for floating-point values or not.
+        :param: use_file : bool, default False
+            Whether to store the model data in a separate file or not.
 
         Returns
         -------
@@ -109,6 +112,8 @@ class SVC(Template):
         self.class_name = class_name
         self.method_name = method_name
         self.use_repr = use_repr
+        self.use_file = use_file
+
         if self.target_method == 'predict':
             return self.predict()
 

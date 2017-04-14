@@ -142,20 +142,26 @@ class Porter:
         return classifiers
 
     def export(self, class_name='Brain', method_name='predict',
-               use_repr=True, details=False, **kwargs):
+               use_repr=True, use_file=False, details=False, **kwargs):
         """
         Transpile a trained model to the syntax of a
         chosen programming language.
 
         Parameters
         ----------
-        class_name : string, default 'Brain'
+        :param class_name : string, default: 'Brain'
             The name for the ported class.
 
-        method_name : string, default 'predict'
+        :param method_name : string, default: 'predict'
             The name for the ported method.
 
-        details : bool, default False
+        :param use_repr : bool, default: True
+            Whether to use repr() for floating-point values or not.
+            
+        :param use_file : bool, default: False
+            Whether to store the model data in a separate file or not.
+
+        :param details : bool, default False
             Return additional data for the compilation
             and execution.
 
@@ -167,7 +173,8 @@ class Porter:
         """
         output = self.template.export(class_name=class_name,
                                       method_name=method_name,
-                                      use_repr=use_repr)
+                                      use_repr=use_repr,
+                                      use_file=use_file)
         self.output = output
         if not details:
             return output
@@ -202,13 +209,13 @@ class Porter:
 
         Parameters
         ----------
-        class_name : string, default 'Brain'
+        :param class_name : string, default 'Brain'
             The name for the ported class.
 
-        method_name : string, default 'predict'
+        :param method_name : string, default 'predict'
             The name for the ported method.
 
-        details : bool, default False
+        :param details : bool, default False
             Return additional data for the compilation
             and execution.
 
@@ -229,20 +236,20 @@ class Porter:
 
         Parameters
         ----------
-        X : {array-like}, shape (n_features) or (n_samples, n_features)
+        :param X : {array-like}, shape (n_features) or (n_samples, n_features)
             The input data.
 
-        class_name : string, default 'Brain'
+        :param class_name : string, default 'Brain'
             The name for the ported class.
 
-        method_name : string, default 'predict'
+        :param method_name : string, default 'predict'
             The name for the ported method.
 
-        tnp_dir : string, default 'tmp'
+        :param tnp_dir : string, default 'tmp'
             The path to the temporary directory for
             storing the transpiled (and compiled) model.
 
-        keep_tmp_dir : bool, default False
+        :param keep_tmp_dir : bool, default False
             Whether to delete the temporary directory
             or not.
 
@@ -316,10 +323,10 @@ class Porter:
 
         Parameters
         ----------
-        X : ndarray, shape (n_samples, n_features)
+        :param X : ndarray, shape (n_samples, n_features)
             Input data.
 
-        normalize : bool, optional (default=True)
+        :param normalize : bool, optional (default=True)
             If ``False``, return the number of correctly classified samples.
             Otherwise, return the fraction of correctly classified samples.
 
@@ -347,7 +354,7 @@ class Porter:
 
         Parameters
         ----------
-        language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
+        :param language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
             The target programming language.
         """
         lang = str(language)
@@ -384,10 +391,10 @@ class Porter:
 
         Parameters
         ----------
-        class_name : str
+        :param class_name : str
             The used class name.
 
-        language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
+        :param language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
             The target programming language.
 
         Returns
@@ -420,13 +427,13 @@ class Porter:
 
         Parameters
         ----------
-        filename : str
+        :param filename : str
             The used filename.
 
-        class_name : str
+        :param class_name : str
             The used class name.
 
-        language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
+        :param language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
             The target programming language.
 
         Returns

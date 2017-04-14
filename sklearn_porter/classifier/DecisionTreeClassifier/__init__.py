@@ -93,6 +93,7 @@ class DecisionTreeClassifier(Template):
         self.class_name = class_name
         self.method_name = method_name
         self.use_repr = use_repr
+
         if self.target_method == 'predict':
             return self.predict(class_name, method_name)
 

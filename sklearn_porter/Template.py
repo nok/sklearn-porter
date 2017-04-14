@@ -13,17 +13,23 @@ class Template(object):
         self.target_language = str(target_language)
         self.target_method = str(target_method)
 
+        # Default settings:
+        self.class_name = 'Brain'
+        self.method_name = 'predict'
+        self.use_repr = True
+        self.use_file = False
+
     def indent(self, text, n_indents=1, skipping=False):
         """
         Indent text with single spaces.
 
         Parameters
         ----------
-        text : string
+        :param text : string
             The text which get a specific indentation.
-        n_indents : int, default: 1
+        :param n_indents : int, default: 1
             The number of indentations.
-        skipping : boolean, default: False
+        :param skipping : boolean, default: False
             Whether to skip the initial indentation.
 
         Returns
@@ -58,13 +64,13 @@ class Template(object):
 
         Parameters
         ----------
-        param name : string
+        :param param name : string
             The key name of the template.
-        param templates : string, default: None
+        :param param templates : string, default: None
             The template with placeholders.
-        param n_indents : int, default: None
+        :param param n_indents : int, default: None
             The number of indentations.
-        param skipping : bool, default: False
+        :param param skipping : bool, default: False
             Whether to skip the initial indentation.
 
         Returns
@@ -103,5 +109,4 @@ class Template(object):
     def repr(self, val):
         if 'use_repr' in self.__dict__.keys() and bool(self.use_repr) is True:
             return repr(val)
-        else:
-            return val
+        return val
