@@ -184,7 +184,7 @@ The exported [result](examples/classifier/DecisionTreeClassifier/java/basics.py#
 
 ### Prediction
 
-Or run the prediction(s) in the target programming language directly:
+Run the prediction(s) in the target programming language directly:
 
 ```python
 # ...
