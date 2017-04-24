@@ -274,10 +274,10 @@ Furthermore [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=
 
 ### Testing
 
-The tests cover module functions as well as matching predictions of transpiled models. Run [all tests](tests) by executing the script [tests.sh](recipes/tests.sh):
+The tests cover module functions as well as matching predictions of transpiled models. Run [all tests](tests) by executing the script [test.sh](recipes/test.sh):
 
 ```sh
-./recipes/tests.sh
+./recipes/test.sh
 ```
 
 ```sh
