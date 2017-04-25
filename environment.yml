@@ -1,17 +1,27 @@
 name: sklearn-porter
+channels:
+- defaults
 dependencies:
+- certifi=2016.2.28=py27_0
 - mkl=2017.0.1=0
-- numpy=1.11.3=py27_0
-- openssl=1.0.2k=0
+- numpy=1.12.1=py27_0
+- openssl=1.0.2k=1
 - pip=9.0.1=py27_1
 - python=2.7.13=0
 - readline=6.2=2
-- scikit-learn=0.18.1=np111py27_1
-- scipy=0.18.1=np111py27_1
+- scikit-learn=0.18.1=np112py27_1
+- scipy=0.19.0=np112py27_0
 - setuptools=27.2.0=py27_0
 - sqlite=3.13.0=0
 - tk=8.5.18=0
 - wheel=0.29.0=py27_0
 - zlib=1.2.8=3
 - pip:
+  - args==0.1.0
+  - clint==0.5.1
+  - pkginfo==1.4.1
+  - requests==2.13.0
+  - requests-toolbelt==0.7.0
   - six==1.10.0
+  - tbb==0.1
+  - twine==1.8.1
