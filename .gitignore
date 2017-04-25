@@ -27,3 +27,5 @@ temp/
 tmp
 tmp.*
 Tmp.*
+
+.ipynb_checkpoints
