@@ -83,7 +83,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/c/basics.py#L19">X</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/c/basics.ipynb">X</a></td>
             <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/basics.py#L19">X</a></td>
             <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/basics.py#L19">X</a></td>
             <td align="center"></td>

@@ -14,8 +14,6 @@ clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100,
                          random_state=0)
 clf.fit(X, y)
 
-# Cheese!
-
 result = Porter(clf, language='c').export()
 print(result)
 
