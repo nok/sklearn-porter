@@ -1,4 +1,5 @@
 language: python
+dist: trusty
 notifications:
   email: false
 branches:
@@ -38,6 +39,7 @@ install:
   - conda install -n root _license
   - conda info -a
   - conda env create -q -n sklearn-porter python=$TRAVIS_PYTHON_VERSION -f environment.yml
+  - pip install -U pip
   - source activate sklearn-porter
 script:
   - python -m unittest discover -vp '*Test.py'
