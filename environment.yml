@@ -80,10 +80,12 @@ dependencies:
   - backports.shutil-get-terminal-size==1.0.0
   - backports.ssl-match-hostname==3.4.0.2
   - clint==0.5.1
+  - hide-code==0.4.0
   - ipython-genutils==0.2.0
   - jupyter-client==5.0.1
   - jupyter-console==5.1.0
   - jupyter-core==4.3.0
+  - pdfkit==0.6.1
   - pkginfo==1.4.1
   - prompt-toolkit==1.0.14
   - requests==2.13.0
