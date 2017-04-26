@@ -2,19 +2,17 @@
 
 from sklearn import svm
 from sklearn.datasets import load_iris
-
 from sklearn_porter import Porter
 
 
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
+
 clf = svm.SVC(C=1., gamma=0.001, kernel='rbf', random_state=0)
 clf.fit(X, y)
 
-# Cheese!
-
-result = Porter(clf, language='php').export()
-print(result)
+output = Porter(clf, language='php').export()
+print(output)
 
 """
 <?php

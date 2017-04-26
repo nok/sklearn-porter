@@ -2,19 +2,17 @@
 
 from sklearn import svm
 from sklearn.datasets import load_iris
-
 from sklearn_porter import Porter
 
 
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
+
 clf = svm.LinearSVC(C=1., random_state=0)
 clf.fit(X, y)
 
-# Cheese!
-
-result = Porter(clf, language='js').export()
-print(result)
+output = Porter(clf, language='js').export()
+print(output)
 
 """
 var Brain = function(atts) {

@@ -2,20 +2,18 @@
 
 from sklearn.datasets import load_iris
 from sklearn.naive_bayes import GaussianNB
-
 from sklearn_porter import Porter
 
 
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
+
 clf = GaussianNB()
 clf.fit(X, y)
 
-# Cheese!
-
-result = Porter(clf).export()
-# result = Porter(clf, language='java').export()
-print(result)
+output = Porter(clf).export()
+# output = Porter(clf, language='java').export()
+print(output)
 
 """
 class Brain {

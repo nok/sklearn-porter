@@ -2,19 +2,17 @@
 
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.datasets import load_iris
-
 from sklearn_porter import Porter
 
 
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
+
 clf = KNeighborsClassifier(algorithm='brute', n_neighbors=3, weights='uniform')
 clf.fit(X, y)
 
-# Cheese!
-
-result = Porter(clf, language='js').export()
-print(result)
+output = Porter(clf, language='js').export()
+print(output)
 
 """
 // Array.prototype.fill polyfill:

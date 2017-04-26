@@ -3,21 +3,19 @@
 from sklearn.datasets import load_iris
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
-
 from sklearn_porter import Porter
 
 
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
+
 base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
 clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100,
                          random_state=0)
 clf.fit(X, y)
 
-# Cheese!
-
-result = Porter(clf, language='js').export()
-print(result)
+output = Porter(clf, language='js').export()
+print(output)
 
 """
 var Brain = function(atts) {

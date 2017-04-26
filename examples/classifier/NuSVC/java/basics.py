@@ -2,20 +2,18 @@
 
 from sklearn import svm
 from sklearn.datasets import load_iris
-
 from sklearn_porter import Porter
 
 
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
+
 clf = svm.NuSVC(gamma=0.001, kernel='rbf', random_state=0)
 clf.fit(X, y)
 
-# Cheese!
-
-result = Porter(clf).export()
-# result = Porter(clf, language='java').export()
-print(result)
+output = Porter(clf).export()
+# output = Porter(clf, language='java').export()
+print(output)
 
 """
 class Brain {

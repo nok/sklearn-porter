@@ -2,19 +2,17 @@
 
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
-
 from sklearn_porter import Porter
 
 
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
+
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-# Cheese!
-
-result = Porter(clf, language='c').export()
-print(result)
+output = Porter(clf, language='c').export()
+print(output)
 
 """
 #include <stdlib.h>

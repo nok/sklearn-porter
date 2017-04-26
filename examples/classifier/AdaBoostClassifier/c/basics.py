@@ -3,19 +3,19 @@
 from sklearn.datasets import load_iris
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
-
 from sklearn_porter import Porter
 
 
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
+
 base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
 clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100,
                          random_state=0)
 clf.fit(X, y)
 
-result = Porter(clf, language='c').export()
-print(result)
+output = Porter(clf, language='c').export()
+print(output)
 
 """
 #include <stdlib.h>

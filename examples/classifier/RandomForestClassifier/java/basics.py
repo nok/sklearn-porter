@@ -2,21 +2,19 @@
 
 from sklearn.datasets import load_iris
 from sklearn.ensemble import RandomForestClassifier
-
 from sklearn_porter import Porter
 
 
 iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
+
 clf = RandomForestClassifier(n_estimators=15, max_depth=None,
                              min_samples_split=2, random_state=0)
 clf.fit(X, y)
 
-# Cheese!
-
-result = Porter(clf).port()
-# result = Porter(clf, language='java').export()
-print(result)
+output = Porter(clf).port()
+# output = Porter(clf, language='java').export()
+print(output)
 
 """
 class Brain {

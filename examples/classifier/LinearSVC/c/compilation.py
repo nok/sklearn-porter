@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import subprocess as subp
-
 from sklearn import svm
 from sklearn.datasets import load_iris
-
 from sklearn_porter import Porter
 
 
@@ -12,8 +10,6 @@ iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
 clf = svm.LinearSVC(C=1., random_state=0)
 clf.fit(X, y)
-
-# Cheese!
 
 data = Porter(clf, language='c').export(details=True)
 
