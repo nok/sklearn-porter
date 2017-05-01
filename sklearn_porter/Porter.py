@@ -157,9 +157,6 @@ class Porter:
 
         :param use_repr : bool, default: True
             Whether to use repr() for floating-point values or not.
-            
-        :param use_file : bool, default: False
-            Whether to store the model data in a separate file or not.
 
         :param details : bool, default False
             Return additional data for the compilation

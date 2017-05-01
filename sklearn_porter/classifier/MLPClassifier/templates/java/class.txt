@@ -1,8 +1,8 @@
 class {class_name} {{
 
-    {hidden_activation_function}
+    {activation_function}
 
-    {output_activation_function}
+    {output_function}
 
     {method}
 

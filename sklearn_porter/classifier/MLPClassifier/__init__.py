@@ -22,16 +22,16 @@ class MLPClassifier(Template):
         'java': {
             'type':     '{0}',
             'arr':      '{{{0}}}',
-            'new_arr':  'new double[{0}]',
-            'arr[]':    'double[] {name} = {{{values}}};',
-            'arr[][]':  'double[][] {name} = {{{values}}};',
-            'arr[][][]': 'double[][][] {name} = {{{values}}};',
+            'new_arr':  'new {data_type}[{values}]',
+            'arr[]':    '{data_type}[] {name} = {{{values}}};',
+            'arr[][]':  '{data_type}[][] {name} = {{{values}}};',
+            'arr[][][]': '{data_type}[][][] {name} = {{{values}}};',
             'indent':   '    ',
         },
         'js': {
             'type':     '{0}',
             'arr':      '[{0}]',
-            'new_arr':  'new Array({0}).fill(0)',
+            'new_arr':  'new Array({values}).fill(0)',
             'arr[]':    'var {name} = [{values}];',
             'arr[][]':  'var {name} = [{values}];',
             'arr[][][]': 'var {name} = [{values}];',
@@ -101,7 +101,9 @@ class MLPClassifier(Template):
         """Get list of supported activation functions for the output layer."""
         return ['softmax']  # 'logistic' fails in tests
 
-    def export(self, class_name="Brain", method_name="predict", use_repr=True):
+    def export(self, class_name='Brain',
+               method_name='predict',
+               use_repr=True):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -122,6 +124,7 @@ class MLPClassifier(Template):
         self.class_name = class_name
         self.method_name = method_name
         self.use_repr = use_repr
+
         if self.target_method == 'predict':
             return self.predict()
 
@@ -150,7 +153,7 @@ class MLPClassifier(Template):
         activations = list(self._get_activations())
         activations = ', '.join(['atts'] + activations)
         activations = self.temp('arr[][]').format(
-            name='activations', values=activations)
+            data_type='double', name='activations', values=activations)
 
         # Coefficients (weights):
         coefficients = []
@@ -163,13 +166,13 @@ class MLPClassifier(Template):
             coefficients.append(self.temp('arr').format(layer_weights))
         coefficients = ', '.join(coefficients)
         coefficients = self.temp('arr[][][]').format(
-            name='coefficients', values=coefficients)
+            data_type='double', name='coefficients', values=coefficients)
 
         # Intercepts (biases):
         intercepts = list(self._get_intercepts())
         intercepts = ', '.join(intercepts)
         intercepts = self.temp('arr[][]').format(
-            name='intercepts', values=intercepts)
+            data_type='double', name='intercepts', values=intercepts)
 
         return self.temp('method', skipping=True, n_indents=1).format(
             class_name=self.class_name, method_name=self.method_name,
@@ -193,8 +196,8 @@ class MLPClassifier(Template):
         return self.temp('class').format(
             class_name=self.class_name, method_name=self.method_name,
             method=method, n_features=self.n_inputs,
-            hidden_activation_function=hidden_act,
-            output_activation_function=output_act)
+            activation_function=hidden_act,
+            output_function=output_act)
 
     def _get_intercepts(self):
         """
@@ -209,5 +212,6 @@ class MLPClassifier(Template):
         Concatenate the layers sizes of the classifier except the input layer.
         """
         for layer in self.layer_units[1:]:
-            yield self.temp('new_arr').format((str(int(layer))))
+            yield self.temp('new_arr').format(
+                data_type='double', values=(str(int(layer))))
 

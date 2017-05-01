@@ -3,9 +3,9 @@
 
 var {class_name} = function(atts) {{
 
-    {hidden_activation_function}
+    {activation_function}
 
-    {output_activation_function}
+    {output_function}
 
     {method}
 
