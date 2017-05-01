@@ -83,35 +83,32 @@ class MLPClassifierTest(JavaTest, unittest.TestCase):
             Y_py.append(self.make_pred_in_py(x))
         self.assertListEqual(Y, Y_py)
 
-    # def test_hidden_activation_function_tanh(self):
+    # def test_activation_fn_tanh(self):
     #     clf = MLPClassifier(
     #         activation='tanh', hidden_layer_sizes=50,
     #         learning_rate_init=.1)
-    #     self.set_classifier(clf)
-    #     java_preds, py_preds = [], []
+    #     self._port_model(clf)
+    #     Y, Y_py = [], []
     #     min_vals = np.amin(self.X, axis=0)
     #     max_vals = np.amax(self.X, axis=0)
     #     for n in range(30):
-    #         x = [random.uniform(min_vals[f], max_vals[f]) for f in
-    #              range(self.n_features)]
-    #         java_preds.append(self.make_pred_in_java(x))
-    #         py_preds.append(self.make_pred_in_py(x))
-    #
-    #     matches = np.sum(np.array(java_preds) == np.array(py_preds))
-    #     accuracy = matches / 30. * 100.
-    #     print("accuracy: %s" % repr(accuracy))
-    #     self.assertGreaterEqual(accuracy, 50.)
+    #         x = [random.uniform(min_vals[f], max_vals[f])
+    #              for f in range(self.n_features)]
+    #         Y.append(self.make_pred_in_custom(x))
+    #         Y_py.append(self.make_pred_in_py(x))
+    #     self.assertListEqual(Y, Y_py)
 
-    # def test_hidden_activation_function_logistic(self):
+    # def test_activation_fn_logistic(self):
     #     clf = MLPClassifier(
-    #         activation='logistic', hidden_layer_sizes=50, learning_rate_init=.1)
-    #     self.set_classifier(clf)
-    #     java_preds, py_preds = [], []
+    #         activation='logistic', hidden_layer_sizes=50,
+    #         learning_rate_init=.1)
+    #     self._port_model(clf)
+    #     Y, Y_py = [], []
     #     min_vals = np.amin(self.X, axis=0)
     #     max_vals = np.amax(self.X, axis=0)
-    #     for n in range(150):
-    #         x = [random.uniform(min_vals[f], max_vals[f]) for f in
-    #              range(self.n_features)]
-    #         java_preds.append(self.make_pred_in_java(x))
-    #         py_preds.append(self.make_pred_in_py(x))
-    #     self.assertListEqual(py_preds, java_preds)
+    #     for n in range(30):
+    #         x = [random.uniform(min_vals[f], max_vals[f])
+    #              for f in range(self.n_features)]
+    #         Y.append(self.make_pred_in_custom(x))
+    #         Y_py.append(self.make_pred_in_py(x))
+    #     self.assertListEqual(Y, Y_py)
