@@ -23,7 +23,7 @@ class MLPClassifierTest(JavaScriptTest, unittest.TestCase):
     def tearDown(self):
         super(MLPClassifierTest, self).tearDown()
 
-    def test_hidden_activation_function_relu(self):
+    def test_activation_fn_relu(self):
         mdl = MLPClassifier(
             activation='relu', hidden_layer_sizes=50,
             learning_rate_init=.1)
@@ -38,9 +38,39 @@ class MLPClassifierTest(JavaScriptTest, unittest.TestCase):
             Y_py.append(self.make_pred_in_py(x))
         self.assertListEqual(Y, Y_py)
 
-    def test_hidden_activation_function_identity(self):
+    def test_activation_fn_relu_with_mult_layers(self):
+        mdl = MLPClassifier(
+            activation='relu', hidden_layer_sizes=[60, 40, 20],
+            learning_rate_init=.1)
+        self._port_model(mdl)
+        Y, Y_py = [], []
+        min_vals = np.amin(self.X, axis=0)
+        max_vals = np.amax(self.X, axis=0)
+        for n in range(30):
+            x = [random.uniform(min_vals[f], max_vals[f])
+                 for f in range(self.n_features)]
+            Y.append(self.make_pred_in_custom(x))
+            Y_py.append(self.make_pred_in_py(x))
+        self.assertListEqual(Y, Y_py)
+
+    def test_activation_fn_identity(self):
         mdl = MLPClassifier(
             activation='identity', hidden_layer_sizes=50,
+            learning_rate_init=.1)
+        self._port_model(mdl)
+        Y, Y_py = [], []
+        min_vals = np.amin(self.X, axis=0)
+        max_vals = np.amax(self.X, axis=0)
+        for n in range(30):
+            x = [random.uniform(min_vals[f], max_vals[f])
+                 for f in range(self.n_features)]
+            Y.append(self.make_pred_in_custom(x))
+            Y_py.append(self.make_pred_in_py(x))
+        self.assertListEqual(Y, Y_py)
+
+    def test_activation_fn_identity_with_mult_layers(self):
+        mdl = MLPClassifier(
+            activation='identity', hidden_layer_sizes=[60, 40, 20],
             learning_rate_init=.1)
         self._port_model(mdl)
         Y, Y_py = [], []
