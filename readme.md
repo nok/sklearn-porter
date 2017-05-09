@@ -293,6 +293,21 @@ N_RANDOM_TESTS=30 python -m unittest discover -vp '*Test.py'
 ```
 
 
+### Quality
+
+It's highly recommended to ensure the code quality. For that I use [Pylint](https://github.com/PyCQA/pylint/), which you can run by executing the script [lint.sh](recipes/lint.sh): 
+
+```sh
+./recipes/lint.sh
+```
+
+```sh
+source activate sklearn-porter
+find ./sklearn_porter -name '*.py' -exec pylint {} \;
+source deactivate
+```
+
+
 ## Questions?
 
 Don't be shy and feel free to contact me on [Twitter](https://twitter.com/darius_morawiec) or [Gitter](https://gitter.im/nok/sklearn-porter).
