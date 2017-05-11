@@ -29,63 +29,63 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
-            <td align="center"><a href="examples/classifier/SVC/c/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/SVC/java/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/SVC/js/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/SVC/c/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/SVC/java/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/SVC/js/basics.ipynb">✕</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/SVC/php/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/SVC/php/basics.ipynb">✕</a></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.NuSVC.html">sklearn.svm.NuSVC</a></td>
-            <td align="center"><a href="examples/classifier/NuSVC/c/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/NuSVC/java/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/NuSVC/js/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/c/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/java/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/js/basics.ipynb">✕</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/NuSVC/php/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/NuSVC/php/basics.ipynb">✕</a></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/c/basics.ipynb">X</a> , <a href="examples/classifier/LinearSVC/c/compilation.py#L14">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/java/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/js/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/go/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/php/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/ruby/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/c/basics.ipynb">✕</a> , <a href="examples/classifier/LinearSVC/c/compilation.py#L14">✕</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/java/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/js/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/go/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/php/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/ruby/basics.ipynb">✕</a></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/c/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/js/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/c/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/js/basics.ipynb">✕</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/php/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/DecisionTreeClassifier/php/basics.ipynb">✕</a></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></td>
-            <td align="center"><a href="examples/classifier/RandomForestClassifier/c/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/RandomForestClassifier/java/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/RandomForestClassifier/js/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/c/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/java/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/RandomForestClassifier/js/basics.ipynb">✕</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
-            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/c/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/js/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/c/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/ExtraTreesClassifier/js/basics.ipynb">✕</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/c/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/c/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/basics.ipynb">✕</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -93,8 +93,8 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">sklearn.neighbors.KNeighborsClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/KNeighborsClassifier/java/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/KNeighborsClassifier/js/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/KNeighborsClassifier/java/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/KNeighborsClassifier/js/basics.ipynb">✕</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -102,8 +102,8 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/MLPClassifier/java/basics.ipynb">X</a></td>
-            <td align="center"><a href="examples/classifier/MLPClassifier/js/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/java/basics.ipynb">✕</a></td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/js/basics.ipynb">✕</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -111,7 +111,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">sklearn.naive_bayes.GaussianNB</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/GaussianNB/java/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/GaussianNB/java/basics.ipynb">✕</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -120,7 +120,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">sklearn.naive_bayes.BernoulliNB</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/BernoulliNB/java/basics.ipynb">X</a></td>
+            <td align="center"><a href="examples/classifier/BernoulliNB/java/basics.ipynb">✕</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -180,7 +180,7 @@ output = porter.export()
 print(output)
 ```
 
-The exported [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L20-L100) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
+The exported [result](examples/classifier/DecisionTreeClassifier/java/basics.py#L18-L98) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
 
 ### Prediction
 
