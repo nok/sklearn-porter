@@ -21,7 +21,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
 
-class Porter:
+class Porter(object):
 
     # Version:
     _version_path = str(os.path.join(os.path.dirname(__file__),
@@ -32,6 +32,7 @@ class Porter:
     __version__ = str(_version).strip()
 
     def __init__(self, model, language='java', method='predict', **kwargs):
+        # pylint: disable=unused-argument
         """
         Port a trained model to the syntax of a chosen
         programming language.
@@ -143,6 +144,7 @@ class Porter:
 
     def export(self, class_name='Brain', method_name='predict',
                use_repr=True, details=False, **kwargs):
+        # pylint: disable=unused-argument
         """
         Transpile a trained model to the syntax of a
         chosen programming language.
@@ -196,9 +198,8 @@ class Porter:
         }
         return output
 
-    def port(self, class_name='Brain',
-             method_name='predict',
-             details=False):
+    def port(self, class_name='Brain', method_name='predict', details=False):
+        # pylint: disable=unused-argument
         """
         Transpile a trained model to the syntax of a
         chosen programming language.
@@ -276,8 +277,8 @@ class Porter:
                               details=True)
         filename = Porter.get_filename(class_name, self.target_language)
         target_file = os.path.join(tnp_dir, filename)
-        with open(target_file, str('w')) as f:
-            f.write(details.get('model'))
+        with open(target_file, str('w')) as file_:
+            file_.write(details.get('model'))
 
         # Compilation command:
         comp_cmd = details.get('cmd').get('compilation')
@@ -289,29 +290,29 @@ class Porter:
         exec_cmd = details.get('cmd').get('execution')
         exec_cmd = str(exec_cmd).split()
 
-        y = None
+        pred_y = None
 
         # Single feature set:
         if exec_cmd is not None and len(X.shape) == 1:
-            full_exec_cmd = exec_cmd + [str(f).strip() for f in X]
-            pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
-                                     cwd=tnp_dir)
-            y = int(pred)
+            full_exec_cmd = exec_cmd + [str(sample).strip() for sample in X]
+            pred_y = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
+                                       cwd=tnp_dir)
+            pred_y = int(pred_y)
 
         # Multiple feature sets:
         if exec_cmd is not None and len(X.shape) > 1:
-            y = np.empty(X.shape[0], dtype=int)
+            pred_y = np.empty(X.shape[0], dtype=int)
             for idx, x in enumerate(X):
-                full_exec_cmd = exec_cmd + [str(f).strip() for f in x]
+                full_exec_cmd = exec_cmd + [str(feature).strip() for feature in x]
                 pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
-                                         cwd=tnp_dir)
-                y[idx] = int(pred)
+                                           cwd=tnp_dir)
+                pred_y[idx] = int(pred)
 
         # Cleanup:
         if not keep_tmp_dir:
             subp.call(['rm', '-rf', tnp_dir])
 
-        return y
+        return pred_y
 
     def predict_test(self, X, normalize=True):
         """

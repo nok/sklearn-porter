@@ -53,22 +53,22 @@ class KNeighborsClassifier(Template):
         self.model = model
 
         self.n_classes = len(self.model.classes_)
-        self.n_templates = len(self.model._fit_X)
-        self.n_features = len(self.model._fit_X[0])
+        self.n_templates = len(self.model._fit_X)  # pylint: disable=W0212
+        self.n_features = len(self.model._fit_X[0])  # pylint: disable=W0212
         self.n_neighbors = self.model.n_neighbors
 
         self.algorithm = self.model.algorithm
         self.power_param = self.model.p
 
-        if self.algorithm is not 'brute':
-            from sklearn.neighbors.kd_tree import KDTree
-            from sklearn.neighbors.ball_tree import BallTree
-            tree = self.model._tree
+        if self.algorithm != 'brute':
+            from sklearn.neighbors.kd_tree import KDTree  # pylint: disable-msg=E0611
+            from sklearn.neighbors.ball_tree import BallTree  # pylint: disable-msg=E0611
+            tree = self.model._tree  # pylint: disable=W0212
             if isinstance(tree, (KDTree, BallTree)):
                 self.tree = tree
 
         self.metric = self.model.metric
-        if self.model.weights is not 'uniform':
+        if self.model.weights != 'uniform':
             msg = "Only 'uniform' weights are supported for this classifier."
             raise NotImplementedError(msg)
 
@@ -124,7 +124,7 @@ class KNeighborsClassifier(Template):
 
         # Templates
         temps = []
-        for atts in enumerate(self.model._fit_X):
+        for atts in enumerate(self.model._fit_X):  # pylint: disable=W0212
             tmp = [self.temp('type').format(self.repr(a)) for a in atts[1]]
             tmp = self.temp('arr').format(', '.join(tmp))
             temps.append(tmp)
@@ -137,7 +137,7 @@ class KNeighborsClassifier(Template):
             m=self.n_features)
 
         # Classes
-        classes = self.model._y
+        classes = self.model._y  # pylint: disable=W0212
         classes = [self.temp('type').format(int(c)) for c in classes]
         classes = ', '.join(classes)
         classes = self.temp('arr[]').format(

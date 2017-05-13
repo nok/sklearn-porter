@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...Template import Template
 import numpy as np
+from ...Template import Template
 
-np.set_printoptions(precision=15)
+np.set_printoptions(precision=64)
 
 
 class MLPClassifier(Template):
@@ -78,7 +78,7 @@ class MLPClassifier(Template):
         self.n_outputs = self.model.n_outputs_
 
         self.hidden_layer_sizes = self.model.hidden_layer_sizes
-        if type(self.hidden_layer_sizes) is int:
+        if isinstance(self.hidden_layer_sizes, int):
             self.hidden_layer_sizes = [self.hidden_layer_sizes]
         self.hidden_layer_sizes = list(self.hidden_layer_sizes)
 
@@ -214,4 +214,3 @@ class MLPClassifier(Template):
         for layer in self.layer_units[1:]:
             yield self.temp('new_arr').format(
                 data_type='double', values=(str(int(layer))))
-

@@ -118,17 +118,18 @@ class RandomForestClassifier(Template):
         """
         return self.create_class(self.create_method())
 
-    def create_branches(self, l, r, t, value, features, node, depth):
+    def create_branches(self, left_nodes, right_nodes, threshold,
+                        value, features, node, depth):
         """
         Parse and port a single tree model.
 
         Parameters
         ----------
-        :param l : object
+        :param left_nodes : object
             The left children node.
-        :param r : object
+        :param right_nodes : object
             The left children node.
-        :param t : object
+        :param threshold : object
             The decision threshold.
         :param value : object
             The label or class.
@@ -146,18 +147,20 @@ class RandomForestClassifier(Template):
         """
         out = ''  # returned output
         # ind = '\n' + '    ' * depth
-        if t[node] != -2.:
+        if threshold[node] != -2.:
             out += '\n'
             out += self.temp('if', n_indents=depth).format(
-                features[node], '<=', self.repr(t[node]))
-            if l[node] != -1.:
+                features[node], '<=', self.repr(threshold[node]))
+            if left_nodes[node] != -1.:
                 out += self.create_branches(
-                    l, r, t, value, features, l[node], depth + 1)
+                    left_nodes, right_nodes, threshold, value,
+                    features, left_nodes[node], depth + 1)
             out += '\n'
             out += self.temp('else', n_indents=depth)
-            if r[node] != -1.:
+            if right_nodes[node] != -1.:
                 out += self.create_branches(
-                    l, r, t, value, features, r[node], depth + 1)
+                    left_nodes, right_nodes, threshold, value,
+                    features, right_nodes[node], depth + 1)
             out += '\n'
             out += self.temp('endif', n_indents=depth)
         else:
@@ -215,9 +218,8 @@ class RandomForestClassifier(Template):
         suffix = ("_{0:0" + str(len(str(self.n_estimators - 1))) + "d}")
         for idx, model in enumerate(self.models):
             fn_name = self.method_name + suffix.format(idx)
-            fn_name = self.temp(
-                'method_calls', n_indents=2, skipping=True).format(
-                idx, self.class_name, fn_name)
+            fn_name = self.temp('method_calls', n_indents=2, skipping=True)\
+                .format(idx, self.class_name, fn_name)
             fn_names.append(fn_name)
         fn_names = '\n'.join(fn_names)
         fn_names = self.indent(fn_names, n_indents=1, skipping=True)

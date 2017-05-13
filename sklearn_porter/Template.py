@@ -10,6 +10,7 @@ class Template(object):
 
     def __init__(self, model, target_language='java',
                  target_method='predict', **kwargs):
+        # pylint: disable=unused-argument
         self.target_language = str(target_language)
         self.target_method = str(target_method)
 
@@ -84,7 +85,7 @@ class Template(object):
         key = keys.pop(0).lower()
         template = templates.get(key, None)
         if template is not None:
-            if type(template) is str:
+            if isinstance(template, str):
                 if n_indents is not None:
                     template = self.indent(template, n_indents, skipping)
                 return template
@@ -93,7 +94,6 @@ class Template(object):
                 return self.temp(keys, template, skipping=False)
         else:
             class_name = self.__class__.__name__
-            # TODO: Replace static path definition: 'classifier':
             path = os.path.join(
                 os.path.dirname(__file__), 'classifier', class_name,
                 'templates', self.target_language, name + '.txt')

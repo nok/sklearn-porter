@@ -128,7 +128,7 @@ class LinearSVC(Template):
 
         # Coefficients:
         coefs = []
-        for idx, coef in enumerate(self.model.coef_):
+        for coef in self.model.coef_:
             tmp = [self.temp('type').format(self.repr(c)) for c in coef]
             tmp = self.temp('arr').format(', '.join(tmp))
             coefs.append(tmp)

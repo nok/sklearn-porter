@@ -83,8 +83,8 @@ class SVC(Template):
         self.svs_rows = model.n_support_
         self.n_svs_rows = len(model.n_support_)
         self.coeffs = model.dual_coef_
-        self.inters = model._intercept_
-        self.n_inters = len(model._intercept_)
+        self.inters = model._intercept_  # pylint: disable=W0212
+        self.n_inters = len(model._intercept_)  # pylint: disable=W0212
         self.classes = model.classes_
         self.n_classes = len(model.classes_)
 
@@ -147,7 +147,7 @@ class SVC(Template):
 
         # Support vectors:
         vectors = []
-        for vidx, vector in enumerate(self.svs):
+        for vector in self.svs:
             _vectors = [self.temp('type').format(self.repr(v)) for v in vector]
             _vectors = self.temp('arr').format(', '.join(_vectors))
             vectors.append(_vectors)
@@ -159,7 +159,7 @@ class SVC(Template):
 
         # Coefficients:
         coeffs = []
-        for cidx, coeff in enumerate(self.coeffs):
+        for coeff in self.coeffs:
             _coeffs = [self.temp('type').format(self.repr(c)) for c in coeff]
             _coeffs = self.temp('arr').format(', '.join(_coeffs))
             coeffs.append(_coeffs)

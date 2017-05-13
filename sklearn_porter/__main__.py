@@ -62,8 +62,8 @@ def main():
             dest_path = os.sep.join(dest_dir)
 
         # Save transpiled model:
-        with open(dest_path, 'w') as f:
-            f.write(details.get('model'))
+        with open(dest_path, 'w') as file_:
+            file_.write(details.get('model'))
     else:
         raise ValueError('No valid model in pickle format was found.')
 
