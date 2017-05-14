@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
+from ..Classifier import Classifier
 
-from ...Template import Template
 
-
-class BernoulliNB(Template):
+class BernoulliNB(Classifier):
     """
     See also
     --------

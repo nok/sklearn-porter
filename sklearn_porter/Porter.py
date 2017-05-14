@@ -57,6 +57,8 @@ class Porter(object):
         # Algorithm type:
         if isinstance(self.model, self.classifiers):
             self.algorithm_type = 'classifier'
+        elif isinstance(self.model, self.regressors):
+            self.algorithm_type = 'regressor'
         else:
             error = "The given model '{model}' isn't" \
                     " supported.".format(**self.__dict__)
@@ -105,6 +107,14 @@ class Porter(object):
 
         self.tested_env_dependencies = False
 
+    @staticmethod
+    def get_sklearn_version():
+        from sklearn import __version__ as version
+        version = str(version).split('.')
+        version = [int(v) for v in version]
+        major, minor = version[0], version[1]
+        return major, minor
+
     @property
     def classifiers(self):
         """
@@ -131,16 +141,36 @@ class Porter(object):
         )
 
         # sklearn version >= 0.18.0
-        from sklearn import __version__ as version
-        version = str(version).split('.')
-        version = [int(v) for v in version]
-        major, minor = version[0], version[1]
+        major, minor = Porter.get_sklearn_version()
         if major > 0 or (major == 0 and minor >= 18):
             from sklearn.neural_network.multilayer_perceptron \
                 import MLPClassifier
             classifiers += (MLPClassifier, )
 
         return classifiers
+
+    @property
+    def regressors(self):
+        """
+        Get a set of supported regressors.
+
+        Returns
+        -------
+        regressors : {set}
+            The supported regressors.
+        """
+
+        # sklearn version < 0.18.0
+        regressors = ()
+
+        # sklearn version >= 0.18.0
+        major, minor = Porter.get_sklearn_version()
+        if major > 0 or (major == 0 and minor >= 18):
+            from sklearn.neural_network.multilayer_perceptron \
+                import MLPRegressor
+            regressors += (MLPRegressor, )
+
+        return regressors
 
     def export(self, class_name='Brain', method_name='predict',
                use_repr=True, details=False, **kwargs):

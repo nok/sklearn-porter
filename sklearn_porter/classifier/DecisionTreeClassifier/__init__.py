@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from ...Template import Template
+from ..Classifier import Classifier
 
 
-class DecisionTreeClassifier(Template):
+class DecisionTreeClassifier(Classifier):
     """
     See also
     --------

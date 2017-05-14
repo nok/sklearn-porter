@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from sklearn.tree.tree import DecisionTreeClassifier
+from ..Classifier import Classifier
 
-from ...Template import Template
 
-
-class RandomForestClassifier(Template):
+class RandomForestClassifier(Classifier):
     """
     See also
     --------

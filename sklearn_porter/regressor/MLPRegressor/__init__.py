@@ -1,33 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from ..Classifier import Classifier
+from ..Regressor import Regressor
 
 np.set_printoptions(precision=64)
 
 
-class MLPClassifier(Classifier):
+class MLPRegressor(Regressor):
     """
     See also
     --------
     sklearn.neural_network.MLPClassifier
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html
     """
 
     SUPPORTED_METHODS = ['predict']
 
     # @formatter:off
     TEMPLATES = {
-        'java': {
-            'type':     '{0}',
-            'arr':      '{{{0}}}',
-            'new_arr':  'new {data_type}[{values}]',
-            'arr[]':    '{data_type}[] {name} = {{{values}}};',
-            'arr[][]':  '{data_type}[][] {name} = {{{values}}};',
-            'arr[][][]': '{data_type}[][][] {name} = {{{values}}};',
-            'indent':   '    ',
-        },
         'js': {
             'type':     '{0}',
             'arr':      '[{0}]',
@@ -47,14 +38,14 @@ class MLPClassifier(Classifier):
 
         Parameters
         ----------
-        :param model : MLPClassifier
-            An instance of a trained AdaBoostClassifier model.
+        :param model : MLPRegressor
+            An instance of a trained MLPRegressor model.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
-        super(MLPClassifier, self).__init__(
+        super(MLPRegressor, self).__init__(
             model, target_language=target_language,
             target_method=target_method, **kwargs)
         self.model = model
@@ -64,12 +55,6 @@ class MLPClassifier(Classifier):
         if self.hidden_activation not in self.hidden_activation_functions:
             raise ValueError(("The activation function '%s' of the model "
                               "is not supported.") % self.hidden_activation)
-
-        # Output activation function ('softmax' or 'logistic'):
-        self.output_activation = self.model.out_activation_
-        if self.output_activation not in self.output_activation_functions:
-            raise ValueError(("The activation function '%s' of the model "
-                              "is not supported.") % self.output_activation)
 
         self.n_layers = self.model.n_layers_
         self.n_hidden_layers = self.model.n_layers_ - 2
@@ -94,14 +79,7 @@ class MLPClassifier(Classifier):
     @property
     def hidden_activation_functions(self):
         """Get list of supported activation functions for the hidden layers."""
-        return ['relu', 'identity']  # 'tanh', 'logistic'
-
-    @property
-    def output_activation_functions(self):
-        """Get list of supported activation functions for the output layer."""
-        return ['softmax']  # 'softmax' for multiclass classification
-                            # 'logistic' for binary classification
-                            # 'identity' for regression
+        return ['relu', 'identity', 'tanh', 'logistic']
 
     def export(self, class_name='Brain',
                method_name='predict',
@@ -193,13 +171,10 @@ class MLPClassifier(Classifier):
         """
         hidden_act_type = 'hidden_activation.' + self.hidden_activation
         hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
-        output_act_type = 'output_activation.' + self.output_activation
-        output_act = self.temp(output_act_type, skipping=True, n_indents=1)
         return self.temp('class').format(
             class_name=self.class_name, method_name=self.method_name,
             method=method, n_features=self.n_inputs,
-            activation_function=hidden_act,
-            output_function=output_act)
+            activation_function=hidden_act)
 
     def _get_intercepts(self):
         """

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import sklearn
+from ..Classifier import Classifier
 
-from ...Template import Template
 
-
-class AdaBoostClassifier(Template):
+class AdaBoostClassifier(Classifier):
     """
     See also
     --------
