@@ -62,14 +62,14 @@ class MLPClassifier(Template):
         # Activation function ('identity', 'logistic', 'tanh' or 'relu'):
         self.hidden_activation = self.model.activation
         if self.hidden_activation not in self.hidden_activation_functions:
-            raise ValueError(('The activation function \'%s\' of the model '
-                              'is not supported.') % self.hidden_activation)
+            raise ValueError(("The activation function '%s' of the model "
+                              "is not supported.") % self.hidden_activation)
 
         # Output activation function ('softmax' or 'logistic'):
         self.output_activation = self.model.out_activation_
         if self.output_activation not in self.output_activation_functions:
-            raise ValueError(('The activation function \'%s\' of the model '
-                              'is not supported.') % self.output_activation)
+            raise ValueError(("The activation function '%s' of the model "
+                              "is not supported.") % self.output_activation)
 
         self.n_layers = self.model.n_layers_
         self.n_hidden_layers = self.model.n_layers_ - 2
@@ -94,12 +94,14 @@ class MLPClassifier(Template):
     @property
     def hidden_activation_functions(self):
         """Get list of supported activation functions for the hidden layers."""
-        return ['relu', 'identity']  # 'tanh' and 'logistic' fails in tests
+        return ['relu', 'identity']  # 'tanh', 'logistic'
 
     @property
     def output_activation_functions(self):
         """Get list of supported activation functions for the output layer."""
-        return ['softmax']  # 'logistic' fails in tests
+        return ['softmax']  # 'softmax' for multiclass classification
+                            # 'logistic' for binary classification
+                            # 'identity' for regression
 
     def export(self, class_name='Brain',
                method_name='predict',

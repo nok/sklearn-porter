@@ -2,6 +2,11 @@
 public static double[] hidden_activation(double[] v) {
     for (int i = 0, l = v.length; i < l; i++) {
         v[i] = 1. / (1. + Math.exp(-v[i]));
+        // if (v[i] > 0) {
+        //     v[i] = -Math.log(1. + Math.exp(-v[i]));
+        // } else {
+        //     v[i] = v[i] - Math.log(1. + Math.exp(-v[i]));
+        // }
     }
     return v;
 }
