@@ -170,6 +170,13 @@ class MLPRegressor(Regressor):
             The built class as string.
         """
         hidden_act_type = 'hidden_activation.' + self.hidden_activation
+
+        if self.hidden_activation == 'logistic':
+            if self.n_hidden_layers == 1:
+                hidden_act_type = 'hidden_activation.logistic_single'
+            else:
+                hidden_act_type = 'hidden_activation.logistic_multiple'
+
         hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
         return self.temp('class').format(
             class_name=self.class_name, method_name=self.method_name,

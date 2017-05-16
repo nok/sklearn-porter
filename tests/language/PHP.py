@@ -55,15 +55,16 @@ class PHP(Timer, Checker):
         # $ rm -rf temp
         subp.call(['rm', '-rf', 'tmp'])
 
-    def make_pred_in_py(self, features):
-        return int(self.mdl.predict([features])[0])
+    def make_pred_in_py(self, features, cast=True):
+        pred = self.mdl.predict([features])[0]
+        return int(pred) if cast else float(pred)
 
-    def make_pred_in_custom(self, features):
+    def make_pred_in_custom(self, features, cast=True):
         # $ php -f <temp_filename> <features>
         filename = self.tmp_fn + '.php'
         path = os.path.join('tmp', filename)
         cmd = ['php', '-f', path]
         args = [str(f).strip() for f in features]
         cmd += args
-        pred = subp.check_output(cmd, stderr=subp.STDOUT)
-        return int(pred)
+        pred = subp.check_output(cmd, stderr=subp.STDOUT).rstrip()
+        return int(pred) if cast else float(pred)

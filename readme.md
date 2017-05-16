@@ -15,11 +15,11 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
 <table>
     <tbody>
         <tr>
-            <td align="center" width="40%"><strong>Type</strong></td>
+            <td align="center" width="40%"><strong>Algorithm</strong></td>
             <td align="center" colspan="6" width="60%"><strong>Programming language</strong></td>
         </tr>
         <tr>
-            <td align="center" width="40%">Classifier</td>
+            <td align="left" width="40%">Classification</td>
             <td align="center" width="10%">C</td>
             <td align="center" width="10%">Java</td>
             <td align="center" width="10%">JavaScript</td>
@@ -122,6 +122,19 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/BernoulliNB/java/basics.ipynb">✓</a></td>
             <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
+        <tr>
+            <td align="left" width="40%">Regression</td>
+            <td colspan="6" width="10%"></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">sklearn.neural_network.MLPRegressor</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"><a href="examples/regressor/MLPRegressor/js/basics.ipynb">✓</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>

@@ -8,13 +8,12 @@ from sklearn_porter import Porter
 samples = load_diabetes()
 X, y = samples.data, samples.target
 
-clf = MLPRegressor(
+mdl = MLPRegressor(
     activation='relu', hidden_layer_sizes=30, max_iter=500, alpha=1e-4,
     solver='sgd', tol=1e-4, random_state=1, learning_rate_init=.1)
+mdl.fit(X, y)
 
-clf.fit(X, y)
-
-output = Porter(clf, language='js').export()
+output = Porter(mdl, language='js').export()
 print(output)
 
 """
