@@ -38,7 +38,7 @@ class NuSVCCTest(C, Classifier, TestCase):
     def test_kernel_poly(self):
         clf = NuSVC(kernel='poly',
                     gamma=0.001,
-                    andom_state=0)
+                    random_state=0)
         self._port_model(clf)
         Y, Y_py = [], []
         min_vals = np.amin(self.X, axis=0)
