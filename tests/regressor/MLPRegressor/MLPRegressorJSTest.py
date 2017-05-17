@@ -16,6 +16,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
 
     def setUp(self):
         super(MLPRegressorJSTest, self).setUp()
+        np.random.seed(0)
         mdl = MLPRegressor(activation='relu',
                            hidden_layer_sizes=50,
                            max_iter=500,
@@ -37,7 +38,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -55,7 +56,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -72,7 +73,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -90,7 +91,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -108,7 +109,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -126,7 +127,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -144,7 +145,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -162,7 +163,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -180,7 +181,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -198,7 +199,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
@@ -216,7 +217,7 @@ class MLPRegressorJSTest(JS, Regressor, TestCase):
         min_vals = np.amin(self.X, axis=0)
         max_vals = np.amax(self.X, axis=0)
         for n in range(self.N_RANDOM_TESTS):
-            x = [random.uniform(min_vals[f], max_vals[f]) for f in
+            x = [np.random.uniform(min_vals[f], max_vals[f]) for f in
                  range(self.n_features)]
             match.append(self.make_pred_in_custom(x, cast=False) -
                          self.make_pred_in_py(x, cast=False) < 0.0001)
