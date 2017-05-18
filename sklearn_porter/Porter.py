@@ -335,7 +335,7 @@ class Porter(object):
             for idx, x in enumerate(X):
                 full_exec_cmd = exec_cmd + [str(feature).strip() for feature in x]
                 pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
-                                           cwd=tnp_dir)
+                                         cwd=tnp_dir)
                 pred_y[idx] = int(pred)
 
         # Cleanup:
