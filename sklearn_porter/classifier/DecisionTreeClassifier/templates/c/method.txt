@@ -1,4 +1,4 @@
-int {method_name}(float atts[{n_classes}]) {{
+int {method_name}(float atts[{n_features}]) {{
 
     int classes[{n_classes}];
     {branches}
