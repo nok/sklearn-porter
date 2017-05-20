@@ -87,6 +87,8 @@ class SVC(Classifier):
         self.n_inters = len(model._intercept_)  # pylint: disable=W0212
         self.classes = model.classes_
         self.n_classes = len(model.classes_)
+        self.is_binary = self.n_classes == 2
+        self.binary_prefix = 'binary.' if self.is_binary else ''
 
     def export(self, class_name="Brain", method_name="predict",
                use_repr=True, use_file=False):
@@ -177,39 +179,42 @@ class SVC(Classifier):
         out += '\n'
 
         # Classes:
-        classes = [self.temp('type').format(self.repr(c)) for c in self.classes]
-        classes = ', '.join(classes)
-        out += self.temp('arr[]').format(
-            type='int', name='classes', values=classes)
-        out += '\n'
+        if not self.is_binary:
+            classes = [self.temp('type').format(self.repr(c)) for c in self.classes]
+            classes = ', '.join(classes)
+            out += self.temp('arr[]').format(
+                type='int', name='classes', values=classes)
+            out += '\n'
 
         # Kernels:
         if self.params['kernel'] == 'rbf':
-            out += self.temp('kernel.rbf').format(
+            out += self.temp(self.binary_prefix + 'kernel.rbf').format(
                 len(self.svs), self.n_svs,
                 self.repr(self.params['gamma']))
         elif self.params['kernel'] == 'poly':
-            out += self.temp('kernel.poly').format(
+            out += self.temp(self.binary_prefix + 'kernel.poly').format(
                 len(self.svs), self.n_svs,
                 self.repr(self.params['gamma']),
                 self.repr(self.params['coef0']),
                 self.repr(self.params['degree']))
         elif self.params['kernel'] == 'sigmoid':
-            out += self.temp('kernel.sigmoid').format(
+            out += self.temp(self.binary_prefix + 'kernel.sigmoid').format(
                 len(self.svs), self.n_svs,
                 self.repr(self.params['gamma']),
                 self.repr(self.params['coef0']),
                 self.repr(self.params['degree']))
         elif self.params['kernel'] == 'linear':
-            out += self.temp('kernel.linear').format(
+            out += self.temp(self.binary_prefix + 'kernel.linear').format(
                 len(self.svs), self.n_svs)
         out += '\n'
 
         # Decicion:
         out += self.temp('starts').format(self.n_svs_rows)
         out += self.temp('ends').format(self.n_svs_rows)
-        out += self.temp('decicions').format(self.n_inters, self.n_svs_rows)
-        out += self.temp('classes').format(self.n_inters, self.n_classes)
+        out += self.temp(self.binary_prefix + 'decisions').format(
+            self.n_inters, self.n_svs_rows)
+        out += self.temp(self.binary_prefix + 'classes').format(
+            self.n_inters, self.n_classes)
         n_indents = 0 if self.target_language in ['java', 'js', 'php'] else 1
         out = self.indent(out, n_indents=2-n_indents)
         return self.temp('method', n_indents=1-n_indents, skipping=True).format(

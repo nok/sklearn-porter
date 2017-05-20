@@ -6,8 +6,10 @@ import unittest
 import filecmp
 import os
 
+from sklearn.datasets import load_iris
 from sklearn.externals import joblib
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.utils import shuffle
 
 from sklearn_porter import Porter
 
@@ -23,6 +25,7 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
 
     def setUp(self):
         super(PorterTest, self).setUp()
+        self.load_multiclass_data()
         mdl = DecisionTreeClassifier(random_state=0)
         self._port_model(mdl)
 

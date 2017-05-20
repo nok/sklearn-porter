@@ -14,6 +14,7 @@ class NuSVCPHPTest(PHP, Classifier, TestCase):
 
     def setUp(self):
         super(NuSVCPHPTest, self).setUp()
+        self.load_multiclass_data()
         mdl = NuSVC(kernel='rbf', gamma=0.001,
                     random_state=0)
         self._port_model(mdl)
