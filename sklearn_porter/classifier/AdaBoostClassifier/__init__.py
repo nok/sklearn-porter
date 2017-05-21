@@ -210,8 +210,9 @@ class AdaBoostClassifier(Classifier):
             model.tree_.threshold, model.tree_.value,
             feature_indices, 0, 1)
 
+        suffix = "{0:0" + str(len(str(self.n_estimators))) + "d}"
         return self.temp('single_method').format(
-            str(model_index), self.method_name,
+            suffix.format(model_index), self.method_name,
             self.n_classes, tree_branches)
 
     def create_method(self):
