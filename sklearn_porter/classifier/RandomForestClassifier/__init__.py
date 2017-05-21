@@ -197,11 +197,8 @@ class RandomForestClassifier(Classifier):
             model.tree_.children_left, model.tree_.children_right,
             model.tree_.threshold, model.tree_.value, indices, 0, 1)
 
-        suffix = ("{0:0" + str(len(str(self.n_estimators - 1))) + "d}")
-        model_index = suffix.format(int(model_index))
-
         return self.temp('single_method').format(
-            model_index, self.method_name, self.n_classes, tree_branches)
+            str(model_index), self.method_name, self.n_classes, tree_branches)
 
     def create_method(self):
         """
@@ -214,9 +211,8 @@ class RandomForestClassifier(Classifier):
         """
         # Generate method or function names:
         fn_names = []
-        suffix = ("_{0:0" + str(len(str(self.n_estimators - 1))) + "d}")
         for idx, model in enumerate(self.models):
-            fn_name = self.method_name + suffix.format(idx)
+            fn_name = self.method_name + '_' + str(idx)
             fn_name = self.temp('method_calls', n_indents=2, skipping=True)\
                 .format(idx, self.class_name, fn_name)
             fn_names.append(fn_name)

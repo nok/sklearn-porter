@@ -225,10 +225,9 @@ class AdaBoostClassifier(Classifier):
         """
         # Generate method or function names:
         fn_names = []
-        suffix = ("_{0:0" + str(len(str(self.n_estimators))) + "d}")
         for idx, model in enumerate(self.models):
             cl_name = self.class_name
-            fn_name = self.method_name + suffix.format(idx)
+            fn_name = self.method_name + '_' + str(idx)
             fn_name = self.temp('method_calls', n_indents=2, skipping=True)\
                 .format(idx, cl_name, fn_name)
             fn_names.append(fn_name)
