@@ -112,7 +112,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">sklearn.naive_bayes.GaussianNB</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/GaussianNB/java/basics.ipynb">✓</a></td>
-            <td align="center"></td>
+            <td align="center"><a href="examples/classifier/GaussianNB/js/basics.ipynb">✓</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
