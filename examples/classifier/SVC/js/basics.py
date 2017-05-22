@@ -18,7 +18,7 @@ print(output)
 // Array.prototype.fill polyfill:
 [].fill||(Array.prototype.fill=function(a){for(var b=Object(this),c=parseInt(b.length,10),d=arguments[1],e=parseInt(d,10)||0,f=0>e?Math.max(c+e,0):Math.min(e,c),g=arguments[2],h=void 0===g?c:parseInt(g)||0,i=0>h?Math.max(c+h,0):Math.min(h,c);i>f;f++)b[f]=a;return b});
 
-var Brain = function(atts) {
+var Brain = function() {
 
     this.predict = function(atts) {
         var i, j, k, d, l;

@@ -18,7 +18,7 @@ output = Porter(clf, language='js').export()
 print(output)
 
 """
-var Brain = function(atts) {
+var Brain = function() {
 
     var predict_0 = function(atts) {
         var classes = new Array(3);

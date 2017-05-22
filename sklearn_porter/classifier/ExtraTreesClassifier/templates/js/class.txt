@@ -1,4 +1,4 @@
-var {0} = function(atts) {{
+var {0} = function() {{
 
     {2}
 

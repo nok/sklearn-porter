@@ -15,7 +15,7 @@ output = Porter(clf, language='js').export()
 print(output)
 
 """
-var Brain = function(atts) {
+var Brain = function() {
 
     this.predict = function(atts) {
         if (atts.length != 4) { return -1; };

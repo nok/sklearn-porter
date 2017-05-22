@@ -6,7 +6,7 @@ var Neighbor = function(clazz, dist) {{
     this.dist = dist;
 }};
 
-var {class_name} = function(atts) {{
+var {class_name} = function() {{
 
     {method}
 

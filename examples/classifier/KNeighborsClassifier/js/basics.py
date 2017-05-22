@@ -23,7 +23,7 @@ var Neighbor = function(clazz, dist) {
     this.dist = dist;
 };
 
-var Brain = function(atts) {
+var Brain = function() {
 
     var compDist = function(temp, cand, q) {
         var dist = 0.,
