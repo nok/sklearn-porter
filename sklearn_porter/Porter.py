@@ -257,7 +257,7 @@ class Porter(object):
         return self.export(**loc)
 
     def predict(self, X, class_name='Brain', method_name='predict',
-                tnp_dir='tmp', keep_tmp_dir=False):
+                tnp_dir='tmp', keep_tmp_dir=False, use_repr=True):
         """
         Predict using the transpiled model.
 
@@ -304,7 +304,7 @@ class Porter(object):
         # Transpiled model:
         details = self.export(class_name=class_name,
                               method_name=method_name,
-                              details=True)
+                              use_repr=use_repr, details=True)
         filename = Porter.get_filename(class_name, self.target_language)
         target_file = os.path.join(tnp_dir, filename)
         with open(target_file, str('w')) as file_:
@@ -344,7 +344,7 @@ class Porter(object):
 
         return pred_y
 
-    def predict_test(self, X, normalize=True):
+    def predict_test(self, X, normalize=True, use_repr=True):
         """
         Compute the accuracy of the ported classifier.
 
@@ -370,7 +370,7 @@ class Porter(object):
         if not X.ndim > 1:
             X = np.array([X])
         y_true = self.model.predict(X)
-        y_pred = self.predict(X)
+        y_pred = self.predict(X, use_repr=use_repr)
         return accuracy_score(y_true, y_pred, normalize=normalize)
 
     @staticmethod
