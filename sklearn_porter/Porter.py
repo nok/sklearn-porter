@@ -279,6 +279,9 @@ class Porter(object):
         :param keep_tmp_dir : bool, default False
             Whether to delete the temporary directory
             or not.
+            
+        :param use_repr : bool, default: True
+            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
@@ -356,6 +359,9 @@ class Porter(object):
         :param normalize : bool, optional (default=True)
             If ``False``, return the number of correctly classified samples.
             Otherwise, return the fraction of correctly classified samples.
+            
+        :param use_repr : bool, default: True
+            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
