@@ -12,8 +12,7 @@ class GaussianNBJavaTest(Java, Classifier, TestCase):
 
     def setUp(self):
         super(GaussianNBJavaTest, self).setUp()
-        mdl = GaussianNB()
-        self._port_model(mdl)
+        self.mdl = GaussianNB()
 
     def tearDown(self):
         super(GaussianNBJavaTest, self).tearDown()

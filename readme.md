@@ -47,7 +47,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
-            <td align="center"><a href="examples/classifier/LinearSVC/c/basics.ipynb">✓</a> <a href="examples/classifier/LinearSVC/c/compilation.py#L14">✓</a></td>
+            <td align="center"><a href="examples/classifier/LinearSVC/c/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/java/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/js/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/classifier/LinearSVC/go/basics.ipynb">✓</a></td>
@@ -83,9 +83,9 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/c/basics.ipynb">✓</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/basics.ipynb">✓</a></td>
-            <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/basics.ipynb">✓</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/c/basics.ipynb">○</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/java/basics.ipynb">○</a></td>
+            <td align="center"><a href="examples/classifier/AdaBoostClassifier/js/basics.ipynb">○</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -183,8 +183,8 @@ from sklearn.tree import tree
 from sklearn_porter import Porter
 
 # Load data and train the classifier:
-iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
+samples = load_iris()
+X, y = samples.data, samples.target
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
@@ -202,9 +202,9 @@ Run the prediction(s) in the target programming language directly:
 
 ```python
 # ...
+porter = Porter(clf, language='java')
 
 # Prediction(s):
-porter = Porter(clf, language='java')
 Y_preds = porter.predict(X)
 y_pred = porter.predict(X[0])
 y_pred = porter.predict([1., 2., 3., 4.])
@@ -212,16 +212,17 @@ y_pred = porter.predict([1., 2., 3., 4.])
 
 ### Accuracy
 
-Test the accuracy between the original and the ported estimator:
+Always compute the accuracy between the original and the ported estimator:
 
 ```python
 # ...
+porter = Porter(clf, language='java')
 
 # Accuracy:
-porter = Porter(clf, language='java')
 accuracy = porter.predict_test(X)
 print(accuracy) # 1.0
 ```
+
 
 ### Command-line interface
 
@@ -303,8 +304,8 @@ source deactivate
 While you are developing new features or fixes, you can reduce the test duration by setting the number of random model tests:
 
 ```
-N_RANDOM_TESTS=30 python -m unittest discover -vp '*Test.py'
-```
+N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discover -vp '*Test.py'
+```   
 
 
 ### Quality

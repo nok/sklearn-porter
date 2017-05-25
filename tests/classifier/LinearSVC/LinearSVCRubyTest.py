@@ -12,9 +12,7 @@ class LinearSVCRubyTest(Ruby, Classifier, TestCase):
 
     def setUp(self):
         super(LinearSVCRubyTest, self).setUp()
-        self.load_multiclass_data()
-        mdl = LinearSVC(C=1., random_state=0)
-        self._port_model(mdl)
+        self.mdl = LinearSVC(C=1., random_state=0)
 
     def tearDown(self):
         super(LinearSVCRubyTest, self).tearDown()

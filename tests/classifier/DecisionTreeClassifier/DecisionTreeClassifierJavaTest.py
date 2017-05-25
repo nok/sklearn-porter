@@ -12,8 +12,7 @@ class DecisionTreeClassifierJavaTest(Java, Classifier, TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierJavaTest, self).setUp()
-        mdl = DecisionTreeClassifier(random_state=0)
-        self._port_model(mdl)
+        self.mdl = DecisionTreeClassifier(random_state=0)
 
     def tearDown(self):
         super(DecisionTreeClassifierJavaTest, self).tearDown()

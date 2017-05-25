@@ -12,8 +12,7 @@ class ExtraTreesClassifierJSTest(JS, Classifier, TestCase):
 
     def setUp(self):
         super(ExtraTreesClassifierJSTest, self).setUp()
-        mdl = ExtraTreesClassifier(random_state=0)
-        self._port_model(mdl)
+        self.mdl = ExtraTreesClassifier(random_state=0)
 
     def tearDown(self):
         super(ExtraTreesClassifierJSTest, self).tearDown()

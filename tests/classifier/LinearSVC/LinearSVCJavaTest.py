@@ -12,9 +12,7 @@ class LinearSVCJavaTest(Java, Classifier, TestCase):
 
     def setUp(self):
         super(LinearSVCJavaTest, self).setUp()
-        self.load_multiclass_data()
-        mdl = LinearSVC(C=1., random_state=0)
-        self._port_model(mdl)
+        self.mdl = LinearSVC(C=1., random_state=0)
 
     def tearDown(self):
         super(LinearSVCJavaTest, self).tearDown()

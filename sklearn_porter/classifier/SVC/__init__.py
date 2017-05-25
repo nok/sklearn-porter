@@ -88,7 +88,7 @@ class SVC(Classifier):
         self.classes = model.classes_
         self.n_classes = len(model.classes_)
         self.is_binary = self.n_classes == 2
-        self.binary_prefix = 'binary.' if self.is_binary else ''
+        self.prefix = 'binary' if self.is_binary else 'multi'
 
     def export(self, class_name="Brain", method_name="predict",
                use_repr=True, use_file=False):
@@ -188,33 +188,37 @@ class SVC(Classifier):
 
         # Kernels:
         if self.params['kernel'] == 'rbf':
-            out += self.temp(self.binary_prefix + 'kernel.rbf').format(
+            name = self.prefix + '.kernel.rbf'
+            out += self.temp(name).format(
                 len(self.svs), self.n_svs,
                 self.repr(self.params['gamma']))
         elif self.params['kernel'] == 'poly':
-            out += self.temp(self.binary_prefix + 'kernel.poly').format(
+            name = self.prefix + '.kernel.poly'
+            out += self.temp(name).format(
                 len(self.svs), self.n_svs,
                 self.repr(self.params['gamma']),
                 self.repr(self.params['coef0']),
                 self.repr(self.params['degree']))
         elif self.params['kernel'] == 'sigmoid':
-            out += self.temp(self.binary_prefix + 'kernel.sigmoid').format(
+            name = self.prefix + '.kernel.sigmoid'
+            out += self.temp(name).format(
                 len(self.svs), self.n_svs,
                 self.repr(self.params['gamma']),
                 self.repr(self.params['coef0']),
                 self.repr(self.params['degree']))
         elif self.params['kernel'] == 'linear':
-            out += self.temp(self.binary_prefix + 'kernel.linear').format(
+            name = self.prefix + '.kernel.linear'
+            out += self.temp(name).format(
                 len(self.svs), self.n_svs)
         out += '\n'
 
         # Decicion:
         out += self.temp('starts').format(self.n_svs_rows)
         out += self.temp('ends').format(self.n_svs_rows)
-        out += self.temp(self.binary_prefix + 'decisions').format(
-            self.n_inters, self.n_svs_rows)
-        out += self.temp(self.binary_prefix + 'classes').format(
-            self.n_inters, self.n_classes)
+        name = self.prefix + '.decisions'
+        out += self.temp(name).format(self.n_inters, self.n_svs_rows)
+        name = self.prefix + '.classes'
+        out += self.temp(name).format(self.n_inters, self.n_classes)
         n_indents = 0 if self.target_language in ['java', 'js', 'php'] else 1
         out = self.indent(out, n_indents=2-n_indents)
         return self.temp('method', n_indents=1-n_indents, skipping=True).format(

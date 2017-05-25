@@ -91,6 +91,10 @@ class MLPClassifier(Classifier):
         # Bias:
         self.intercepts = self.model.intercepts_
 
+        # Binary or multiclass classifier?
+        self.is_binary = self.n_outputs == 1
+        self.prefix = 'binary' if self.is_binary else 'multi'
+
     @property
     def hidden_activation_functions(self):
         """Get list of supported activation functions for the hidden layers."""
@@ -99,9 +103,7 @@ class MLPClassifier(Classifier):
     @property
     def output_activation_functions(self):
         """Get list of supported activation functions for the output layer."""
-        return ['softmax']  # 'softmax' for multiclass classification
-                            # 'logistic' for binary classification
-                            # 'identity' for regression
+        return ['softmax', 'logistic']
 
     def export(self, class_name='Brain',
                method_name='predict',
@@ -176,7 +178,8 @@ class MLPClassifier(Classifier):
         intercepts = self.temp('arr[][]').format(
             data_type='double', name='intercepts', values=intercepts)
 
-        return self.temp('method', skipping=True, n_indents=1).format(
+        name = self.prefix + '.method'
+        return self.temp(name, skipping=True, n_indents=1).format(
             class_name=self.class_name, method_name=self.method_name,
             n_features=self.n_inputs, n_classes=self.n_outputs,
             activations=activations, coefficients=coefficients,

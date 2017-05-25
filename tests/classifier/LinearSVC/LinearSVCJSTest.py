@@ -12,9 +12,7 @@ class LinearSVCJSTest(JS, Classifier, TestCase):
 
     def setUp(self):
         super(LinearSVCJSTest, self).setUp()
-        self.load_multiclass_data()
-        mdl = LinearSVC(C=1., random_state=0)
-        self._port_model(mdl)
+        self.mdl = LinearSVC(C=1., random_state=0)
 
     def tearDown(self):
         super(LinearSVCJSTest, self).tearDown()

@@ -12,8 +12,7 @@ class GaussianNBJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(GaussianNBJSTest, self).setUp()
-        mdl = GaussianNB()
-        self._port_model(mdl)
+        self.mdl = GaussianNB()
 
     def tearDown(self):
         super(GaussianNBJSTest, self).tearDown()

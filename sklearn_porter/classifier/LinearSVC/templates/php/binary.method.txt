@@ -1,0 +1,15 @@
+public static function {name}($atts) {{
+    if (sizeof($atts) != {n_features}) {{ return -1; }}
+
+    {coefficients}
+    {intercepts}
+
+    $prob = 0.;
+    for ($i = 0; $i < {n_features}; $i++) {{
+        $prob += $coefs[$i] * $atts[$i];
+    }}
+    if ($prob + $inters > 0) {{
+        return 1;
+    }}
+    return 0;
+}}

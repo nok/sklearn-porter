@@ -12,8 +12,7 @@ class DecisionTreeClassifierPHPTest(PHP, Classifier, TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierPHPTest, self).setUp()
-        mdl = DecisionTreeClassifier(random_state=0)
-        self._port_model(mdl)
+        self.mdl = DecisionTreeClassifier(random_state=0)
 
     def tearDown(self):
         super(DecisionTreeClassifierPHPTest, self).tearDown()

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import sys
 import time
 
 
@@ -10,4 +11,5 @@ class Timer(object):
 
     def _stop_test(self):
         delta = time.time() - self.start_time
-        print('%.3fs' % delta)
+        sys.stdout.write('(%.3f sec) ' % delta)
+        sys.stdout.flush()

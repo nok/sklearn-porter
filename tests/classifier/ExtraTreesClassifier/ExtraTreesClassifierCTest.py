@@ -12,8 +12,7 @@ class ExtraTreesClassifierCTest(C, Classifier, TestCase):
 
     def setUp(self):
         super(ExtraTreesClassifierCTest, self).setUp()
-        mdl = ExtraTreesClassifier(random_state=0)
-        self._port_model(mdl)
+        self.mdl = ExtraTreesClassifier(random_state=0)
 
     def tearDown(self):
         super(ExtraTreesClassifierCTest, self).tearDown()

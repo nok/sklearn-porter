@@ -1,0 +1,25 @@
+this.{method_name} = function(atts) {{
+    if (atts.length != {n_features}) {{ return -1; }};
+
+    {activations}
+    {coefficients}
+    {intercepts}
+
+    for (var i = 0; i < activations.length - 1; i++) {{
+        for (var j = 0; j < activations[i + 1].length; j++) {{
+            for (var l = 0; l < activations[i].length; l++) {{
+                activations[i + 1][j] += activations[i][l] * coefficients[i][l][j];
+            }}
+            activations[i + 1][j] += intercepts[i][j];
+            if ((i + 1) != (activations.length - 1)) {{
+                activations[i + 1] = hidden_activation(activations[i + 1]);
+            }}
+        }}
+    }}
+    activations[activations.length - 1] = output_activation(activations[activations.length - 1]);
+
+    if (activations[activations.length - 1][0] > 0) {{
+        return 1;
+    }}
+    return 0;
+}};

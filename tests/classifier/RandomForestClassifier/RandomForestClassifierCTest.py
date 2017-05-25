@@ -12,8 +12,7 @@ class RandomForestClassifierCTest(C, Classifier, TestCase):
 
     def setUp(self):
         super(RandomForestClassifierCTest, self).setUp()
-        mdl = RandomForestClassifier(n_estimators=100, random_state=0)
-        self._port_model(mdl)
+        self.mdl = RandomForestClassifier(n_estimators=100, random_state=0)
 
     def tearDown(self):
         super(RandomForestClassifierCTest, self).tearDown()

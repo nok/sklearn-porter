@@ -17,13 +17,15 @@ class LinearSVC(Classifier):
     # @formatter:off
     TEMPLATES = {
         'c': {
-            'type':     ('{0}'),
-            'arr':      ('{{{0}}}'),
-            'arr[]':    ('double {name}[{n}] = {{{values}}};'),
-            'arr[][]':  ('double {name}[{n}][{m}] = {{{values}}};'),
-            'indent':   ('    '),
+            'init':     '{type} {name} = {value};',
+            'type':     '{0}',
+            'arr':      '{{{0}}}',
+            'arr[]':    'double {name}[{n}] = {{{values}}};',
+            'arr[][]':  'double {name}[{n}][{m}] = {{{values}}};',
+            'indent':   '    ',
         },
         'go': {
+            'init':     '{name} := {value}',
             'type':     '{0}',
             'arr':      '{{{0}}}',
             'arr[]':    '{name} := []float64{{{values}}}',
@@ -31,6 +33,7 @@ class LinearSVC(Classifier):
             'indent':   '\t',
         },
         'java': {
+            'init':     '{type} {name} = {value};',
             'type':     '{0}',
             'arr':      '{{{0}}}',
             'arr[]':    'double[] {name} = {{{values}}};',
@@ -38,6 +41,7 @@ class LinearSVC(Classifier):
             'indent':   '    ',
         },
         'js': {
+            'init':     'var {name} = {value};',
             'type':     '{0}',
             'arr':      '[{0}]',
             'arr[]':    'var {name} = [{values}];',
@@ -45,6 +49,7 @@ class LinearSVC(Classifier):
             'indent':   '    ',
         },
         'php': {
+            'init':     '${name} = {value};',
             'type':     '{0}',
             'arr':      '[{0}]',
             'arr[]':    '${name} = [{values}];',
@@ -52,11 +57,12 @@ class LinearSVC(Classifier):
             'indent':   '    ',
         },
         'ruby': {
-            'type': '{0}',
-            'arr': '[{0}]',
-            'arr[]': ('{name} = [{values}]'),
-            'arr[][]': ('{name} = [{values}]'),
-            'indent': '    ',
+            'init':     '{name} = {value}',
+            'type':     '{0}',
+            'arr':      '[{0}]',
+            'arr[]':    '{name} = [{values}]',
+            'arr[][]':  '{name} = [{values}]',
+            'indent':   '    ',
         }
     }
     # @formatter:on
@@ -80,6 +86,8 @@ class LinearSVC(Classifier):
         self.model = model
         self.n_features = len(model.coef_[0])
         self.n_classes = len(model.classes_)
+        self.is_binary = self.n_classes == 2
+        self.prefix = 'binary.' if self.is_binary else 'multi.'
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
@@ -127,26 +135,39 @@ class LinearSVC(Classifier):
         """
 
         # Coefficients:
-        coefs = []
-        for coef in self.model.coef_:
-            tmp = [self.temp('type').format(self.repr(c)) for c in coef]
-            tmp = self.temp('arr').format(', '.join(tmp))
-            coefs.append(tmp)
-        coefs = ', '.join(coefs)
-        coefs = self.temp('arr[][]').format(
-            name='coefs', values=coefs, n=self.n_classes, m=self.n_features)
+        if self.is_binary:
+            coefs = self.model.coef_[0]
+            coefs = [self.temp('type').format(self.repr(c)) for c in coefs]
+            coefs = ', '.join(coefs)
+            coefs = self.temp('arr[]').format(
+                name='coefs', values=coefs, n=self.n_features)
+        else:
+            coefs = []
+            for coef in self.model.coef_:
+                tmp = [self.temp('type').format(self.repr(c)) for c in coef]
+                tmp = self.temp('arr').format(', '.join(tmp))
+                coefs.append(tmp)
+            coefs = ', '.join(coefs)
+            coefs = self.temp('arr[][]').format(
+                name='coefs', values=coefs, n=self.n_classes, m=self.n_features)
 
         # Intercepts:
-        inters = self.model.intercept_
-        inters = [self.temp('type').format(self.repr(i)) for i in inters]
-        inters = ', '.join(inters)
-        inters = self.temp('arr[]').format(
-            name='inters', values=inters, n=self.n_classes)
+        if self.is_binary:
+            inters = self.model.intercept_[0]
+            inters = self.temp('init').format(type='double', name='inters',
+                                              value=self.repr(inters))
+        else:
+            inters = self.model.intercept_
+            inters = [self.temp('type').format(self.repr(i)) for i in inters]
+            inters = ', '.join(inters)
+            inters = self.temp('arr[]').format(
+                name='inters', values=inters, n=self.n_classes)
 
         # Indentation
         n_indents = 0 if self.target_language in ['c', 'go'] else 1
 
-        return self.temp('method', n_indents=n_indents, skipping=True).format(
+        return self.temp(self.prefix + 'method',
+                         n_indents=n_indents, skipping=True).format(
             name=self.method_name, n_features=self.n_features,
             n_classes=self.n_classes, coefficients=coefs,
             intercepts=inters)

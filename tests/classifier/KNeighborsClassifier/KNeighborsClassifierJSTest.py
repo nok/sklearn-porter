@@ -12,10 +12,7 @@ class KNeighborsClassifierJSTest(JS, Classifier, TestCase):
 
     def setUp(self):
         super(KNeighborsClassifierJSTest, self).setUp()
-        mdl = KNeighborsClassifier(algorithm='brute',
-                                   n_neighbors=3,
-                                   weights='uniform')
-        self._port_model(mdl)
+        self.mdl = KNeighborsClassifier(n_neighbors=3)
 
     def tearDown(self):
         super(KNeighborsClassifierJSTest, self).tearDown()

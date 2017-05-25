@@ -6,10 +6,8 @@ import unittest
 import filecmp
 import os
 
-from sklearn.datasets import load_iris
 from sklearn.externals import joblib
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.utils import shuffle
 
 from sklearn_porter import Porter
 
@@ -25,9 +23,9 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
 
     def setUp(self):
         super(PorterTest, self).setUp()
-        self.load_multiclass_data()
-        mdl = DecisionTreeClassifier(random_state=0)
-        self._port_model(mdl)
+        self.load_iris_data()
+        self.mdl = DecisionTreeClassifier(random_state=0)
+        self._port_model()
 
     def tearDown(self):
         super(PorterTest, self).tearDown()
@@ -35,21 +33,17 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
     def test_porter_args_method(self):
         """Test invalid method name."""
         args = dict(method='random')
-        self.assertRaises(AttributeError,
-                          lambda: Porter(self.mdl, args))
+        self.assertRaises(AttributeError, lambda: Porter(self.mdl, args))
 
     def test_porter_args_language(self):
         """Test invalid programming language."""
         args = dict(method='predict', language='random')
-        self.assertRaises(AttributeError,
-                          lambda: Porter(self.mdl, args))
+        self.assertRaises(AttributeError, lambda: Porter(self.mdl, args))
 
     def test_python_command_execution(self):
         """Test command line execution."""
 
-        # $ rm -rf temp
         subp.call(['rm', '-rf', 'tmp'])
-        # $ mkdir temp
         subp.call(['mkdir', 'tmp'])
         filename = '{}.java'.format(self.tmp_fn)
         cp_src = os.path.join('tmp', filename)
@@ -57,13 +51,13 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
             porter = Porter(self.mdl)
             out = porter.export(method_name='predict', class_name=self.tmp_fn)
             f.write(out)
-        # $ javac temp/Tmp.java
+        # $ javac tmp/Tmp.java
         subp.call(['javac', cp_src])
 
         # Rename model for comparison:
         filename = '{}_2.java'.format(self.tmp_fn)
         cp_dest = os.path.join('tmp', filename)
-        # $ mv temp/Brain.java temp/Brain_2.java
+        # $ mv tmp/Brain.java tmp/Brain_2.java
         subp.call(['mv', cp_src, cp_dest])
 
         # Dump model:
@@ -83,10 +77,10 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
         """Test whether the prediction of random features match or not."""
         # Create random features:
         Y, Y_py = [], []
-        for n in range(self.N_RANDOM_TESTS):
+        for n in range(self.N_RANDOM_FEATURE_SETS):
             x = [random.uniform(0., 10.) for n in range(self.n_features)]
             y_py = int(self.mdl.predict([x])[0])
             Y_py.append(y_py)
-            y = self.make_pred_in_custom(x)
+            y = self.pred_in_custom(x)
             Y.append(y)
         self.assertEqual(Y_py, Y)

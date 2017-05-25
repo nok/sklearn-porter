@@ -12,8 +12,7 @@ class DecisionTreeClassifierCTest(C, Classifier, TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierCTest, self).setUp()
-        mdl = DecisionTreeClassifier(random_state=0)
-        self._port_model(mdl)
+        self.mdl = DecisionTreeClassifier(random_state=0)
 
     def tearDown(self):
         super(DecisionTreeClassifierCTest, self).tearDown()

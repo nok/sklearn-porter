@@ -12,12 +12,27 @@ class BernoulliNBJavaTest(Java, Classifier, unittest.TestCase):
 
     def setUp(self):
         super(BernoulliNBJavaTest, self).setUp()
-        mdl = BernoulliNB()
-        self._port_model(mdl)
+        self.mdl = BernoulliNB()
 
     def tearDown(self):
         super(BernoulliNBJavaTest, self).tearDown()
 
-    @unittest.skip('BernoulliNB is suitable for discrete data.')
-    def test_random_features(self):
+    @unittest.skip('BernoulliNB is just suitable for discrete data.')
+    def test_random_features_w_iris_data(self):
+        pass
+
+    @unittest.skip('BernoulliNB is just suitable for discrete data.')
+    def test_existing_features_w_binary_data(self):
+        pass
+
+    @unittest.skip('BernoulliNB is just suitable for discrete data.')
+    def test_random_features_w_binary_data(self):
+        pass
+
+    @unittest.skip('BernoulliNB is just suitable for discrete data.')
+    def test_random_features_w_digits_data(self):
+        pass
+
+    @unittest.skip('BernoulliNB is just suitable for discrete data.')
+    def test_existing_features_w_digits_data(self):
         pass
