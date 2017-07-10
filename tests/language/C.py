@@ -31,7 +31,7 @@ class C(Checker):
                                 method_name='foo')
             f.write(out)
         # $ gcc temp/tmp.c -o temp/tmp
-        cmd = 'gcc {} -o tmp/{}'.format(path, self.tmp_fn)
+        cmd = 'gcc {} -lm -o tmp/{}'.format(path, self.tmp_fn)
         subp.call(cmd.split())
 
     def pred_in_py(self, features, cast=True):
