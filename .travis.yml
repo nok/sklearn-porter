@@ -20,7 +20,7 @@ php:
 compiler:
   - gcc
 before_install:
-  - sudo apt-add-repository ppa:brightbox/ruby-ng
+  - sudo apt-add-repository ppa:brightbox/ruby-ng -y
   - sudo apt-add-repository ppa:ondrej/php -y
   - sudo apt-get update -q
 install:
