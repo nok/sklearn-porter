@@ -43,8 +43,8 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
     def test_python_command_execution(self):
         """Test command line execution."""
 
-        subp.call(['rm', '-rf', 'tmp'])
-        subp.call(['mkdir', 'tmp'])
+        subp.call('rm -rf tmp'.split())
+        subp.call('mkdir tmp'.split())
         filename = '{}.java'.format(self.tmp_fn)
         cp_src = os.path.join('tmp', filename)
         with open(cp_src, 'w') as f:
@@ -66,7 +66,7 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
         joblib.dump(self.mdl, pkl_path)
 
         # Port model:
-        cmd = ['python', '-m', 'sklearn_porter', '-i', pkl_path]
+        cmd = 'python -m sklearn_porter -i {}'.format(pkl_path).split()
         subp.call(cmd)
         # Compare file contents:
         equal = filecmp.cmp(cp_src, cp_dest)

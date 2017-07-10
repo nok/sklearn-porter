@@ -22,8 +22,8 @@ class Ruby(Checker):
 
     def _port_model(self):
         self.mdl.fit(self.X, self.y)
-        subp.call(['rm', '-rf', 'tmp'])
-        subp.call(['mkdir', 'tmp'])
+        subp.call('rm -rf tmp'.split())
+        subp.call('mkdir tmp'.split())
         filename = self.tmp_fn + '.rb'
         path = os.path.join('tmp', filename)
         with open(path, 'w') as f:

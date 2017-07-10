@@ -22,8 +22,8 @@ class JavaScript(Checker):
 
     def _port_model(self):
         self.mdl.fit(self.X, self.y)
-        subp.call(['rm', '-rf', 'tmp'])
-        subp.call(['mkdir', 'tmp'])
+        subp.call('rm -rf tmp'.split())
+        subp.call('mkdir tmp'.split())
         with open(self.tmp_fn, 'w') as f:
             porter = Porter(self.mdl, language=self.LANGUAGE)
             out = porter.export(class_name='Brain',

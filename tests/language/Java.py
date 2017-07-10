@@ -22,8 +22,8 @@ class Java(Checker):
 
     def _port_model(self):
         self.mdl.fit(self.X, self.y)
-        subp.call(['rm', '-rf', 'tmp'])
-        subp.call(['mkdir', 'tmp'])
+        subp.call('rm -rf tmp'.split())
+        subp.call('mkdir tmp'.split())
         filename = self.tmp_fn + '.java'
         path = os.path.join('tmp', filename)
         with open(path, 'w') as f:
@@ -40,7 +40,7 @@ class Java(Checker):
 
     def pred_in_custom(self, features, cast=True):
         # $ java -classpath tmp <tmp_filename> <features>
-        cmd = ['java', '-classpath', 'tmp', self.tmp_fn]
+        cmd = 'java -classpath tmp {}'.format(self.tmp_fn).split()
         args = [str(f).strip() for f in features]
         cmd += args
         pred = subp.check_output(cmd, stderr=subp.STDOUT).rstrip()

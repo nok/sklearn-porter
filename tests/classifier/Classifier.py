@@ -132,4 +132,5 @@ class Classifier(Timer):
 
     def _clear_model(self):
         self.mdl = None
-        subp.call(['rm', '-rf', 'tmp'])
+        cmd = 'rm -rf tmp'.split()
+        subp.call(cmd)

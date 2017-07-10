@@ -21,9 +21,8 @@ class C(Checker):
 
     def _port_model(self):
         self.mdl.fit(self.X, self.y)
-        subp.call(['rm', '-rf', 'tmp'])
-        # $ mkdir tmp
-        subp.call(['mkdir', 'tmp'])
+        subp.call('rm -rf tmp'.split())
+        subp.call('mkdir tmp'.split())
         filename = self.tmp_fn + '.c'
         path = os.path.join('tmp', filename)
         with open(path, 'w') as f:
@@ -32,7 +31,8 @@ class C(Checker):
                                 method_name='foo')
             f.write(out)
         # $ gcc temp/tmp.c -o temp/tmp
-        subp.call(['gcc', path, '-lm', '-o', 'tmp/' + self.tmp_fn])
+        cmd = 'gcc {} -o tmp/{}'.format(path, self.tmp_fn)
+        subp.call(cmd.split())
 
     def pred_in_py(self, features, cast=True):
         pred = self.mdl.predict([features])[0]

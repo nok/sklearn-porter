@@ -65,4 +65,4 @@ class Regressor(Timer):
 
     def _clear_model(self):
         self.mdl = None
-        subp.call(['rm', '-rf', 'tmp'])
+        subp.call('rm -rf tmp'.split())
