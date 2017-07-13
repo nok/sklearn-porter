@@ -43,5 +43,12 @@ install:
   - conda env create -q -n sklearn-porter python=$TRAVIS_PYTHON_VERSION -f environment.yml
   - pip install -U pip
   - source activate sklearn-porter
+before_script:
+  - python --version
+  - gcc --version
+  - java -version
+  - node --version
+  - go version
+  - php --version
 script:
   - python -m unittest discover -vp '*Test.py'
