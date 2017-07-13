@@ -50,5 +50,6 @@ before_script:
   - node --version
   - go version
   - php --version
+  - ruby --version
 script:
   - python -m unittest discover -vp '*Test.py'
