@@ -284,7 +284,7 @@ conda env create -n sklearn-porter python=2 -f environment.yml
 source activate sklearn-porter
 ```
 
-Furthermore [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=1.6`), [PHP](http://www.php.net/) (`>=7`), [Ruby](https://www.ruby-lang.org) (`>=1.9.3`) and [GCC](https://gcc.gnu.org) (`>=4.2`) are required for all tests.
+Furthermore [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=1.6`), [PHP](http://www.php.net/) (`>=7`), [Ruby](https://www.ruby-lang.org) (`>=2.4.1`) and [GCC](https://gcc.gnu.org) (`>=4.2`) are required for all tests.
 
 
 ### Testing
