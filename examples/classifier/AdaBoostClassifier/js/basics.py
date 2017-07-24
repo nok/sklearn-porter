@@ -231,8 +231,8 @@ var Brain = function() {
             }
             for (j = 0; j < n_classes; j++) {
                 preds[i][j] = preds[i][j] / normalizer;
-                if (preds[i][j] < 2.2250738585072014e-308) {
-                    preds[i][j] = 2.2250738585072014e-308;
+                if (preds[i][j] < 2.2204460492503131e-16) {
+                    preds[i][j] = 2.2204460492503131e-16;
                 }
                 preds[i][j] = Math.log(preds[i][j]);
             }
