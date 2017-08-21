@@ -28,5 +28,5 @@ python ./setup.py sdist bdist_wheel
 read -r -p "Upload $name@$version to '$target'? [y/N] " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
 then
-    twine upload ./dist/* -r $target
+    twine upload ./dist/* --repository-url $target
 fi
