@@ -164,9 +164,10 @@ pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/master
 - scikit-learn>=0.14.1
 ```
 
-If you want to transpile a multilayer perceptron (<a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a>), you have to upgrade the scikit-learn package:
+If you want to transpile a [multilayer perceptron](http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html), you have to upgrade the scikit-learn package:
 
 ```
+- python>=2.7.3
 - scikit-learn>=0.18.0
 ```
 
