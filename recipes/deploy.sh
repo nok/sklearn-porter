@@ -7,25 +7,24 @@
 name=sklearn-porter
 anaconda_env=sklearn-porter
 
-# Environment
+# Set variables:
 source activate $anaconda_env
 rm -rf ./build/*
 rm -rf ./dist/*
 
-# Version:
+# Read the version:
 version=`python -c "from sklearn_porter.Porter import Porter; print(Porter.__version__);"`
 
-# Target (e.g.: pypitest, pypi):
-target=pypitest
+# Define the target environment:
+target=https://test.pypi.org/legacy/
 if [[ $# -eq 1 ]] ; then
-    target=$1
+    target=https://upload.pypi.org/legacy/
 fi
 
-# Package:
+# Build package:
 python ./setup.py sdist bdist_wheel
-twine register ./dist/$name-$version.tar.gz -r $target
-twine register ./dist/$name-$version-py2-none-any.whl -r $target
 
+# Upload:
 read -r -p "Upload $name@$version to '$target'? [y/N] " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
 then
