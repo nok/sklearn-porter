@@ -84,7 +84,6 @@ dependencies:
   - prompt-toolkit==1.0.15
   - requests==2.18.4
   - requests-toolbelt==0.8.0
-  - tbb==0.1
   - tqdm==4.15.0
   - twine==1.9.1
   - urllib3==1.22
