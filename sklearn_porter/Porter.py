@@ -51,6 +51,18 @@ class Porter(object):
         self.model = model
         self.output = ''
 
+        # Extract algorithm from optimizer:
+        # sklearn version >= 0.19.0
+        major, minor = Porter.sklearn_version()
+        if major > 0 or (major == 0 and minor >= 19):
+            from sklearn.model_selection._search import GridSearchCV
+            from sklearn.model_selection._search import RandomizedSearchCV
+            optimizers = (GridSearchCV, RandomizedSearchCV)
+            if isinstance(self.model, optimizers):
+                if hasattr(self.model, 'best_estimator_') and \
+                        hasattr(self.model.best_estimator_, '_final_estimator'):
+                    self.model = self.model.best_estimator_._final_estimator
+
         # Algorithm name:
         self.algorithm_name = str(type(self.model).__name__)
 
@@ -108,7 +120,7 @@ class Porter(object):
         self.tested_env_dependencies = False
 
     @staticmethod
-    def get_sklearn_version():
+    def sklearn_version():
         from sklearn import __version__ as version
         version = str(version).split('.')
         version = [int(v) for v in version]
@@ -141,7 +153,7 @@ class Porter(object):
         )
 
         # sklearn version >= 0.18.0
-        major, minor = Porter.get_sklearn_version()
+        major, minor = Porter.sklearn_version()
         if major > 0 or (major == 0 and minor >= 18):
             from sklearn.neural_network.multilayer_perceptron \
                 import MLPClassifier
@@ -164,7 +176,7 @@ class Porter(object):
         regressors = ()
 
         # sklearn version >= 0.18.0
-        major, minor = Porter.get_sklearn_version()
+        major, minor = Porter.sklearn_version()
         if major > 0 or (major == 0 and minor >= 18):
             from sklearn.neural_network.multilayer_perceptron \
                 import MLPRegressor
