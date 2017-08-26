@@ -1,172 +1,95 @@
 name: sklearn-porter
-channels:
-- defaults
+channels: !!python/tuple
+- !!python/unicode
+  'conda-forge'
+- !!python/unicode
+  'defaults'
 dependencies:
-- !!python/unicode
-  'backports=1.0=py27_0'
-- !!python/unicode
-  'backports_abc=0.5=py27_0'
-- !!python/unicode
-  'bleach=1.5.0=py27_0'
-- !!python/unicode
-  'certifi=2016.2.28=py27_0'
-- !!python/unicode
-  'configparser=3.5.0=py27_0'
-- !!python/unicode
-  'cycler=0.10.0=py27_0'
-- !!python/unicode
-  'decorator=4.0.11=py27_0'
-- !!python/unicode
-  'entrypoints=0.2.2=py27_1'
-- !!python/unicode
-  'enum34=1.1.6=py27_0'
-- !!python/unicode
-  'freetype=2.5.5=2'
-- !!python/unicode
-  'functools32=3.2.3.2=py27_0'
-- !!python/unicode
-  'get_terminal_size=1.0.0=py27_0'
-- !!python/unicode
-  'html5lib=0.999=py27_0'
-- !!python/unicode
-  'icu=54.1=0'
-- !!python/unicode
-  'ipykernel=4.6.1=py27_0'
-- !!python/unicode
-  'ipython=5.3.0=py27_0'
-- !!python/unicode
-  'ipython_genutils=0.2.0=py27_0'
-- !!python/unicode
-  'ipywidgets=6.0.0=py27_0'
-- !!python/unicode
-  'jinja2=2.9.6=py27_0'
-- !!python/unicode
-  'jsonschema=2.6.0=py27_0'
-- !!python/unicode
-  'jupyter=1.0.0=py27_3'
-- !!python/unicode
-  'jupyter_client=5.0.1=py27_0'
-- !!python/unicode
-  'jupyter_console=5.1.0=py27_0'
-- !!python/unicode
-  'jupyter_core=4.3.0=py27_0'
-- !!python/unicode
-  'libpng=1.6.27=0'
-- !!python/unicode
-  'markupsafe=0.23=py27_2'
-- !!python/unicode
-  'matplotlib=2.0.0=np112py27_0'
-- !!python/unicode
-  'mistune=0.7.4=py27_0'
-- !!python/unicode
-  'mkl=2017.0.1=0'
-- !!python/unicode
-  'nbconvert=5.1.1=py27_0'
-- !!python/unicode
-  'nbformat=4.3.0=py27_0'
-- !!python/unicode
-  'notebook=5.0.0=py27_0'
-- !!python/unicode
-  'numpy=1.12.1=py27_0'
-- !!python/unicode
-  'openssl=1.0.2k=1'
-- !!python/unicode
-  'pandocfilters=1.4.1=py27_0'
-- !!python/unicode
-  'path.py=10.3.1=py27_0'
-- !!python/unicode
-  'pathlib2=2.2.1=py27_0'
-- !!python/unicode
-  'pexpect=4.2.1=py27_0'
-- !!python/unicode
-  'pickleshare=0.7.4=py27_0'
-- !!python/unicode
-  'pip=9.0.1=py27_1'
-- !!python/unicode
-  'prompt_toolkit=1.0.14=py27_0'
-- !!python/unicode
-  'ptyprocess=0.5.1=py27_0'
-- !!python/unicode
-  'pygments=2.2.0=py27_0'
-- !!python/unicode
-  'pyparsing=2.1.4=py27_0'
-- !!python/unicode
-  'pyqt=5.6.0=py27_2'
-- !!python/unicode
-  'python=2.7.13=0'
-- !!python/unicode
-  'python-dateutil=2.6.0=py27_0'
-- !!python/unicode
-  'pytz=2017.2=py27_0'
-- !!python/unicode
-  'pyzmq=16.0.2=py27_0'
-- !!python/unicode
-  'qt=5.6.2=0'
-- !!python/unicode
-  'qtconsole=4.3.0=py27_0'
-- !!python/unicode
-  'readline=6.2=2'
-- !!python/unicode
-  'scandir=1.5=py27_0'
-- !!python/unicode
-  'scikit-learn=0.18.1=np112py27_1'
-- !!python/unicode
-  'scipy=0.19.0=np112py27_0'
-- !!python/unicode
-  'setuptools=27.2.0=py27_0'
-- !!python/unicode
-  'simplegeneric=0.8.1=py27_1'
-- !!python/unicode
-  'singledispatch=3.4.0.3=py27_0'
-- !!python/unicode
-  'sip=4.18=py27_0'
-- !!python/unicode
-  'six=1.10.0=py27_0'
-- !!python/unicode
-  'sqlite=3.13.0=0'
-- !!python/unicode
-  'ssl_match_hostname=3.4.0.2=py27_1'
-- !!python/unicode
-  'subprocess32=3.2.7=py27_0'
-- !!python/unicode
-  'terminado=0.6=py27_0'
-- !!python/unicode
-  'testpath=0.3=py27_0'
-- !!python/unicode
-  'tk=8.5.18=0'
-- !!python/unicode
-  'tornado=4.5.1=py27_0'
-- !!python/unicode
-  'traitlets=4.3.2=py27_0'
-- !!python/unicode
-  'wcwidth=0.1.7=py27_0'
-- !!python/unicode
-  'wheel=0.29.0=py27_0'
-- !!python/unicode
-  'widgetsnbextension=2.0.0=py27_0'
-- !!python/unicode
-  'zlib=1.2.8=3'
+- appnope=0.1.0=py27_0
+- backports=1.0=py27_0
+- backports_abc=0.5=py27_0
+- bleach=1.5.0=py27_0
+- configparser=3.5.0=py27_0
+- decorator=4.1.2=py27_0
+- entrypoints=0.2.3=py27_0
+- enum34=1.1.6=py27_0
+- functools32=3.2.3.2=py27_0
+- get_terminal_size=1.0.0=py27_0
+- html5lib=0.9999999=py27_0
+- icu=54.1=0
+- ipykernel=4.6.1=py27_0
+- ipython=5.3.0=py27_0
+- ipython_genutils=0.2.0=py27_0
+- ipywidgets=6.0.0=py27_0
+- jinja2=2.9.6=py27_0
+- jsonschema=2.6.0=py27_0
+- jupyter=1.0.0=py27_3
+- jupyter_client=5.1.0=py27_0
+- jupyter_console=5.1.0=py27_0
+- jupyter_core=4.3.0=py27_0
+- markupsafe=1.0=py27_0
+- mistune=0.7.4=py27_0
+- mkl=2017.0.3=0
+- nbconvert=5.2.1=py27_0
+- nbformat=4.3.0=py27_0
+- notebook=5.0.0=py27_0
+- numpy=1.13.1=py27_0
+- openssl=1.0.2l=0
+- pandocfilters=1.4.1=py27_0
+- path.py=10.3.1=py27_0
+- pathlib2=2.3.0=py27_0
+- pexpect=4.2.1=py27_0
+- pickleshare=0.7.4=py27_0
+- pip=9.0.1=py27_1
+- prompt_toolkit=1.0.15=py27_0
+- ptyprocess=0.5.2=py27_0
+- pygments=2.2.0=py27_0
+- pyqt=5.6.0=py27_2
+- python=2.7.13=0
+- python-dateutil=2.6.1=py27_0
+- pyzmq=16.0.2=py27_0
+- qt=5.6.2=2
+- qtconsole=4.3.1=py27_0
+- readline=6.2=2
+- scandir=1.5=py27_0
+- scikit-learn=0.19.0=np113py27_0
+- scipy=0.19.1=np113py27_0
+- setuptools=27.2.0=py27_0
+- simplegeneric=0.8.1=py27_1
+- singledispatch=3.4.0.3=py27_0
+- sip=4.18=py27_0
+- six=1.10.0=py27_0
+- sqlite=3.13.0=0
+- ssl_match_hostname=3.5.0.1=py27_0
+- terminado=0.6=py27_0
+- testpath=0.3.1=py27_0
+- tk=8.5.18=0
+- tornado=4.5.1=py27_0
+- traitlets=4.3.2=py27_0
+- wcwidth=0.1.7=py27_0
+- wheel=0.29.0=py27_0
+- widgetsnbextension=2.0.0=py27_0
+- zlib=1.2.11=0
 - pip:
-  - args==0.1.0
-  - astroid==1.5.2
   - backports-abc==0.5
-  - backports.functools-lru-cache==1.3
   - backports.shutil-get-terminal-size==1.0.0
-  - backports.ssl-match-hostname==3.4.0.2
-  - clint==0.5.1
-  - hide-code==0.4.0
+  - backports.ssl-match-hostname==3.5.0.1
+  - certifi==2017.7.27.1
+  - chardet==3.0.4
+  - idna==2.6
   - ipython-genutils==0.2.0
-  - isort==4.2.5
-  - jupyter-client==5.0.1
+  - jupyter-client==5.1.0
   - jupyter-console==5.1.0
   - jupyter-core==4.3.0
-  - lazy-object-proxy==1.3.1
-  - mccabe==0.6.1
-  - pdfkit==0.6.1
   - pkginfo==1.4.1
-  - prompt-toolkit==1.0.14
-  - pylint==1.7.1
-  - requests==2.13.0
-  - requests-toolbelt==0.7.0
-  - twine==1.8.1
-  - wrapt==1.10.10
+  - prompt-toolkit==1.0.15
+  - pyportmidi==0.0.7
+  - requests==2.18.4
+  - requests-toolbelt==0.8.0
+  - tbb==0.1
+  - tqdm==4.15.0
+  - twine==1.9.1
+  - urllib3==1.22
+  - yasm==0.0
+prefix: /Users/darius/anaconda2/envs/sklearn-porter
+
