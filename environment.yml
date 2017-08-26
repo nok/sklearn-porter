@@ -82,7 +82,6 @@ dependencies:
   - jupyter-core==4.3.0
   - pkginfo==1.4.1
   - prompt-toolkit==1.0.15
-  - pyportmidi==0.0.7
   - requests==2.18.4
   - requests-toolbelt==0.8.0
   - tbb==0.1
