@@ -7,8 +7,8 @@ import sys
 import subprocess as subp
 
 import numpy as np
-from sklearn.metrics import accuracy_score
 
+from sklearn.metrics import accuracy_score
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
 from sklearn.ensemble.forest import RandomForestClassifier
@@ -24,12 +24,12 @@ from sklearn.naive_bayes import BernoulliNB
 class Porter(object):
 
     # Version:
-    _version_path = str(os.path.join(os.path.dirname(__file__),
-                                     '__version__.txt'))
-    _version = open(_version_path).readlines().pop()
-    if isinstance(_version, bytes):
-        _version = _version.decode('utf-8')
-    __version__ = str(_version).strip()
+    local_dir = os.path.dirname(__file__)
+    version_file = os.path.join(local_dir, '__version__.txt')
+    version = open(version_file).readlines().pop()
+    if isinstance(version, bytes):
+        version = version.decode('utf-8')
+    __version__ = str(version).strip()
 
     def __init__(self, model, language='java', method='predict', **kwargs):
         # pylint: disable=unused-argument
@@ -51,10 +51,12 @@ class Porter(object):
         self.model = model
         self.output = ''
 
+        # Determine the imported scikit-learn version:
+        self.major, self.minor, self.patch = Porter.read_sklearn_version()
+
         # Extract algorithm from optimizer:
         # sklearn version >= 0.19.0
-        major, minor = Porter.sklearn_version()
-        if major > 0 or (major == 0 and minor >= 19):
+        if self.major > 0 or (self.major == 0 and self.minor >= 19):
             from sklearn.model_selection._search import GridSearchCV
             from sklearn.model_selection._search import RandomizedSearchCV
             optimizers = (GridSearchCV, RandomizedSearchCV)
@@ -120,12 +122,13 @@ class Porter(object):
         self.tested_env_dependencies = False
 
     @staticmethod
-    def sklearn_version():
+    def read_sklearn_version():
         from sklearn import __version__ as version
         version = str(version).split('.')
         version = [int(v) for v in version]
         major, minor = version[0], version[1]
-        return major, minor
+        patch = version[2] if len(version) == 3 else 0
+        return major, minor, patch
 
     @property
     def classifiers(self):
@@ -153,8 +156,7 @@ class Porter(object):
         )
 
         # sklearn version >= 0.18.0
-        major, minor = Porter.sklearn_version()
-        if major > 0 or (major == 0 and minor >= 18):
+        if self.major > 0 or (self.major == 0 and self.minor >= 18):
             from sklearn.neural_network.multilayer_perceptron \
                 import MLPClassifier
             classifiers += (MLPClassifier, )
@@ -176,8 +178,7 @@ class Porter(object):
         regressors = ()
 
         # sklearn version >= 0.18.0
-        major, minor = Porter.sklearn_version()
-        if major > 0 or (major == 0 and minor >= 18):
+        if self.major > 0 or (self.major == 0 and self.minor >= 18):
             from sklearn.neural_network.multilayer_perceptron \
                 import MLPRegressor
             regressors += (MLPRegressor, )
