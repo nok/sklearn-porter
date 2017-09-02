@@ -146,13 +146,13 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) m
 
 ## Installation
 
-```sh
+```bash
 pip install sklearn-porter
 ```
 
 If you want the latest bleeding edge changes, you can install the module from the master (development) branch:
 
-```sh
+```bash
 pip uninstall -y sklearn-porter
 pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/master
 ```
@@ -238,21 +238,21 @@ joblib.dump(clf, 'model.pkl')
 
 After that the model can be transpiled by using the following command:
 
-```sh
+```bash
 python -m sklearn_porter --input <pickle_file> [--output <destination_dir>] [--language {c,go,java,js,php,ruby}]
 python -m sklearn_porter -i <pickle_file> [-o <destination_dir>] [-l {c,go,java,js,php,ruby}]
 ```
 
 The following commands have all the same result:
 
-```sh
+```bash
 python -m sklearn_porter --input model.pkl --language java
 python -m sklearn_porter -i model.pkl -l java
 ```
 
 By changing the language parameter you can set the target programming language:
 
-```
+```bash
 python -m sklearn_porter -i model.pkl -l c
 python -m sklearn_porter -i model.pkl -l go
 python -m sklearn_porter -i model.pkl -l java
@@ -263,7 +263,7 @@ python -m sklearn_porter -i model.pkl -l ruby
 
 Further information will be shown by using the `--help` parameter:
 
-```sh
+```bash
 python -m sklearn_porter --help
 python -m sklearn_porter -h
 ```
@@ -275,13 +275,12 @@ python -m sklearn_porter -h
 
 Install the required [environment modules](environment.yml) by executing the script [environment.sh](recipes/environment.sh):
 
-```sh
-./recipes/environment.sh
+```bash
+bash ./recipes/environment.sh
 ```
 
-```sh
-conda config --add channels conda-forge
-conda env create -n sklearn-porter python=2 -f environment.yml
+```bash
+conda env create -c conda-forge -n sklearn-porter python=2 -f environment.yml
 source activate sklearn-porter
 ```
 
@@ -292,19 +291,22 @@ Furthermore [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=
 
 The tests cover module functions as well as matching predictions of transpiled models. Run [all tests](tests) by executing the script [test.sh](recipes/test.sh):
 
-```sh
-./recipes/test.sh
+```bash
+bash ./recipes/test.sh
 ```
 
-```sh
-source activate sklearn-porter
+```bash
 python -m unittest discover -vp '*Test.py'
-source deactivate
 ```
 
-While you are developing new features or fixes, you can reduce the test duration by setting the number of random model tests:
-
+```bash
+python -m unittest discover -vp 'RandomForest*Test.py'
+python -m unittest discover -vp '*JavaTest.py'
 ```
+
+While you are developing new features or fixes, you can reduce the test duration by setting the number of model tests:
+
+```bash
 N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discover -vp '*Test.py'
 ```   
 
@@ -313,14 +315,12 @@ N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discover 
 
 It's highly recommended to ensure the code quality. For that I use [Pylint](https://github.com/PyCQA/pylint/), which you can run by executing the script [lint.sh](recipes/lint.sh): 
 
-```sh
-./recipes/lint.sh
+```bash
+bash ./recipes/lint.sh
 ```
 
-```sh
-source activate sklearn-porter
+```bash
 find ./sklearn_porter -name '*.py' -exec pylint {} \;
-source deactivate
 ```
 
 
