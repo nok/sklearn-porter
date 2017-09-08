@@ -47,6 +47,7 @@ before_script:
   - python --version
   - gcc --version
   - java -version
+  - unset JAVA_TOOL_OPTIONS && unset _JAVA_OPTIONS
   - node --version
   - go version
   - php --version
