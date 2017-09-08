@@ -74,7 +74,7 @@ class Porter(object):
         elif isinstance(self.model, self.regressors):
             self.algorithm_type = 'regressor'
         else:
-            error = "The given model '{model}' isn't" \
+            error = "Currently the given model '{model}' isn't" \
                     " supported.".format(**self.__dict__)
             raise ValueError(error)
 
@@ -91,7 +91,7 @@ class Porter(object):
                                [self.algorithm_name], level)
             clazz = getattr(clazz, self.algorithm_name)
         except ImportError:
-            error = "The given model '{algorithm_name}' " \
+            error = "Currently the given model '{algorithm_name}' " \
                     "isn't supported.".format(**self.__dict__)
             raise AttributeError(error)
 
@@ -103,15 +103,16 @@ class Porter(object):
                                     'templates', language)
         has_template = os.path.isdir(template_dir)
         if not has_template:
-            error = "The given target programming language" \
-                    " '{}' isn't supported.".format(language)
+            error = "Currently there is no support of the combination " \
+                    "of the estimator '{}' and the target programming " \
+                    "language '{}'.".format(self.algorithm_name, language)
             raise AttributeError(error)
         self.target_language = language
 
         # Set target prediction method:
         has_method = method in set(getattr(clazz, 'SUPPORTED_METHODS'))
         if not has_method:
-            error = "The given model method" \
+            error = "Currently the given model method" \
                     " '{}' isn't supported.".format(method)
             raise AttributeError(error)
         self.target_method = method
@@ -309,7 +310,7 @@ class Porter(object):
 
         # Support:
         if 'predict' not in set(self.template.SUPPORTED_METHODS):
-            error = "The given model method" \
+            error = "Currently the given model method" \
                     " '{}' isn't supported.".format('predict')
             raise AttributeError(error)
 
