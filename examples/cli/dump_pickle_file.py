@@ -10,4 +10,4 @@ X, y = iris_data.data, iris_data.target
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-joblib.dump(clf, 'model.pkl')
+joblib.dump(clf, 'estimator.pkl')

@@ -233,7 +233,7 @@ This example shows how you can port a model from the command line. First of all 
 # ...
 
 # Extract estimator:
-joblib.dump(clf, 'model.pkl')
+joblib.dump(clf, 'estimator.pkl')
 ```
 
 After that the model can be transpiled by using the following command:
@@ -246,19 +246,19 @@ python -m sklearn_porter -i <pickle_file> [-o <destination_dir>] [-l {c,go,java,
 The following commands have all the same result:
 
 ```bash
-python -m sklearn_porter --input model.pkl --language java
-python -m sklearn_porter -i model.pkl -l java
+python -m sklearn_porter --input estimator.pkl --language java
+python -m sklearn_porter -i estimator.pkl -l java
 ```
 
 By changing the language parameter you can set the target programming language:
 
 ```bash
-python -m sklearn_porter -i model.pkl -l c
-python -m sklearn_porter -i model.pkl -l go
-python -m sklearn_porter -i model.pkl -l java
-python -m sklearn_porter -i model.pkl -l js
-python -m sklearn_porter -i model.pkl -l php
-python -m sklearn_porter -i model.pkl -l ruby
+python -m sklearn_porter -i estimator.pkl -l c
+python -m sklearn_porter -i estimator.pkl -l go
+python -m sklearn_porter -i estimator.pkl -l java
+python -m sklearn_porter -i estimator.pkl -l js
+python -m sklearn_porter -i estimator.pkl -l php
+python -m sklearn_porter -i estimator.pkl -l ruby
 ```
 
 Further information will be shown by using the `--help` parameter:
