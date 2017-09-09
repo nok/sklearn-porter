@@ -65,10 +65,9 @@ def main():
         language = str(args['language'])  # with default language
         languages = ['c', 'java', 'js', 'go', 'php', 'ruby']
         for key in languages:
-            if args.get(key):  # found ecplicit assignment
+            if args.get(key):  # found explicit assignment
                 language = key
                 break
-
         # Port estimator:
         porter = Porter(estimator, language=language)
         details = porter.export(details=True)
