@@ -21,6 +21,9 @@ src/*.java
 src/*.class
 
 examples/tests
+examples/cli/*.c
+examples/cli/*.java
+examples/cli/*.js
 
 .temp/
 temp/
