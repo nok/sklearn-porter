@@ -19,7 +19,7 @@ def parse_args(args):
         '--input', '-i',
         required=True,
         help=(
-            'Set the path of an exported model '
+            'Set the path of an exported estimator '
             'in pickle (.pkl) format.'))
     parser.add_argument(
         '--output', '-o',
@@ -41,10 +41,7 @@ def parse_args(args):
         choices=languages.keys(),
         default='java',
         required=False,
-        help=(
-            'Set the target programming language '
-            '({}).'.format(', '.join(['"{}"'.format(key)
-                                      for key in languages.keys()]))))
+        help=argparse.SUPPRESS)
     for key, lang in list(languages.items()):
         parser.add_argument(
             '--{}'.format(key),
@@ -62,7 +59,7 @@ def main():
 
         # Load data:
         from sklearn.externals import joblib
-        model = joblib.load(input_path)
+        estimator = joblib.load(input_path)
 
         # Determine the target programming language:
         language = str(args['language'])  # with default language
@@ -72,8 +69,8 @@ def main():
                 language = key
                 break
 
-        # Port model:
-        porter = Porter(model, language=language)
+        # Port estimator:
+        porter = Porter(estimator, language=language)
         details = porter.export(details=True)
         filename = details.get('filename')
 
@@ -92,7 +89,7 @@ def main():
         with open(dest_path, 'w') as file_:
             file_.write(details.get('model'))
     else:
-        raise ValueError('No valid model in pickle format was found.')
+        raise ValueError('No valid estimator in pickle format was found.')
 
 if __name__ == "__main__":
     main()
