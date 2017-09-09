@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 import argparse
 
 from . import Porter
 
 
-def main():
+def parse_args(args):
     parser = argparse.ArgumentParser(
         description=(
-            'Transpile trained scikit-learn models '
+            'Transpile trained scikit-learn estimators '
             'to C, Java, JavaScript and others. '),
         epilog=(
             'More details on: '
@@ -25,17 +26,36 @@ def main():
         required=False,
         help=(
             'Set the destination directory, '
-            'where the transpiled model will be '
+            'where the transpiled estimator will be '
             'stored.'))
+    languages = {
+        'c': 'C',
+        'java': 'Java',
+        'js': 'JavaScript',
+        'go': 'Go',
+        'php': 'PHP',
+        'ruby': 'Ruby'
+    }
     parser.add_argument(
         '--language', '-l',
-        choices=['c', 'java', 'js', 'go', 'php', 'ruby'],
+        choices=languages.keys(),
         default='java',
         required=False,
         help=(
             'Set the target programming language '
-            '("c", "java", "js", "go", "php", "ruby").'))
-    args = vars(parser.parse_args())
+            '({}).'.format(', '.join(['"{}"'.format(key)
+                                      for key in languages.keys()]))))
+    for key, lang in list(languages.items()):
+        parser.add_argument(
+            '--{}'.format(key),
+            action='store_true',
+            help='Set {} as the target programming language.'.format(lang))
+    args = vars(parser.parse_args(args))
+    return args
+
+
+def main():
+    args = parse_args(sys.argv[1:])
 
     input_path = str(args['input'])
     if input_path.endswith('.pkl') and os.path.isfile(input_path):
@@ -44,8 +64,15 @@ def main():
         from sklearn.externals import joblib
         model = joblib.load(input_path)
 
+        # Determine the target programming language:
+        language = str(args['language'])  # with default language
+        languages = ['c', 'java', 'js', 'go', 'php', 'ruby']
+        for key in languages:
+            if args.get(key):  # found ecplicit assignment
+                language = key
+                break
+
         # Port model:
-        language = str(args['language'])
         porter = Porter(model, language=language)
         details = porter.export(details=True)
         filename = details.get('filename')

@@ -239,26 +239,24 @@ joblib.dump(clf, 'estimator.pkl')
 After that the model can be transpiled by using the following command:
 
 ```bash
-python -m sklearn_porter --input <pickle_file> [--output <destination_dir>] [--language {c,go,java,js,php,ruby}]
-python -m sklearn_porter -i <pickle_file> [-o <destination_dir>] [-l {c,go,java,js,php,ruby}]
+python -m sklearn_porter --input <PICKLE_FILE> [--output <DEST_DIR>] [--language {c,go,java,js,php,ruby}] [--c] [--java] [--js] [--go] [--php] [--ruby]
+python -m sklearn_porter -i <PICKLE_FILE> [-o <DEST_DIR>] [-l {c,go,java,js,php,ruby}] [--c] [--java] [--js] [--go] [--php] [--ruby]
 ```
 
-The following commands have all the same result:
+For instance the following command transpiles the estimator to the target programming language Java:
 
 ```bash
-python -m sklearn_porter --input estimator.pkl --language java
-python -m sklearn_porter -i estimator.pkl -l java
+python -m sklearn_porter -i estimator.pkl --java
 ```
 
-By changing the language parameter you can set the target programming language:
+You can change the target programming language on the fly:
 
 ```bash
-python -m sklearn_porter -i estimator.pkl -l c
-python -m sklearn_porter -i estimator.pkl -l go
-python -m sklearn_porter -i estimator.pkl -l java
-python -m sklearn_porter -i estimator.pkl -l js
-python -m sklearn_porter -i estimator.pkl -l php
-python -m sklearn_porter -i estimator.pkl -l ruby
+python -m sklearn_porter -i estimator.pkl --c
+python -m sklearn_porter -i estimator.pkl --go
+python -m sklearn_porter -i estimator.pkl --js
+python -m sklearn_porter -i estimator.pkl --php
+python -m sklearn_porter -i estimator.pkl --ruby
 ```
 
 Further information will be shown by using the `--help` parameter:
