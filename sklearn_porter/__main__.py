@@ -54,29 +54,35 @@ def parse_args(args):
 def main():
     args = parse_args(sys.argv[1:])
 
+    # Check input data:
     input_path = str(args['input'])
-    if input_path.endswith('.pkl') and os.path.isfile(input_path):
+    if not input_path.endswith('.pkl') or not os.path.isfile(input_path):
+        error = 'No valid estimator in pickle format was found.'
+        sys.exit('Error: {}'.format(error))
 
-        # Load data:
-        from sklearn.externals import joblib
-        estimator = joblib.load(input_path)
+    # Load data:
+    from sklearn.externals import joblib
+    estimator = joblib.load(input_path)
 
-        # Determine the target programming language:
-        language = str(args['language'])  # with default language
-        languages = ['c', 'java', 'js', 'go', 'php', 'ruby']
-        for key in languages:
-            if args.get(key):  # found explicit assignment
-                language = key
-                break
-        # Port estimator:
+    # Determine the target programming language:
+    language = str(args['language'])  # with default language
+    languages = ['c', 'java', 'js', 'go', 'php', 'ruby']
+    for key in languages:
+        if args.get(key):  # found explicit assignment
+            language = key
+            break
+
+    # Port estimator:
+    try:
         porter = Porter(estimator, language=language)
         details = porter.export(details=True)
-        filename = details.get('filename')
-
+    except Exception as e:
+        sys.exit('Error: {}'.format(str(e)))
+    else:
         # Define destination path:
         dest_dir = str(args['output'])
+        filename = details.get('filename')
         if dest_dir != '' and os.path.isdir(dest_dir):
-            dest_dir = str(args['output'])
             dest_path = os.path.join(dest_dir, filename)
         else:
             dest_dir = input_path.split(os.sep)
@@ -84,11 +90,10 @@ def main():
             dest_dir += [filename]
             dest_path = os.sep.join(dest_dir)
 
-        # Save transpiled model:
+        # Save transpiled estimator:
         with open(dest_path, 'w') as file_:
             file_.write(details.get('model'))
-    else:
-        raise ValueError('No valid estimator in pickle format was found.')
+
 
 if __name__ == "__main__":
     main()
