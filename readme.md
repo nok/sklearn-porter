@@ -21,7 +21,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         <tr>
             <td align="left" width="40%">Classification</td>
             <td align="center" width="10%">C</td>
-            <td align="center" width="10%">Java</td>
+            <td align="center" width="10%">Java*</td>
             <td align="center" width="10%">JavaScript</td>
             <td align="center" width="10%">Go</td>
             <td align="center" width="10%">PHP</td>
@@ -142,7 +142,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
     </tbody>
 </table>
 
-✓ = is full-featured, ○ = has minor exceptions
+✓ = is full-featured, ○ = has minor exceptions, * = default language
 
 ## Installation
 
@@ -243,10 +243,10 @@ python -m sklearn_porter --input <PICKLE_FILE> [--output <DEST_DIR>] [--pipe] [-
 python -m sklearn_porter -i <PICKLE_FILE> [-o <DEST_DIR>] [-p] [--c] [--java] [--js] [--go] [--php] [--ruby]
 ```
 
-For instance the following command transpiles the estimator to the target programming language Java:
+For instance the following command transpiles the estimator to the target programming language JavaScript:
 
 ```
-python -m sklearn_porter -i estimator.pkl --java
+python -m sklearn_porter -i estimator.pkl --js
 ```
 
 The target programming language is changeable on the fly: 
@@ -254,8 +254,8 @@ The target programming language is changeable on the fly:
 ```
 python -m sklearn_porter -i estimator.pkl --c
 python -m sklearn_porter -i estimator.pkl --go
-python -m sklearn_porter -i estimator.pkl --js
 python -m sklearn_porter -i estimator.pkl --php
+python -m sklearn_porter -i estimator.pkl --java
 python -m sklearn_porter -i estimator.pkl --ruby
 ```
 
