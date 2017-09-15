@@ -28,6 +28,12 @@ def parse_args(args):
             'Set the destination directory, '
             'where the transpiled estimator will be '
             'stored.'))
+    parser.add_argument(
+        '--pipe', '-p',
+        required=False,
+        default=False,
+        action='store_true',
+        help='Print the transpiled estimator to the console.')
     languages = {
         'c': 'C',
         'java': 'Java',
@@ -55,7 +61,7 @@ def main():
     args = parse_args(sys.argv[1:])
 
     # Check input data:
-    input_path = str(args['input'])
+    input_path = str(args.get('input'))
     if not input_path.endswith('.pkl') or not os.path.isfile(input_path):
         error = 'No valid estimator in pickle format was found.'
         sys.exit('Error: {}'.format(error))
@@ -65,7 +71,7 @@ def main():
     estimator = joblib.load(input_path)
 
     # Determine the target programming language:
-    language = str(args['language'])  # with default language
+    language = str(args.get('language'))  # with default language
     languages = ['c', 'java', 'js', 'go', 'php', 'ruby']
     for key in languages:
         if args.get(key):  # found explicit assignment
@@ -75,13 +81,18 @@ def main():
     # Port estimator:
     try:
         porter = Porter(estimator, language=language)
-        details = porter.export(details=True)
+        output = porter.export(details=True)
     except Exception as e:
         sys.exit('Error: {}'.format(str(e)))
     else:
+        # Print transpiled estimator to the console:
+        if bool(args.get('pipe', False)):
+            print(output.get('model'))
+            sys.exit(0)
+
         # Define destination path:
-        dest_dir = str(args['output'])
-        filename = details.get('filename')
+        dest_dir = str(args.get('output'))
+        filename = output.get('filename')
         if dest_dir != '' and os.path.isdir(dest_dir):
             dest_path = os.path.join(dest_dir, filename)
         else:
@@ -92,7 +103,7 @@ def main():
 
         # Save transpiled estimator:
         with open(dest_path, 'w') as file_:
-            file_.write(details.get('model'))
+            file_.write(output.get('model'))
 
 
 if __name__ == "__main__":

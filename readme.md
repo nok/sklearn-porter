@@ -239,8 +239,8 @@ joblib.dump(clf, 'estimator.pkl')
 After that the model can be transpiled by using the following command:
 
 ```
-python -m sklearn_porter --input <PICKLE_FILE> [--output <DEST_DIR>] [--c] [--java] [--js] [--go] [--php] [--ruby]
-python -m sklearn_porter -i <PICKLE_FILE> [-o <DEST_DIR>] [--c] [--java] [--js] [--go] [--php] [--ruby]
+python -m sklearn_porter --input <PICKLE_FILE> [--output <DEST_DIR>] [--pipe] [--c] [--java] [--js] [--go] [--php] [--ruby]
+python -m sklearn_porter -i <PICKLE_FILE> [-o <DEST_DIR>] [-p] [--c] [--java] [--js] [--go] [--php] [--ruby]
 ```
 
 For instance the following command transpiles the estimator to the target programming language Java:
@@ -249,7 +249,7 @@ For instance the following command transpiles the estimator to the target progra
 python -m sklearn_porter -i estimator.pkl --java
 ```
 
-You can change the target programming language on the fly:
+The target programming language is changeable on the fly: 
 
 ```
 python -m sklearn_porter -i estimator.pkl --c
@@ -257,6 +257,18 @@ python -m sklearn_porter -i estimator.pkl --go
 python -m sklearn_porter -i estimator.pkl --js
 python -m sklearn_porter -i estimator.pkl --php
 python -m sklearn_porter -i estimator.pkl --ruby
+```
+
+The transpiled estimator is useable for further processing by using the `--pipe` parameter:
+
+```
+python -m sklearn_porter -i estimator.pkl --js --pipe > estimator.js
+```
+
+For instance the generated JavaScript code can be minified by using [UglifyJS](https://github.com/mishoo/UglifyJS2):
+
+```
+python -m sklearn_porter -i estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js 
 ```
 
 Further information will be shown by using the `--help` parameter:
