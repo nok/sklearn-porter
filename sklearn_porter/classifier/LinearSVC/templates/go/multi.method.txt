@@ -1,11 +1,11 @@
 func {name}(atts []float64) int {{
 
+	{coefficients}
+	{intercepts}
+
 	if len(atts) != len(coefs[0]) {{
 		return -1
 	}}
-
-	{coefficients}
-	{intercepts}
 
 	classIdx := -1
 	classVal := math.Inf(-1)

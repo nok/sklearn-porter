@@ -1,14 +1,21 @@
 package main
 
 import (
+	"os"
 	"fmt"
-	"math"
+	"strconv"
+	{with_math_lib}
 )
 
 {method}
 
 func main() {{
-	// atts := []float64{{ /* values */ }}
-	// classIdx := predict(atts)
-	// fmt.Println(classIdx)
+	var features []float64
+	for _, arg := range os.Args[1:] {{
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {{
+			features = append(features, n)
+		}}
+	}}
+	classIdx := {method_name}(features)
+	fmt.Println(classIdx)
 }}

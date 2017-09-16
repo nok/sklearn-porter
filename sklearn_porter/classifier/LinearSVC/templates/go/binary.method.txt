@@ -1,11 +1,11 @@
 func {name}(atts []float64) int {{
 
-	if len(atts) != len(coefs[0]) {{
-		return -1
-	}}
-
 	{coefficients}
 	{intercepts}
+
+	if len(atts) != len(coefs) {{
+		return -1
+	}}
 
 	var prob float64
 	for i := 0; i < len(coefs); i++ {{

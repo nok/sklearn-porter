@@ -294,8 +294,14 @@ conda env create -c conda-forge -n sklearn-porter python=2 -f environment.yml
 source activate sklearn-porter
 ```
 
-Furthermore [Node.js](https://nodejs.org) (`>=6`), [Java](https://java.com) (`>=1.6`), [PHP](http://www.php.net/) (`>=7`), [Ruby](https://www.ruby-lang.org) (`>=2.4.1`) and [GCC](https://gcc.gnu.org) (`>=4.2`) are required for all tests.
+The following compilers or intepreters are required to cover all tests:
 
+- [GCC](https://gcc.gnu.org) (`>=4.2`)
+- [Java](https://java.com) (`>=1.6`)
+- [PHP](http://www.php.net/) (`>=7`)
+- [Ruby](https://www.ruby-lang.org) (`>=2.4.1`)
+- [Go](https://golang.org/) (`>=1.7.4`)
+- [Node.js](https://nodejs.org) (`>=6`)
 
 ### Testing
 
@@ -309,6 +315,8 @@ bash ./recipes/test.sh
 python -m unittest discover -vp '*Test.py'
 ```
 
+The test files have a specific pattern: `'[Algorithm][Language]Test.py'`:
+
 ```bash
 python -m unittest discover -vp 'RandomForest*Test.py'
 python -m unittest discover -vp '*JavaTest.py'
@@ -318,7 +326,7 @@ While you are developing new features or fixes, you can reduce the test duration
 
 ```bash
 N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discover -vp '*Test.py'
-```   
+```
 
 
 ### Quality

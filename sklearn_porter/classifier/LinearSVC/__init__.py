@@ -181,6 +181,8 @@ class LinearSVC(Classifier):
         :return out : string
             The built class as string.
         """
+        with_math_lib = '' if self.is_binary else '"math"'
         return self.temp('class').format(
             class_name=self.class_name, method_name=self.method_name,
-            method=method, n_features=self.n_features)
+            method=method, n_features=self.n_features,
+            with_math_lib=with_math_lib)
