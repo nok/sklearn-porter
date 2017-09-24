@@ -1,13 +1,13 @@
-var {0} = function() {{
+var {class_name} = function() {{
 
-    {2}
+    {method}
 
 }};
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
-    if (process.argv.length - 2 == {3}) {{
+    if (process.argv.length - 2 == {n_features}) {{
         var argv = process.argv.slice(2);
-        var prediction = new {0}().{1}(argv);
+        var prediction = new {class_name}().{method_name}(argv);
         console.log(prediction);
     }}
 }}

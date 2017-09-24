@@ -242,5 +242,7 @@ class RandomForestClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            self.class_name, self.method_name, method, self.n_features)
+        return self.temp('class').format(class_name=self.class_name,
+                                         method_name=self.method_name,
+                                         n_features=self.n_features,
+                                         method=method)
