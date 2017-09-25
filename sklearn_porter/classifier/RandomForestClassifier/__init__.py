@@ -145,11 +145,10 @@ class RandomForestClassifier(Classifier):
             The ported single tree as function or method.
         """
         out = ''  # returned output
-        # ind = '\n' + '    ' * depth
         if threshold[node] != -2.:
             out += '\n'
-            out += self.temp('if', n_indents=depth).format(
-                features[node], '<=', self.repr(threshold[node]))
+            temp = self.temp('if', n_indents=depth)
+            out += temp.format(features[node], '<=', self.repr(threshold[node]))
             if left_nodes[node] != -1.:
                 out += self.create_branches(
                     left_nodes, right_nodes, threshold, value,
@@ -164,8 +163,9 @@ class RandomForestClassifier(Classifier):
             out += self.temp('endif', n_indents=depth)
         else:
             clazzes = []
+            temp_arr = self.temp('arr', n_indents=depth)
             for i, rate in enumerate(value[node][0]):
-                clazz = self.temp('arr', n_indents=depth).format(i, int(rate))
+                clazz = temp_arr.format(i, int(rate))
                 clazz = '\n' + clazz
                 clazzes.append(clazz)
             out += self.temp('join').join(clazzes) + self.temp('join')
@@ -197,8 +197,12 @@ class RandomForestClassifier(Classifier):
             model.tree_.children_left, model.tree_.children_right,
             model.tree_.threshold, model.tree_.value, indices, 0, 1)
 
-        return self.temp('single_method').format(
-            str(model_index), self.method_name, self.n_classes, tree_branches)
+        temp_single_method = self.temp('single_method')
+        out = temp_single_method.format(method_name=self.method_name,
+                                        method_id=str(model_index),
+                                        n_classes=self.n_classes,
+                                        tree_branches=tree_branches)
+        return out
 
     def create_method(self):
         """
@@ -211,10 +215,11 @@ class RandomForestClassifier(Classifier):
         """
         # Generate method or function names:
         fn_names = []
+        temp_method_calls = self.temp('method_calls', n_indents=2, skipping=True)
         for idx, model in enumerate(self.models):
             fn_name = self.method_name + '_' + str(idx)
-            fn_name = self.temp('method_calls', n_indents=2, skipping=True)\
-                .format(idx, self.class_name, fn_name)
+            fn_name = temp_method_calls.format(class_name=self.class_name,
+                                               method_name=fn_name)
             fn_names.append(fn_name)
         fn_names = '\n'.join(fn_names)
         fn_names = self.indent(fn_names, n_indents=1, skipping=True)
@@ -228,10 +233,13 @@ class RandomForestClassifier(Classifier):
 
         # Merge generated content:
         n_indents = 1 if self.target_language in ['java', 'js'] else 0
-        method = self.temp('method').format(
-            fns, self.method_name, self.n_estimators, self.n_classes, fn_names)
-        method = self.indent(method, n_indents=n_indents, skipping=True)
-        return method
+        temp_method = self.temp('method')
+        out = temp_method.format(method_name=self.method_name,
+                                 method_calls=fn_names, methods=fns,
+                                 n_estimators=self.n_estimators,
+                                 n_classes=self.n_classes)
+        out = self.indent(out, n_indents=n_indents, skipping=True)
+        return out
 
     def create_class(self, method):
         """
@@ -242,7 +250,8 @@ class RandomForestClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(class_name=self.class_name,
-                                         method_name=self.method_name,
-                                         n_features=self.n_features,
-                                         method=method)
+        temp_class = self.temp('class')
+        out = temp_class.format(class_name=self.class_name,
+                                method_name=self.method_name,
+                                method=method, n_features=self.n_features)
+        return out

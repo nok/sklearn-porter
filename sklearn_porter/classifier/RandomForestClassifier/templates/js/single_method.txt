@@ -1,8 +1,8 @@
-var {1}_{0} = function(atts) {{
-    var classes = new Array({2});
-    {3}
+var {method_name}_{method_id} = function(atts) {{
+    var classes = new Array({n_classes});
+    {tree_branches}
     var i = 0, class_idx = 0, class_val = classes[0];
-    for (i = 1; i < {2}; i++) {{
+    for (i = 1; i < {n_classes}; i++) {{
         if (classes[i] > class_val) {{
             class_idx = i;
             class_val = classes[i];

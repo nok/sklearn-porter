@@ -1,4 +1,4 @@
-func {name}(atts []float64) int {{
+func {method_name}(atts []float64) int {{
 
 	{coefficients}
 	{intercepts}

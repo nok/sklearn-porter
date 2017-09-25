@@ -1,1 +1,1 @@
-classes[{2}(atts)]++;
+classes[{method_name}(atts)]++;

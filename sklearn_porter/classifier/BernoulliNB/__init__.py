@@ -51,12 +51,17 @@ class BernoulliNB(Classifier):
         # jll = safe_sparse_dot(X, (self.feature_log_prob_ - neg_prob).T)
         # jll += self.class_log_prior_ + neg_prob.sum(axis=1)
 
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
         # Create class prior probabilities:
         priors = [self.temp('type').format(self.repr(p)) for p in
                   model.class_log_prior_]
         priors = ', '.join(priors)
-        self.priors = self.temp('arr[]').format(type='double', name='priors',
-                                                values=priors)
+        self.priors = temp_arr_.format(type='double', name='priors',
+                                       values=priors)
 
         # Create probabilities:
         # probs = []
@@ -73,24 +78,22 @@ class BernoulliNB(Classifier):
         neg_prob = np.log(1 - np.exp(model.feature_log_prob_))
         probs = []
         for prob in neg_prob:
-            tmp = [self.temp('type').format(self.repr(p)) for p in prob]
-            tmp = self.temp('arr').format(', '.join(tmp))
+            tmp = [temp_type.format(self.repr(p)) for p in prob]
+            tmp = temp_arr.format(', '.join(tmp))
             probs.append(tmp)
         probs = ', '.join(probs)
-        self.neg_probs = self.temp('arr[][]').format(type='double',
-                                                     name='negProbs',
-                                                     values=probs)
+        self.neg_probs = temp_arr__.format(type='double', name='negProbs',
+                                           values=probs)
 
         delta_probs = (model.feature_log_prob_ - neg_prob).T
         probs = []
         for prob in delta_probs:
-            tmp = [self.temp('type').format(self.repr(p)) for p in prob]
-            tmp = self.temp('arr').format(', '.join(tmp))
+            tmp = [temp_type.format(self.repr(p)) for p in prob]
+            tmp = temp_arr.format(', '.join(tmp))
             probs.append(tmp)
         probs = ', '.join(probs)
-        self.del_probs = self.temp('arr[][]').format(type='double',
-                                                     name='delProbs',
-                                                     values=probs)
+        self.del_probs = temp_arr__.format(type='double', name='delProbs',
+                                           values=probs)
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
@@ -137,8 +140,10 @@ class BernoulliNB(Classifier):
             The built method as string.
         """
         n_indents = 1 if self.target_language in ['java'] else 0
-        return self.temp('method.predict', n_indents=n_indents,
-                         skipping=True).format(**self.__dict__)
+        temp_method = self.temp('method.predict', n_indents=n_indents,
+                                skipping=True)
+        out = temp_method.format(**self.__dict__)
+        return out
 
     def create_class(self, method):
         """
@@ -150,4 +155,6 @@ class BernoulliNB(Classifier):
             The built class as string.
         """
         self.__dict__.update(dict(method=method))
-        return self.temp('class').format(**self.__dict__)
+        temp_class = self.temp('class')
+        out = temp_class.format(**self.__dict__)
+        return out

@@ -1,4 +1,4 @@
-this.{name} = function(atts) {{
+this.{method_name} = function(atts) {{
     if (atts.length != {n_features}) {{ return -1; }};
 
     {coefficients}

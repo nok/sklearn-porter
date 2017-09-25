@@ -1,13 +1,13 @@
-{0}
-this.{1} = function(atts) {{
-    var n_estimators = {2},
+{methods}
+this.{method_name} = function(atts) {{
+    var n_estimators = {n_estimators},
         preds = new Array(n_estimators),
-        n_classes = {3},
+        n_classes = {n_classes},
         classes = new Array(n_classes),
         normalizer, sum, idx, val,
         i, j;
 
-    {4}
+    {method_calls}
 
     for (i = 0; i < n_estimators; i++) {{
         normalizer = 0.;

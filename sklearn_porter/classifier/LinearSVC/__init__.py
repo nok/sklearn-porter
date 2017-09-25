@@ -87,7 +87,7 @@ class LinearSVC(Classifier):
         self.n_features = len(model.coef_[0])
         self.n_classes = len(model.classes_)
         self.is_binary = self.n_classes == 2
-        self.prefix = 'binary.' if self.is_binary else 'multi.'
+        self.prefix = 'binary' if self.is_binary else 'multi'
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
@@ -134,43 +134,51 @@ class LinearSVC(Classifier):
             The built method as string.
         """
 
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
         # Coefficients:
         if self.is_binary:
             coefs = self.model.coef_[0]
-            coefs = [self.temp('type').format(self.repr(c)) for c in coefs]
+            coefs = [temp_type.format(self.repr(c)) for c in coefs]
             coefs = ', '.join(coefs)
-            coefs = self.temp('arr[]').format(
-                name='coefs', values=coefs, n=self.n_features)
+            coefs = temp_arr_.format(name='coefs', values=coefs,
+                                     n=self.n_features)
         else:
             coefs = []
             for coef in self.model.coef_:
-                tmp = [self.temp('type').format(self.repr(c)) for c in coef]
-                tmp = self.temp('arr').format(', '.join(tmp))
+                tmp = [temp_type.format(self.repr(c)) for c in coef]
+                tmp = temp_arr.format(', '.join(tmp))
                 coefs.append(tmp)
             coefs = ', '.join(coefs)
-            coefs = self.temp('arr[][]').format(
-                name='coefs', values=coefs, n=self.n_classes, m=self.n_features)
+            coefs = temp_arr__.format(name='coefs', values=coefs,
+                                      n=self.n_classes, m=self.n_features)
 
         # Intercepts:
         if self.is_binary:
             inters = self.model.intercept_[0]
-            inters = self.temp('init').format(type='double', name='inters',
-                                              value=self.repr(inters))
+            temp_init = self.temp('init')
+            inters = temp_init.format(type='double', name='inters',
+                                      value=self.repr(inters))
         else:
             inters = self.model.intercept_
-            inters = [self.temp('type').format(self.repr(i)) for i in inters]
+            inters = [temp_type.format(self.repr(i)) for i in inters]
             inters = ', '.join(inters)
-            inters = self.temp('arr[]').format(
-                name='inters', values=inters, n=self.n_classes)
+            inters = temp_arr_.format(name='inters', values=inters,
+                                      n=self.n_classes)
 
         # Indentation
         n_indents = 0 if self.target_language in ['c', 'go'] else 1
 
-        return self.temp(self.prefix + 'method',
-                         n_indents=n_indents, skipping=True).format(
-            name=self.method_name, n_features=self.n_features,
-            n_classes=self.n_classes, coefficients=coefs,
-            intercepts=inters)
+        method_type = '{}.method'.format(self.prefix)
+        temp_method = self.temp(method_type, n_indents=n_indents, skipping=True)
+        out = temp_method.format(method_name=self.method_name,
+                                 n_features=self.n_features,
+                                 n_classes=self.n_classes,
+                                 coefficients=coefs, intercepts=inters)
+        return out
 
     def create_class(self, method):
         """
@@ -182,7 +190,9 @@ class LinearSVC(Classifier):
             The built class as string.
         """
         with_math_lib = '' if self.is_binary else '"math"'
-        return self.temp('class').format(
-            class_name=self.class_name, method_name=self.method_name,
-            method=method, n_features=self.n_features,
-            with_math_lib=with_math_lib)
+        temp_class = self.temp('class')
+        out = temp_class.format(class_name=self.class_name,
+                                method_name=self.method_name, method=method,
+                                n_features=self.n_features,
+                                with_math_lib=with_math_lib)
+        return out

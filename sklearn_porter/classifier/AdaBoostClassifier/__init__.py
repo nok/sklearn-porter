@@ -159,8 +159,8 @@ class AdaBoostClassifier(Classifier):
         out = ''
         if threshold[node] != -2.:
             out += '\n'
-            out += self.temp('if', n_indents=depth).format(
-                features[node], '<=', self.repr(threshold[node]))
+            temp = self.temp('if', n_indents=depth)
+            out += temp.format(features[node], '<=', self.repr(threshold[node]))
             if left_nodes[node] != -1.:
                 out += self.create_branches(
                     left_nodes, right_nodes, threshold, value,
@@ -175,9 +175,9 @@ class AdaBoostClassifier(Classifier):
             out += self.temp('endif', n_indents=depth)
         else:
             clazzes = []
+            temp = self.temp('arr', n_indents=depth)
             for i, val in enumerate(value[node][0]):
-                clazz = self.temp('arr', n_indents=depth).format(
-                    i, self.repr(val))
+                clazz = temp.format(i, self.repr(val))
                 clazz = '\n' + clazz
                 clazzes.append(clazz)
             out += self.temp('join').join(clazzes) + self.temp('join')
@@ -210,9 +210,12 @@ class AdaBoostClassifier(Classifier):
             model.tree_.threshold, model.tree_.value,
             feature_indices, 0, 1)
 
-        return self.temp('single_method').format(
-            str(model_index), self.method_name,
-            self.n_classes, tree_branches)
+        temp_single_method = self.temp('single_method')
+        out = temp_single_method.format(method_name=self.method_name,
+                                        method_index=str(model_index),
+                                        methods=tree_branches,
+                                        n_classes=self.n_classes)
+        return out
 
     def create_method(self):
         """
@@ -225,11 +228,14 @@ class AdaBoostClassifier(Classifier):
         """
         # Generate method or function names:
         fn_names = []
+        temp_method_calls = self.temp('method_calls', n_indents=2,
+                                      skipping=True)
         for idx, model in enumerate(self.models):
             cl_name = self.class_name
             fn_name = self.method_name + '_' + str(idx)
-            fn_name = self.temp('method_calls', n_indents=2, skipping=True)\
-                .format(idx, cl_name, fn_name)
+            fn_name = temp_method_calls.format(class_name=cl_name,
+                                               method_name=fn_name,
+                                               method_index=idx)
             fn_names.append(fn_name)
         fn_names = '\n'.join(fn_names)
         fn_names = self.indent(fn_names, n_indents=1, skipping=True)
@@ -238,14 +244,16 @@ class AdaBoostClassifier(Classifier):
         fns = []
         for idx, model in enumerate(self.models):
             tree = self.create_single_method(idx, model)
-            # tree = self.indent(tree, indentation=4)
             fns.append(tree)
         fns = '\n'.join(fns)
 
         # Merge generated content:
         n_indents = 1 if self.target_language in ['java', 'js'] else 0
-        method = self.temp('method').format(
-            fns, self.method_name, self.n_estimators, self.n_classes, fn_names)
+        temp_method = self.temp('method')
+        method = temp_method.format(method_name=self.method_name,
+                                    method_calls=fn_names, methods=fns,
+                                    n_estimators=self.n_estimators,
+                                    n_classes=self.n_classes)
         method = self.indent(method, n_indents=n_indents, skipping=True)
         return method
 
@@ -258,5 +266,9 @@ class AdaBoostClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            self.class_name, self.method_name, method, self.n_features)
+
+        temp_class = self.temp('class')
+        out = temp_class.format(class_name=self.class_name,
+                                method_name=self.method_name, method=method,
+                                n_features=self.n_features)
+        return out

@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
  
 ### Changed
  
+- Use human-readable placeholders (e.g. `'{class_name}.{method_name}'`) instead of index-based placeholders (e.g. `'{0}.{1}'`) in all main templates of all estimators.
+ 
 ### Removed
 
 - Hide the command-line argument `--language` and `-l` for the choice of the target programming language. 

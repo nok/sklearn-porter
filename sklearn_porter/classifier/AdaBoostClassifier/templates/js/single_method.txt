@@ -1,5 +1,5 @@
-var {1}_{0} = function(atts) {{
-    var classes = new Array({2});
-    {3}
+var {method_name}_{method_index} = function(atts) {{
+    var classes = new Array({n_classes});
+    {methods}
     return classes;
 }};

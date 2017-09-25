@@ -1,4 +1,4 @@
-int {name} (float atts[{n_features}]) {{
+int {method_name} (float atts[{n_features}]) {{
 
     {coefficients}
     {intercepts}

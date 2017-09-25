@@ -139,19 +139,24 @@ class SVC(Classifier):
         :return out : string
             The built method as string.
         """
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
         out = '\n'
 
         # Number of support vectors:
-        n_svs = [self.temp('type').format(self.repr(v)) for v in self.svs_rows]
+        n_svs = [temp_type.format(self.repr(v)) for v in self.svs_rows]
         n_svs = ', '.join(n_svs)
-        out += self.temp('arr[]').format(type='int', name='n_svs', values=n_svs)
+        out += temp_arr_.format(type='int', name='n_svs', values=n_svs)
         out += '\n'
 
         # Support vectors:
         vectors = []
         for vector in self.svs:
-            _vectors = [self.temp('type').format(self.repr(v)) for v in vector]
-            _vectors = self.temp('arr').format(', '.join(_vectors))
+            _vectors = [temp_type.format(self.repr(v)) for v in vector]
+            _vectors = temp_arr.format(', '.join(_vectors))
             vectors.append(_vectors)
         vectors = ', '.join(vectors)
         out += self.temp('arr[][]', skipping=True).format(
@@ -162,28 +167,25 @@ class SVC(Classifier):
         # Coefficients:
         coeffs = []
         for coeff in self.coeffs:
-            _coeffs = [self.temp('type').format(self.repr(c)) for c in coeff]
-            _coeffs = self.temp('arr').format(', '.join(_coeffs))
+            _coeffs = [temp_type.format(self.repr(c)) for c in coeff]
+            _coeffs = temp_arr.format(', '.join(_coeffs))
             coeffs.append(_coeffs)
         coeffs = ', '.join(coeffs)
-        out += self.temp('arr[][]').format(
-            type='double', name='coeffs', values=coeffs,
-            n=len(self.coeffs), m=len(self.coeffs[0]))
+        out += temp_arr__.format(type='double', name='coeffs', values=coeffs,
+                                 n=len(self.coeffs), m=len(self.coeffs[0]))
         out += '\n'
 
         # Interceptions:
-        inters = [self.temp('type').format(self.repr(i)) for i in self.inters]
+        inters = [temp_type.format(self.repr(i)) for i in self.inters]
         inters = ', '.join(inters)
-        out += self.temp('arr[]').format(
-            type='double', name='inters', values=inters)
+        out += temp_arr_.format(type='double', name='inters', values=inters)
         out += '\n'
 
         # Classes:
         if not self.is_binary:
-            classes = [self.temp('type').format(self.repr(c)) for c in self.classes]
+            classes = [temp_type.format(self.repr(c)) for c in self.classes]
             classes = ', '.join(classes)
-            out += self.temp('arr[]').format(
-                type='int', name='classes', values=classes)
+            out += temp_arr_.format(type='int', name='classes', values=classes)
             out += '\n'
 
         # Kernels:
@@ -221,8 +223,10 @@ class SVC(Classifier):
         out += self.temp(name).format(self.n_inters, self.n_classes)
         n_indents = 0 if self.target_language in ['java', 'js', 'php'] else 1
         out = self.indent(out, n_indents=2-n_indents)
-        return self.temp('method', n_indents=1-n_indents, skipping=True).format(
-            method_name=self.method_name, decicion=out)
+
+        temp_method = self.temp('method', n_indents=1-n_indents, skipping=True)
+        out = temp_method.format(method_name=self.method_name, decicion=out)
+        return out
 
     def create_class(self, method):
         """
@@ -233,6 +237,8 @@ class SVC(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            class_name=self.class_name, method_name=self.method_name,
-            method=method, n_features=self.n_svs)
+        temp_class = self.temp('class')
+        out = temp_class.format(class_name=self.class_name,
+                                method_name=self.method_name, method=method,
+                                n_features=self.n_svs)
+        return out

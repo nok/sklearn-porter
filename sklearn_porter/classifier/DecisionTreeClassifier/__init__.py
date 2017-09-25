@@ -140,8 +140,8 @@ class DecisionTreeClassifier(Classifier):
         # ind = '\n' + '    ' * depth
         if threshold[node] != -2.:
             out += '\n'
-            out += self.temp('if', n_indents=depth).format(
-                features[node], '<=', self.repr(threshold[node]))
+            temp = self.temp('if', n_indents=depth)
+            out += temp.format(features[node], '<=', self.repr(threshold[node]))
             if left_nodes[node] != -1.:
                 out += self.create_branches(
                     left_nodes, right_nodes, threshold, value,
@@ -156,8 +156,9 @@ class DecisionTreeClassifier(Classifier):
             out += self.temp('endif', n_indents=depth)
         else:
             clazzes = []
+            temp = self.temp('arr', n_indents=depth)
             for i, rate in enumerate(value[node][0]):
-                clazz = self.temp('arr', n_indents=depth).format(i, int(rate))
+                clazz = temp.format(i, int(rate))
                 clazz = '\n' + clazz
                 clazzes.append(clazz)
             out += self.temp('join').join(clazzes) + self.temp('join')
@@ -197,10 +198,11 @@ class DecisionTreeClassifier(Classifier):
         """
         n_indents = 1 if self.target_language in ['java', 'js', 'php'] else 0
         branches = self.indent(self.create_tree(), n_indents=1)
-        return self.temp('method', n_indents=n_indents, skipping=True)\
-            .format(class_name=class_name, method_name=method_name,
-                    n_features=self.n_features, n_classes=self.n_classes,
-                    branches=branches)
+        temp_method = self.temp('method', n_indents=n_indents, skipping=True)
+        out = temp_method.format(class_name=class_name, method_name=method_name,
+                                 n_features=self.n_features,
+                                 n_classes=self.n_classes, branches=branches)
+        return out
 
     def create_class(self, method, class_name, method_name):
         """
@@ -211,6 +213,7 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            class_name=class_name, method_name=method_name,
-            n_features=self.n_features, method=method)
+        temp_class = self.temp('class')
+        out = temp_class.format(class_name=class_name, method_name=method_name,
+                                method=method, n_features=self.n_features)
+        return out

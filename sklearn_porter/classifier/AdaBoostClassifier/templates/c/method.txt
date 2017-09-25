@@ -1,11 +1,11 @@
-{0}
-int {1}(float atts[]) {{
+{methods}
+int {method_name}(float atts[]) {{
     int i, j;
-    int n_estimators = {2};
-    int n_classes = {3};
+    int n_estimators = {n_estimators};
+    int n_classes = {n_classes};
 
     double *preds[n_estimators];
-    {4}
+    {method_calls}
 
     double normalizer, sum;
     for (i = 0; i < n_estimators; i++) {{

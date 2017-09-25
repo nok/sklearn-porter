@@ -1,8 +1,8 @@
-{0}
-public static int {1}(float[] atts) {{
-    int n_classes = {3};
+{methods}
+public static int {method_name}(float[] atts) {{
+    int n_classes = {n_classes};
     int[] classes = new int[n_classes];
-    {4}
+    {method_calls}
 
     int class_idx = 0;
     int class_val = classes[0];

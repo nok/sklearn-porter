@@ -1,5 +1,5 @@
-double *{1}_{0}(float atts[]) {{
-    double *classes = malloc(sizeof(double) * {2});
-    {3}
+double *{method_name}_{method_index}(float atts[]) {{
+    double *classes = malloc(sizeof(double) * {n_classes});
+    {methods}
     return classes;
 }}

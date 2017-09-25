@@ -1,4 +1,4 @@
-public static int {name}(float[] atts) {{
+public static int {method_name}(float[] atts) {{
     if (atts.length != {n_features}) {{ return -1; }}
 
     {coefficients}

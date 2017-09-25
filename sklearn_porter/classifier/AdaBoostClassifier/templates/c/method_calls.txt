@@ -1,1 +1,1 @@
-preds[{0}] = {2}(atts);
+preds[{method_index}] = {method_name}(atts);

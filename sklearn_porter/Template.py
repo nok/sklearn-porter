@@ -110,3 +110,8 @@ class Template(object):
         if 'use_repr' in self.__dict__.keys() and bool(self.use_repr) is True:
             return repr(val)
         return val
+
+    def data(self, d):
+        x = self.__dict__.copy()
+        x.update(d)
+        return x

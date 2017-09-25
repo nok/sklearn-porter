@@ -55,32 +55,37 @@ class GaussianNB(Classifier):
         self.n_features = len(model.sigma_[0])
         self.n_classes = len(model.classes_)
 
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
         # Create class prior probabilities:
-        priors = [self.temp('type').format(self.repr(c)) for c in
+        priors = [temp_type.format(self.repr(c)) for c in
                   self.model.class_prior_]
         priors = ', '.join(priors)
-        self.priors = self.temp('arr[]').format(type='double', name='priors',
-                                                values=priors)
+        self.priors = temp_arr_.format(type='double', name='priors',
+                                      values=priors)
 
         # Create sigmas:
         sigmas = []
         for sigma in self.model.sigma_:
-            tmp = [self.temp('type').format(self.repr(s)) for s in sigma]
-            tmp = self.temp('arr').format(', '.join(tmp))
+            tmp = [temp_type.format(self.repr(s)) for s in sigma]
+            tmp = temp_arr.format(', '.join(tmp))
             sigmas.append(tmp)
         sigmas = ', '.join(sigmas)
-        self.sigmas = self.temp('arr[][]').format(type='double', name='sigmas',
-                                                  values=sigmas)
+        self.sigmas = temp_arr__.format(type='double', name='sigmas',
+                                        values=sigmas)
 
         # Create thetas:
         thetas = []
         for theta in self.model.theta_:
-            tmp = [self.temp('type').format(self.repr(t)) for t in theta]
-            tmp = self.temp('arr').format(', '.join(tmp))
+            tmp = [temp_type.format(self.repr(t)) for t in theta]
+            tmp = temp_arr.format(', '.join(tmp))
             thetas.append(tmp)
         thetas = ', '.join(thetas)
-        self.thetas = self.temp('arr[][]').format(type='double', name='thetas',
-                                                  values=thetas)
+        self.thetas = temp_arr__.format(type='double', name='thetas',
+                                        values=thetas)
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
@@ -126,8 +131,9 @@ class GaussianNB(Classifier):
         :return out : string
             The built method as string.
         """
-        return self.temp('method.predict', n_indents=1,
-                         skipping=True).format(**self.__dict__)
+        temp_method = self.temp('method.predict', n_indents=1, skipping=True)
+        out = temp_method.format(**self.__dict__)
+        return out
 
     def create_class(self, method):
         """
@@ -139,4 +145,6 @@ class GaussianNB(Classifier):
             The built class as string.
         """
         self.__dict__.update(dict(method=method))
-        return self.temp('class').format(**self.__dict__)
+        temp_class = self.temp('class')
+        out = temp_class.format(**self.__dict__)
+        return out

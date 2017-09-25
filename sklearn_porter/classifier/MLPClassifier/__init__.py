@@ -105,9 +105,7 @@ class MLPClassifier(Classifier):
         """Get list of supported activation functions for the output layer."""
         return ['softmax', 'logistic']
 
-    def export(self, class_name='Brain',
-               method_name='predict',
-               use_repr=True):
+    def export(self, class_name='Brain', method_name='predict', use_repr=True):
         """
         Port a trained model to the syntax of a chosen programming language.
 
@@ -153,11 +151,15 @@ class MLPClassifier(Classifier):
             The built method as string.
         """
 
+        temp_arr = self.temp('arr')
+        temp_arr__ = self.temp('arr[][]')
+        temp_arr___ = self.temp('arr[][][]')
+
         # Activations:
         activations = list(self._get_activations())
         activations = ', '.join(['atts'] + activations)
-        activations = self.temp('arr[][]').format(
-            data_type='double', name='activations', values=activations)
+        activations = temp_arr__.format(data_type='double', name='activations',
+                                        values=activations)
 
         # Coefficients (weights):
         coefficients = []
@@ -165,25 +167,30 @@ class MLPClassifier(Classifier):
             layer_weights = []
             for weights in layer:
                 weights = ', '.join([self.repr(w) for w in weights])
-                layer_weights.append(self.temp('arr').format(weights))
+                layer_weights.append(temp_arr.format(weights))
             layer_weights = ', '.join(layer_weights)
-            coefficients.append(self.temp('arr').format(layer_weights))
+            coefficients.append(temp_arr.format(layer_weights))
         coefficients = ', '.join(coefficients)
-        coefficients = self.temp('arr[][][]').format(
-            data_type='double', name='coefficients', values=coefficients)
+        coefficients = temp_arr___.format(data_type='double',
+                                          name='coefficients',
+                                          values=coefficients)
 
         # Intercepts (biases):
         intercepts = list(self._get_intercepts())
         intercepts = ', '.join(intercepts)
-        intercepts = self.temp('arr[][]').format(
-            data_type='double', name='intercepts', values=intercepts)
+        intercepts = temp_arr__.format(data_type='double', name='intercepts',
+                                       values=intercepts)
 
-        name = self.prefix + '.method'
-        return self.temp(name, skipping=True, n_indents=1).format(
-            class_name=self.class_name, method_name=self.method_name,
-            n_features=self.n_inputs, n_classes=self.n_outputs,
-            activations=activations, coefficients=coefficients,
-            intercepts=intercepts)
+        method_type = '{}.method'.format(self.prefix)
+        temp_method = self.temp(method_type, skipping=True, n_indents=1)
+        out = temp_method.format(class_name=self.class_name,
+                                 method_name=self.method_name,
+                                 n_features=self.n_inputs,
+                                 n_classes=self.n_outputs,
+                                 activations=activations,
+                                 coefficients=coefficients,
+                                 intercepts=intercepts)
+        return out
 
     def create_class(self, method):
         """
@@ -198,24 +205,28 @@ class MLPClassifier(Classifier):
         hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
         output_act_type = 'output_activation.' + self.output_activation
         output_act = self.temp(output_act_type, skipping=True, n_indents=1)
-        return self.temp('class').format(
-            class_name=self.class_name, method_name=self.method_name,
-            method=method, n_features=self.n_inputs,
-            activation_function=hidden_act,
-            output_function=output_act)
+
+        temp_class = self.temp('class')
+        out = temp_class.format(class_name=self.class_name,
+                                method_name=self.method_name, method=method,
+                                n_features=self.n_inputs,
+                                activation_function=hidden_act,
+                                output_function=output_act)
+        return out
 
     def _get_intercepts(self):
         """
         Concatenate all intercepts of the classifier.
         """
+        temp_arr = self.temp('arr')
         for layer in self.intercepts:
             inter = ', '.join([self.repr(b) for b in layer])
-            yield self.temp('arr').format(inter)
+            yield temp_arr.format(inter)
 
     def _get_activations(self):
         """
         Concatenate the layers sizes of the classifier except the input layer.
         """
+        temp_arr = self.temp('new_arr')
         for layer in self.layer_units[1:]:
-            yield self.temp('new_arr').format(
-                data_type='double', values=(str(int(layer))))
+            yield temp_arr.format(data_type='double', values=(str(int(layer))))

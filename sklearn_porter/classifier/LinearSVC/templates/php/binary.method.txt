@@ -1,4 +1,4 @@
-public static function {name}($atts) {{
+public static function {method_name}($atts) {{
     if (sizeof($atts) != {n_features}) {{ return -1; }}
 
     {coefficients}

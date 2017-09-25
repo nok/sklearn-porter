@@ -1,4 +1,4 @@
-def self.{name} (atts)
+def self.{method_name} (atts)
 
     {coefficients}
     {intercepts}

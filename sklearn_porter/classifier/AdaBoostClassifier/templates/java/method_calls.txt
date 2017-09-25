@@ -1,1 +1,1 @@
-preds[{0}] = {1}.{2}(atts);
+preds[{method_index}] = {class_name}.{method_name}(atts);

@@ -122,41 +122,38 @@ class KNeighborsClassifier(Classifier):
         distance_comp = self.temp(
             metric_name, n_indents=1, skipping=True)
 
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
         # Templates
         temps = []
         for atts in enumerate(self.model._fit_X):  # pylint: disable=W0212
-            tmp = [self.temp('type').format(self.repr(a)) for a in atts[1]]
-            tmp = self.temp('arr').format(', '.join(tmp))
+            tmp = [temp_type.format(self.repr(a)) for a in atts[1]]
+            tmp = temp_arr.format(', '.join(tmp))
             temps.append(tmp)
         temps = ', '.join(temps)
-        temps = self.temp('arr[][]').format(
-            type='double',
-            name='X',
-            values=temps,
-            n=self.n_templates,
-            m=self.n_features)
+        temps = temp_arr__.format(type='double', name='X', values=temps,
+                                  n=self.n_templates, m=self.n_features)
 
         # Classes
         classes = self.model._y  # pylint: disable=W0212
-        classes = [self.temp('type').format(int(c)) for c in classes]
+        classes = [temp_type.format(int(c)) for c in classes]
         classes = ', '.join(classes)
-        classes = self.temp('arr[]').format(
-            type='int',
-            name='y',
-            values=classes,
-            n=self.n_templates)
+        classes = temp_arr_.format(type='int', name='y', values=classes,
+                                   n=self.n_templates)
 
-        return self.temp('method.predict', n_indents=1, skipping=True).format(
-            method_name=self.method_name,
-            class_name=self.class_name,
-            n_neighbors=self.n_neighbors,
-            n_templates=self.n_templates,
-            n_features=self.n_features,
-            n_classes=self.n_classes,
-            distance_computation=distance_comp,
-            power=self.power_param,
-            X=temps,
-            y=classes)
+        temp_method = self.temp('method.predict', n_indents=1, skipping=True)
+        out = temp_method.format(class_name=self.class_name,
+                                 method_name=self.method_name,
+                                 n_neighbors=self.n_neighbors,
+                                 n_templates=self.n_templates,
+                                 n_features=self.n_features,
+                                 n_classes=self.n_classes,
+                                 distance_computation=distance_comp,
+                                 power=self.power_param, X=temps, y=classes)
+        return out
 
     def create_class(self, method):
         """
@@ -167,8 +164,8 @@ class KNeighborsClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        return self.temp('class').format(
-            class_name=self.class_name,
-            method_name=self.method_name,
-            method=method,
-            n_features=self.n_features)
+        temp_class = self.temp('class')
+        out = temp_class.format(class_name=self.class_name,
+                                method_name=self.method_name, method=method,
+                                n_features=self.n_features)
+        return out
