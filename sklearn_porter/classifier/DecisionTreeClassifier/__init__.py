@@ -47,6 +47,18 @@ class DecisionTreeClassifier(Classifier):
             'arr':      '$classes[{0}] = {1}',
             'indent':   '    ',
             'join':     '; ',
+        },
+        'ruby': {
+            # 'init':     '{name} = {value}',
+            # 'type':     '{0}',
+            'if':       'if atts[{0}] {1} {2}',
+            'else':     'else',
+            'endif':    'end',
+            'arr':      'classes[{0}] = {1}',
+            # 'arr[]':    '{name} = [{values}]',
+            # 'arr[][]':  '{name} = [{values}]',
+            'indent':   '    ',
+            'join':     ' ',
         }
     }
     # @formatter:on
@@ -179,7 +191,7 @@ class DecisionTreeClassifier(Classifier):
             if self.n_features > 1 or (self.n_features == 1 and i >= 0):
                 feature_indices.append([str(j) for j in range(n_features)][i])
 
-        indentation = 1 if self.target_language in ['java', 'js', 'php'] else 0
+        indentation = 1 if self.target_language in ['java', 'js', 'php', 'ruby'] else 0
         return self.create_branches(
             self.model.tree_.children_left,
             self.model.tree_.children_right,
@@ -196,7 +208,7 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built method as string.
         """
-        n_indents = 1 if self.target_language in ['java', 'js', 'php'] else 0
+        n_indents = 1 if self.target_language in ['java', 'js', 'php', 'ruby'] else 0
         branches = self.indent(self.create_tree(), n_indents=1)
         temp_method = self.temp('method', n_indents=n_indents, skipping=True)
         out = temp_method.format(class_name=class_name, method_name=method_name,

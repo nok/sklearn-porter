@@ -1,0 +1,7 @@
+def self.{method_name} (atts)
+	classes = Array.new({n_classes}, 0)
+	{branches}
+
+	pos = classes.each_with_index.select {{|e, i| e==classes.max}}.map &:last
+	return pos.min
+end
