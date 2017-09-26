@@ -50,6 +50,14 @@ class RandomForestClassifier(Classifier):
             'indent':   '    ',
             'join':     '; ',
         },
+        'ruby': {
+            'if':       'if atts[{0}] {1} {2}',
+            'else':     'else',
+            'endif':    'end',
+            'arr':      'classes[{0}] = {1}',
+            'indent':   '    ',
+            'join':     '',
+        },
     }
     # @formatter:on
 
@@ -240,7 +248,7 @@ class RandomForestClassifier(Classifier):
         fns = '\n'.join(fns)
 
         # Merge generated content:
-        n_indents = 1 if self.target_language in ['java', 'js', 'php'] else 0
+        n_indents = 1 if self.target_language in ['java', 'js', 'php', 'ruby'] else 0
         temp_method = self.temp('method')
         out = temp_method.format(method_name=self.method_name,
                                  method_calls=fn_names, methods=fns,
