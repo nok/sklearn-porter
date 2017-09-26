@@ -34,7 +34,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"><a href="examples/classifier/SVC/js/basics.ipynb">✓</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/classifier/SVC/php/basics.ipynb">✓</a></td>
-            <td align="center"></td>
+            <td align="center">✓</td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.svm.NuSVC.html">sklearn.svm.NuSVC</a></td>

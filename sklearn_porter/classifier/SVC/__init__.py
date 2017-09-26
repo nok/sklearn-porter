@@ -44,6 +44,13 @@ class SVC(Classifier):
             'arr[][]':  '${name} = [{values}];',
             'indent':   '    ',
         },
+        'ruby': {
+            'type':     '{0}',
+            'arr':      '[{0}]',
+            'arr[]':    '{name} = [{values}]',
+            'arr[][]':  '{name} = [{values}]',
+            'indent':   '    ',
+        },
     }
     # @formatter:on
 
@@ -221,7 +228,7 @@ class SVC(Classifier):
         out += self.temp(name).format(self.n_inters, self.n_svs_rows)
         name = self.prefix + '.classes'
         out += self.temp(name).format(self.n_inters, self.n_classes)
-        n_indents = 0 if self.target_language in ['java', 'js', 'php'] else 1
+        n_indents = 0 if self.target_language in ['java', 'js', 'php', 'ruby'] else 1
         out = self.indent(out, n_indents=2-n_indents)
 
         temp_method = self.temp('method', n_indents=1-n_indents, skipping=True)

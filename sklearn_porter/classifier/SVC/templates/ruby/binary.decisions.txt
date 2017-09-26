@@ -1,0 +1,9 @@
+
+decision = 0
+for k in starts[1] ... ends[1]
+    decision += kernels[k] * coeffs[0][k]
+end
+for k in starts[0] ... ends[0]
+    decision += kernels[k] * coeffs[0][k]
+end
+decision += inters[0]

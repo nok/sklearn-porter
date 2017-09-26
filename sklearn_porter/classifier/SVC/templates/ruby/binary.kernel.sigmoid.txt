@@ -1,0 +1,10 @@
+
+# tanh(y<x,x'>+r)
+kernels = Array.new({0}, 0)
+for i in 0 ... {0}
+    kernel = 0
+    for j in 0 ... {1}
+        kernel += svs[i][j] * atts[j]
+    end
+    kernels[i] = -Math.tanh(({2} * kernel) + {3})
+end
