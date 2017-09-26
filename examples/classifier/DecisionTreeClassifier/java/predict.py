@@ -10,9 +10,6 @@ iris_data = load_iris()
 X, y = iris_data.data, iris_data.target
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
-
-# Cheese!
-
 porter = Porter(clf)
 
 # Single prediction:
