@@ -59,7 +59,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/c/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/java/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/js/basics.ipynb">✓</a></td>
-            <td align="center"></td>
+            <td align="center">✓</td>
             <td align="center"><a href="examples/classifier/DecisionTreeClassifier/php/basics.ipynb">✓</a></td>
             <td align="center">✓</td>
         </tr>

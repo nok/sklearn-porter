@@ -24,6 +24,14 @@ class DecisionTreeClassifier(Classifier):
             'indent':   '    ',
             'join':     '; ',
         },
+        'go': {
+            'if':       'if atts[{0}] {1} {2} {{',
+            'else':     '} else {',
+            'endif':    '}',
+            'arr':      'classes[{0}] = {1}',
+            'indent':   '\t',
+            'join':     '',
+        },
         'java': {
             'if':       'if (atts[{0}] {1} {2}) {{',
             'else':     '} else {',
@@ -49,14 +57,10 @@ class DecisionTreeClassifier(Classifier):
             'join':     '; ',
         },
         'ruby': {
-            # 'init':     '{name} = {value}',
-            # 'type':     '{0}',
             'if':       'if atts[{0}] {1} {2}',
             'else':     'else',
             'endif':    'end',
             'arr':      'classes[{0}] = {1}',
-            # 'arr[]':    '{name} = [{values}]',
-            # 'arr[][]':  '{name} = [{values}]',
             'indent':   '    ',
             'join':     ' ',
         }
