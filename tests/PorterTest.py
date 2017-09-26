@@ -32,17 +32,16 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
 
     def test_porter_args_method(self):
         """Test invalid method name."""
-        args = dict(method='random')
+        args = dict(method='invalid_name')
         self.assertRaises(AttributeError, lambda: Porter(self.mdl, args))
 
     def test_porter_args_language(self):
         """Test invalid programming language."""
-        args = dict(method='predict', language='random')
+        args = dict(method='predict', language='invalid_name')
         self.assertRaises(AttributeError, lambda: Porter(self.mdl, args))
 
     def test_python_command_execution(self):
         """Test command line execution."""
-
         subp.call('rm -rf tmp'.split())
         subp.call('mkdir tmp'.split())
         filename = '{}.java'.format(self.tmp_fn)
