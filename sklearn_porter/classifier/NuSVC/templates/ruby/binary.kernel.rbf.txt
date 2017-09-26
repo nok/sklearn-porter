@@ -1,0 +1,10 @@
+
+# exp(-y|x-x'|^2)
+kernels = Array.new({0}, 0)
+for i in 0 ... {0}
+    kernel = 0
+    for j in 0 ... {1}
+        kernel += ((svs[i][j] - atts[j]) ** 2)
+    end
+    kernels[i] = -Math.exp(-{2} * kernel)
+end

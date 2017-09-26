@@ -1,0 +1,3 @@
+def self.{method_name} (atts)
+	{decicion}
+end

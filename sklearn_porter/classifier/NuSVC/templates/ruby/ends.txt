@@ -1,0 +1,5 @@
+
+ends = Array.new({0}, 0)
+for i in 0 ... {0}
+	ends[i] = n_svs[i] + starts[i]
+end
