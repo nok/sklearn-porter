@@ -78,7 +78,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"><a href="examples/classifier/ExtraTreesClassifier/java/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/classifier/ExtraTreesClassifier/js/basics.ipynb">✓</a></td>
             <td align="center"></td>
-            <td align="center"></td>
+            <td align="center">✓</td>
             <td align="center"></td>
         </tr>
         <tr>
