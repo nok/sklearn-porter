@@ -11,14 +11,14 @@ this.{method_name} = function(atts) {{
                 activations[i + 1][j] += activations[i][l] * coefficients[i][l][j];
             }}
             activations[i + 1][j] += intercepts[i][j];
-            if ((i + 1) != (activations.length - 1)) {{
-                activations[i + 1] = hidden_activation(activations[i + 1]);
-            }}
+        }}
+        if ((i + 1) < (activations.length - 1)) {{
+            activations[i + 1] = comp_act(activations[i + 1]);
         }}
     }}
-    activations[activations.length - 1] = output_activation(activations[activations.length - 1]);
+    activations[activations.length - 1] = comp_out(activations[activations.length - 1]);
 
-    if (activations[activations.length - 1][0] > 0) {{
+    if (activations[activations.length - 1][0] > .5) {{
         return 1;
     }}
     return 0;

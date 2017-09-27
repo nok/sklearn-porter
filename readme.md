@@ -102,8 +102,8 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         <tr>
             <td><a href="http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/classifier/MLPClassifier/java/basics.ipynb">○</a></td>
-            <td align="center"><a href="examples/classifier/MLPClassifier/js/basics.ipynb">○</a></td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/java/basics.ipynb">✓</a></td>
+            <td align="center"><a href="examples/classifier/MLPClassifier/js/basics.ipynb">✓</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>

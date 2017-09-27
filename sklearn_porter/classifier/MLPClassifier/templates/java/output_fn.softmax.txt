@@ -1,5 +1,5 @@
 // Type: softmax
-public static double[] output_activation(double[] v) {
+public static double[] compOut(double[] v) {
     double max = Double.NEGATIVE_INFINITY;
     for (double x : v) {
         if (x > max) {

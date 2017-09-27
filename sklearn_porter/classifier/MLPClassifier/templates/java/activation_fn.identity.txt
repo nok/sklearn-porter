@@ -1,0 +1,4 @@
+// Type: identity
+public static double[] compAct(double[] v) {
+    return v;
+}

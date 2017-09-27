@@ -1,5 +1,5 @@
 // Type: relu
-var hidden_activation = function(v) {
+var comp_act = function(v) {
     for (var i = 0, l = v.length; i < l; i++) {
         v[i] = Math.max(0, v[i]);
     }

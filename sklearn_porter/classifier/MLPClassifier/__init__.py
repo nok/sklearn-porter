@@ -98,7 +98,7 @@ class MLPClassifier(Classifier):
     @property
     def hidden_activation_functions(self):
         """Get list of supported activation functions for the hidden layers."""
-        return ['relu', 'identity']  # 'tanh', 'logistic'
+        return ['relu', 'identity', 'tanh', 'logistic']
 
     @property
     def output_activation_functions(self):
@@ -181,7 +181,7 @@ class MLPClassifier(Classifier):
         intercepts = temp_arr__.format(data_type='double', name='intercepts',
                                        values=intercepts)
 
-        method_type = '{}.method'.format(self.prefix)
+        method_type = 'method.{}'.format(self.prefix)
         temp_method = self.temp(method_type, skipping=True, n_indents=1)
         out = temp_method.format(class_name=self.class_name,
                                  method_name=self.method_name,
@@ -201,9 +201,9 @@ class MLPClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        hidden_act_type = 'hidden_activation.' + self.hidden_activation
+        hidden_act_type = 'activation_fn.' + self.hidden_activation
         hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
-        output_act_type = 'output_activation.' + self.output_activation
+        output_act_type = 'output_fn.' + self.output_activation
         output_act = self.temp(output_act_type, skipping=True, n_indents=1)
 
         temp_class = self.temp('class')

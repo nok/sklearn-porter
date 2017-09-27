@@ -177,13 +177,13 @@ class MLPRegressor(Regressor):
         :return out : string
             The built class as string.
         """
-        hidden_act_type = 'hidden_activation.' + self.hidden_activation
+        hidden_act_type = 'activation_fn.' + self.hidden_activation
 
         if self.hidden_activation == 'logistic':
             if self.n_hidden_layers == 1:
-                hidden_act_type = 'hidden_activation.logistic_single'
+                hidden_act_type = 'activation_fn.logistic_single'
             else:
-                hidden_act_type = 'hidden_activation.logistic_multiple'
+                hidden_act_type = 'activation_fn.logistic_multiple'
 
         hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
         temp_class = self.temp('class')

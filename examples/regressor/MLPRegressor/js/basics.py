@@ -23,7 +23,7 @@ print(output)
 var Brain = function() {
 
     // Type: relu
-    var hidden_activation = function(v) {
+    var comp_act = function(v) {
         for (var i = 0, l = v.length; i < l; i++) {
             v[i] = Math.max(0, v[i]);
         }
@@ -43,9 +43,9 @@ var Brain = function() {
                     activations[i + 1][j] += activations[i][l] * coefficients[i][l][j];
                 }
                 activations[i + 1][j] += intercepts[i][j];
-                if ((i + 1) != (activations.length - 1)) {
-                    activations[i + 1] = hidden_activation(activations[i + 1]);
-                }
+            }
+            if ((i + 1) < (activations.length - 1)) {
+                activations[i + 1] = comp_act(activations[i + 1]);
             }
         }
         if (activations[activations.length - 1].length > 1) {

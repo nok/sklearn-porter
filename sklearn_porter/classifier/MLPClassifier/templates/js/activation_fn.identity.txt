@@ -1,0 +1,4 @@
+// Type: identity
+var comp_act = function(v) {
+    return v;
+};
