@@ -54,7 +54,15 @@ class Porter(object):
         # Determine the imported scikit-learn version:
         self.major, self.minor, self.patch = Porter.read_sklearn_version()
 
-        # Extract algorithm from optimizer:
+        # Extract algorithm from 'Pipeline':
+        # sklearn version >= 0.15.0
+        if self.major > 0 or (self.major == 0 and self.minor >= 15):
+            from sklearn.pipeline import Pipeline
+            if isinstance(self.model, Pipeline):
+                if hasattr(self.model, '_final_estimator'):
+                    self.model = self.model._final_estimator
+
+        # Extract algorithm from optimizer (GridSearchCV, RandomizedSearchCV):
         # sklearn version >= 0.19.0
         if self.major > 0 or (self.major == 0 and self.minor >= 19):
             from sklearn.model_selection._search import GridSearchCV
