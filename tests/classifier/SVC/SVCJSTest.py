@@ -2,10 +2,14 @@
 
 from unittest import TestCase
 import numpy as np
-import random
 
 from sklearn.svm.classes import SVC
+from sklearn.datasets import samples_generator
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import f_regression
+from sklearn.pipeline import Pipeline
 
+from sklearn_porter import Porter
 from ..Classifier import Classifier
 from ...language.JavaScript import JavaScript as JS
 
@@ -54,3 +58,16 @@ class SVCJSTest(JS, Classifier, TestCase):
         self._clear_model()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
+
+    def test_pipeline_estimator(self):
+        self.X, self.y = samples_generator.make_classification(
+            n_informative=5, n_redundant=0, random_state=42)
+        anova_filter = SelectKBest(f_regression, k=5)
+        self.mdl = Pipeline([('anova', anova_filter), ('svc', SVC(kernel='linear'))])
+        self.mdl.set_params(anova__k=10, svc__C=.1)
+        try:
+            self._port_model()
+        except Exception as e:
+            self.fail('Unexpected exception raised: {}'.format(e.message))
+        finally:
+            self._clear_model()

@@ -59,7 +59,8 @@ class Porter(object):
         if self.major > 0 or (self.major == 0 and self.minor >= 15):
             from sklearn.pipeline import Pipeline
             if isinstance(self.model, Pipeline):
-                if hasattr(self.model, '_final_estimator'):
+                if hasattr(self.model, '_final_estimator') and \
+                                self.model._final_estimator is not None:
                     self.model = self.model._final_estimator
 
         # Extract algorithm from optimizer (GridSearchCV, RandomizedSearchCV):
