@@ -16,6 +16,8 @@ All notable changes to this project will be documented in this file.
 - Add new estimator:
     - Go:
         - sklearn.tree.DecisionTreeClassifier ([#fe59710](https://github.com/nok/sklearn-porter/commit/fe59710a72c6a4bf5fb1d0acc0a35eba3dda950e))
+    - JavaScript:
+        - sklearn.naive_bayes.BernoulliNB ([#9784d6b](https://github.com/nok/sklearn-porter/commit/9784d6b8752fbb15b57345a5a08138618e3b676e))
     - PHP:
         - sklearn.ensemble.RandomForestClassifier ([#faac38d](https://github.com/nok/sklearn-porter/commit/faac38d60f04c40641935b25c4b6dce33e96b4ac))
         - sklearn.ensemble.ExtraTreesClassifier ([#2a29321](https://github.com/nok/sklearn-porter/commit/2a2932114e9313ae1e54b9369adcae00a4cce813))
