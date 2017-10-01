@@ -150,7 +150,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
 pip install sklearn-porter
 ```
 
-If you want the latest bleeding edge changes, you can install the module from the master (development) branch:
+If you want the [latest changes](changelog.md#unreleased), you can install the module from the master (development) branch:
 
 ```bash
 pip uninstall -y sklearn-porter
