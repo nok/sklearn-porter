@@ -22,6 +22,13 @@ class BernoulliNB(Classifier):
             'arr[][]':  '{type}[][] {name} = {{{values}}};',
             'indent':   '    ',
         },
+        'js': {
+            'type':     '{0}',
+            'arr':      '[{0}]',
+            'arr[]':    'var {name} = [{values}];',
+            'arr[][]':  'var {name} = [{values}];',
+            'indent':   '    ',
+        }
     }
     # @formatter:on
 
@@ -139,7 +146,7 @@ class BernoulliNB(Classifier):
         :return out : string
             The built method as string.
         """
-        n_indents = 1 if self.target_language in ['java'] else 0
+        n_indents = 1 if self.target_language in ['java', 'js'] else 0
         temp_method = self.temp('method.predict', n_indents=n_indents,
                                 skipping=True)
         out = temp_method.format(**self.__dict__)
