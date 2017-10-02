@@ -1,5 +1,5 @@
-// Type: softmax
-var comp_out = function(v) {
+// Output function (softmax):
+var compOut = function(v) {
     var max = Number.NEGATIVE_INFINITY;
     for (var i = 0, l = v.length; i < l; i++) {
         if (v[i] > max) {

@@ -1,5 +1,5 @@
-// Type: logistic
-var comp_act = function(v) {
+// Activation function (logistic):
+var compAct = function(v) {
     for (var i = 0, l = v.length; i < l; i++) {
         if (v[i] > 0) {
             v[i] = -Math.log(1. + Math.exp(-v[i]));

@@ -1,4 +1,4 @@
-// Type: identity
+// Activation function (identity):
 public static double[] compAct(double[] v) {
     return v;
 }

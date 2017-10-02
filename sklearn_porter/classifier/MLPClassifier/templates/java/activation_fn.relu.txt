@@ -1,4 +1,4 @@
-// Type: relu
+// Activation function (relu):
 public static double[] compAct(double[] v) {
     for (int i = 0, l = v.length; i < l; i++) {
         v[i] = Math.max(0, v[i]);

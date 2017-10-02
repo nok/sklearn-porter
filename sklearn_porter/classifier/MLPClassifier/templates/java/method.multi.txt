@@ -1,30 +1,30 @@
 public static int {method_name}(double[] atts) {{
     if (atts.length != {n_features}) {{ return -1; }}
 
-    {activations}
     {coefficients}
     {intercepts}
 
-    for (int i = 0; i < activations.length - 1; i++) {{
-        for (int j = 0; j < activations[i + 1].length; j++) {{
-            for (int l = 0; l < activations[i].length; l++) {{
-                activations[i + 1][j] += activations[i][l] * coefficients[i][l][j];
+    {layers}
+    for (int i = 0; i < layers.length - 1; i++) {{
+        for (int j = 0; j < layers[i + 1].length; j++) {{
+            for (int l = 0; l < layers[i].length; l++) {{
+                layers[i + 1][j] += layers[i][l] * COEFFICIENTS[i][l][j];
             }}
-            activations[i + 1][j] += intercepts[i][j];
+            layers[i + 1][j] += INTERCEPTS[i][j];
         }}
-        if ((i + 1) < (activations.length - 1)) {{
-            activations[i + 1] = {class_name}.compAct(activations[i + 1]);
+        if ((i + 1) < (layers.length - 1)) {{
+            layers[i + 1] = {class_name}.compAct(layers[i + 1]);
         }}
     }}
-    activations[activations.length - 1] = {class_name}.compOut(activations[activations.length - 1]);
+    layers[layers.length - 1] = {class_name}.compOut(layers[layers.length - 1]);
 
-    int class_idx = -1;
-    double class_val = Double.NEGATIVE_INFINITY;
-    for (int i = 0, l = activations[activations.length - 1].length; i < l; i++) {{
-        if (activations[activations.length - 1][i] > class_val) {{
-            class_val = activations[activations.length - 1][i];
-            class_idx = i;
+    int classIdx = -1;
+    double classVal = Double.NEGATIVE_INFINITY;
+    for (int i = 0, l = layers[layers.length - 1].length; i < l; i++) {{
+        if (layers[layers.length - 1][i] > classVal) {{
+            classVal = layers[layers.length - 1][i];
+            classIdx = i;
         }}
     }}
-    return class_idx;
+    return classIdx;
 }}

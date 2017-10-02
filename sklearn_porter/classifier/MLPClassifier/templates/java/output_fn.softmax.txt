@@ -1,4 +1,4 @@
-// Type: softmax
+// Output function (softmax):
 public static double[] compOut(double[] v) {
     double max = Double.NEGATIVE_INFINITY;
     for (double x : v) {

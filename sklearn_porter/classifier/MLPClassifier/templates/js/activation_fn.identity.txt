@@ -1,4 +1,4 @@
-// Type: identity
-var comp_act = function(v) {
+// Activation function (identity):
+var compAct = function(v) {
     return v;
 };

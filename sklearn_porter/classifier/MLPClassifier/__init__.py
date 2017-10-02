@@ -31,10 +31,10 @@ class MLPClassifier(Classifier):
         'js': {
             'type':     '{0}',
             'arr':      '[{0}]',
-            'new_arr':  'new Array({values}).fill(0)',
-            'arr[]':    'var {name} = [{values}];',
-            'arr[][]':  'var {name} = [{values}];',
-            'arr[][][]': 'var {name} = [{values}];',
+            'new_arr':  'new Array({values}).fill({fill_with})',
+            'arr[]':    '{name} = [{values}];',
+            'arr[][]':  '{name} = [{values}];',
+            'arr[][][]': '{name} = [{values}];',
             'indent':   '    ',
         }
     }
@@ -156,10 +156,10 @@ class MLPClassifier(Classifier):
         temp_arr___ = self.temp('arr[][][]')
 
         # Activations:
-        activations = list(self._get_activations())
-        activations = ', '.join(['atts'] + activations)
-        activations = temp_arr__.format(data_type='double', name='activations',
-                                        values=activations)
+        layers = list(self._get_activations())
+        layers = ', '.join(['atts'] + layers)
+        layers = temp_arr__.format(data_type='double', name='layers',
+                                   values=layers)
 
         # Coefficients (weights):
         coefficients = []
@@ -172,24 +172,27 @@ class MLPClassifier(Classifier):
             coefficients.append(temp_arr.format(layer_weights))
         coefficients = ', '.join(coefficients)
         coefficients = temp_arr___.format(data_type='double',
-                                          name='coefficients',
+                                          name='COEFFICIENTS',
                                           values=coefficients)
 
         # Intercepts (biases):
         intercepts = list(self._get_intercepts())
         intercepts = ', '.join(intercepts)
-        intercepts = temp_arr__.format(data_type='double', name='intercepts',
+        intercepts = temp_arr__.format(data_type='double',
+                                       name='INTERCEPTS',
                                        values=intercepts)
 
         method_type = 'method.{}'.format(self.prefix)
         temp_method = self.temp(method_type, skipping=True, n_indents=1)
-        out = temp_method.format(class_name=self.class_name,
-                                 method_name=self.method_name,
-                                 n_features=self.n_inputs,
-                                 n_classes=self.n_outputs,
-                                 activations=activations,
-                                 coefficients=coefficients,
-                                 intercepts=intercepts)
+        method = temp_method.format(class_name=self.class_name,
+                                    method_name=self.method_name,
+                                    n_features=self.n_inputs,
+                                    n_classes=self.n_outputs,
+                                    layers=layers,
+                                    coefficients=coefficients,
+                                    intercepts=intercepts)
+        n_indents = 1 if self.target_language in ['js'] else 0
+        out = self.indent(method, n_indents=n_indents, skipping=True)
         return out
 
     def create_class(self, method):
@@ -202,16 +205,21 @@ class MLPClassifier(Classifier):
             The built class as string.
         """
         hidden_act_type = 'activation_fn.' + self.hidden_activation
-        hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
+        n_indents = 1 if self.target_language in ['java'] else 2
+        hidden_act = self.temp(hidden_act_type, skipping=True,
+                               n_indents=n_indents)
         output_act_type = 'output_fn.' + self.output_activation
-        output_act = self.temp(output_act_type, skipping=True, n_indents=1)
+        output_act = self.temp(output_act_type, skipping=True,
+                               n_indents=n_indents)
 
         temp_class = self.temp('class')
+        file_name = '{}.js'.format(self.class_name.lower())
         out = temp_class.format(class_name=self.class_name,
                                 method_name=self.method_name, method=method,
                                 n_features=self.n_inputs,
                                 activation_function=hidden_act,
-                                output_function=output_act)
+                                output_function=output_act,
+                                file_name=file_name)
         return out
 
     def _get_intercepts(self):
@@ -229,4 +237,6 @@ class MLPClassifier(Classifier):
         """
         temp_arr = self.temp('new_arr')
         for layer in self.layer_units[1:]:
-            yield temp_arr.format(data_type='double', values=(str(int(layer))))
+            yield temp_arr.format(data_type='double',
+                                  values=(str(int(layer))),
+                                  fill_with='.0')

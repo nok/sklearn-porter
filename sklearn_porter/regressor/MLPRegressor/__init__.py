@@ -22,10 +22,10 @@ class MLPRegressor(Regressor):
         'js': {
             'type':     '{0}',
             'arr':      '[{0}]',
-            'new_arr':  'new Array({values}).fill(0)',
-            'arr[]':    'var {name} = [{values}];',
-            'arr[][]':  'var {name} = [{values}];',
-            'arr[][][]': 'var {name} = [{values}];',
+            'new_arr':  'new Array({values}).fill({fill_with})',
+            'arr[]':    '{name} = [{values}];',
+            'arr[][]':  '{name} = [{values}];',
+            'arr[][][]': '{name} = [{values}];',
             'indent':   '    ',
         }
     }
@@ -131,11 +131,11 @@ class MLPRegressor(Regressor):
         temp_arr___ = self.temp('arr[][][]')
 
         # Activations:
-        activations = list(self._get_activations())
-        activations = ', '.join(['atts'] + activations)
-        activations = temp_arr__.format(data_type='double',
-                                        name='activations',
-                                        values=activations)
+        layers = list(self._get_activations())
+        layers = ', '.join(['atts'] + layers)
+        layers = temp_arr__.format(data_type='double',
+                                   name='layers',
+                                   values=layers)
 
         # Coefficients (weights):
         coefficients = []
@@ -148,22 +148,22 @@ class MLPRegressor(Regressor):
             coefficients.append(temp_arr.format(layer_weights))
         coefficients = ', '.join(coefficients)
         coefficients = temp_arr___.format(data_type='double',
-                                          name='coefficients',
+                                          name='COEFFICIENTS',
                                           values=coefficients)
 
         # Intercepts (biases):
         intercepts = list(self._get_intercepts())
         intercepts = ', '.join(intercepts)
         intercepts = temp_arr__.format(data_type='double',
-                                       name='intercepts',
+                                       name='INTERCEPTS',
                                        values=intercepts)
 
-        temp_method = self.temp('method', skipping=True, n_indents=1)
+        temp_method = self.temp('method', skipping=True, n_indents=2)
         out = temp_method.format(class_name=self.class_name,
                                  method_name=self.method_name,
                                  n_features=self.n_inputs,
                                  n_classes=self.n_outputs,
-                                 activations=activations,
+                                 layers=layers,
                                  coefficients=coefficients,
                                  intercepts=intercepts)
         return out
@@ -185,12 +185,14 @@ class MLPRegressor(Regressor):
             else:
                 hidden_act_type = 'activation_fn.logistic_multiple'
 
-        hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
+        hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=2)
         temp_class = self.temp('class')
+        file_name = '{}.js'.format(self.class_name.lower())
         out = temp_class.format(class_name=self.class_name,
                                 method_name=self.method_name, method=method,
                                 n_features=self.n_inputs,
-                                activation_function=hidden_act)
+                                activation_function=hidden_act,
+                                file_name=file_name)
         return out
 
     def _get_intercepts(self):
@@ -208,4 +210,6 @@ class MLPRegressor(Regressor):
         """
         temp_arr = self.temp('new_arr')
         for layer in self.layer_units[1:]:
-            yield temp_arr.format(data_type='double', values=(str(int(layer))))
+            yield temp_arr.format(data_type='double',
+                                  values=(str(int(layer))),
+                                  fill_with='.0')
