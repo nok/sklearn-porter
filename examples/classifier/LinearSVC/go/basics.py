@@ -18,7 +18,9 @@ print(output)
 package main
 
 import (
+	"os"
 	"fmt"
+	"strconv"
 	"math"
 )
 
@@ -48,8 +50,13 @@ func predict(atts []float64) int {
 }
 
 func main() {
-	// atts := []float64{ /* values */ }
-	// classIdx := predict(atts)
-	// fmt.Println(classIdx)
+	var features []float64
+	for _, arg := range os.Args[1:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+	classIdx := predict(features)
+	fmt.Println(classIdx)
 }
 """
