@@ -24,7 +24,7 @@ var {class_name} = (function() {{
 }})();
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
-    if (process.argv.length - 2 == {n_features}) {{
+    if (process.argv.length - 2 === {n_features}) {{
         const features = process.argv.slice(2);
         var brain = {class_name}.getInstance();
         var prediction = brain.{method_name}(features);
@@ -32,17 +32,17 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
     }}
 }}
 
-// Web Worker ({file_name}):
+// Web Worker:
+// File: {file_name}
 var onmessage = function(e) {{
-    if (e.data.length == {n_features}) {{
+    if (e.data.length === {n_features}) {{
         const features = e.data;
         var brain = {class_name}.getInstance();
         var prediction = brain.{method_name}(features);
         postMessage(prediction);
     }}
 }};
-
-// Web Worker (main.js):
+// File: main.js
 // if (typeof window !== 'undefined' && window.Worker) {{
 //     var worker = new Worker('{file_name}');
 //     worker.onmessage = function(e) {{
