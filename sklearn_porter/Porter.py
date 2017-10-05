@@ -89,10 +89,10 @@ class Porter(object):
 
         # Import model class:
         if sys.version_info < (3, 3):
-            package = '{algorithm_type}.{algorithm_name}'
+            package = 'estimator.{algorithm_type}.{algorithm_name}'
             level = -1
         else:
-            package = 'sklearn_porter.{algorithm_type}.{algorithm_name}'
+            package = 'sklearn_porter.estimator.{algorithm_type}.{algorithm_name}'
             level = 0
         package = package.format(**self.__dict__)
         try:
@@ -107,9 +107,8 @@ class Porter(object):
         # Set target programming language:
         language = str(language).strip().lower()
         pwd = os.path.dirname(__file__)
-        template_dir = os.path.join(pwd, self.algorithm_type,
-                                    self.algorithm_name,
-                                    'templates', language)
+        template_dir = os.path.join(pwd, 'estimator', self.algorithm_type,
+                                    self.algorithm_name, 'templates', language)
         has_template = os.path.isdir(template_dir)
         if not has_template:
             error = "Currently there is no support of the combination " \

@@ -94,9 +94,9 @@ class Template(object):
                 return self.temp(keys, template, skipping=False)
         else:
             class_name = self.__class__.__name__
-            path = os.path.join(
-                os.path.dirname(__file__), self.algorithm_type, class_name,
-                'templates', self.target_language, name + '.txt')
+            path = os.path.join(os.path.dirname(__file__), 'estimator',
+                                self.algorithm_type, class_name, 'templates',
+                                self.target_language, name + '.txt')
             if os.path.isfile(path):
                 template = open(path, 'r').read()
                 if n_indents is not None:

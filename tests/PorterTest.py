@@ -13,7 +13,7 @@ from sklearn_porter import Porter
 
 from utils.Timer import Timer
 from utils.DependencyChecker import DependencyChecker as Checker
-from classifier.Classifier import Classifier
+from estimator.classifier.Classifier import Classifier
 from language.Java import Java
 
 
