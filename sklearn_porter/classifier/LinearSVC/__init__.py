@@ -20,8 +20,8 @@ class LinearSVC(Classifier):
             'init':     '{type} {name} = {value};',
             'type':     '{0}',
             'arr':      '{{{0}}}',
-            'arr[]':    'double {name}[{n}] = {{{values}}};',
-            'arr[][]':  'double {name}[{n}][{m}] = {{{values}}};',
+            'arr[]':    '{type} {name}[{n}] = {{{values}}};',
+            'arr[][]':  '{type} {name}[{n}][{m}] = {{{values}}};',
             'indent':   '    ',
         },
         'go': {
@@ -36,8 +36,8 @@ class LinearSVC(Classifier):
             'init':     '{type} {name} = {value};',
             'type':     '{0}',
             'arr':      '{{{0}}}',
-            'arr[]':    'double[] {name} = {{{values}}};',
-            'arr[][]':  'double[][] {name} = {{{values}}};',
+            'arr[]':    '{type}[] {name} = {{{values}}};',
+            'arr[][]':  '{type}[][] {name} = {{{values}}};',
             'indent':   '    ',
         },
         'js': {
@@ -144,8 +144,8 @@ class LinearSVC(Classifier):
             coefs = self.model.coef_[0]
             coefs = [temp_type.format(self.repr(c)) for c in coefs]
             coefs = ', '.join(coefs)
-            coefs = temp_arr_.format(name='coefs', values=coefs,
-                                     n=self.n_features)
+            coefs = temp_arr_.format(type='double', name='coefs',
+                                     values=coefs, n=self.n_features)
         else:
             coefs = []
             for coef in self.model.coef_:
@@ -153,7 +153,7 @@ class LinearSVC(Classifier):
                 tmp = temp_arr.format(', '.join(tmp))
                 coefs.append(tmp)
             coefs = ', '.join(coefs)
-            coefs = temp_arr__.format(name='coefs', values=coefs,
+            coefs = temp_arr__.format(type='double', name='coefs', values=coefs,
                                       n=self.n_classes, m=self.n_features)
 
         # Intercepts:
@@ -166,8 +166,8 @@ class LinearSVC(Classifier):
             inters = self.model.intercept_
             inters = [temp_type.format(self.repr(i)) for i in inters]
             inters = ', '.join(inters)
-            inters = temp_arr_.format(name='inters', values=inters,
-                                      n=self.n_classes)
+            inters = temp_arr_.format(type='double', name='inters',
+                                      values=inters, n=self.n_classes)
 
         # Indentation
         n_indents = 0 if self.target_language in ['c', 'go'] else 1

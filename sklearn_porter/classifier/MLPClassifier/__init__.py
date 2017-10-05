@@ -22,10 +22,10 @@ class MLPClassifier(Classifier):
         'java': {
             'type':     '{0}',
             'arr':      '{{{0}}}',
-            'new_arr':  'new {data_type}[{values}]',
-            'arr[]':    '{data_type}[] {name} = {{{values}}};',
-            'arr[][]':  '{data_type}[][] {name} = {{{values}}};',
-            'arr[][][]': '{data_type}[][][] {name} = {{{values}}};',
+            'new_arr':  'new {type}[{values}]',
+            'arr[]':    '{type}[] {name} = {{{values}}};',
+            'arr[][]':  '{type}[][] {name} = {{{values}}};',
+            'arr[][][]': '{type}[][][] {name} = {{{values}}};',
             'indent':   '    ',
         },
         'js': {
@@ -158,8 +158,7 @@ class MLPClassifier(Classifier):
         # Activations:
         layers = list(self._get_activations())
         layers = ', '.join(['atts'] + layers)
-        layers = temp_arr__.format(data_type='double', name='layers',
-                                   values=layers)
+        layers = temp_arr__.format(type='double', name='layers', values=layers)
 
         # Coefficients (weights):
         coefficients = []
@@ -171,14 +170,14 @@ class MLPClassifier(Classifier):
             layer_weights = ', '.join(layer_weights)
             coefficients.append(temp_arr.format(layer_weights))
         coefficients = ', '.join(coefficients)
-        coefficients = temp_arr___.format(data_type='double',
+        coefficients = temp_arr___.format(type='double',
                                           name='COEFFICIENTS',
                                           values=coefficients)
 
         # Intercepts (biases):
         intercepts = list(self._get_intercepts())
         intercepts = ', '.join(intercepts)
-        intercepts = temp_arr__.format(data_type='double',
+        intercepts = temp_arr__.format(type='double',
                                        name='INTERCEPTS',
                                        values=intercepts)
 
@@ -237,6 +236,6 @@ class MLPClassifier(Classifier):
         """
         temp_arr = self.temp('new_arr')
         for layer in self.layer_units[1:]:
-            yield temp_arr.format(data_type='double',
+            yield temp_arr.format(type='double',
                                   values=(str(int(layer))),
                                   fill_with='.0')
