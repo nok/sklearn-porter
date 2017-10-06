@@ -4,8 +4,8 @@ import unittest
 
 from sklearn.ensemble import ExtraTreesClassifier
 
-from ..Classifier import Classifier
-from ....language.Java import Java
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.Java import Java
 
 
 class ExtraTreesClassifierJavaTest(Java, Classifier, unittest.TestCase):

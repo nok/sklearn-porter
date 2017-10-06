@@ -5,8 +5,8 @@ import unittest
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from ..Classifier import Classifier
-from ....language.C import C
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.C import C
 
 
 class AdaBoostClassifierCTest(C, Classifier, unittest.TestCase):

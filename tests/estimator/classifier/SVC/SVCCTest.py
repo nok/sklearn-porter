@@ -2,12 +2,11 @@
 
 from unittest import TestCase
 import numpy as np
-import random
 
 from sklearn.svm.classes import SVC
 
-from ..Classifier import Classifier
-from ....language.C import C
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.C import C
 
 
 class SVCCTest(C, Classifier, TestCase):

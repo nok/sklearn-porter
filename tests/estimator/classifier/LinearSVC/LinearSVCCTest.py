@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from sklearn.svm.classes import LinearSVC
 
-from ..Classifier import Classifier
-from ....language.C import C
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.C import C
 
 
 class LinearSVCCTest(C, Classifier, TestCase):

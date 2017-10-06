@@ -1,12 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import unittest
 from unittest import TestCase
 
 from sklearn.ensemble import RandomForestClassifier
 
-from ..Classifier import Classifier
-from ....language.PHP import PHP
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.PHP import PHP
 
 
 class RandomForestClassifierPHPTest(PHP, Classifier, TestCase):

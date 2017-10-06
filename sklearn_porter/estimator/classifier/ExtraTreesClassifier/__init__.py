@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from ..RandomForestClassifier import RandomForestClassifier
+from sklearn_porter.estimator.classifier.RandomForestClassifier \
+    import RandomForestClassifier
 
 
 class ExtraTreesClassifier(RandomForestClassifier):

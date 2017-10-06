@@ -4,11 +4,11 @@ from unittest import TestCase
 
 from sklearn.ensemble import ExtraTreesClassifier
 
-from ..Classifier import Classifier
-from ....language.JavaScript import JavaScript as JS
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.JavaScript import JavaScript
 
 
-class ExtraTreesClassifierJSTest(JS, Classifier, TestCase):
+class ExtraTreesClassifierJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(ExtraTreesClassifierJSTest, self).setUp()

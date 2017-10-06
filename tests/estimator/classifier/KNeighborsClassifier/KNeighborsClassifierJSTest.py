@@ -4,11 +4,11 @@ from unittest import TestCase
 
 from sklearn.neighbors import KNeighborsClassifier
 
-from ..Classifier import Classifier
-from ....language.JavaScript import JavaScript as JS
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.JavaScript import JavaScript
 
 
-class KNeighborsClassifierJSTest(JS, Classifier, TestCase):
+class KNeighborsClassifierJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(KNeighborsClassifierJSTest, self).setUp()

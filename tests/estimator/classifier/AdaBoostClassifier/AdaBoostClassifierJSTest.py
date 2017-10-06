@@ -5,11 +5,11 @@ import unittest
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from ..Classifier import Classifier
-from ....language.JavaScript import JavaScript as JS
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.JavaScript import JavaScript
 
 
-class AdaBoostClassifierJSTest(JS, Classifier, unittest.TestCase):
+class AdaBoostClassifierJSTest(JavaScript, Classifier, unittest.TestCase):
 
     def setUp(self):
         super(AdaBoostClassifierJSTest, self).setUp()

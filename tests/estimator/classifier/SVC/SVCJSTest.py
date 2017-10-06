@@ -9,11 +9,11 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_regression
 from sklearn.pipeline import Pipeline
 
-from ..Classifier import Classifier
-from ....language.JavaScript import JavaScript as JS
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.JavaScript import JavaScript
 
 
-class SVCJSTest(JS, Classifier, TestCase):
+class SVCJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(SVCJSTest, self).setUp()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from ..Classifier import Classifier
+from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
 class BernoulliNB(Classifier):

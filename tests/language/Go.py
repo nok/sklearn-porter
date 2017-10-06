@@ -3,7 +3,7 @@
 import os
 import subprocess as subp
 from sklearn_porter import Porter
-from ..utils.DependencyChecker import DependencyChecker as Checker
+from tests.utils.DependencyChecker import DependencyChecker as Checker
 
 
 class Go(Checker):

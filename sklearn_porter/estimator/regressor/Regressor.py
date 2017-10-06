@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ...Template import Template
+from sklearn_porter.Template import Template
 
 
 class Regressor(Template):

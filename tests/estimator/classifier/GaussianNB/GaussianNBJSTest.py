@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from sklearn.naive_bayes import GaussianNB
 
-from ..Classifier import Classifier
-from ....language.JavaScript import JavaScript
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.JavaScript import JavaScript
 
 
 class GaussianNBJSTest(JavaScript, Classifier, TestCase):

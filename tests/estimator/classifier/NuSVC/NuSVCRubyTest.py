@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from sklearn.svm.classes import NuSVC
 
-from ..Classifier import Classifier
-from ....language.Ruby import Ruby
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.Ruby import Ruby
 
 
 class NuSVCRubyTest(Ruby, Classifier, TestCase):

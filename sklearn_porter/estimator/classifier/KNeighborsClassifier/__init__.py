@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..Classifier import Classifier
+from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
 class KNeighborsClassifier(Classifier):

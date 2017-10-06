@@ -5,11 +5,11 @@ import numpy as np
 
 from sklearn.neural_network.multilayer_perceptron import MLPClassifier
 
-from ..Classifier import Classifier
-from ....language.JavaScript import JavaScript as JS
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.JavaScript import JavaScript
 
 
-class MLPClassifierJSTest(JS, Classifier, TestCase):
+class MLPClassifierJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(MLPClassifierJSTest, self).setUp()

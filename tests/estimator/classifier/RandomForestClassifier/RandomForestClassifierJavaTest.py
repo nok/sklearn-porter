@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from sklearn.ensemble import RandomForestClassifier
 
-from ..Classifier import Classifier
-from ....language.Java import Java
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.Java import Java
 
 
 class RandomForestClassifierJavaTest(Java, Classifier, TestCase):

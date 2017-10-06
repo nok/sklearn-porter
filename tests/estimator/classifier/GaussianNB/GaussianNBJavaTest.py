@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from sklearn.naive_bayes import GaussianNB
 
-from ..Classifier import Classifier
-from ....language.Java import Java
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.Java import Java
 
 
 class GaussianNBJavaTest(Java, Classifier, TestCase):

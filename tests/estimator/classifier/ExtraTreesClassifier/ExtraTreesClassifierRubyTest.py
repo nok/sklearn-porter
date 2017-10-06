@@ -4,8 +4,8 @@ import unittest
 
 from sklearn.ensemble import ExtraTreesClassifier
 
-from ..Classifier import Classifier
-from ....language.Ruby import Ruby
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.Ruby import Ruby
 
 
 class ExtraTreesClassifierRubyTest(Ruby, Classifier, unittest.TestCase):

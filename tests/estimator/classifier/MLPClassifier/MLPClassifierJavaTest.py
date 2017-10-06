@@ -5,8 +5,8 @@ import numpy as np
 
 from sklearn.neural_network.multilayer_perceptron import MLPClassifier
 
-from ..Classifier import Classifier
-from ....language.Java import Java
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.Java import Java
 
 
 class MLPClassifierJavaTest(Java, Classifier, TestCase):

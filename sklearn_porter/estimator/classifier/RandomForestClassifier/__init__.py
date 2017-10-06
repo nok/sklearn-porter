@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from sklearn.tree.tree import DecisionTreeClassifier
-from ..Classifier import Classifier
+from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
 class RandomForestClassifier(Classifier):

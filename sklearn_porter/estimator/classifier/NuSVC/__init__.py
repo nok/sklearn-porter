@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..SVC import SVC
+from sklearn_porter.estimator.classifier.SVC import SVC
 
 
 class NuSVC(SVC):

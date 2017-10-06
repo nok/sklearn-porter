@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import sklearn
-from ..Classifier import Classifier
+from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
 class AdaBoostClassifier(Classifier):

@@ -5,8 +5,8 @@ import unittest
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from ..Classifier import Classifier
-from ....language.Java import Java
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.Java import Java
 
 
 class AdaBoostClassifierJavaTest(Java, Classifier, unittest.TestCase):

@@ -4,11 +4,11 @@ from unittest import TestCase
 
 from sklearn.svm.classes import LinearSVC
 
-from ..Classifier import Classifier
-from ....language.JavaScript import JavaScript as JS
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.JavaScript import JavaScript
 
 
-class LinearSVCJSTest(JS, Classifier, TestCase):
+class LinearSVCJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(LinearSVCJSTest, self).setUp()

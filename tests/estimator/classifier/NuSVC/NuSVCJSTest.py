@@ -4,11 +4,11 @@ from unittest import TestCase
 
 from sklearn.svm.classes import NuSVC
 
-from ..Classifier import Classifier
-from ....language.JavaScript import JavaScript as JS
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.JavaScript import JavaScript
 
 
-class NuSVCJSTest(JS, Classifier, TestCase):
+class NuSVCJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(NuSVCJSTest, self).setUp()

@@ -4,8 +4,8 @@ import unittest
 
 from sklearn.naive_bayes import BernoulliNB
 
-from ..Classifier import Classifier
-from ....language.JavaScript import JavaScript
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.JavaScript import JavaScript
 
 
 class BernoulliNBJSTest(JavaScript, Classifier, unittest.TestCase):

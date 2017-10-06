@@ -9,7 +9,7 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.datasets import load_digits
 from sklearn.utils import shuffle
 
-from ...utils.Timer import Timer
+from tests.utils.Timer import Timer
 
 
 class Classifier(Timer):

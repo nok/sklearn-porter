@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from sklearn.tree import DecisionTreeClassifier
 
-from ..Classifier import Classifier
-from ....language.Go import Go
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.Go import Go
 
 
 class DecisionTreeClassifierGoTest(Go, Classifier, TestCase):

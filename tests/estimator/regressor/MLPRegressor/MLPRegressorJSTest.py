@@ -5,11 +5,11 @@ import numpy as np
 
 from sklearn.neural_network.multilayer_perceptron import MLPRegressor
 
-from ..Regressor import Regressor
-from ....language.JavaScript import JavaScript as JS
+from tests.estimator.regressor.Regressor import Regressor
+from tests.language.JavaScript import JavaScript
 
 
-class MLPRegressorJSTest(JS, Regressor, TestCase):
+class MLPRegressorJSTest(JavaScript, Regressor, TestCase):
 
     N_RANDOM_TESTS = 50
 

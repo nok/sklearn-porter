@@ -4,8 +4,8 @@ from unittest import TestCase
 
 from sklearn.svm.classes import LinearSVC
 
-from ..Classifier import Classifier
-from ....language.PHP import PHP
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.PHP import PHP
 
 
 class LinearSVCPHPTest(PHP, Classifier, TestCase):

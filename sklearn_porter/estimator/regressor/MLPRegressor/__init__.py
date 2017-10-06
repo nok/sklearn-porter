@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import numpy as np
-from ..Regressor import Regressor
+from sklearn_porter.estimator.regressor.Regressor import Regressor
 
 np.set_printoptions(precision=64)
 

@@ -7,7 +7,7 @@ import numpy as np
 from sklearn.datasets import load_diabetes
 from sklearn.utils import shuffle
 
-from ...utils.Timer import Timer
+from tests.utils.Timer import Timer
 
 
 class Regressor(Timer):
