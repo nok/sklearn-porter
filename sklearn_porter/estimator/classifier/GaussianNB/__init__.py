@@ -33,27 +33,27 @@ class GaussianNB(Classifier):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java',
+    def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param model : AdaBoostClassifier
-            An instance of a trained GaussianNB model.
+        :param estimator : AdaBoostClassifier
+            An instance of a trained GaussianNB estimator.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
         super(GaussianNB, self).__init__(
-            model, target_language=target_language,
+            estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.model = model
+        self.estimator = estimator
 
-        self.n_features = len(model.sigma_[0])
-        self.n_classes = len(model.classes_)
+        self.n_features = len(estimator.sigma_[0])
+        self.n_classes = len(estimator.classes_)
 
         temp_type = self.temp('type')
         temp_arr = self.temp('arr')
@@ -62,14 +62,14 @@ class GaussianNB(Classifier):
 
         # Create class prior probabilities:
         priors = [temp_type.format(self.repr(c)) for c in
-                  self.model.class_prior_]
+                  self.estimator.class_prior_]
         priors = ', '.join(priors)
         self.priors = temp_arr_.format(type='double', name='priors',
                                       values=priors)
 
         # Create sigmas:
         sigmas = []
-        for sigma in self.model.sigma_:
+        for sigma in self.estimator.sigma_:
             tmp = [temp_type.format(self.repr(s)) for s in sigma]
             tmp = temp_arr.format(', '.join(tmp))
             sigmas.append(tmp)
@@ -79,7 +79,7 @@ class GaussianNB(Classifier):
 
         # Create thetas:
         thetas = []
-        for theta in self.model.theta_:
+        for theta in self.estimator.theta_:
             tmp = [temp_type.format(self.repr(t)) for t in theta]
             tmp = temp_arr.format(', '.join(tmp))
             thetas.append(tmp)
@@ -89,7 +89,7 @@ class GaussianNB(Classifier):
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
@@ -124,7 +124,7 @@ class GaussianNB(Classifier):
 
     def create_method(self):
         """
-        Build the model method or function.
+        Build the estimator method or function.
 
         Returns
         -------
@@ -137,7 +137,7 @@ class GaussianNB(Classifier):
 
     def create_class(self, method):
         """
-        Build the model class.
+        Build the estimator class.
 
         Returns
         -------

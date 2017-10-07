@@ -12,7 +12,7 @@ class DecisionTreeClassifierJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierJSTest, self).setUp()
-        self.mdl = DecisionTreeClassifier(random_state=0)
+        self.estimator = DecisionTreeClassifier(random_state=0)
 
     def tearDown(self):
         super(DecisionTreeClassifierJSTest, self).tearDown()

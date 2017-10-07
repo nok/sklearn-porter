@@ -12,7 +12,7 @@ class BernoulliNBJavaTest(Java, Classifier, unittest.TestCase):
 
     def setUp(self):
         super(BernoulliNBJavaTest, self).setUp()
-        self.mdl = BernoulliNB()
+        self.estimator = BernoulliNB()
 
     def tearDown(self):
         super(BernoulliNBJavaTest, self).tearDown()

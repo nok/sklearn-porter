@@ -12,7 +12,7 @@ class LinearSVCJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(LinearSVCJSTest, self).setUp()
-        self.mdl = LinearSVC(C=1., random_state=0)
+        self.estimator = LinearSVC(C=1., random_state=0)
 
     def tearDown(self):
         super(LinearSVCJSTest, self).tearDown()

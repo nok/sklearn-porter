@@ -22,7 +22,7 @@ class Regressor(Timer):
         self.load_data()
 
     def tearDown(self):
-        self._clear_model()
+        self._clear_estimator()
         self._stop_test()
 
     def _init_env(self):
@@ -40,7 +40,7 @@ class Regressor(Timer):
         self.n_features = len(self.X[0])
 
     def test_random_features_new(self):
-        self._port_model()
+        self._port_estimator()
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         match = []
@@ -48,21 +48,21 @@ class Regressor(Timer):
             x = np.random.uniform(amin, amax, self.n_features)
             match.append(self.pred_in_custom(x, cast=False) -
                          self.pred_in_py(x, cast=False) < 0.0001)
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertEqual(match.count(True), len(match))
 
     def test_existing_features_new(self):
-        self._port_model()
+        self._port_estimator()
         match = []
         n = min(self.N_EXISTING_FEATURE_SETS, len(self.X))
         for x in self.X[:n]:
             match.append(self.pred_in_custom(x, cast=False) -
                          self.pred_in_py(x, cast=False) < 0.0001)
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertEqual(match.count(True), len(match))
 
-    def _clear_model(self):
-        self.mdl = None
+    def _clear_estimator(self):
+        self.estimator = None
         subp.call('rm -rf tmp'.split())

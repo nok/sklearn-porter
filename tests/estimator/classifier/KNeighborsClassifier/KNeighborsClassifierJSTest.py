@@ -12,7 +12,7 @@ class KNeighborsClassifierJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(KNeighborsClassifierJSTest, self).setUp()
-        self.mdl = KNeighborsClassifier(n_neighbors=3)
+        self.estimator = KNeighborsClassifier(n_neighbors=3)
 
     def tearDown(self):
         super(KNeighborsClassifierJSTest, self).tearDown()

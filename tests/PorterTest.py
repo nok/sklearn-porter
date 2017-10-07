@@ -24,21 +24,21 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
     def setUp(self):
         super(PorterTest, self).setUp()
         self.load_iris_data()
-        self.mdl = DecisionTreeClassifier(random_state=0)
-        self._port_model()
+        self.estimator = DecisionTreeClassifier(random_state=0)
+        self._port_estimator()
 
     def tearDown(self):
         super(PorterTest, self).tearDown()
 
     def test_porter_args_method(self):
         """Test invalid method name."""
-        args = dict(method='invalid_name')
-        self.assertRaises(AttributeError, lambda: Porter(self.mdl, args))
+        self.assertRaises(AttributeError, lambda: Porter(self.estimator,
+                                                         method='invalid'))
 
     def test_porter_args_language(self):
         """Test invalid programming language."""
-        args = dict(method='predict', language='invalid_name')
-        self.assertRaises(AttributeError, lambda: Porter(self.mdl, args))
+        self.assertRaises(AttributeError, lambda: Porter(self.estimator,
+                                                         language='invalid'))
 
     def test_python_command_execution(self):
         """Test command line execution."""
@@ -47,24 +47,24 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
         filename = '{}.java'.format(self.tmp_fn)
         cp_src = os.path.join('tmp', filename)
         with open(cp_src, 'w') as f:
-            porter = Porter(self.mdl)
+            porter = Porter(self.estimator)
             out = porter.export(method_name='predict', class_name=self.tmp_fn)
             f.write(out)
         # $ javac tmp/Tmp.java
         subp.call(['javac', cp_src])
 
-        # Rename model for comparison:
+        # Rename estimator for comparison:
         filename = '{}_2.java'.format(self.tmp_fn)
         cp_dest = os.path.join('tmp', filename)
         # $ mv tmp/Brain.java tmp/Brain_2.java
         subp.call(['mv', cp_src, cp_dest])
 
-        # Dump model:
+        # Dump estimator:
         filename = '{}.pkl'.format(self.tmp_fn)
         pkl_path = os.path.join('tmp', filename)
-        joblib.dump(self.mdl, pkl_path)
+        joblib.dump(self.estimator, pkl_path)
 
-        # Port model:
+        # Port estimator:
         cmd = 'python -m sklearn_porter -i {}'.format(pkl_path).split()
         subp.call(cmd)
         # Compare file contents:
@@ -78,7 +78,7 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
         Y, Y_py = [], []
         for n in range(self.N_RANDOM_FEATURE_SETS):
             x = [random.uniform(0., 10.) for n in range(self.n_features)]
-            y_py = int(self.mdl.predict([x])[0])
+            y_py = int(self.estimator.predict([x])[0])
             Y_py.append(y_py)
             y = self.pred_in_custom(x)
             Y.append(y)

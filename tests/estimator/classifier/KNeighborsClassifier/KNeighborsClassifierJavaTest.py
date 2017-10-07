@@ -12,7 +12,7 @@ class KNeighborsClassifierJavaTest(Java, Classifier, unittest.TestCase):
 
     def setUp(self):
         super(KNeighborsClassifierJavaTest, self).setUp()
-        self.mdl = KNeighborsClassifier(n_neighbors=3)
+        self.estimator = KNeighborsClassifier(n_neighbors=3)
 
     def tearDown(self):
         super(KNeighborsClassifierJavaTest, self).tearDown()

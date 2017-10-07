@@ -12,7 +12,7 @@ class NuSVCPHPTest(PHP, Classifier, TestCase):
 
     def setUp(self):
         super(NuSVCPHPTest, self).setUp()
-        self.mdl = NuSVC(kernel='rbf', gamma=0.001, random_state=0)
+        self.estimator = NuSVC(kernel='rbf', gamma=0.001, random_state=0)
 
     def tearDown(self):
         super(NuSVCPHPTest, self).tearDown()

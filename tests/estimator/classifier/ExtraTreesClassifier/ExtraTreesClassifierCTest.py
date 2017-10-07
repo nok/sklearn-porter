@@ -12,7 +12,7 @@ class ExtraTreesClassifierCTest(C, Classifier, TestCase):
 
     def setUp(self):
         super(ExtraTreesClassifierCTest, self).setUp()
-        self.mdl = ExtraTreesClassifier(random_state=0)
+        self.estimator = ExtraTreesClassifier(random_state=0)
 
     def tearDown(self):
         super(ExtraTreesClassifierCTest, self).tearDown()

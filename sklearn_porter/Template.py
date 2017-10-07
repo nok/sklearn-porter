@@ -8,7 +8,7 @@ class Template(object):
     SUPPORTED_METHODS = {}
     TEMPLATES = {}
 
-    def __init__(self, model, target_language='java',
+    def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         # pylint: disable=unused-argument
         self.target_language = str(target_language)
@@ -95,7 +95,7 @@ class Template(object):
         else:
             class_name = self.__class__.__name__
             path = os.path.join(os.path.dirname(__file__), 'estimator',
-                                self.algorithm_type, class_name, 'templates',
+                                self.estimator_type, class_name, 'templates',
                                 self.target_language, name + '.txt')
             if os.path.isfile(path):
                 template = open(path, 'r').read()

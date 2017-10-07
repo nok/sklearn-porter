@@ -23,7 +23,7 @@ class Classifier(Timer):
         self._start_test()
 
     def tearDown(self):
-        self._clear_model()
+        self._clear_estimator()
         self._stop_test()
 
     def _init_env(self):
@@ -54,7 +54,7 @@ class Classifier(Timer):
 
     def test_random_features_w_binary_data(self):
         self.load_binary_data()
-        self._port_model()
+        self._port_estimator()
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         preds, ground_truth = [], []
@@ -62,13 +62,13 @@ class Classifier(Timer):
             x = np.random.uniform(amin, amax, self.n_features)
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
     def test_random_features_w_iris_data(self):
         self.load_iris_data()
-        self._port_model()
+        self._port_estimator()
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         preds, ground_truth = [], []
@@ -76,13 +76,13 @@ class Classifier(Timer):
             x = np.random.uniform(amin, amax, self.n_features)
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
     def test_random_features_w_digits_data(self):
         self.load_digits_data()
-        self._port_model()
+        self._port_estimator()
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         preds, ground_truth = [], []
@@ -90,47 +90,47 @@ class Classifier(Timer):
             x = np.random.uniform(amin, amax, self.n_features)
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
     def test_existing_features_w_binary_data(self):
         self.load_binary_data()
-        self._port_model()
+        self._port_estimator()
         preds, ground_truth = [], []
         n = min(self.N_EXISTING_FEATURE_SETS, len(self.X))
         for x in self.X[:n]:
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
     def test_existing_features_w_iris_data(self):
         self.load_iris_data()
-        self._port_model()
+        self._port_estimator()
         preds, ground_truth = [], []
         n = min(self.N_EXISTING_FEATURE_SETS, len(self.X))
         for x in self.X[:n]:
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
     def test_existing_features_w_digits_data(self):
         self.load_digits_data()
-        self._port_model()
+        self._port_estimator()
         preds, ground_truth = [], []
         n = min(self.N_EXISTING_FEATURE_SETS, len(self.X))
         for x in self.X[:n]:
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def _clear_model(self):
-        self.mdl = None
+    def _clear_estimator(self):
+        self.estimator = None
         cmd = 'rm -rf tmp'.split()
         subp.call(cmd)

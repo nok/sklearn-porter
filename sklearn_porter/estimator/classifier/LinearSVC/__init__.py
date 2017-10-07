@@ -67,31 +67,31 @@ class LinearSVC(Classifier):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java',
+    def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param model : LinearSVC
-            An instance of a trained AdaBoostClassifier model.
+        :param estimator : LinearSVC
+            An instance of a trained AdaBoostClassifier estimator.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
-        super(LinearSVC, self).__init__(model, target_language=target_language,
+        super(LinearSVC, self).__init__(estimator, target_language=target_language,
                                         target_method=target_method, **kwargs)
-        self.model = model
-        self.n_features = len(model.coef_[0])
-        self.n_classes = len(model.classes_)
+        self.estimator = estimator
+        self.n_features = len(estimator.coef_[0])
+        self.n_classes = len(estimator.classes_)
         self.is_binary = self.n_classes == 2
         self.prefix = 'binary' if self.is_binary else 'multi'
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
@@ -126,7 +126,7 @@ class LinearSVC(Classifier):
 
     def create_method(self):
         """
-        Build the model method or function.
+        Build the estimator method or function.
 
         Returns
         -------
@@ -141,14 +141,14 @@ class LinearSVC(Classifier):
 
         # Coefficients:
         if self.is_binary:
-            coefs = self.model.coef_[0]
+            coefs = self.estimator.coef_[0]
             coefs = [temp_type.format(self.repr(c)) for c in coefs]
             coefs = ', '.join(coefs)
             coefs = temp_arr_.format(type='double', name='coefs',
                                      values=coefs, n=self.n_features)
         else:
             coefs = []
-            for coef in self.model.coef_:
+            for coef in self.estimator.coef_:
                 tmp = [temp_type.format(self.repr(c)) for c in coef]
                 tmp = temp_arr.format(', '.join(tmp))
                 coefs.append(tmp)
@@ -158,12 +158,12 @@ class LinearSVC(Classifier):
 
         # Intercepts:
         if self.is_binary:
-            inters = self.model.intercept_[0]
+            inters = self.estimator.intercept_[0]
             temp_init = self.temp('init')
             inters = temp_init.format(type='double', name='inters',
                                       value=self.repr(inters))
         else:
-            inters = self.model.intercept_
+            inters = self.estimator.intercept_
             inters = [temp_type.format(self.repr(i)) for i in inters]
             inters = ', '.join(inters)
             inters = temp_arr_.format(type='double', name='inters',
@@ -182,7 +182,7 @@ class LinearSVC(Classifier):
 
     def create_class(self, method):
         """
-        Build the model class.
+        Build the estimator class.
 
         Returns
         -------

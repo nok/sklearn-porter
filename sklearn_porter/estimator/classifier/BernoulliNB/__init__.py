@@ -32,28 +32,28 @@ class BernoulliNB(Classifier):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java',
+    def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param model : AdaBoostClassifier
-            An instance of a trained BernoulliNB model.
+        :param estimator : AdaBoostClassifier
+            An instance of a trained BernoulliNB estimator.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
         super(BernoulliNB, self).__init__(
-            model, target_language=target_language,
+            estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.model = model
+        self.estimator = estimator
 
-        # self.n_features = len(model.sigma_[0])
-        self.n_classes = len(model.classes_)
-        self.n_features = len(model.feature_log_prob_[0])
+        # self.n_features = len(estimator.sigma_[0])
+        self.n_classes = len(estimator.classes_)
+        self.n_features = len(estimator.feature_log_prob_[0])
 
         # jll = safe_sparse_dot(X, (self.feature_log_prob_ - neg_prob).T)
         # jll += self.class_log_prior_ + neg_prob.sum(axis=1)
@@ -65,14 +65,14 @@ class BernoulliNB(Classifier):
 
         # Create class prior probabilities:
         priors = [self.temp('type').format(self.repr(p)) for p in
-                  model.class_log_prior_]
+                  estimator.class_log_prior_]
         priors = ', '.join(priors)
         self.priors = temp_arr_.format(type='double', name='priors',
                                        values=priors)
 
         # Create probabilities:
         # probs = []
-        # for prob in model.feature_log_prob_:
+        # for prob in estimator.feature_log_prob_:
         #     tmp = [self.temp('type').format(repr(p)) for p in prob]
         #     tmp = self.temp('arr').format(', '.join(tmp))
         #     probs.append(tmp)
@@ -82,7 +82,7 @@ class BernoulliNB(Classifier):
         #                                              values=probs)
 
         # Create negative probabilities:
-        neg_prob = np.log(1 - np.exp(model.feature_log_prob_))
+        neg_prob = np.log(1 - np.exp(estimator.feature_log_prob_))
         probs = []
         for prob in neg_prob:
             tmp = [temp_type.format(self.repr(p)) for p in prob]
@@ -92,7 +92,7 @@ class BernoulliNB(Classifier):
         self.neg_probs = temp_arr__.format(type='double', name='negProbs',
                                            values=probs)
 
-        delta_probs = (model.feature_log_prob_ - neg_prob).T
+        delta_probs = (estimator.feature_log_prob_ - neg_prob).T
         probs = []
         for prob in delta_probs:
             tmp = [temp_type.format(self.repr(p)) for p in prob]
@@ -104,7 +104,7 @@ class BernoulliNB(Classifier):
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
@@ -139,7 +139,7 @@ class BernoulliNB(Classifier):
 
     def create_method(self):
         """
-        Build the model method or function.
+        Build the estimator method or function.
 
         Returns
         -------
@@ -154,7 +154,7 @@ class BernoulliNB(Classifier):
 
     def create_class(self, method):
         """
-        Build the model class.
+        Build the estimator class.
 
         Returns
         -------

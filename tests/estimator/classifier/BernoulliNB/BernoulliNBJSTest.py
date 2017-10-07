@@ -12,7 +12,7 @@ class BernoulliNBJSTest(JavaScript, Classifier, unittest.TestCase):
 
     def setUp(self):
         super(BernoulliNBJSTest, self).setUp()
-        self.mdl = BernoulliNB()
+        self.estimator = BernoulliNB()
 
     def tearDown(self):
         super(BernoulliNBJSTest, self).tearDown()

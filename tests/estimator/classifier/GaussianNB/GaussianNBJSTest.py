@@ -12,7 +12,7 @@ class GaussianNBJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(GaussianNBJSTest, self).setUp()
-        self.mdl = GaussianNB()
+        self.estimator = GaussianNB()
 
     def tearDown(self):
         super(GaussianNBJSTest, self).tearDown()

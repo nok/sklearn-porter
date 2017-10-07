@@ -12,7 +12,7 @@ class ExtraTreesClassifierJavaTest(Java, Classifier, unittest.TestCase):
 
     def setUp(self):
         super(ExtraTreesClassifierJavaTest, self).setUp()
-        self.mdl = ExtraTreesClassifier(random_state=0)
+        self.estimator = ExtraTreesClassifier(random_state=0)
 
     def tearDown(self):
         super(ExtraTreesClassifierJavaTest, self).tearDown()

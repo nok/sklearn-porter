@@ -12,7 +12,7 @@ class NuSVCRubyTest(Ruby, Classifier, TestCase):
 
     def setUp(self):
         super(NuSVCRubyTest, self).setUp()
-        self.mdl = NuSVC(kernel='rbf', gamma=0.001, random_state=0)
+        self.estimator = NuSVC(kernel='rbf', gamma=0.001, random_state=0)
 
     def tearDown(self):
         super(NuSVCRubyTest, self).tearDown()

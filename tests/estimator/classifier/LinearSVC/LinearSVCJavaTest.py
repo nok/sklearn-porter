@@ -20,7 +20,7 @@ class LinearSVCJavaTest(Java, Classifier, TestCase):
 
     def setUp(self):
         super(LinearSVCJavaTest, self).setUp()
-        self.mdl = LinearSVC(C=1., random_state=0)
+        self.estimator = LinearSVC(C=1., random_state=0)
 
     def tearDown(self):
         super(LinearSVCJavaTest, self).tearDown()

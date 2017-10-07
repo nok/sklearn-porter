@@ -54,25 +54,25 @@ class SVC(Classifier):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java',
+    def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param model : AdaBoostClassifier
-            An instance of a trained SVC model.
+        :param estimator : AdaBoostClassifier
+            An instance of a trained SVC estimator.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
-        super(SVC, self).__init__(model, target_language=target_language,
+        super(SVC, self).__init__(estimator, target_language=target_language,
                                   target_method=target_method, **kwargs)
-        self.model = model
+        self.estimator = estimator
 
-        params = model.get_params()
+        params = estimator.get_params()
         # Check kernel type:
         kernels = ['linear', 'rbf', 'poly', 'sigmoid']
         if params['kernel'] not in kernels:
@@ -85,22 +85,22 @@ class SVC(Classifier):
             raise ValueError(msg)
         self.params = params
 
-        self.svs = model.support_vectors_
-        self.n_svs = len(model.support_vectors_[0])
-        self.svs_rows = model.n_support_
-        self.n_svs_rows = len(model.n_support_)
-        self.coeffs = model.dual_coef_
-        self.inters = model._intercept_  # pylint: disable=W0212
-        self.n_inters = len(model._intercept_)  # pylint: disable=W0212
-        self.classes = model.classes_
-        self.n_classes = len(model.classes_)
+        self.svs = estimator.support_vectors_
+        self.n_svs = len(estimator.support_vectors_[0])
+        self.svs_rows = estimator.n_support_
+        self.n_svs_rows = len(estimator.n_support_)
+        self.coeffs = estimator.dual_coef_
+        self.inters = estimator._intercept_  # pylint: disable=W0212
+        self.n_inters = len(estimator._intercept_)  # pylint: disable=W0212
+        self.classes = estimator.classes_
+        self.n_classes = len(estimator.classes_)
         self.is_binary = self.n_classes == 2
         self.prefix = 'binary' if self.is_binary else 'multi'
 
     def export(self, class_name="Brain", method_name="predict",
                use_repr=True, use_file=False):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
@@ -111,7 +111,7 @@ class SVC(Classifier):
         :param use_repr : bool, default True
             Whether to use repr() for floating-point values or not.
         :param: use_file : bool, default False
-            Whether to store the model data in a separate file or not.
+            Whether to store the estimator data in a separate file or not.
 
         Returns
         -------
@@ -139,7 +139,7 @@ class SVC(Classifier):
 
     def create_method(self):
         """
-        Build the model method or function.
+        Build the estimator method or function.
 
         Returns
         -------
@@ -237,7 +237,7 @@ class SVC(Classifier):
 
     def create_class(self, method):
         """
-        Build the model class.
+        Build the estimator class.
 
         Returns
         -------

@@ -20,18 +20,17 @@ class JavaScript(Checker):
     def _init_test(self):
         self.tmp_fn = os.path.join('tmp', 'brain.js')
 
-    def _port_model(self):
-        self.mdl.fit(self.X, self.y)
+    def _port_estimator(self):
+        self.estimator.fit(self.X, self.y)
         subp.call('rm -rf tmp'.split())
         subp.call('mkdir tmp'.split())
         with open(self.tmp_fn, 'w') as f:
-            porter = Porter(self.mdl, language=self.LANGUAGE)
-            out = porter.export(class_name='Brain',
-                                method_name='foo')
+            porter = Porter(self.estimator, language=self.LANGUAGE)
+            out = porter.export(class_name='Brain', method_name='foo')
             f.write(out)
 
     def pred_in_py(self, features, cast=True):
-        pred = self.mdl.predict([features])[0]
+        pred = self.estimator.predict([features])[0]
         return int(pred) if cast else float(pred)
 
     def pred_in_custom(self, features, cast=True):

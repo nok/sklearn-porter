@@ -8,6 +8,7 @@ from tests.utils.DependencyChecker import DependencyChecker as Checker
 
 class C(Checker):
 
+    LANGUAGE = 'c'
     DEPENDENCIES = ['mkdir', 'gcc']
 
     # noinspection PyPep8Naming
@@ -19,23 +20,22 @@ class C(Checker):
     def _init_test(self):
         self.tmp_fn = 'brain'
 
-    def _port_model(self):
-        self.mdl.fit(self.X, self.y)
+    def _port_estimator(self):
+        self.estimator.fit(self.X, self.y)
         subp.call('rm -rf tmp'.split())
         subp.call('mkdir tmp'.split())
         filename = self.tmp_fn + '.c'
         path = os.path.join('tmp', filename)
         with open(path, 'w') as f:
-            porter = Porter(self.mdl, language='c')
-            out = porter.export(class_name='Brain',
-                                method_name='foo')
+            porter = Porter(self.estimator, language=self.LANGUAGE)
+            out = porter.export(class_name='Brain', method_name='foo')
             f.write(out)
         # $ gcc temp/tmp.c -o temp/tmp
         cmd = 'gcc {} -std=c99 -lm -o tmp/{}'.format(path, self.tmp_fn)
         subp.call(cmd.split())
 
     def pred_in_py(self, features, cast=True):
-        pred = self.mdl.predict([features])[0]
+        pred = self.estimator.predict([features])[0]
         return int(pred) if cast else float(pred)
 
     def pred_in_custom(self, features, cast=True):

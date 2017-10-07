@@ -12,7 +12,7 @@ class DecisionTreeClassifierRubyTest(Ruby, Classifier, TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierRubyTest, self).setUp()
-        self.mdl = DecisionTreeClassifier(random_state=0)
+        self.estimator = DecisionTreeClassifier(random_state=0)
 
     def tearDown(self):
         super(DecisionTreeClassifierRubyTest, self).tearDown()

@@ -13,17 +13,16 @@ class SVCJavaTest(Java, Classifier, unittest.TestCase):
 
     def setUp(self):
         super(SVCJavaTest, self).setUp()
-        self.mdl = SVC(C=1., kernel='rbf', gamma=0.001, random_state=0)
+        self.estimator = SVC(C=1., kernel='rbf', gamma=0.001, random_state=0)
 
     def tearDown(self):
         super(SVCJavaTest, self).tearDown()
 
     def test_linear_kernel(self):
-        self.mdl = SVC(C=1., kernel='linear',
-                       gamma=0.001,
-                       random_state=0)
+        self.estimator = SVC(C=1., kernel='linear',
+                             gamma=0.001, random_state=0)
         self.load_iris_data()
-        self._port_model()
+        self._port_estimator()
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         preds, ground_truth = [], []
@@ -31,16 +30,15 @@ class SVCJavaTest(Java, Classifier, unittest.TestCase):
             x = np.random.uniform(amin, amax, self.n_features)
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
     def test_sigmoid_kernel(self):
-        self.mdl = SVC(C=1., kernel='sigmoid',
-                       gamma=0.001,
-                       random_state=0)
+        self.estimator = SVC(C=1., kernel='sigmoid',
+                             gamma=0.001, random_state=0)
         self.load_iris_data()
-        self._port_model()
+        self._port_estimator()
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         preds, ground_truth = [], []
@@ -48,7 +46,7 @@ class SVCJavaTest(Java, Classifier, unittest.TestCase):
             x = np.random.uniform(amin, amax, self.n_features)
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
-        self._clear_model()
+        self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 

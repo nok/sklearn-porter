@@ -5,7 +5,7 @@ from sklearn_porter.Template import Template
 
 class Classifier(Template):
 
-    def __init__(self, model, **kwargs):
+    def __init__(self, estimator, **kwargs):
         # pylint: disable=unused-argument
-        super(Classifier, self).__init__(model, **kwargs)
-        self.algorithm_type = 'classifier'
+        super(Classifier, self).__init__(estimator, **kwargs)
+        self.estimator_type = 'classifier'

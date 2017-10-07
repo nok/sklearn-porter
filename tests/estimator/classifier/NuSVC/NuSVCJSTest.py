@@ -12,7 +12,7 @@ class NuSVCJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(NuSVCJSTest, self).setUp()
-        self.mdl = NuSVC(kernel='rbf', gamma=0.001, random_state=0)
+        self.estimator = NuSVC(kernel='rbf', gamma=0.001, random_state=0)
 
     def tearDown(self):
         super(NuSVCJSTest, self).tearDown()

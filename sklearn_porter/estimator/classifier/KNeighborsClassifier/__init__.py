@@ -33,48 +33,48 @@ class KNeighborsClassifier(Classifier):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java',
+    def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param model : KNeighborsClassifier
-            An instance of a trained AdaBoostClassifier model.
+        :param estimator : KNeighborsClassifier
+            An instance of a trained AdaBoostClassifier estimator.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
         super(KNeighborsClassifier, self).__init__(
-            model, target_language=target_language,
+            estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.model = model
+        self.estimator = estimator
 
-        self.n_classes = len(self.model.classes_)
-        self.n_templates = len(self.model._fit_X)  # pylint: disable=W0212
-        self.n_features = len(self.model._fit_X[0])  # pylint: disable=W0212
-        self.n_neighbors = self.model.n_neighbors
+        self.n_classes = len(self.estimator.classes_)
+        self.n_templates = len(self.estimator._fit_X)  # pylint: disable=W0212
+        self.n_features = len(self.estimator._fit_X[0])  # pylint: disable=W0212
+        self.n_neighbors = self.estimator.n_neighbors
 
-        self.algorithm = self.model.algorithm
-        self.power_param = self.model.p
+        self.algorithm = self.estimator.algorithm
+        self.power_param = self.estimator.p
 
         if self.algorithm != 'brute':
             from sklearn.neighbors.kd_tree import KDTree  # pylint: disable-msg=E0611
             from sklearn.neighbors.ball_tree import BallTree  # pylint: disable-msg=E0611
-            tree = self.model._tree  # pylint: disable=W0212
+            tree = self.estimator._tree  # pylint: disable=W0212
             if isinstance(tree, (KDTree, BallTree)):
                 self.tree = tree
 
-        self.metric = self.model.metric
-        if self.model.weights != 'uniform':
+        self.metric = self.estimator.metric
+        if self.estimator.weights != 'uniform':
             msg = "Only 'uniform' weights are supported for this classifier."
             raise NotImplementedError(msg)
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
@@ -109,7 +109,7 @@ class KNeighborsClassifier(Classifier):
 
     def create_method(self):
         """
-        Build the model method or function.
+        Build the estimator method or function.
 
         Returns
         -------
@@ -129,7 +129,7 @@ class KNeighborsClassifier(Classifier):
 
         # Templates
         temps = []
-        for atts in enumerate(self.model._fit_X):  # pylint: disable=W0212
+        for atts in enumerate(self.estimator._fit_X):  # pylint: disable=W0212
             tmp = [temp_type.format(self.repr(a)) for a in atts[1]]
             tmp = temp_arr.format(', '.join(tmp))
             temps.append(tmp)
@@ -138,7 +138,7 @@ class KNeighborsClassifier(Classifier):
                                   n=self.n_templates, m=self.n_features)
 
         # Classes
-        classes = self.model._y  # pylint: disable=W0212
+        classes = self.estimator._y  # pylint: disable=W0212
         classes = [temp_type.format(int(c)) for c in classes]
         classes = ', '.join(classes)
         classes = temp_arr_.format(type='int', name='y', values=classes,
@@ -157,7 +157,7 @@ class KNeighborsClassifier(Classifier):
 
     def create_class(self, method):
         """
-        Build the model class.
+        Build the estimator class.
 
         Returns
         -------

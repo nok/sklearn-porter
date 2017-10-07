@@ -12,7 +12,7 @@ class ExtraTreesClassifierJSTest(JavaScript, Classifier, TestCase):
 
     def setUp(self):
         super(ExtraTreesClassifierJSTest, self).setUp()
-        self.mdl = ExtraTreesClassifier(random_state=0)
+        self.estimator = ExtraTreesClassifier(random_state=0)
 
     def tearDown(self):
         super(ExtraTreesClassifierJSTest, self).tearDown()

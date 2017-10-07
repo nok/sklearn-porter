@@ -44,59 +44,59 @@ class AdaBoostClassifier(Classifier):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java',
+    def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param model : AdaBoostClassifier
-            An instance of a trained AdaBoostClassifier model.
+        :param estimator : AdaBoostClassifier
+            An instance of a trained AdaBoostClassifier estimator.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
         super(AdaBoostClassifier, self).__init__(
-            model, target_language=target_language,
+            estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.model = model
+        self.estimator = estimator
 
         # Check the used algorithm type:
-        if model.algorithm != 'SAMME.R':
+        if estimator.algorithm != 'SAMME.R':
             msg = "The classifier doesn't support the given algorithm %s."
-            raise ValueError(msg, model.algorithm)
+            raise ValueError(msg, estimator.algorithm)
 
         # Check type of base estimators:
         if not isinstance(
-                model.base_estimator,
+                estimator.base_estimator,
                 sklearn.tree.tree.DecisionTreeClassifier):
             msg = "The classifier doesn't support the given base estimator %s."
-            raise ValueError(msg, model.base_estimator)
+            raise ValueError(msg, estimator.base_estimator)
 
         # Check number of base estimators:
-        if not model.n_estimators > 0:
+        if not estimator.n_estimators > 0:
             msg = "The classifier hasn't any base estimators."
             raise ValueError(msg)
 
-        self.model = model
-        self.n_classes = model.n_classes_
+        self.estimator = estimator
+        self.n_classes = estimator.n_classes_
 
-        self.models = []
+        self.estimators = []
         self.weights = []
         self.n_estimators = 0
-        for idx in range(self.model.n_estimators):
-            weight = self.model.estimator_weights_[idx]
+        for idx in range(self.estimator.n_estimators):
+            weight = self.estimator.estimator_weights_[idx]
             if weight > 0:
-                self.models.append(self.model.estimators_[idx])
-                self.weights.append(self.model.estimator_weights_[idx])
+                self.estimators.append(self.estimator.estimators_[idx])
+                self.weights.append(self.estimator.estimator_weights_[idx])
                 self.n_estimators += 1
-                self.n_features = self.model.estimators_[idx].n_features_
+                self.n_features = self.estimator.estimators_[idx].n_features_
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
@@ -132,7 +132,7 @@ class AdaBoostClassifier(Classifier):
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth):
         """
-        Parse and port a single tree model.
+        Parse and port a single tree estimator.
 
         Parameters
         ----------
@@ -183,16 +183,16 @@ class AdaBoostClassifier(Classifier):
             out += self.temp('join').join(clazzes) + self.temp('join')
         return out
 
-    def create_single_method(self, model_index, model):
+    def create_single_method(self, estimator_index, estimator):
         """
         Port a method for a single tree.
 
         Parameters
         ----------
-        :param model_index : int
-            The model index.
-        :param model : AdaBoostClassifier
-            The model itself.
+        :param estimator_index : int
+            The estimator index.
+        :param estimator : AdaBoostClassifier
+            The estimator itself.
 
         Returns
         -------
@@ -200,26 +200,26 @@ class AdaBoostClassifier(Classifier):
             The created method as string.
         """
         feature_indices = []
-        for i in model.tree_.feature:
-            n_features = model.n_features_
+        for i in estimator.tree_.feature:
+            n_features = estimator.n_features_
             if self.n_features > 1 or (self.n_features == 1 and i >= 0):
                 feature_indices.append([str(j) for j in range(n_features)][i])
 
         tree_branches = self.create_branches(
-            model.tree_.children_left, model.tree_.children_right,
-            model.tree_.threshold, model.tree_.value,
+            estimator.tree_.children_left, estimator.tree_.children_right,
+            estimator.tree_.threshold, estimator.tree_.value,
             feature_indices, 0, 1)
 
         temp_single_method = self.temp('single_method')
         out = temp_single_method.format(method_name=self.method_name,
-                                        method_index=str(model_index),
+                                        method_index=str(estimator_index),
                                         methods=tree_branches,
                                         n_classes=self.n_classes)
         return out
 
     def create_method(self):
         """
-        Build the model methods or functions.
+        Build the estimator methods or functions.
 
         Returns
         -------
@@ -230,7 +230,7 @@ class AdaBoostClassifier(Classifier):
         fn_names = []
         temp_method_calls = self.temp('method_calls', n_indents=2,
                                       skipping=True)
-        for idx, model in enumerate(self.models):
+        for idx, estimator in enumerate(self.estimators):
             cl_name = self.class_name
             fn_name = self.method_name + '_' + str(idx)
             fn_name = temp_method_calls.format(class_name=cl_name,
@@ -242,8 +242,8 @@ class AdaBoostClassifier(Classifier):
 
         # Generate related trees:
         fns = []
-        for idx, model in enumerate(self.models):
-            tree = self.create_single_method(idx, model)
+        for idx, estimator in enumerate(self.estimators):
+            tree = self.create_single_method(idx, estimator)
             fns.append(tree)
         fns = '\n'.join(fns)
 
@@ -259,7 +259,7 @@ class AdaBoostClassifier(Classifier):
 
     def create_class(self, method):
         """
-        Build the model class.
+        Build the estimator class.
 
         Returns
         -------

@@ -12,7 +12,7 @@ class DecisionTreeClassifierGoTest(Go, Classifier, TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierGoTest, self).setUp()
-        self.mdl = DecisionTreeClassifier(random_state=0)
+        self.estimator = DecisionTreeClassifier(random_state=0)
 
     def tearDown(self):
         super(DecisionTreeClassifierGoTest, self).tearDown()

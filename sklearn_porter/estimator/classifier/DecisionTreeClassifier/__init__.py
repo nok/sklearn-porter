@@ -67,30 +67,30 @@ class DecisionTreeClassifier(Classifier):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java',
+    def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param model : AdaBoostClassifier
-            An instance of a trained DecisionTreeClassifier model.
+        :param estimator : AdaBoostClassifier
+            An instance of a trained DecisionTreeClassifier estimator.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
         super(DecisionTreeClassifier, self).__init__(
-            model, target_language=target_language,
+            estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.model = model
-        self.n_features = model.n_features_
-        self.n_classes = model.n_classes_
+        self.estimator = estimator
+        self.n_features = estimator.n_features_
+        self.n_classes = estimator.n_classes_
 
     def export(self, class_name="Brain", method_name="predict", use_repr=True):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
@@ -128,7 +128,7 @@ class DecisionTreeClassifier(Classifier):
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth):
         """
-        Parse and port a single tree model.
+        Parse and port a single tree estimator.
 
         Parameters
         ----------
@@ -190,22 +190,22 @@ class DecisionTreeClassifier(Classifier):
             The tree branches as string.
         """
         feature_indices = []
-        for i in self.model.tree_.feature:
+        for i in self.estimator.tree_.feature:
             n_features = self.n_features
             if self.n_features > 1 or (self.n_features == 1 and i >= 0):
                 feature_indices.append([str(j) for j in range(n_features)][i])
 
         indentation = 1 if self.target_language in ['java', 'js', 'php', 'ruby'] else 0
         return self.create_branches(
-            self.model.tree_.children_left,
-            self.model.tree_.children_right,
-            self.model.tree_.threshold,
-            self.model.tree_.value,
+            self.estimator.tree_.children_left,
+            self.estimator.tree_.children_right,
+            self.estimator.tree_.threshold,
+            self.estimator.tree_.value,
             feature_indices, 0, indentation)
 
     def create_method(self, class_name, method_name):
         """
-        Build the model method or function.
+        Build the estimator method or function.
 
         Returns
         -------
@@ -222,7 +222,7 @@ class DecisionTreeClassifier(Classifier):
 
     def create_class(self, method, class_name, method_name):
         """
-        Build the model class.
+        Build the estimator class.
 
         Returns
         -------

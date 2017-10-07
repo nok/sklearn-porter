@@ -31,50 +31,50 @@ class MLPRegressor(Regressor):
     }
     # @formatter:on
 
-    def __init__(self, model, target_language='java',
+    def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param model : MLPRegressor
-            An instance of a trained MLPRegressor model.
+        :param estimator : MLPRegressor
+            An instance of a trained MLPRegressor estimator.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
         super(MLPRegressor, self).__init__(
-            model, target_language=target_language,
+            estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.model = model
+        self.estimator = estimator
 
         # Activation function ('identity', 'logistic', 'tanh' or 'relu'):
-        self.hidden_activation = self.model.activation
+        self.hidden_activation = self.estimator.activation
         if self.hidden_activation not in self.hidden_activation_functions:
-            raise ValueError(("The activation function '%s' of the model "
+            raise ValueError(("The activation function '%s' of the estimator "
                               "is not supported.") % self.hidden_activation)
 
-        self.n_layers = self.model.n_layers_
-        self.n_hidden_layers = self.model.n_layers_ - 2
+        self.n_layers = self.estimator.n_layers_
+        self.n_hidden_layers = self.estimator.n_layers_ - 2
 
-        self.n_inputs = len(self.model.coefs_[0])
-        self.n_outputs = self.model.n_outputs_
+        self.n_inputs = len(self.estimator.coefs_[0])
+        self.n_outputs = self.estimator.n_outputs_
 
-        self.hidden_layer_sizes = self.model.hidden_layer_sizes
+        self.hidden_layer_sizes = self.estimator.hidden_layer_sizes
         if isinstance(self.hidden_layer_sizes, int):
             self.hidden_layer_sizes = [self.hidden_layer_sizes]
         self.hidden_layer_sizes = list(self.hidden_layer_sizes)
 
         self.layer_units = \
-            [self.n_inputs] + self.hidden_layer_sizes + [self.model.n_outputs_]
+            [self.n_inputs] + self.hidden_layer_sizes + [self.estimator.n_outputs_]
 
         # Weights:
-        self.coefficients = self.model.coefs_
+        self.coefficients = self.estimator.coefs_
 
         # Bias:
-        self.intercepts = self.model.intercepts_
+        self.intercepts = self.estimator.intercepts_
 
     @property
     def hidden_activation_functions(self):
@@ -83,7 +83,7 @@ class MLPRegressor(Regressor):
 
     def export(self, class_name='Brain', method_name='predict', use_repr=True):
         """
-        Port a trained model to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
@@ -119,7 +119,7 @@ class MLPRegressor(Regressor):
 
     def create_method(self):
         """
-        Build the model method or function.
+        Build the estimator method or function.
 
         Returns
         -------
@@ -170,7 +170,7 @@ class MLPRegressor(Regressor):
 
     def create_class(self, method):
         """
-        Build the model class.
+        Build the estimator class.
 
         Returns
         -------

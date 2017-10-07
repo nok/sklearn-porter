@@ -31,168 +31,121 @@ class Porter(object):
         version = version.decode('utf-8')
     __version__ = str(version).strip()
 
-    def __init__(self, model, language='java', method='predict', **kwargs):
+    def __init__(self, estimator, language='java', method='predict', **kwargs):
         # pylint: disable=unused-argument
         """
-        Port a trained model to the syntax of a chosen
-        programming language.
+        Port a trained model to the syntax
+        of a chosen programming language.
 
         Parameters
         ----------
-        model : sklearn.base.BaseEstimator
-            A trained scikit-learn model.
-
         language : {'c', 'go', 'java', 'js', 'php', 'ruby'}, default 'java'
             The required target programming language.
 
         method : {'predict', 'predict_proba'}, default 'predict'
             The target prediction method.
         """
-        self.model = model
-        self.output = ''
 
-        # Determine the imported scikit-learn version:
-        self.major, self.minor, self.patch = Porter.read_sklearn_version()
+        # Check language support:
+        language = str(language).strip().lower()
+        if language not in ['c', 'go', 'java', 'js', 'php', 'ruby']:
+            error = "The given language '{}' isn't supported.".format(language)
+            raise AttributeError(error)
+        self.target_language = language
 
-        # Extract algorithm from 'Pipeline':
+        # Check method support:
+        method = str(method).strip().lower()
+        if method not in ['predict', 'predict_proba']:
+            error = "The given method '{}' isn't supported.".format(method)
+            raise AttributeError(error)
+        self.target_method = method
+
+        # Determine the local version of sklearn:
+        from sklearn import __version__ as sklearn_ver
+        sklearn_ver = str(sklearn_ver).split('.')
+        sklearn_ver = [int(v) for v in sklearn_ver]
+        major, minor = sklearn_ver[0], sklearn_ver[1]
+        patch = sklearn_ver[2] if len(sklearn_ver) >= 3 else 0
+        self.sklearn_ver = (major, minor, patch)
+
+        # Extract estimator from 'Pipeline':
         # sklearn version >= 0.15.0
-        if self.major > 0 or (self.major == 0 and self.minor >= 15):
+        if not hasattr(self, 'estimator') and self.sklearn_ver[:2] >= (0, 15):
             from sklearn.pipeline import Pipeline
-            if isinstance(self.model, Pipeline):
-                if hasattr(self.model, '_final_estimator') and \
-                                self.model._final_estimator is not None:
-                    self.model = self.model._final_estimator
+            if isinstance(estimator, Pipeline):
+                if hasattr(estimator, '_final_estimator') and \
+                                estimator._final_estimator is not None:
+                    self.estimator = estimator._final_estimator
 
-        # Extract algorithm from optimizer (GridSearchCV, RandomizedSearchCV):
+        # Extract estimator from optimizer (GridSearchCV, RandomizedSearchCV):
         # sklearn version >= 0.19.0
-        if self.major > 0 or (self.major == 0 and self.minor >= 19):
+        if not hasattr(self, 'estimator') and self.sklearn_ver[:2] >= (0, 19):
             from sklearn.model_selection._search import GridSearchCV
             from sklearn.model_selection._search import RandomizedSearchCV
             optimizers = (GridSearchCV, RandomizedSearchCV)
-            if isinstance(self.model, optimizers):
-                if hasattr(self.model, 'best_estimator_') and \
-                        hasattr(self.model.best_estimator_, '_final_estimator'):
-                    self.model = self.model.best_estimator_._final_estimator
+            if isinstance(estimator, optimizers):
+                if hasattr(estimator, 'best_estimator_') and \
+                        hasattr(estimator.best_estimator_, '_final_estimator'):
+                    self.estimator = estimator.best_estimator_._final_estimator
 
-        # Algorithm name:
-        self.algorithm_name = str(type(self.model).__name__)
+        if not hasattr(self, 'estimator'):
+            self.estimator = estimator
 
-        # Algorithm type:
-        if isinstance(self.model, self.classifiers):
-            self.algorithm_type = 'classifier'
-        elif isinstance(self.model, self.regressors):
-            self.algorithm_type = 'regressor'
+        # Determine the local supported estimators:
+        self.supported_classifiers = self._classifiers
+        self.supported_regressors = self._regressors
+
+        # Read algorithm name and type:
+        self.estimator_name = str(type(self.estimator).__name__)
+        if isinstance(self.estimator, self.supported_classifiers):
+            self.estimator_type = 'classifier'
+        elif isinstance(self.estimator, self.supported_regressors):
+            self.estimator_type = 'regressor'
         else:
-            error = "Currently the given model '{model}' isn't" \
+            error = "Currently the given estimator '{estimator}' isn't" \
                     " supported.".format(**self.__dict__)
             raise ValueError(error)
 
-        # Import model class:
-        if sys.version_info < (3, 3):
-            package = 'estimator.{algorithm_type}.{algorithm_name}'
+        # Import estimator class:
+        if sys.version_info[:2] < (3, 3):
+            pckg = 'estimator.{estimator_type}.{estimator_name}'
             level = -1
         else:
-            package = 'sklearn_porter.estimator.{algorithm_type}.{algorithm_name}'
+            pckg = 'sklearn_porter.estimator.{estimator_type}.{estimator_name}'
             level = 0
-        package = package.format(**self.__dict__)
+        pckg = pckg.format(**self.__dict__)
         try:
-            clazz = __import__(package, globals(), locals(),
-                               [self.algorithm_name], level)
-            clazz = getattr(clazz, self.algorithm_name)
+            clazz = __import__(pckg, globals(), locals(),
+                               [self.estimator_name], level)
+            clazz = getattr(clazz, self.estimator_name)
         except ImportError:
             error = "Currently the given model '{algorithm_name}' " \
                     "isn't supported.".format(**self.__dict__)
             raise AttributeError(error)
 
         # Set target programming language:
-        language = str(language).strip().lower()
         pwd = os.path.dirname(__file__)
-        template_dir = os.path.join(pwd, 'estimator', self.algorithm_type,
-                                    self.algorithm_name, 'templates', language)
+        template_dir = os.path.join(pwd, 'estimator', self.estimator_type,
+                                    self.estimator_name, 'templates',
+                                    self.target_language)
         has_template = os.path.isdir(template_dir)
         if not has_template:
             error = "Currently there is no support of the combination " \
                     "of the estimator '{}' and the target programming " \
-                    "language '{}'.".format(self.algorithm_name, language)
+                    "language '{}'.".format(self.estimator_name,
+                                            self.target_language)
             raise AttributeError(error)
-        self.target_language = language
 
         # Set target prediction method:
-        has_method = method in set(getattr(clazz, 'SUPPORTED_METHODS'))
+        has_method = self.target_method in \
+                     set(getattr(clazz, 'SUPPORTED_METHODS'))
         if not has_method:
             error = "Currently the given model method" \
-                    " '{}' isn't supported.".format(method)
+                    " '{}' isn't supported.".format(self.target_method)
             raise AttributeError(error)
-        self.target_method = method
 
         # Create instance with all parameters:
         self.template = clazz(**self.__dict__)
-
-        self.tested_env_dependencies = False
-
-    @staticmethod
-    def read_sklearn_version():
-        from sklearn import __version__ as version
-        version = str(version).split('.')
-        version = [int(v) for v in version]
-        major, minor = version[0], version[1]
-        patch = version[2] if len(version) == 3 else 0
-        return major, minor, patch
-
-    @property
-    def classifiers(self):
-        """
-        Get a set of supported classifiers.
-
-        Returns
-        -------
-        classifiers : {set}
-            The supported classifiers.
-        """
-
-        # sklearn version < 0.18.0
-        classifiers = (
-            AdaBoostClassifier,
-            BernoulliNB,
-            DecisionTreeClassifier,
-            ExtraTreesClassifier,
-            GaussianNB,
-            KNeighborsClassifier,
-            LinearSVC,
-            NuSVC,
-            RandomForestClassifier,
-            SVC,
-        )
-
-        # sklearn version >= 0.18.0
-        if self.major > 0 or (self.major == 0 and self.minor >= 18):
-            from sklearn.neural_network.multilayer_perceptron \
-                import MLPClassifier
-            classifiers += (MLPClassifier, )
-
-        return classifiers
-
-    @property
-    def regressors(self):
-        """
-        Get a set of supported regressors.
-
-        Returns
-        -------
-        regressors : {set}
-            The supported regressors.
-        """
-
-        # sklearn version < 0.18.0
-        regressors = ()
-
-        # sklearn version >= 0.18.0
-        if self.major > 0 or (self.major == 0 and self.minor >= 18):
-            from sklearn.neural_network.multilayer_perceptron \
-                import MLPRegressor
-            regressors += (MLPRegressor, )
-
-        return regressors
 
     def export(self, class_name='Brain', method_name='predict',
                use_repr=True, details=False, **kwargs):
@@ -225,15 +178,14 @@ class Porter(object):
         output = self.template.export(class_name=class_name,
                                       method_name=method_name,
                                       use_repr=use_repr)
-        self.output = output
         if not details:
             return output
 
         language = self.target_language
-        filename = Porter.get_filename(class_name, language)
-        comp_cmd, exec_cmd = Porter.get_commands(filename,
-                                                 class_name,
-                                                 language)
+        filename = Porter._get_filename(class_name, language)
+        comp_cmd, exec_cmd = Porter._get_commands(filename,
+                                                  class_name,
+                                                  language)
         output = {
             'model': str(output),
             'filename': filename,
@@ -244,8 +196,8 @@ class Porter(object):
                 'execution': exec_cmd
             },
             'algorithm': {
-                'type': self.algorithm_type,
-                'name': self.algorithm_name
+                'type': self.estimator_type,
+                'name': self.estimator_name
             }
         }
         return output
@@ -277,6 +229,61 @@ class Porter(object):
         loc = locals()
         loc.pop(str('self'))
         return self.export(**loc)
+
+    @property
+    def _classifiers(self):
+        """
+        Get a set of supported classifiers.
+
+        Returns
+        -------
+        classifiers : {set}
+            The set of supported classifiers.
+        """
+
+        # sklearn version < 0.18.0
+        classifiers = (
+            AdaBoostClassifier,
+            BernoulliNB,
+            DecisionTreeClassifier,
+            ExtraTreesClassifier,
+            GaussianNB,
+            KNeighborsClassifier,
+            LinearSVC,
+            NuSVC,
+            RandomForestClassifier,
+            SVC,
+        )
+
+        # sklearn version >= 0.18.0
+        if self.sklearn_ver[:2] >= (0, 18):
+            from sklearn.neural_network.multilayer_perceptron \
+                import MLPClassifier
+            classifiers += (MLPClassifier, )
+
+        return classifiers
+
+    @property
+    def _regressors(self):
+        """
+        Get a set of supported regressors.
+
+        Returns
+        -------
+        regressors : {set}
+            The set of supported regressors.
+        """
+
+        # sklearn version < 0.18.0
+        regressors = ()
+
+        # sklearn version >= 0.18.0
+        if self.sklearn_ver[:2] >= (0, 18):
+            from sklearn.neural_network.multilayer_perceptron \
+                import MLPRegressor
+            regressors += (MLPRegressor, )
+
+        return regressors
 
     def predict(self, X, class_name='Brain', method_name='predict',
                 tnp_dir='tmp', keep_tmp_dir=False, use_repr=True):
@@ -312,9 +319,9 @@ class Porter(object):
         """
 
         # Dependencies:
-        if not self.tested_env_dependencies:
-            Porter.test_dependencies(self.target_language)
-            self.tested_env_dependencies = True
+        if not hasattr(self, '_tested_dependencies'):
+            self._test_dependencies()
+            self._tested_dependencies = True
 
         # Support:
         if 'predict' not in set(self.template.SUPPORTED_METHODS):
@@ -330,7 +337,7 @@ class Porter(object):
         details = self.export(class_name=class_name,
                               method_name=method_name,
                               use_repr=use_repr, details=True)
-        filename = Porter.get_filename(class_name, self.target_language)
+        filename = Porter._get_filename(class_name, self.target_language)
         target_file = os.path.join(tnp_dir, filename)
         with open(target_file, str('w')) as file_:
             file_.write(details.get('model'))
@@ -397,12 +404,11 @@ class Porter(object):
         X = np.array(X)
         if not X.ndim > 1:
             X = np.array([X])
-        y_true = self.model.predict(X)
+        y_true = self.estimator.predict(X)
         y_pred = self.predict(X, use_repr=use_repr)
         return accuracy_score(y_true, y_pred, normalize=normalize)
 
-    @staticmethod
-    def test_dependencies(language):
+    def _test_dependencies(self):
         """
         Check all target programming and operating
         system dependencies.
@@ -412,25 +418,27 @@ class Porter(object):
         :param language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
             The target programming language.
         """
-        lang = str(language)
+        lang = self.target_language
+
+        if sys.platform in ('cygwin', 'win32', 'win64'):
+            error = "The required dependencies aren't available on Windows."
+            raise EnvironmentError(error)
 
         # Dependencies:
         depends = {
-            'c': ['gcc'],
-            'java': ['java', 'javac'],
-            'js': ['node'],
-            # 'go': [],
-            'php': ['php'],
-            'ruby': ['ruby']
+            'c': ('gcc'),
+            'java': ('java', 'javac'),
+            'js': ('node'),
+            'go': ('go'),
+            'php': ('php'),
+            'ruby': ('ruby')
         }
-        all_depends = depends.get(lang) + ['mkdir', 'rm']
+        all_depends = depends.get(lang) + ('mkdir', 'rm')
 
-        # Test:
         cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
         for exe in all_depends:
             cmd = cmd.format(exe)
-            status = subp.check_output(cmd, shell=True,
-                                       stderr=subp.STDOUT)
+            status = subp.check_output(cmd, shell=True, stderr=subp.STDOUT)
             if sys.version_info >= (3, 3) and isinstance(status, bytes):
                 status = status.decode('utf-8')
             status = str(status).strip()
@@ -440,7 +448,7 @@ class Porter(object):
                 raise SystemError(error)
 
     @staticmethod
-    def get_filename(class_name, language):
+    def _get_filename(class_name, language):
         """
         Generate the specific filename.
 
@@ -475,7 +483,7 @@ class Porter(object):
         return '{}.{}'.format(name, suffix)
 
     @staticmethod
-    def get_commands(filename, class_name, language):
+    def _get_commands(filename, class_name, language):
         """
         Generate the related compilation and
         execution commands.
