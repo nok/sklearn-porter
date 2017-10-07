@@ -469,7 +469,7 @@ class Porter(object):
         lang = str(language)
 
         # Name:
-        if language == 'java':
+        if language in ['java', 'php']:
             name = name.capitalize()
 
         # Suffix:
@@ -513,7 +513,9 @@ class Porter(object):
             # gcc brain.c -o brain
             'c': 'gcc {} -lm -o {}'.format(fname, cname),
             # javac Brain.java
-            'java': 'javac {}'.format(fname)
+            'java': 'javac {}'.format(fname),
+            # go build -o brain brain.go
+            'go': 'go build -o {} {}.go'.format(cname, cname)
         }
         comp_cmd = comp_vars.get(lang, None)
 
@@ -525,10 +527,12 @@ class Porter(object):
             'java': 'java -classpath . {}'.format(cname.capitalize()),
             # node brain.js
             'js': 'node {}'.format(fname),
-            # php -f brain.php
-            'php': 'php -f {}'.format(fname),
+            # php -f Brain.php
+            'php': 'php -f {}'.format(cname.capitalize()),
             # ruby brain.rb
-            'ruby': 'ruby {}'.format(fname)
+            'ruby': 'ruby {}'.format(fname),
+            # ./brain
+            'go': os.path.join('.', cname),
         }
         exec_cmd = exec_vars.get(lang, None)
 
