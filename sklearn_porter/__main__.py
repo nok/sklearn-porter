@@ -15,30 +15,33 @@ def parse_args(args):
         epilog=(
             'More details on: '
             'https://github.com/nok/sklearn-porter'))
-    parser.add_argument(
+    parser._action_groups.pop()
+    required = parser.add_argument_group('Required arguments')
+    optional = parser.add_argument_group('Optional arguments')
+    required.add_argument(
         '--input', '-i',
         required=True,
         help=(
             'Path to an exported estimator '
             'in pickle (.pkl) format.'))
-    parser.add_argument(
+    optional.add_argument(
         '--output', '-o',
         required=False,
         help=(
             'Path to the destination directory '
             'where the transpiled estimator will be '
             'stored.'))
-    parser.add_argument(
+    optional.add_argument(
         '--class_name',
         default='Brain',
         required=False,
         help='Define the class name in the final output.')
-    parser.add_argument(
+    optional.add_argument(
         '--method_name',
         default='predict',
         required=False,
         help='Define the method name in the final output.')
-    parser.add_argument(
+    optional.add_argument(
         '--pipe', '-p',
         required=False,
         default=False,
@@ -52,14 +55,14 @@ def parse_args(args):
         'php': 'PHP',
         'ruby': 'Ruby'
     }
-    parser.add_argument(
+    optional.add_argument(
         '--language', '-l',
         choices=languages.keys(),
         default='java',
         required=False,
         help=argparse.SUPPRESS)
     for key, lang in list(languages.items()):
-        parser.add_argument(
+        optional.add_argument(
             '--{}'.format(key),
             action='store_true',
             help='Set {} as the target programming language.'.format(lang))
