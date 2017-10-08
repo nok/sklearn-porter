@@ -19,15 +19,25 @@ def parse_args(args):
         '--input', '-i',
         required=True,
         help=(
-            'Set the path of an exported estimator '
+            'Path to an exported estimator '
             'in pickle (.pkl) format.'))
     parser.add_argument(
         '--output', '-o',
         required=False,
         help=(
-            'Set the destination directory, '
+            'Path to the destination directory '
             'where the transpiled estimator will be '
             'stored.'))
+    parser.add_argument(
+        '--class_name',
+        default='Brain',
+        required=False,
+        help='Define the class name in the final output.')
+    parser.add_argument(
+        '--method_name',
+        default='predict',
+        required=False,
+        help='Define the method name in the final output.')
     parser.add_argument(
         '--pipe', '-p',
         required=False,
@@ -81,7 +91,11 @@ def main():
     # Port estimator:
     try:
         porter = Porter(estimator, language=language)
-        output = porter.export(details=True)
+        class_name = str(args.get('class_name'))
+        method_name = str(args.get('method_name'))
+        output = porter.export(class_name=class_name,
+                               method_name=method_name,
+                               details=True)
     except Exception as e:
         sys.exit('Error: {}'.format(str(e)))
     else:

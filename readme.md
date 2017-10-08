@@ -239,8 +239,8 @@ joblib.dump(clf, 'estimator.pkl')
 After that the model can be transpiled by using the following command:
 
 ```
-python -m sklearn_porter --input <PICKLE_FILE> [--output <DEST_DIR>] [--pipe] [--c] [--java] [--js] [--go] [--php] [--ruby]
-python -m sklearn_porter -i <PICKLE_FILE> [-o <DEST_DIR>] [-p] [--c] [--java] [--js] [--go] [--php] [--ruby]
+python -m sklearn_porter --input <PICKLE_FILE> [--output <DEST_DIR>] [--class_name <NAME>] [--method_name <NAME>] [--pipe] [--c] [--java] [--js] [--go] [--php] [--ruby]
+python -m sklearn_porter -i <PICKLE_FILE> [-o <DEST_DIR>] [--class_name <NAME>] [--method_name <NAME>] [-p] [--c] [--java] [--js] [--go] [--php] [--ruby]
 ```
 
 For instance the following command transpiles the estimator to the target programming language JavaScript:
