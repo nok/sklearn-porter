@@ -1,5 +1,15 @@
 class {class_name} {{
 
+    private double[][] layers;
+    private double[][][] weights;
+    private double[][] bias;
+
+    public {class_name}(double[][] layers, double[][][] weights, double[][] bias) {{
+        this.layers = layers;
+        this.weights = weights;
+        this.bias = bias;
+    }}
+
     {activation_function}
 
     {output_function}
@@ -8,11 +18,21 @@ class {class_name} {{
 
     public static void main(String[] args) {{
         if (args.length == {n_features}) {{
-            double[] atts = new double[args.length];
+            // Features:
+            double[] features = new double[args.length];
             for (int i = 0, l = args.length; i < l; i++) {{
-                atts[i] = Double.parseDouble(args[i]);
+                features[i] = Double.parseDouble(args[i]);
             }}
-            System.out.println({class_name}.{method_name}(atts));
+
+            // Model data:
+            {layers}
+            {weights}
+            {bias}
+
+            // Prediction:
+            {class_name} brain = new {class_name}(layers, weights, bias);
+            int estimation = brain.{method_name}(features);
+            System.out.println(estimation);
         }}
     }}
 }}

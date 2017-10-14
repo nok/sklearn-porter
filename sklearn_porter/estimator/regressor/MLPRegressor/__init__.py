@@ -126,13 +126,31 @@ class MLPRegressor(Regressor):
         :return out : string
             The built method as string.
         """
+        temp_method = self.temp('method', skipping=True, n_indents=1)
+        out = temp_method.format(class_name=self.class_name,
+                                 method_name=self.method_name,
+                                 n_features=self.n_inputs,
+                                 n_classes=self.n_outputs)
+        return out
+
+    def create_class(self, method):
+        """
+        Build the estimator class.
+
+        Returns
+        -------
+        :return out : string
+            The built class as string.
+        """
+        hidden_act_type = 'activation_fn.' + self.hidden_activation
+
         temp_arr = self.temp('arr')
         temp_arr__ = self.temp('arr[][]')
         temp_arr___ = self.temp('arr[][][]')
 
         # Activations:
         layers = list(self._get_activations())
-        layers = ', '.join(['atts'] + layers)
+        layers = ', '.join(layers)
         layers = temp_arr__.format(data_type='double',
                                    name='layers',
                                    values=layers)
@@ -148,36 +166,15 @@ class MLPRegressor(Regressor):
             coefficients.append(temp_arr.format(layer_weights))
         coefficients = ', '.join(coefficients)
         coefficients = temp_arr___.format(data_type='double',
-                                          name='COEFFICIENTS',
+                                          name='weights',
                                           values=coefficients)
 
         # Intercepts (biases):
         intercepts = list(self._get_intercepts())
         intercepts = ', '.join(intercepts)
         intercepts = temp_arr__.format(data_type='double',
-                                       name='INTERCEPTS',
+                                       name='bias',
                                        values=intercepts)
-
-        temp_method = self.temp('method', skipping=True, n_indents=2)
-        out = temp_method.format(class_name=self.class_name,
-                                 method_name=self.method_name,
-                                 n_features=self.n_inputs,
-                                 n_classes=self.n_outputs,
-                                 layers=layers,
-                                 coefficients=coefficients,
-                                 intercepts=intercepts)
-        return out
-
-    def create_class(self, method):
-        """
-        Build the estimator class.
-
-        Returns
-        -------
-        :return out : string
-            The built class as string.
-        """
-        hidden_act_type = 'activation_fn.' + self.hidden_activation
 
         if self.hidden_activation == 'logistic':
             if self.n_hidden_layers == 1:
@@ -185,14 +182,17 @@ class MLPRegressor(Regressor):
             else:
                 hidden_act_type = 'activation_fn.logistic_multiple'
 
-        hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=2)
+        hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
         temp_class = self.temp('class')
         file_name = '{}.js'.format(self.class_name.lower())
         out = temp_class.format(class_name=self.class_name,
                                 method_name=self.method_name, method=method,
                                 n_features=self.n_inputs,
                                 activation_function=hidden_act,
-                                file_name=file_name)
+                                file_name=file_name,
+                                weights=coefficients,
+                                bias=intercepts,
+                                layers=layers)
         return out
 
     def _get_intercepts(self):

@@ -150,6 +150,24 @@ class MLPClassifier(Classifier):
         :return out : string
             The built method as string.
         """
+        method_type = 'method.{}'.format(self.prefix)
+        temp_method = self.temp(method_type, skipping=True, n_indents=1)
+        method = temp_method.format(class_name=self.class_name,
+                                    method_name=self.method_name,
+                                    n_features=self.n_inputs,
+                                    n_classes=self.n_outputs)
+        out = self.indent(method, n_indents=0, skipping=True)
+        return out
+
+    def create_class(self, method):
+        """
+        Build the estimator class.
+
+        Returns
+        -------
+        :return out : string
+            The built class as string.
+        """
 
         temp_arr = self.temp('arr')
         temp_arr__ = self.temp('arr[][]')
@@ -157,7 +175,7 @@ class MLPClassifier(Classifier):
 
         # Activations:
         layers = list(self._get_activations())
-        layers = ', '.join(['atts'] + layers)
+        layers = ', '.join(layers)
         layers = temp_arr__.format(type='double', name='layers', values=layers)
 
         # Coefficients (weights):
@@ -171,45 +189,22 @@ class MLPClassifier(Classifier):
             coefficients.append(temp_arr.format(layer_weights))
         coefficients = ', '.join(coefficients)
         coefficients = temp_arr___.format(type='double',
-                                          name='COEFFICIENTS',
+                                          name='weights',
                                           values=coefficients)
 
         # Intercepts (biases):
         intercepts = list(self._get_intercepts())
         intercepts = ', '.join(intercepts)
         intercepts = temp_arr__.format(type='double',
-                                       name='INTERCEPTS',
+                                       name='bias',
                                        values=intercepts)
 
-        method_type = 'method.{}'.format(self.prefix)
-        temp_method = self.temp(method_type, skipping=True, n_indents=1)
-        method = temp_method.format(class_name=self.class_name,
-                                    method_name=self.method_name,
-                                    n_features=self.n_inputs,
-                                    n_classes=self.n_outputs,
-                                    layers=layers,
-                                    coefficients=coefficients,
-                                    intercepts=intercepts)
-        n_indents = 1 if self.target_language in ['js'] else 0
-        out = self.indent(method, n_indents=n_indents, skipping=True)
-        return out
-
-    def create_class(self, method):
-        """
-        Build the estimator class.
-
-        Returns
-        -------
-        :return out : string
-            The built class as string.
-        """
         hidden_act_type = 'activation_fn.' + self.hidden_activation
-        n_indents = 1 if self.target_language in ['java'] else 2
         hidden_act = self.temp(hidden_act_type, skipping=True,
-                               n_indents=n_indents)
+                               n_indents=1)
         output_act_type = 'output_fn.' + self.output_activation
         output_act = self.temp(output_act_type, skipping=True,
-                               n_indents=n_indents)
+                               n_indents=1)
 
         temp_class = self.temp('class')
         file_name = '{}.js'.format(self.class_name.lower())
@@ -218,7 +213,10 @@ class MLPClassifier(Classifier):
                                 n_features=self.n_inputs,
                                 activation_function=hidden_act,
                                 output_function=output_act,
-                                file_name=file_name)
+                                file_name=file_name,
+                                weights=coefficients,
+                                bias=intercepts,
+                                layers=layers)
         return out
 
     def _get_intercepts(self):

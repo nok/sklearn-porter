@@ -1,4 +1,4 @@
 // Activation function (identity):
-public static double[] compAct(double[] v) {
+private double[] compAct(double[] v) {
     return v;
 }

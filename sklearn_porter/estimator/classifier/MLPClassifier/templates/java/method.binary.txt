@@ -1,24 +1,24 @@
-public static int {method_name}(double[] atts) {{
-    if (atts.length != {n_features}) {{ return -1; }}
+public int {method_name}(double[] neurons) {{
+    if (neurons.length != {n_features}) return -1;
 
-    {coefficients}
-    {intercepts}
+    double[][] network = new double[this.layers.length + 1][];
+    System.arraycopy(new double[][] {{neurons}}, 0, network, 0, 1);
+    System.arraycopy(this.layers, 0, network, 1, this.layers.length);
 
-    {layers}
-    for (int i = 0; i < layers.length - 1; i++) {{
-        for (int j = 0; j < layers[i + 1].length; j++) {{
-            for (int l = 0; l < layers[i].length; l++) {{
-                layers[i + 1][j] += layers[i][l] * COEFFICIENTS[i][l][j];
+    for (int i = 0; i < network.length - 1; i++) {{
+        for (int j = 0; j < network[i + 1].length; j++) {{
+            for (int l = 0; l < network[i].length; l++) {{
+                network[i + 1][j] += network[i][l] * this.weights[i][l][j];
             }}
-            layers[i + 1][j] += INTERCEPTS[i][j];
+            network[i + 1][j] += this.bias[i][j];
         }}
-        if ((i + 1) < (layers.length - 1)) {{
-            layers[i + 1] = {class_name}.compAct(layers[i + 1]);
+        if ((i + 1) < (network.length - 1)) {{
+            network[i + 1] = this.compAct(network[i + 1]);
         }}
     }}
-    layers[layers.length - 1] = {class_name}.compOut(layers[layers.length - 1]);
+    network[network.length - 1] = this.compOut(network[network.length - 1]);
 
-    if (layers[layers.length - 1][0] > .5) {{
+    if (network[network.length - 1][0] > .5) {{
         return 1;
     }}
     return 0;

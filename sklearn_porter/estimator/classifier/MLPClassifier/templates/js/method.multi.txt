@@ -1,33 +1,27 @@
-// Model data:
-const {coefficients}
-const {intercepts}
+this.{method_name} = function(neurons) {{
+    if (neurons.length != {n_features}) return -1;
+    var network = [neurons].concat(layers);
 
-return {{
-    {method_name}: function(atts) {{
-        if (atts.length != {n_features}) {{ return -1; }};
-        var {layers}
-
-        for (var i = 0; i < layers.length - 1; i++) {{
-            for (var j = 0; j < layers[i + 1].length; j++) {{
-                for (var l = 0; l < layers[i].length; l++) {{
-                    layers[i + 1][j] += layers[i][l] * COEFFICIENTS[i][l][j];
-                }}
-                layers[i + 1][j] += INTERCEPTS[i][j];
+    for (var i = 0; i < network.length - 1; i++) {{
+        for (var j = 0; j < network[i + 1].length; j++) {{
+            for (var l = 0; l < network[i].length; l++) {{
+                network[i + 1][j] += network[i][l] * weights[i][l][j];
             }}
-            if ((i + 1) < (layers.length - 1)) {{
-                layers[i + 1] = compAct(layers[i + 1]);
-            }}
+            network[i + 1][j] += bias[i][j];
         }}
-        layers[layers.length - 1] = compOut(layers[layers.length - 1]);
-
-        var classIdx = -1,
-            classVal = Number.NEGATIVE_INFINITY;
-        for (var i = 0, l = layers[layers.length - 1].length; i < l; i++) {{
-            if (layers[layers.length - 1][i] > classVal) {{
-                classVal = layers[layers.length - 1][i];
-                classIdx = i;
-            }}
+        if ((i + 1) < (network.length - 1)) {{
+            network[i + 1] = compAct(network[i + 1]);
         }}
-        return classIdx;
     }}
+    network[network.length - 1] = compOut(network[network.length - 1]);
+
+    var classIdx = -1,
+        classVal = Number.NEGATIVE_INFINITY;
+    for (var i = 0, l = network[network.length - 1].length; i < l; i++) {{
+        if (network[network.length - 1][i] > classVal) {{
+            classVal = network[network.length - 1][i];
+            classIdx = i;
+        }}
+    }}
+    return classIdx;
 }};
