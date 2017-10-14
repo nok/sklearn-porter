@@ -70,17 +70,6 @@ class BernoulliNB(Classifier):
         self.priors = temp_arr_.format(type='double', name='priors',
                                        values=priors)
 
-        # Create probabilities:
-        # probs = []
-        # for prob in estimator.feature_log_prob_:
-        #     tmp = [self.temp('type').format(repr(p)) for p in prob]
-        #     tmp = self.temp('arr').format(', '.join(tmp))
-        #     probs.append(tmp)
-        # probs = ', '.join(probs)
-        # self.pos_probs = self.temp('arr[][]').format(type='double',
-        #                                              name='posProbs',
-        #                                              values=probs)
-
         # Create negative probabilities:
         neg_prob = np.log(1 - np.exp(estimator.feature_log_prob_))
         probs = []

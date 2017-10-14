@@ -1,23 +1,18 @@
-this.{method_name} = function(atts) {{
-
-    {priors}
-    {neg_probs}
-    {del_probs}
-
+this.{method_name} = function(features) {{
     var jll = new Array({n_classes});
     for (var i = 0; i < {n_classes}; i++) {{
         var sum = 0.;
         for (var j = 0; j < {n_features}; j++) {{
-            sum += atts[i] * delProbs[j][i];
+            sum += features[i] * this.delProbs[j][i];
         }}
         jll[i] = sum;
     }}
     for (var i = 0; i < {n_classes}; i++) {{
         var sum = 0.;
         for (var j = 0; j < {n_features}; j++) {{
-            sum += negProbs[i][j];
+            sum += this.negProbs[i][j];
         }}
-        jll[i] += priors[i] + sum;
+        jll[i] += this.priors[i] + sum;
     }}
 
     var highestLikeli = -1;
@@ -30,4 +25,3 @@ this.{method_name} = function(atts) {{
     }}
     return classIndex;
 }};
-
