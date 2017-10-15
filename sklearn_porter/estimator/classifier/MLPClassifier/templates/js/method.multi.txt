@@ -14,9 +14,9 @@ this.{method_name} = function(neurons) {{
     }}
     network[network.length - 1] = compute(this.output, network[network.length - 1]);
 
-    var idx = 0;
+    var classIdx = 0;
     for (var i = 0, l = network[network.length - 1].length; i < l; i++) {{
-        idx = network[network.length - 1][i] > network[network.length - 1][idx] ? i : idx;
+        classIdx = network[network.length - 1][i] > network[network.length - 1][classIdx] ? i : classIdx;
     }}
-    return idx;
+    return classIdx;
 }};

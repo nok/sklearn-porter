@@ -60,7 +60,7 @@ var KNeighborsClassifier = function(nNeighbors, nTemplates, nClasses, power, X, 
     };
     
     this.predict = function(features) {
-        var classIdx = -1, i;
+        var classIdx = 0, i;
         if (this.nNeighbors == 1) {
             var minDist = Number.POSITIVE_INFINITY,
                 curDist;
@@ -83,12 +83,8 @@ var KNeighborsClassifier = function(nNeighbors, nTemplates, nClasses, power, X, 
             for (i = 0; i < this.nNeighbors; i++) {
                 classes[dists[i].clazz]++;
             }
-            var classVal = -1;
             for (i = 0; i < this.nClasses; i++) {
-                if (classes[i] > classVal) {
-                    classVal = classes[i];
-                    classIdx = i;
-                }
+                classIdx = classes[i] > classes[classIdx] ? i : classIdx;
             }
         }
         return classIdx;

@@ -102,11 +102,11 @@ class MLPClassifier {
         }
         network[network.length - 1] = this.compute(this.output, network[network.length - 1]);
     
-        int index = 0;
+        int classIdx = 0;
         for (int i = 0; i < network[network.length - 1].length; i++) {
-            index = network[network.length - 1][i] > network[network.length - 1][index] ? i : index;
+            classIdx = network[network.length - 1][i] > network[network.length - 1][classIdx] ? i : classIdx;
         }
-        return index;
+        return classIdx;
     }
 
     public static void main(String[] args) {
@@ -124,8 +124,8 @@ class MLPClassifier {
             double[][] bias = {{0.27329993209430209, 0.045310867633656354, 0.27288324760831439, 0.077849850445091434, -0.08678817617553182, -5.4942767215827209e-05, 0.069049906095333638, -0.001351882234418093, 0.37269129695600306, 0.24642350794307871, -0.057710905515910849, 0.27602091532766571, -0.25701844183485578, -0.25086548614215542, -0.24291339229998862, 0.0058787688780131157, -0.35095977227260644, 0.32759995581220519, 0.1820224617249597, -0.33311222928102641, -0.14338741581704045, -0.15890098532849142, -0.23565265831762289, 0.21039815571773038, -0.13135057234436923, 0.27459945142322323, 0.10236286853974209, 0.23734657497494971, 0.29179121899019184, 0.27022356890602728, -0.016817592366898296, 0.097021609456156704, 0.19801869110809275, -0.21204201739373746, -0.074780231104254274, 0.066208351573373847, -0.2692023201710636, 0.066055748646204768, -0.061275656952743306, 0.21793674702065699, -0.10428472854774561, 0.2793289505623322, 0.078508256139697211, -0.21688633895597972, 0.23537233053629866, 0.059800248313777858, -0.28090048094084513, 0.038273387641640809, 0.13206836674617714, 0.31958941316477846}, {0.36240186249890116, 0.25839314565174937, -0.42179831644378363}};
 
             // Prediction:
-            MLPClassifier brain = new MLPClassifier("tanh", "softmax", layers, weights, bias);
-            int estimation = brain.predict(features);
+            MLPClassifier clf = new MLPClassifier("tanh", "softmax", layers, weights, bias);
+            int estimation = clf.predict(features);
             System.out.println(estimation);
 
         }

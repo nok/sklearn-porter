@@ -1,5 +1,6 @@
 this.{method_name} = function(features) {{
     var jll = new Array({n_classes});
+
     for (var i = 0; i < {n_classes}; i++) {{
         var sum = 0.;
         for (var j = 0; j < {n_features}; j++) {{
@@ -14,14 +15,10 @@ this.{method_name} = function(features) {{
         }}
         jll[i] += this.priors[i] + sum;
     }}
+    var classIdx = 0;
 
-    var highestLikeli = -1;
-    var classIndex = -1;
-    for (var i = 0; i < {n_classes}; i++) {{
-        if (jll[i] > highestLikeli) {{
-            highestLikeli = jll[i];
-            classIndex = i;
-        }}
+    for (var i = 0, l = {n_classes}; i < l; i++) {{
+        classIdx = jll[i] > jll[classIdx] ? i : classIdx;
     }}
-    return classIndex;
+    return classIdx;
 }};

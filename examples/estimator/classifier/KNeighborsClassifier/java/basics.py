@@ -75,7 +75,7 @@ class KNeighborsClassifier {
     }
     
     public int predict(double[] features) {
-        int classIdx = -1;
+        int classIdx = 0;
         if (this.nNeighbors == 1) {
             double minDist = Double.POSITIVE_INFINITY;
             double curDist;
@@ -101,12 +101,8 @@ class KNeighborsClassifier {
             for (Neighbor neighbor : dists.subList(0, this.nNeighbors)) {
                 classes[neighbor.clazz]++;
             }
-            int classVal = -1;
             for (int i = 0; i < this.nClasses; i++) {
-                if (classes[i] > classVal) {
-                    classVal = classes[i];
-                    classIdx = i;
-                }
+                classIdx = classes[i] > classes[classIdx] ? i : classIdx;
             }
         }
         return classIdx;

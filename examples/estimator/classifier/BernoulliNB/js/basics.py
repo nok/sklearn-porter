@@ -25,6 +25,7 @@ var BernoulliNB = function(priors, negProbs, delProbs) {
 
     this.predict = function(features) {
         var jll = new Array(3);
+    
         for (var i = 0; i < 3; i++) {
             var sum = 0.;
             for (var j = 0; j < 4; j++) {
@@ -39,16 +40,12 @@ var BernoulliNB = function(priors, negProbs, delProbs) {
             }
             jll[i] += this.priors[i] + sum;
         }
+        var classIdx = 0;
     
-        var highestLikeli = -1;
-        var classIndex = -1;
-        for (var i = 0; i < 3; i++) {
-            if (jll[i] > highestLikeli) {
-                highestLikeli = jll[i];
-                classIndex = i;
-            }
+        for (var i = 0, l = 3; i < l; i++) {
+            classIdx = jll[i] > jll[classIdx] ? i : classIdx;
         }
-        return classIndex;
+        return classIdx;
     };
 
 };
@@ -56,15 +53,17 @@ var BernoulliNB = function(priors, negProbs, delProbs) {
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv.length - 2 === 4) {
 
+        // Features:
+        var features = process.argv.slice(2);
+
         // Parameters:
         var priors = [-1.0986122886681096, -1.0986122886681096, -1.0986122886681096];
         var negProbs = [[-3.9512437185814138, -3.9512437185814138, -3.9512437185814138, -3.9512437185814138], [-3.9512437185814138, -3.9512437185814138, -3.9512437185814138, -3.9512437185814138], [-3.9512437185814138, -3.9512437185814138, -3.9512437185814138, -3.9512437185814138]];
         var delProbs = [[3.931825632724312, 3.931825632724312, 3.931825632724312], [3.931825632724312, 3.931825632724312, 3.931825632724312], [3.931825632724312, 3.931825632724312, 3.931825632724312], [3.931825632724312, 3.931825632724312, 3.931825632724312]];
 
         // Estimator:
-        const brain = new BernoulliNB(priors, negProbs, delProbs);
-        var features = process.argv.slice(2);
-        var prediction = brain.predict(features);
+        var clf = new BernoulliNB(priors, negProbs, delProbs);
+        var prediction = clf.predict(features);
         console.log(prediction);
 
     }

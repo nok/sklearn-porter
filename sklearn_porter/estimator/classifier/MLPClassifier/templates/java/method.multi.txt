@@ -16,9 +16,9 @@ public int {method_name}(double[] neurons) {{
     }}
     network[network.length - 1] = this.compute(this.output, network[network.length - 1]);
 
-    int idx = 0;
+    int classIdx = 0;
     for (int i = 0; i < network[network.length - 1].length; i++) {{
-        idx = network[network.length - 1][i] > network[network.length - 1][idx] ? i : idx;
+        classIdx = network[network.length - 1][i] > network[network.length - 1][classIdx] ? i : classIdx;
     }}
-    return idx;
+    return classIdx;
 }}

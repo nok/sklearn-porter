@@ -90,11 +90,11 @@ var MLPClassifier = function(hidden, output, layers, weights, bias) {
         }
         network[network.length - 1] = compute(this.output, network[network.length - 1]);
     
-        var index = 0;
+        var classIdx = 0;
         for (var i = 0, l = network[network.length - 1].length; i < l; i++) {
-            index = network[network.length - 1][i] > network[network.length - 1][index] ? i : index;
+            classIdx = network[network.length - 1][i] > network[network.length - 1][classIdx] ? i : classIdx;
         }
-        return index;
+        return classIdx;
     };
 
 };
@@ -105,12 +105,12 @@ const weights = [[[-0.055317816158370905, -0.25162425407767391, -0.3332519786113
 const bias = [[0.30011741283138643, -0.029751221601027597, 0.27707089984418304, 0.09437747263089169, -0.073328190572502505, -0.009339555268726818, 0.069540321946648831, 0.030114067358476229, 0.1926469413394869, 0.023144226681430048, -0.070082924717630057, 0.24099343057814002, -0.25759272493282814, -0.3911290402719596, -0.24328056130217912, -0.13877438337256462, -0.3840609961969641, 0.20571932163518283, 0.12990256746838591, -0.32332067950525173, -0.11080976020947265, -0.1415205938964631, -0.24600210345938872, 0.26790419688164757, -0.29106359813082855, 0.2495076134848766, 0.054676119964720049, 0.25255465627456269, 0.22982296359481452, 0.29374548533376282, -0.026746489455462041, -0.044633956332849833, 0.015346134348148879, -0.1428540988439016, -0.059281796245451462, 0.030997844617798281, -0.48568377250041256, -0.2100376289112072, -0.044215767340361145, 0.018240118057367673, -0.1466920807505617, 0.39966256678781159, 0.051904810189690342, -0.28673053302698287, 0.19195282255033613, 0.074687451363289303, -0.35766933287571323, -0.05320421333257852, 0.11937922437695309, 0.27906785198501721], [0.37658323831187673, 0.45913319499996535, -0.63671974160497524]];
 
 // Estimator:
-var brain = new MLPClassifier('relu', 'softmax', layers, weights, bias);
+var clf = new MLPClassifier('relu', 'softmax', layers, weights, bias);
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv.length - 2 === 4) {
         var features = process.argv.slice(2);
-        var prediction = brain.predict(features);
+        var prediction = clf.predict(features);
         console.log(prediction);
     }
 }
@@ -129,7 +129,7 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
 var onmessage = function(e) {
     if (e.data.length === 4) {
         var features = e.data;
-        var prediction = brain.predict(features);
+        var prediction = clf.predict(features);
         postMessage(prediction);
     }
 };

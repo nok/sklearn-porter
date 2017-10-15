@@ -1,7 +1,6 @@
 public int {method_name}(double[] features) {{
-    if (features.length != {n_features}) return -1;
-
     double[] jll = new double[{n_classes}];
+
     for (int i = 0; i < {n_classes}; i++) {{
         double sum = 0.;
         for (int j = 0; j < {n_features}; j++) {{
@@ -17,13 +16,9 @@ public int {method_name}(double[] features) {{
         jll[i] += this.priors[i] + sum;
     }}
 
-    double highestLikeli = Double.NEGATIVE_INFINITY;
-    int classIndex = -1;
-    for (int i = 0; i < {n_classes}; i++) {{
-        if (jll[i] > highestLikeli) {{
-            highestLikeli = jll[i];
-            classIndex = i;
-        }}
+    int classIndex = 0;
+    for (int i = 0, l = {n_classes}; i < l; i++) {{
+        classIndex = jll[i] > jll[classIndex] ? i : classIndex;
     }}
     return classIndex;
 }}

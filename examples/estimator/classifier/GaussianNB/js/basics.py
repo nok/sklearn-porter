@@ -40,11 +40,11 @@ var GaussianNB = function(priors, sigmas, thetas) {
             likelihoods[i] = Math.log(this.priors[i]) + nij;
         }
     
-        var idx = 0;
+        var classIdx = 0;
         for (var i = 0, l = likelihoods.length; i < l; i++) {
-            idx = likelihoods[i] > likelihoods[idx] ? i : idx;
+            classIdx = likelihoods[i] > likelihoods[classIdx] ? i : classIdx;
         }
-        return idx;
+        return classIdx;
     };
 
 };

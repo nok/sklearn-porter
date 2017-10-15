@@ -72,8 +72,8 @@ class {class_name} {{
             {bias}
 
             // Prediction:
-            {class_name} brain = new {class_name}("{hidden_activation}", "{output_activation}", layers, weights, bias);
-            int estimation = brain.{method_name}(features);
+            {class_name} clf = new {class_name}("{hidden_activation}", "{output_activation}", layers, weights, bias);
+            int estimation = clf.{method_name}(features);
             System.out.println(estimation);
 
         }}

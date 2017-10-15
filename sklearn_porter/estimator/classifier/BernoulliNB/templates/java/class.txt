@@ -27,8 +27,8 @@ class {class_name} {{
             final {del_probs}
 
             // Prediction:
-            {class_name} brain = new {class_name}(priors, negProbs, delProbs);
-            int estimation = brain.{method_name}(features);
+            {class_name} clf = new {class_name}(priors, negProbs, delProbs);
+            int estimation = clf.{method_name}(features);
             System.out.println(estimation);
 
         }}

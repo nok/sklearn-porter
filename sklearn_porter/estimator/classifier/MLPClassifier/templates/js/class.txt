@@ -55,12 +55,12 @@ const {weights}
 const {bias}
 
 // Estimator:
-var brain = new {class_name}('{hidden_activation}', '{output_activation}', layers, weights, bias);
+var clf = new {class_name}('{hidden_activation}', '{output_activation}', layers, weights, bias);
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
     if (process.argv.length - 2 === {n_features}) {{
         var features = process.argv.slice(2);
-        var prediction = brain.{method_name}(features);
+        var prediction = clf.{method_name}(features);
         console.log(prediction);
     }}
 }}
@@ -79,7 +79,7 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
 var onmessage = function(e) {{
     if (e.data.length === {n_features}) {{
         var features = e.data;
-        var prediction = brain.{method_name}(features);
+        var prediction = clf.{method_name}(features);
         postMessage(prediction);
     }}
 }};

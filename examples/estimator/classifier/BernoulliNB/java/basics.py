@@ -30,9 +30,8 @@ class BernoulliNB {
     }
 
     public int predict(double[] features) {
-        if (features.length != 4) return -1;
-    
         double[] jll = new double[3];
+    
         for (int i = 0; i < 3; i++) {
             double sum = 0.;
             for (int j = 0; j < 4; j++) {
@@ -48,13 +47,9 @@ class BernoulliNB {
             jll[i] += this.priors[i] + sum;
         }
     
-        double highestLikeli = Double.NEGATIVE_INFINITY;
-        int classIndex = -1;
-        for (int i = 0; i < 3; i++) {
-            if (jll[i] > highestLikeli) {
-                highestLikeli = jll[i];
-                classIndex = i;
-            }
+        int classIndex = 0;
+        for (int i = 0, l = 3; i < l; i++) {
+            classIndex = jll[i] > jll[classIndex] ? i : classIndex;
         }
         return classIndex;
     }
@@ -74,8 +69,8 @@ class BernoulliNB {
             final double[][] delProbs = {{3.931825632724312, 3.931825632724312, 3.931825632724312}, {3.931825632724312, 3.931825632724312, 3.931825632724312}, {3.931825632724312, 3.931825632724312, 3.931825632724312}, {3.931825632724312, 3.931825632724312, 3.931825632724312}};
 
             // Prediction:
-            BernoulliNB brain = new BernoulliNB(priors, negProbs, delProbs);
-            int estimation = brain.predict(features);
+            BernoulliNB clf = new BernoulliNB(priors, negProbs, delProbs);
+            int estimation = clf.predict(features);
             System.out.println(estimation);
 
         }
