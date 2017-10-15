@@ -1,19 +1,18 @@
 this.{method_name} = function(neurons) {{
-    if (neurons.length != {n_features}) return -1;
-    var network = [neurons].concat(layers);
+    var network = [neurons].concat(this.layers);
 
     for (var i = 0; i < network.length - 1; i++) {{
         for (var j = 0; j < network[i + 1].length; j++) {{
             for (var l = 0; l < network[i].length; l++) {{
-                network[i + 1][j] += network[i][l] * weights[i][l][j];
+                network[i + 1][j] += network[i][l] * this.weights[i][l][j];
             }}
-            network[i + 1][j] += bias[i][j];
+            network[i + 1][j] += this.bias[i][j];
         }}
         if ((i + 1) < (network.length - 1)) {{
-            network[i + 1] = compAct(network[i + 1]);
+            network[i + 1] = compute(this.hidden, network[i + 1]);
         }}
     }}
-    network[network.length - 1] = compOut(network[network.length - 1]);
+    network[network.length - 1] = compute(this.output, network[network.length - 1]);
 
     if (network[network.length - 1][0] > .5) {{
         return 1;
