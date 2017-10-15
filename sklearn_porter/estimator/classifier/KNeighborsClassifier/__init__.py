@@ -127,6 +127,27 @@ class KNeighborsClassifier(Classifier):
         temp_arr_ = self.temp('arr[]')
         temp_arr__ = self.temp('arr[][]')
 
+        temp_method = self.temp('method.predict', n_indents=1, skipping=True)
+        out = temp_method.format(class_name=self.class_name,
+                                 method_name=self.method_name,
+                                 distance_computation=distance_comp)
+        return out
+
+    def create_class(self, method):
+        """
+        Build the estimator class.
+
+        Returns
+        -------
+        :return out : string
+            The built class as string.
+        """
+
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
         # Templates
         temps = []
         for atts in enumerate(self.estimator._fit_X):  # pylint: disable=W0212
@@ -144,28 +165,12 @@ class KNeighborsClassifier(Classifier):
         classes = temp_arr_.format(type='int', name='y', values=classes,
                                    n=self.n_templates)
 
-        temp_method = self.temp('method.predict', n_indents=1, skipping=True)
-        out = temp_method.format(class_name=self.class_name,
-                                 method_name=self.method_name,
-                                 n_neighbors=self.n_neighbors,
-                                 n_templates=self.n_templates,
-                                 n_features=self.n_features,
-                                 n_classes=self.n_classes,
-                                 distance_computation=distance_comp,
-                                 power=self.power_param, X=temps, y=classes)
-        return out
-
-    def create_class(self, method):
-        """
-        Build the estimator class.
-
-        Returns
-        -------
-        :return out : string
-            The built class as string.
-        """
         temp_class = self.temp('class')
         out = temp_class.format(class_name=self.class_name,
                                 method_name=self.method_name, method=method,
-                                n_features=self.n_features)
+                                n_features=self.n_features, X=temps, y=classes,
+                                n_neighbors=self.n_neighbors,
+                                n_templates=self.n_templates,
+                                n_classes=self.n_classes,
+                                power=self.power_param)
         return out

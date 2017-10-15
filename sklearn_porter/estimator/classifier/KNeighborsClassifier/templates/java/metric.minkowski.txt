@@ -1,4 +1,4 @@
-public static double compDist(double[] temp, double[] cand, double q) {
+private static double compute(double[] temp, double[] cand, double q) {
     double dist = 0.;
     double diff;
     for (int i = 0, l = temp.length; i < l; i++) {

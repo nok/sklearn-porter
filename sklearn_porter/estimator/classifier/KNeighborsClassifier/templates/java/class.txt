@@ -2,6 +2,22 @@ import java.util.*;
 
 class {class_name} {{
 
+    private int nNeighbors;
+    private int nTemplates;
+    private int nClasses;
+    private double power;
+    private double[][] X;
+    private int[] y;
+
+    public {class_name}(int nNeighbors, int nTemplates, int nClasses, double power, double[][] X, int[] y) {{
+        this.nNeighbors = nNeighbors;
+        this.nTemplates = nTemplates;
+        this.nClasses = nClasses;
+        this.power = power;
+        this.X = X;
+        this.y = y;
+    }}
+
     private static class Neighbor {{
         Integer clazz;
         Double dist;
@@ -15,11 +31,23 @@ class {class_name} {{
 
     public static void main(String[] args) {{
         if (args.length == {n_features}) {{
-            double[] atts = new double[args.length];
+
+            // Features:
+            double[] features = new double[args.length];
             for (int i = 0, l = args.length; i < l; i++) {{
-                atts[i] = Double.parseDouble(args[i]);
+                features[i] = Double.parseDouble(args[i]);
             }}
-            System.out.println({class_name}.{method_name}(atts));
+
+            // Parameters:
+            {X}
+            {y}
+
+            // Prediction:
+            {class_name} clf = new {class_name}({n_neighbors}, {n_templates}, {n_classes}, {power}, X, y);
+            int estimation = clf.{method_name}(features);
+            System.out.println(estimation);
+
         }}
     }}
+
 }}

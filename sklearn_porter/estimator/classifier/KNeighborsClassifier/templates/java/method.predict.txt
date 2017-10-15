@@ -1,34 +1,22 @@
 {distance_computation}
 
-public static int {method_name}(double[] atts) {{
-    if (atts.length != {n_features}) {{
-        return -1;
-    }}
-
-    {X}
-    {y}
-
+public int {method_name}(double[] features) {{
     int classIdx = -1;
-    int nNeighbors = {n_neighbors};
-    int nTemplates = {n_templates};
-    int nClasses = {n_classes};
-    double power = {power};
-
-    if (nNeighbors == 1) {{
+    if (this.nNeighbors == 1) {{
         double minDist = Double.POSITIVE_INFINITY;
         double curDist;
-        for (int i = 0; i < nTemplates; i++) {{
-            curDist = {class_name}.compDist(X[i], atts, power);
+        for (int i = 0; i < this.nTemplates; i++) {{
+            curDist = {class_name}.compute(this.X[i], features, this.power);
             if (curDist <= minDist) {{
                 minDist = curDist;
                 classIdx = y[i];
             }}
         }}
     }} else {{
-        int[] classes = new int[nClasses];
+        int[] classes = new int[this.nClasses];
         ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
-        for (int i = 0; i < nTemplates; i++) {{
-            dists.add(new Neighbor(y[i], {class_name}.compDist(X[i], atts, power)));
+        for (int i = 0; i < this.nTemplates; i++) {{
+            dists.add(new Neighbor(y[i], {class_name}.compute(this.X[i], features, this.power)));
         }}
         Collections.sort(dists, new Comparator<Neighbor>() {{
             @Override
@@ -36,11 +24,11 @@ public static int {method_name}(double[] atts) {{
                 return n1.dist.compareTo(n2.dist);
             }}
         }});
-        for (Neighbor neighbor : dists.subList(0, nNeighbors)) {{
+        for (Neighbor neighbor : dists.subList(0, this.nNeighbors)) {{
             classes[neighbor.clazz]++;
         }}
         int classVal = -1;
-        for (int i = 0; i < nClasses; i++) {{
+        for (int i = 0; i < this.nClasses; i++) {{
             if (classes[i] > classVal) {{
                 classVal = classes[i];
                 classIdx = i;
