@@ -89,7 +89,7 @@ class LinearSVC(Classifier):
         self.is_binary = self.n_classes == 2
         self.prefix = 'binary' if self.is_binary else 'multi'
 
-    def export(self, class_name="Brain", method_name="predict", use_repr=True):
+    def export(self, class_name, method_name, use_repr=True):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 

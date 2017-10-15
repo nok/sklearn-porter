@@ -72,7 +72,7 @@ class KNeighborsClassifier(Classifier):
             msg = "Only 'uniform' weights are supported for this classifier."
             raise NotImplementedError(msg)
 
-    def export(self, class_name="Brain", method_name="predict", use_repr=True):
+    def export(self, class_name, method_name, use_repr=True):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 

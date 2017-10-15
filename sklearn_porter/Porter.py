@@ -147,7 +147,7 @@ class Porter(object):
         # Create instance with all parameters:
         self.template = clazz(**self.__dict__)
 
-    def export(self, class_name='Brain', method_name='predict',
+    def export(self, class_name=None, method_name=None,
                use_repr=True, details=False, **kwargs):
         # pylint: disable=unused-argument
         """
@@ -156,10 +156,10 @@ class Porter(object):
 
         Parameters
         ----------
-        :param class_name : string, default: 'Brain'
+        :param class_name : string, default: None
             The name for the ported class.
 
-        :param method_name : string, default: 'predict'
+        :param method_name : string, default: None
             The name for the ported method.
 
         :param use_repr : bool, default: True
@@ -175,6 +175,13 @@ class Porter(object):
             The ported model as string or a dictionary
             with further information.
         """
+
+        if class_name is None:
+            class_name = self.estimator_name
+
+        if method_name is None:
+            method_name = self.target_method
+
         output = self.template.export(class_name=class_name,
                                       method_name=method_name,
                                       use_repr=use_repr)

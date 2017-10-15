@@ -81,15 +81,15 @@ class MLPRegressor(Regressor):
         """Get list of supported activation functions for the hidden layers."""
         return ['relu', 'identity', 'tanh', 'logistic']
 
-    def export(self, class_name='Brain', method_name='predict', use_repr=True):
+    def export(self, class_name, method_name, use_repr=True):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string, default: 'Brain'
+        :param class_name: string
             The name of the class in the returned result.
-        :param method_name: string, default: 'predict'
+        :param method_name: string
             The name of the method in the returned result.
         :param use_repr : bool, default True
             Whether to use repr() for floating-point values or not.

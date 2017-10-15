@@ -21,7 +21,7 @@ print(output)
 """
 import java.util.*;
 
-class Brain {
+class KNeighborsClassifier {
 
     private int nNeighbors;
     private int nTemplates;
@@ -30,7 +30,7 @@ class Brain {
     private double[][] X;
     private int[] y;
 
-    public Brain(int nNeighbors, int nTemplates, int nClasses, double power, double[][] X, int[] y) {
+    public KNeighborsClassifier(int nNeighbors, int nTemplates, int nClasses, double power, double[][] X, int[] y) {
         this.nNeighbors = nNeighbors;
         this.nTemplates = nTemplates;
         this.nClasses = nClasses;
@@ -48,7 +48,7 @@ class Brain {
         }
     }
 
-    private static double compDist(double[] temp, double[] cand, double q) {
+    private static double compute(double[] temp, double[] cand, double q) {
         double dist = 0.;
         double diff;
         for (int i = 0, l = temp.length; i < l; i++) {
@@ -80,7 +80,7 @@ class Brain {
             double minDist = Double.POSITIVE_INFINITY;
             double curDist;
             for (int i = 0; i < this.nTemplates; i++) {
-                curDist = Brain.compDist(this.X[i], features, this.power);
+                curDist = KNeighborsClassifier.compute(this.X[i], features, this.power);
                 if (curDist <= minDist) {
                     minDist = curDist;
                     classIdx = y[i];
@@ -90,7 +90,7 @@ class Brain {
             int[] classes = new int[this.nClasses];
             ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
             for (int i = 0; i < this.nTemplates; i++) {
-                dists.add(new Neighbor(y[i], Brain.compDist(this.X[i], features, this.power)));
+                dists.add(new Neighbor(y[i], KNeighborsClassifier.compute(this.X[i], features, this.power)));
             }
             Collections.sort(dists, new Comparator<Neighbor>() {
                 @Override
@@ -126,7 +126,7 @@ class Brain {
             int[] y = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
 
             // Prediction:
-            Brain clf = new Brain(3, 150, 3, 2, X, y);
+            KNeighborsClassifier clf = new KNeighborsClassifier(3, 150, 3, 2, X, y);
             int estimation = clf.predict(features);
             System.out.println(estimation);
 
