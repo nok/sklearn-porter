@@ -8,7 +8,7 @@ class {class_name} {{
     private double[][][] weights;
     private double[][] bias;
 
-    public Brain(String hidden, String output, double[][] layers, double[][][] weights, double[][] bias) {{
+    public {class_name}(String hidden, String output, double[][] layers, double[][][] weights, double[][] bias) {{
         this.hidden = Activation.valueOf(hidden.toUpperCase());
         this.output = Activation.valueOf(output.toUpperCase());
         this.layers = layers;
