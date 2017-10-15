@@ -6,7 +6,8 @@ from sklearn_porter import Porter
 
 
 iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
+X = iris_data.data
+y = iris_data.target
 
 clf = BernoulliNB()
 clf.fit(X, y)
@@ -16,7 +17,7 @@ output = porter.export()
 print(output)
 
 """
-var Brain = function(priors, negProbs, delProbs) {
+var BernoulliNB = function(priors, negProbs, delProbs) {
 
     this.priors = priors;
     this.negProbs = negProbs;
@@ -61,7 +62,7 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
         var delProbs = [[3.931825632724312, 3.931825632724312, 3.931825632724312], [3.931825632724312, 3.931825632724312, 3.931825632724312], [3.931825632724312, 3.931825632724312, 3.931825632724312], [3.931825632724312, 3.931825632724312, 3.931825632724312]];
 
         // Estimator:
-        const brain = new Brain(priors, negProbs, delProbs);
+        const brain = new BernoulliNB(priors, negProbs, delProbs);
         var features = process.argv.slice(2);
         var prediction = brain.predict(features);
         console.log(prediction);

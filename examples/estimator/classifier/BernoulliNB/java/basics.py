@@ -6,7 +6,8 @@ from sklearn_porter import Porter
 
 
 iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
+X = iris_data.data
+y = iris_data.target
 
 clf = BernoulliNB()
 clf.fit(X, y)
@@ -16,13 +17,13 @@ output = porter.export()
 print(output)
 
 """
-class Brain {
+class BernoulliNB {
 
     private double[] priors;
     private double[][] negProbs;
     private double[][] delProbs;
 
-    public Brain(double[] priors, double[][] negProbs, double[][] delProbs) {
+    public BernoulliNB(double[] priors, double[][] negProbs, double[][] delProbs) {
         this.priors = priors;
         this.negProbs = negProbs;
         this.delProbs = delProbs;
@@ -73,7 +74,7 @@ class Brain {
             final double[][] delProbs = {{3.931825632724312, 3.931825632724312, 3.931825632724312}, {3.931825632724312, 3.931825632724312, 3.931825632724312}, {3.931825632724312, 3.931825632724312, 3.931825632724312}, {3.931825632724312, 3.931825632724312, 3.931825632724312}};
 
             // Prediction:
-            Brain brain = new Brain(priors, negProbs, delProbs);
+            BernoulliNB brain = new BernoulliNB(priors, negProbs, delProbs);
             int estimation = brain.predict(features);
             System.out.println(estimation);
 
