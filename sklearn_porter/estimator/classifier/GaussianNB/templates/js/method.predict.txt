@@ -1,31 +1,23 @@
-this.{method_name} = function(atts) {{
+this.{method_name} = function(features) {{
+    var likelihoods = new Array(this.sigmas.length);
 
-    {priors}
-    {sigmas}
-    {thetas}
-    var likelihoods = new Array({n_classes});
-
-    for (var i = 0; i < {n_classes}; i++) {{
+    for (var i = 0, il = this.sigmas.length; i < il; i++) {{
         var sum = 0.;
-        for (var j = 0; j < {n_features}; j++) {{
-            sum += Math.log(2. * Math.PI * sigmas[i][j]);
+        for (var j = 0, jl = this.sigmas[0].length; j < jl; j++) {{
+            sum += Math.log(2. * Math.PI * this.sigmas[i][j]);
         }}
         var nij = -0.5 * sum;
         sum = 0.;
-        for (var j = 0; j < {n_features}; j++) {{
-            sum += Math.pow(atts[j] - thetas[i][j], 2.) / sigmas[i][j];
+        for (var j = 0, jl = this.sigmas[0].length; j < jl; j++) {{
+            sum += Math.pow(features[j] - this.thetas[i][j], 2.) / this.sigmas[i][j];
         }}
         nij -= 0.5 * sum;
-        likelihoods[i] = Math.log(priors[i]) + nij;
+        likelihoods[i] = Math.log(this.priors[i]) + nij;
     }}
 
-    var highest_likeli = Number.NEGATIVE_INFINITY;
-    var classIndex = -1;
-    for (var i = 0; i < {n_classes}; i++) {{
-        if (likelihoods[i] > highest_likeli) {{
-            highest_likeli = likelihoods[i];
-            classIndex = i;
-        }}
+    var idx = 0;
+    for (var i = 0, l = likelihoods.length; i < l; i++) {{
+        idx = likelihoods[i] > likelihoods[idx] ? i : idx;
     }}
-    return classIndex;
+    return idx;
 }};
