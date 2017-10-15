@@ -199,24 +199,18 @@ class MLPClassifier(Classifier):
                                        name='bias',
                                        values=intercepts)
 
-        hidden_act_type = 'activation_fn.' + self.hidden_activation
-        hidden_act = self.temp(hidden_act_type, skipping=True,
-                               n_indents=1)
-        output_act_type = 'output_fn.' + self.output_activation
-        output_act = self.temp(output_act_type, skipping=True,
-                               n_indents=1)
-
         temp_class = self.temp('class')
         file_name = '{}.js'.format(self.class_name.lower())
         out = temp_class.format(class_name=self.class_name,
-                                method_name=self.method_name, method=method,
+                                method_name=self.method_name,
+                                hidden_activation=self.hidden_activation,
+                                output_activation=self.output_activation,
                                 n_features=self.n_inputs,
-                                activation_function=hidden_act,
-                                output_function=output_act,
-                                file_name=file_name,
                                 weights=coefficients,
                                 bias=intercepts,
-                                layers=layers)
+                                layers=layers,
+                                method=method,
+                                file_name=file_name)
         return out
 
     def _get_intercepts(self):

@@ -1,38 +1,81 @@
 class {class_name} {{
 
+    private enum Activation {{ IDENTITY, LOGISTIC, RELU, TANH, SOFTMAX }}
+
+    private Activation hidden;
+    private Activation output;
     private double[][] layers;
     private double[][][] weights;
     private double[][] bias;
 
-    public {class_name}(double[][] layers, double[][][] weights, double[][] bias) {{
+    public Brain(String hidden, String output, double[][] layers, double[][][] weights, double[][] bias) {{
+        this.hidden = Activation.valueOf(hidden.toUpperCase());
+        this.output = Activation.valueOf(output.toUpperCase());
         this.layers = layers;
         this.weights = weights;
         this.bias = bias;
     }}
 
-    {activation_function}
-
-    {output_function}
+    private double[] compute(Activation activation, double[] v) {{
+        switch (activation) {{
+            case LOGISTIC:
+                for (int i = 0, l = v.length; i < l; i++) {{
+                    v[i] = 1. / (1. + Math.exp(-v[i]));
+                }}
+                break;
+            case RELU:
+                for (int i = 0, l = v.length; i < l; i++) {{
+                    v[i] = Math.max(0, v[i]);
+                }}
+                break;
+            case TANH:
+                for (int i = 0, l = v.length; i < l; i++) {{
+                    v[i] = Math.tanh(v[i]);
+                }}
+                break;
+            case SOFTMAX:
+                double max = Double.NEGATIVE_INFINITY;
+                for (double x : v) {{
+                    if (x > max) {{
+                        max = x;
+                    }}
+                }}
+                for (int i = 0, l = v.length; i < l; i++) {{
+                    v[i] = Math.exp(v[i] - max);
+                }}
+                double sum = 0.;
+                for (double x : v) {{
+                    sum += x;
+                }}
+                for (int i = 0, l = v.length; i < l; i++) {{
+                    v[i] /= sum;
+                }}
+                break;
+        }}
+        return v;
+    }}
 
     {method}
 
     public static void main(String[] args) {{
         if (args.length == {n_features}) {{
+
             // Features:
             double[] features = new double[args.length];
             for (int i = 0, l = args.length; i < l; i++) {{
                 features[i] = Double.parseDouble(args[i]);
             }}
 
-            // Model data:
+            // Parameters:
             {layers}
             {weights}
             {bias}
 
             // Prediction:
-            {class_name} brain = new {class_name}(layers, weights, bias);
+            {class_name} brain = new {class_name}("{hidden_activation}", "{output_activation}", layers, weights, bias);
             int estimation = brain.{method_name}(features);
             System.out.println(estimation);
+
         }}
     }}
 }}

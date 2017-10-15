@@ -1,6 +1,4 @@
 public int {method_name}(double[] neurons) {{
-    if (neurons.length != {n_features}) return -1;
-
     double[][] network = new double[this.layers.length + 1][];
     System.arraycopy(new double[][] {{neurons}}, 0, network, 0, 1);
     System.arraycopy(this.layers, 0, network, 1, this.layers.length);
@@ -13,10 +11,10 @@ public int {method_name}(double[] neurons) {{
             network[i + 1][j] += this.bias[i][j];
         }}
         if ((i + 1) < (network.length - 1)) {{
-            network[i + 1] = this.compAct(network[i + 1]);
+            network[i + 1] = this.compute(this.hidden, network[i + 1]);
         }}
     }}
-    network[network.length - 1] = this.compOut(network[network.length - 1]);
+    network[network.length - 1] = this.compute(this.output, network[network.length - 1]);
 
     if (network[network.length - 1][0] > .5) {{
         return 1;
