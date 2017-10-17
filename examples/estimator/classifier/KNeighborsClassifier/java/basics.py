@@ -30,9 +30,9 @@ class KNeighborsClassifier {
     private double[][] X;
     private int[] y;
 
-    public KNeighborsClassifier(int nNeighbors, int nTemplates, int nClasses, double power, double[][] X, int[] y) {
+    public KNeighborsClassifier(int nNeighbors, int nClasses, double power, double[][] X, int[] y) {
         this.nNeighbors = nNeighbors;
-        this.nTemplates = nTemplates;
+        this.nTemplates = y.length;
         this.nClasses = nClasses;
         this.power = power;
         this.X = X;
@@ -122,7 +122,7 @@ class KNeighborsClassifier {
             int[] y = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
 
             // Prediction:
-            KNeighborsClassifier clf = new KNeighborsClassifier(3, 150, 3, 2, X, y);
+            KNeighborsClassifier clf = new KNeighborsClassifier(3, 3, 2, X, y);
             int estimation = clf.predict(features);
             System.out.println(estimation);
 

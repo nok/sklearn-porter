@@ -9,9 +9,9 @@ class {class_name} {{
     private double[][] X;
     private int[] y;
 
-    public {class_name}(int nNeighbors, int nTemplates, int nClasses, double power, double[][] X, int[] y) {{
+    public {class_name}(int nNeighbors, int nClasses, double power, double[][] X, int[] y) {{
         this.nNeighbors = nNeighbors;
-        this.nTemplates = nTemplates;
+        this.nTemplates = y.length;
         this.nClasses = nClasses;
         this.power = power;
         this.X = X;
@@ -43,7 +43,7 @@ class {class_name} {{
             {y}
 
             // Prediction:
-            {class_name} clf = new {class_name}({n_neighbors}, {n_templates}, {n_classes}, {power}, X, y);
+            {class_name} clf = new {class_name}({n_neighbors}, {n_classes}, {power}, X, y);
             int estimation = clf.{method_name}(features);
             System.out.println(estimation);
 

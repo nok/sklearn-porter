@@ -19,10 +19,10 @@ output = porter.export()
 print(output)
 
 """
-var KNeighborsClassifier = function(nNeighbors, nTemplates, nClasses, power, X, y) {
+var KNeighborsClassifier = function(nNeighbors, nClasses, power, X, y) {
 
     this.nNeighbors = nNeighbors;
-    this.nTemplates = nTemplates;
+    this.nTemplates = y.length;
     this.nClasses = nClasses;
     this.power = power;
     this.X = X;
@@ -103,7 +103,7 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
         var y = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2];
 
         // Estimator:
-        var clf = new KNeighborsClassifier(3, 150, 3, 2, X, y);
+        var clf = new KNeighborsClassifier(3, 3, 2, X, y);
         var prediction = clf.predict(features);
         console.log(prediction);
 

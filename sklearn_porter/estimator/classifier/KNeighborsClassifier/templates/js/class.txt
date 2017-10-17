@@ -1,7 +1,7 @@
-var {class_name} = function(nNeighbors, nTemplates, nClasses, power, X, y) {{
+var {class_name} = function(nNeighbors, nClasses, power, X, y) {{
 
     this.nNeighbors = nNeighbors;
-    this.nTemplates = nTemplates;
+    this.nTemplates = y.length;
     this.nClasses = nClasses;
     this.power = power;
     this.X = X;
@@ -27,7 +27,7 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
         {y}
 
         // Estimator:
-        var clf = new {class_name}({n_neighbors}, {n_templates}, {n_classes}, {power}, X, y);
+        var clf = new {class_name}({n_neighbors}, {n_classes}, {power}, X, y);
         var prediction = clf.{method_name}(features);
         console.log(prediction);
 
