@@ -1,23 +1,25 @@
 public int {method_name}(double[] features) {{
-    double[] jll = new double[{n_classes}];
+    int nClasses = this.priors.length;
+    int nFeatures = this.delProbs.length;
 
-    for (int i = 0; i < {n_classes}; i++) {{
+    double[] jll = new double[nClasses];
+    for (int i = 0; i < nClasses; i++) {{
         double sum = 0.;
-        for (int j = 0; j < {n_features}; j++) {{
+        for (int j = 0; j < nFeatures; j++) {{
             sum += features[i] * this.delProbs[j][i];
         }}
         jll[i] = sum;
     }}
-    for (int i = 0; i < {n_classes}; i++) {{
+    for (int i = 0; i < nClasses; i++) {{
         double sum = 0.;
-        for (int j = 0; j < {n_features}; j++) {{
+        for (int j = 0; j < nFeatures; j++) {{
             sum += this.negProbs[i][j];
         }}
         jll[i] += this.priors[i] + sum;
     }}
 
     int classIndex = 0;
-    for (int i = 0, l = {n_classes}; i < l; i++) {{
+    for (int i = 0; i < nClasses; i++) {{
         classIndex = jll[i] > jll[classIndex] ? i : classIndex;
     }}
     return classIndex;

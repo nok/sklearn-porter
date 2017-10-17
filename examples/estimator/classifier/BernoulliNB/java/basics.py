@@ -30,25 +30,27 @@ class BernoulliNB {
     }
 
     public int predict(double[] features) {
-        double[] jll = new double[3];
+        int nClasses = this.priors.length;
+        int nFeatures = this.delProbs.length;
     
-        for (int i = 0; i < 3; i++) {
+        double[] jll = new double[nClasses];
+        for (int i = 0; i < nClasses; i++) {
             double sum = 0.;
-            for (int j = 0; j < 4; j++) {
+            for (int j = 0; j < nFeatures; j++) {
                 sum += features[i] * this.delProbs[j][i];
             }
             jll[i] = sum;
         }
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < nClasses; i++) {
             double sum = 0.;
-            for (int j = 0; j < 4; j++) {
+            for (int j = 0; j < nFeatures; j++) {
                 sum += this.negProbs[i][j];
             }
             jll[i] += this.priors[i] + sum;
         }
     
         int classIndex = 0;
-        for (int i = 0, l = 3; i < l; i++) {
+        for (int i = 0; i < nClasses; i++) {
             classIndex = jll[i] > jll[classIndex] ? i : classIndex;
         }
         return classIndex;

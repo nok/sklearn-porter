@@ -24,25 +24,27 @@ var BernoulliNB = function(priors, negProbs, delProbs) {
     this.delProbs = delProbs;
 
     this.predict = function(features) {
-        var jll = new Array(3);
+        var nClasses = this.priors.length,
+            nFeatures = this.delProbs.length;
     
-        for (var i = 0; i < 3; i++) {
+        var jll = new Array(nClasses);
+        for (var i = 0; i < nClasses; i++) {
             var sum = 0.;
-            for (var j = 0; j < 4; j++) {
+            for (var j = 0; j < nFeatures; j++) {
                 sum += features[i] * this.delProbs[j][i];
             }
             jll[i] = sum;
         }
-        for (var i = 0; i < 3; i++) {
+        for (var i = 0; i < nClasses; i++) {
             var sum = 0.;
-            for (var j = 0; j < 4; j++) {
+            for (var j = 0; j < nFeatures; j++) {
                 sum += this.negProbs[i][j];
             }
             jll[i] += this.priors[i] + sum;
         }
         var classIdx = 0;
     
-        for (var i = 0, l = 3; i < l; i++) {
+        for (var i = 0; i < nClasses; i++) {
             classIdx = jll[i] > jll[classIdx] ? i : classIdx;
         }
         return classIdx;
