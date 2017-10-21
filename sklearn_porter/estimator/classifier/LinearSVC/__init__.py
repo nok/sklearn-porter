@@ -89,6 +89,44 @@ class LinearSVC(Classifier):
         self.is_binary = self.n_classes == 2
         self.prefix = 'binary' if self.is_binary else 'multi'
 
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
+        # Coefficients:
+        if self.is_binary:
+            coefs = self.estimator.coef_[0]
+            coefs = [temp_type.format(self.repr(c)) for c in coefs]
+            coefs = ', '.join(coefs)
+            coefs = temp_arr_.format(type='double', name='coefficients',
+                                     values=coefs, n=self.n_features)
+        else:
+            coefs = []
+            for coef in self.estimator.coef_:
+                tmp = [temp_type.format(self.repr(c)) for c in coef]
+                tmp = temp_arr.format(', '.join(tmp))
+                coefs.append(tmp)
+            coefs = ', '.join(coefs)
+            coefs = temp_arr__.format(type='double', name='coefficients',
+                                      values=coefs, n=self.n_classes,
+                                      m=self.n_features)
+        self.coefficients = coefs
+
+        # Intercepts:
+        if self.is_binary:
+            inters = self.estimator.intercept_[0]
+            temp_init = self.temp('init')
+            inters = temp_init.format(type='double', name='intercepts',
+                                      value=self.repr(inters))
+        else:
+            inters = self.estimator.intercept_
+            inters = [temp_type.format(self.repr(i)) for i in inters]
+            inters = ', '.join(inters)
+            inters = temp_arr_.format(type='double', name='intercepts',
+                                      values=inters, n=self.n_classes)
+        self.intercepts = inters
+
     def export(self, class_name, method_name, use_repr=True):
         """
         Port a trained estimator to the syntax of a chosen programming language.
@@ -122,7 +160,9 @@ class LinearSVC(Classifier):
         :return : string
             The transpiled predict method as string.
         """
-        return self.create_class(self.create_method())
+        self.method = self.create_method()
+        output = self.create_class()
+        return output
 
     def create_method(self):
         """
@@ -133,54 +173,13 @@ class LinearSVC(Classifier):
         :return out : string
             The built method as string.
         """
-
-        temp_type = self.temp('type')
-        temp_arr = self.temp('arr')
-        temp_arr_ = self.temp('arr[]')
-        temp_arr__ = self.temp('arr[][]')
-
-        # Coefficients:
-        if self.is_binary:
-            coefs = self.estimator.coef_[0]
-            coefs = [temp_type.format(self.repr(c)) for c in coefs]
-            coefs = ', '.join(coefs)
-            coefs = temp_arr_.format(type='double', name='coefs',
-                                     values=coefs, n=self.n_features)
-        else:
-            coefs = []
-            for coef in self.estimator.coef_:
-                tmp = [temp_type.format(self.repr(c)) for c in coef]
-                tmp = temp_arr.format(', '.join(tmp))
-                coefs.append(tmp)
-            coefs = ', '.join(coefs)
-            coefs = temp_arr__.format(type='double', name='coefs', values=coefs,
-                                      n=self.n_classes, m=self.n_features)
-
-        # Intercepts:
-        if self.is_binary:
-            inters = self.estimator.intercept_[0]
-            temp_init = self.temp('init')
-            inters = temp_init.format(type='double', name='inters',
-                                      value=self.repr(inters))
-        else:
-            inters = self.estimator.intercept_
-            inters = [temp_type.format(self.repr(i)) for i in inters]
-            inters = ', '.join(inters)
-            inters = temp_arr_.format(type='double', name='inters',
-                                      values=inters, n=self.n_classes)
-
-        # Indentation
         n_indents = 0 if self.target_language in ['c', 'go'] else 1
-
         method_type = '{}.method'.format(self.prefix)
-        temp_method = self.temp(method_type, n_indents=n_indents, skipping=True)
-        out = temp_method.format(method_name=self.method_name,
-                                 n_features=self.n_features,
-                                 n_classes=self.n_classes,
-                                 coefficients=coefs, intercepts=inters)
-        return out
+        method_temp = self.temp(method_type, n_indents=n_indents, skipping=True)
+        output = method_temp.format(**self.__dict__)
+        return output
 
-    def create_class(self, method):
+    def create_class(self):
         """
         Build the estimator class.
 
@@ -189,10 +188,11 @@ class LinearSVC(Classifier):
         :return out : string
             The built class as string.
         """
-        with_math_lib = '' if self.is_binary else '"math"'
-        temp_class = self.temp('class')
-        out = temp_class.format(class_name=self.class_name,
-                                method_name=self.method_name, method=method,
-                                n_features=self.n_features,
-                                with_math_lib=with_math_lib)
-        return out
+        if self.target_language in ['java', 'go']:
+            n_indents = 1 if self.target_language == 'java' else 0
+            class_head_temp = self.temp('{}.class'.format(self.prefix),
+                                        n_indents=n_indents, skipping=True)
+            self.class_head = class_head_temp.format(**self.__dict__)
+
+        output = self.temp('class').format(**self.__dict__)
+        return output

@@ -2,12 +2,28 @@
 
 class {class_name} {{
 
+    public function __construct($coefficients, $intercepts) {{
+        $this->coefficients = $coefficients;
+        $this->intercepts = $intercepts;
+    }}
+
     {method}
 
 }}
 
 if ($argc > 1) {{
+
+    // Features:
     array_shift($argv);
-    $prediction = {class_name}::{method_name}($argv);
+    $features = $argv;
+
+    // Parameters:
+    {coefficients}
+    {intercepts}
+
+    // Prediction:
+    $clf = new {class_name}($coefficients, $intercepts);
+    $prediction = $clf->{method_name}($features);
     fwrite(STDOUT, $prediction);
+
 }}

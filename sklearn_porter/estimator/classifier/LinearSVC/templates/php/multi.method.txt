@@ -1,20 +1,15 @@
-public static function {method_name}($atts) {{
-    if (sizeof($atts) != {n_features}) {{ return -1; }}
-
-    {coefficients}
-    {intercepts}
-
-    $class_idx = -1;
-    $class_val = null;
-    for ($i = 0; $i < {n_classes}; $i++) {{
+public function {method_name}($features) {{
+    $classIdx = -1;
+    $classVal = null;
+    for ($i = 0, $il = count($this->intercepts); $i < $il; $i++) {{
         $prob = 0.;
-        for ($j = 0; $j < {n_features}; $j++) {{
-            $prob += $coefs[$i][$j] * $atts[$j];
+        for ($j = 0, $jl = count($this->coefficients[0]); $j < $jl; $j++) {{
+            $prob += $this->coefficients[$i][$j] * $features[$j];
         }}
-        if (is_null($class_val) || $prob + $inters[$i] > $class_val) {{
-            $class_val = $prob + $inters[$i];
-            $class_idx = $i;
+        if (is_null($classVal) || $prob + $this->intercepts[$i] > $classVal) {{
+            $classVal = $prob + $this->intercepts[$i];
+            $classIdx = $i;
         }}
     }}
-    return $class_idx;
+    return $classIdx;
 }}

@@ -1,14 +1,9 @@
-public static int {method_name}(float[] atts) {{
-    if (atts.length != {n_features}) {{ return -1; }}
-
-    {coefficients}
-    {intercepts}
-
+public int {method_name}(double[] features) {{
     double prob = 0.;
-    for (int i = 0; i < {n_features}; i++) {{
-        prob += coefs[i] * atts[i];
+    for (int i = 0, il = this.coefficients.length; i < il; i++) {{
+        prob += this.coefficients[i] * features[i];
     }}
-    if (prob + inters > 0) {{
+    if (prob + this.intercepts > 0) {{
         return 1;
     }}
     return 0;

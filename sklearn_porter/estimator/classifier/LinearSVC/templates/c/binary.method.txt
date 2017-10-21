@@ -1,14 +1,10 @@
-int {method_name} (float atts[{n_features}]) {{
-
-    {coefficients}
-    {intercepts}
-
-    int i;
+int {method_name} (float features[]) {{
+    int i, l;
     double prob = 0.;
-    for (i = 0; i < {n_features}; i++) {{
-        prob += coefs[i] * atts[i];
+    for (i = 0, l = sizeof(coefficients) / sizeof (coefficients[0]); i < l; i++) {{
+        prob += coefficients[i] * features[i];
     }}
-    if (prob + inters > 0) {{
+    if (prob + intercepts > 0) {{
         return 1;
     }}
     return 0;

@@ -1,17 +1,9 @@
-func {method_name}(atts []float64) int {{
-
-	{coefficients}
-	{intercepts}
-
-	if len(atts) != len(coefs) {{
-		return -1
-	}}
-
+func (svc {class_name}) {method_name}(features []float64) int {{
 	var prob float64
-	for i := 0; i < len(coefs); i++ {{
-		prob = prob + coefs[i]*atts[i]
+	for i := 0; i < len(svc.coefficients); i++ {{
+		prob = prob + svc.coefficients[i] * features[i]
 	}}
-	if (prob + inters) > 0 {{
+	if (prob + svc.intercepts) > 0 {{
 		return 1
 	}}
 	return 0

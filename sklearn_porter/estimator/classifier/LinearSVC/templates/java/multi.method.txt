@@ -1,20 +1,15 @@
-public static int {method_name}(float[] atts) {{
-    if (atts.length != {n_features}) {{ return -1; }}
-
-    {coefficients}
-    {intercepts}
-
-    int class_idx = -1;
-    double class_val = Double.NEGATIVE_INFINITY;
-    for (int i = 0; i < {n_classes}; i++) {{
+public int {method_name}(double[] features) {{
+    int classIdx = 0;
+    double classVal = Double.NEGATIVE_INFINITY;
+    for (int i = 0, il = this.intercepts.length; i < il; i++) {{
         double prob = 0.;
-        for (int j = 0; j < {n_features}; j++) {{
-            prob += coefs[i][j] * atts[j];
+        for (int j = 0, jl = this.coefficients[0].length; j < jl; j++) {{
+            prob += this.coefficients[i][j] * features[j];
         }}
-        if (prob + inters[i] > class_val) {{
-            class_val = prob + inters[i];
-            class_idx = i;
+        if (prob + this.intercepts[i] > classVal) {{
+            classVal = prob + this.intercepts[i];
+            classIdx = i;
         }}
     }}
-    return class_idx;
+    return classIdx;
 }}

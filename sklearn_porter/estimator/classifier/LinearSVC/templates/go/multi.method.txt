@@ -1,22 +1,14 @@
-func {method_name}(atts []float64) int {{
-
-	{coefficients}
-	{intercepts}
-
-	if len(atts) != len(coefs[0]) {{
-		return -1
-	}}
-
-	classIdx := -1
+func (svc {class_name}) {method_name}(features []float64) int {{
+	classIdx := 0
 	classVal := math.Inf(-1)
-	outerCount, innerCount := len(coefs), len(coefs[0])
+	outerCount, innerCount := len(svc.coefficients), len(svc.coefficients[0])
 	for i := 0; i < outerCount; i++ {{
 		var prob float64
 		for j := 0; j < innerCount; j++ {{
-			prob = prob + coefs[i][j]*atts[j]
+			prob = prob + svc.coefficients[i][j] * features[j]
 		}}
-		if prob+inters[i] > classVal {{
-			classVal = prob + inters[i]
+		if prob + svc.intercepts[i] > classVal {{
+			classVal = prob + svc.intercepts[i]
 			classIdx = i
 		}}
 	}}

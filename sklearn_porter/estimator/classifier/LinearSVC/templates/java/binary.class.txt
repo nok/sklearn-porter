@@ -1,0 +1,7 @@
+private double[] coefficients;
+private double intercepts;
+
+public {class_name}(double[] coefficients, double intercepts) {{
+    this.coefficients = coefficients;
+    this.intercepts = intercepts;
+}}

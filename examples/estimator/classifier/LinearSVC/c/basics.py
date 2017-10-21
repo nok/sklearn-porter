@@ -6,12 +6,14 @@ from sklearn_porter import Porter
 
 
 iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
+X = iris_data.data
+y = iris_data.target
 
 clf = svm.LinearSVC(C=1., random_state=0)
 clf.fit(X, y)
 
-output = Porter(clf, language='c').export()
+porter = Porter(clf, language='c')
+output = porter.export()
 print(output)
 
 """
@@ -19,21 +21,20 @@ print(output)
 #include <stdio.h>
 #include <math.h>
 
-int predict (float atts[4]) {
+double coefficients[3][4] = {{0.18424209458473811, 0.45123000025163923, -0.80794587716737576, -0.45071660033253858}, {0.052877455748516447, -0.89214995228605254, 0.40398084459610972, -0.9376821661447452}, {-0.85070784319293802, -0.98670214922204336, 1.381010448739191, 1.8654095662423917}};
+double intercepts[3] = {0.10956266406702335, 1.6636707776739579, -1.7096109416521363};
 
-    double coefs[3][4] = {{0.18424209458473811, 0.45123000025163923, -0.80794587716737576, -0.45071660033253858}, {0.052877455748516447, -0.89214995228605254, 0.40398084459610972, -0.9376821661447452}, {-0.85070784319293802, -0.98670214922204336, 1.381010448739191, 1.8654095662423917}};
-    double inters[3] = {0.10956266406702335, 1.6636707776739579, -1.7096109416521363};
-
+int predict (float features[]) {
     double class_val = -INFINITY;
     int class_idx = -1;
-    int i, j;
-    for (i = 0; i < 3; i++) {
+    int i, il, j, jl;
+    for (i = 0, il = sizeof(coefficients) / sizeof (coefficients[0]); i < il; i++) {
         double prob = 0.;
-        for (j = 0; j < 4; j++) {
-            prob += coefs[i][j] * atts[j];
+        for (j = 0, jl = sizeof(coefficients[0]) / sizeof (coefficients[0][0]); j < jl; j++) {
+            prob += coefficients[i][j] * features[j];
         }
-        if (prob + inters[i] > class_val) {
-            class_val = prob + inters[i];
+        if (prob + intercepts[i] > class_val) {
+            class_val = prob + intercepts[i];
             class_idx = i;
         }
     }
@@ -41,12 +42,17 @@ int predict (float atts[4]) {
 }
 
 int main(int argc, const char * argv[]) {
-    float atts[argc-1];
+
+    /* Features: */
+    float features[argc-1];
     int i;
     for (i = 1; i < argc; i++) {
-        atts[i-1] = atof(argv[i]);
+        features[i-1] = atof(argv[i]);
     }
-    printf("%d", predict(atts));
+
+    /* Prediction: */
+    printf("%d", predict(features));
     return 0;
+
 }
 """

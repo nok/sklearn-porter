@@ -1,15 +1,10 @@
-def self.{method_name} (atts)
-
-    {coefficients}
-    {intercepts}
-
-    prob = 0
-    for i in 0 ... {n_features}
-        prob += coefs[i] * atts[i].to_f
-    end
-    if prob + inters > 0
-        return 1
-    end
-    return 0
-
+def {method_name} (features)
+	prob = 0
+	for i in 0 ... @coefficients.length
+		prob += @coefficients[i] * features[i].to_f
+	end
+	if prob + @intercepts > 0
+		return 1
+	end
+	return 0
 end

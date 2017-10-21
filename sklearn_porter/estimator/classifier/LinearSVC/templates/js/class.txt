@@ -1,13 +1,26 @@
-var {class_name} = function() {{
+var {class_name} = function(coefficients, intercepts) {{
+
+    this.coefficients = coefficients;
+    this.intercepts = intercepts;
 
     {method}
 
 }};
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
-    if (process.argv.length - 2 == {n_features}) {{
-        var argv = process.argv.slice(2);
-        var prediction = new {class_name}().{method_name}(argv);
+    if (process.argv.length - 2 === {n_features}) {{
+
+        // Features
+        var features = process.argv.slice(2);
+
+        // Parameters:
+        {coefficients}
+        {intercepts}
+
+        // Prediction:
+        var clf = new {class_name}(coefficients, intercepts);
+        var prediction = clf.{method_name}(features);
         console.log(prediction);
+
     }}
 }}

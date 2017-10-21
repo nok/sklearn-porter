@@ -1,18 +1,14 @@
-int {method_name} (float atts[{n_features}]) {{
-
-    {coefficients}
-    {intercepts}
-
+int {method_name} (float features[]) {{
     double class_val = -INFINITY;
     int class_idx = -1;
-    int i, j;
-    for (i = 0; i < {n_classes}; i++) {{
+    int i, il, j, jl;
+    for (i = 0, il = sizeof(coefficients) / sizeof (coefficients[0]); i < il; i++) {{
         double prob = 0.;
-        for (j = 0; j < {n_features}; j++) {{
-            prob += coefs[i][j] * atts[j];
+        for (j = 0, jl = sizeof(coefficients[0]) / sizeof (coefficients[0][0]); j < jl; j++) {{
+            prob += coefficients[i][j] * features[j];
         }}
-        if (prob + inters[i] > class_val) {{
-            class_val = prob + inters[i];
+        if (prob + intercepts[i] > class_val) {{
+            class_val = prob + intercepts[i];
             class_idx = i;
         }}
     }}
