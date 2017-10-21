@@ -15,27 +15,32 @@ All notable changes to this project will be documented in this file.
 - Add test class `Go` in `tests/language/Go.py` to test all implementations for the target programming language Go ([#1d0b5d6](https://github.com/nok/sklearn-porter/commit/1d0b5d6a2bf1a5604ae283cc728e3a83fb17a6ea)).
 - Add Go compiling (`go build -o brain brain.go`) and execution (`./brain`) command ([#5d24f57](https://github.com/nok/sklearn-porter/commit/5d24f57ec50e9935dac8389e243deda7b09659d7)).
 - Add initial Web Workers features in JavaScript templates ([#87d3236](https://github.com/nok/sklearn-porter/commit/87d32365d06ba01cce7667b03f9a4265a1312dad)). 
-- Add possibility to read the estimator from a used [Pipeline](http://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) ([#b92edff](https://github.com/nok/sklearn-porter/commit/b92edfff278a997d03f6bca65ea99d0bd02f8ba3), issue: [#18](https://github.com/nok/sklearn-porter/issues/18)).
+- Add possibility to read the estimator from a used [Pipeline](http://scikit-learn.org/stable/modules/generated/`pipeline.Pipeline`.html) ([#b92edff](https://github.com/nok/sklearn-porter/commit/b92edfff278a997d03f6bca65ea99d0bd02f8ba3), issue: [#18](https://github.com/nok/sklearn-porter/issues/18)).
 - Use estimator name as default class name (e.g. `MLPClasifier`, `KNeighborsClassifier`, `SVC`, ...) ([#710a854](https://github.com/nok/sklearn-porter/commit/710a854072bf19054cc2c46eff661241ffa92d65)). 
 - Add new estimator:
     - Go:
-        - sklearn.tree.DecisionTreeClassifier ([#fe59710](https://github.com/nok/sklearn-porter/commit/fe59710a72c6a4bf5fb1d0acc0a35eba3dda950e))
+        - `tree.DecisionTreeClassifier` ([#fe59710](https://github.com/nok/sklearn-porter/commit/fe59710a72c6a4bf5fb1d0acc0a35eba3dda950e))
     - JavaScript:
-        - sklearn.naive_bayes.BernoulliNB ([#9784d6b](https://github.com/nok/sklearn-porter/commit/9784d6b8752fbb15b57345a5a08138618e3b676e))
+        - `naive_bayes.BernoulliNB` ([#9784d6b](https://github.com/nok/sklearn-porter/commit/9784d6b8752fbb15b57345a5a08138618e3b676e))
     - PHP:
-        - sklearn.ensemble.RandomForestClassifier ([#faac38d](https://github.com/nok/sklearn-porter/commit/faac38d60f04c40641935b25c4b6dce33e96b4ac))
-        - sklearn.ensemble.ExtraTreesClassifier ([#2a29321](https://github.com/nok/sklearn-porter/commit/2a2932114e9313ae1e54b9369adcae00a4cce813))
+        - `ensemble.RandomForestClassifier` ([#faac38d](https://github.com/nok/sklearn-porter/commit/faac38d60f04c40641935b25c4b6dce33e96b4ac))
+        - `ensemble.ExtraTreesClassifier` ([#2a29321](https://github.com/nok/sklearn-porter/commit/2a2932114e9313ae1e54b9369adcae00a4cce813))
     - Ruby:
-        - sklearn.svm.SVC ([#3ef1646](https://github.com/nok/sklearn-porter/commit/3ef16464515e539e2c4bd6dd718e9d097e95e131))
-        - sklearn.svm.NuSVC ([#0a39aaf](https://github.com/nok/sklearn-porter/commit/0a39aaf9349830130f92c09a8e9af77fed5bacac))
-        - sklearn.tree.DecisionTreeClassifier ([#a404c4f](https://github.com/nok/sklearn-porter/commit/a404c4f383a62d98ac543c617234c0a907b8267a))
-        - sklearn.ensemble.RandomForestClassifier ([#3775501](https://github.com/nok/sklearn-porter/commit/3775501b77436c0b5b5132e11893d0c4add0cb7b))
-        - sklearn.ensemble.ExtraTreesClassifier ([#81b9914](https://github.com/nok/sklearn-porter/commit/81b99149116f00a790e0df33d60e381cafc89bf2))
+        - `svm.SVC` ([#3ef1646](https://github.com/nok/sklearn-porter/commit/3ef16464515e539e2c4bd6dd718e9d097e95e131))
+        - `svm.NuSVC` ([#0a39aaf](https://github.com/nok/sklearn-porter/commit/0a39aaf9349830130f92c09a8e9af77fed5bacac))
+        - `tree.DecisionTreeClassifier` ([#a404c4f](https://github.com/nok/sklearn-porter/commit/a404c4f383a62d98ac543c617234c0a907b8267a))
+        - `ensemble.RandomForestClassifier` ([#3775501](https://github.com/nok/sklearn-porter/commit/3775501b77436c0b5b5132e11893d0c4add0cb7b))
+        - `ensemble.ExtraTreesClassifier` ([#81b9914](https://github.com/nok/sklearn-porter/commit/81b99149116f00a790e0df33d60e381cafc89bf2))
 
 ### Changed
  
 - Use human-readable placeholders (e.g. `'{class_name}.{method_name}'`) instead of index-based placeholders (e.g. `'{0}.{1}'`) in all main templates of all estimators ([#de02795](https://github.com/nok/sklearn-porter/commit/de02795f3628ccad9d5e85940d37b866e2e7443e)).
 - Change the order of optional and required arguments in the `--help` text ([#54d9973](https://github.com/nok/sklearn-porter/commit/54d99736f5fe144350e990621ba4d145776eecdd)).
+- Separate the model data from the algorithm:
+    - `neighbors.KNeighborsClassifier` ([#59a0e91](https://github.com/nok/sklearn-porter/commit/59a0e9114daeeb7d81a975c3adfa0ad27be3a426), [#1ac5d8a](https://github.com/nok/sklearn-porter/commit/29412ab55d8ebcdb7914974121c03d64660e5f94))
+    - `neural_network.MLPClassifier` ([#635da46](https://github.com/nok/sklearn-porter/commit/635da46dbf29a80d51a16f3bbc28a5ba87eacdd7), [#7d31668](https://github.com/nok/sklearn-porter/commit/7d3166894229f70aafe6a6c9e2e7dbd091589c15), [#78296e2](https://github.com/nok/sklearn-porter/commit/78296e2d893d882240ebb8f54ada07d28ab9fc49), [#4cdcfde](https://github.com/nok/sklearn-porter/commit/4cdcfde6a34e131b8ab7088af880eb081fd8f3dd), [#7820508](https://github.com/nok/sklearn-porter/commit/7820508aad7f1ccf39529023c22b3427471bde68), [#7820508](https://github.com/nok/sklearn-porter/commit/7820508aad7f1ccf39529023c22b3427471bde68))
+    - `naive_bayes.GaussianNB` ([#1ac5d8a](https://github.com/nok/sklearn-porter/commit/1ac5d8a3e5137e7d308c8c0f6529ae4c70a54abe))
+    - `naive_bayes.BernoulliNB` ([#ff82bb8](https://github.com/nok/sklearn-porter/commit/ff82bb880ce4ae95af0f95e90bc3e681e4f261b8), [#3c57a06](https://github.com/nok/sklearn-porter/commit/3c57a06a733cdd8e9a74cb41c4087064161ad0d5))
  
 ### Removed
 
@@ -43,5 +48,5 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
-- Fix inaccuracies in sklearn.neural_network.MLPRegressor and sklearn.neural_network.MLPClassifier occurred by the transpiled tanh and identity activation functions ([#6696410](https://github.com/nok/sklearn-porter/commit/66964103083d04eedbd51cd83487808d43073350)).
+- Fix inaccuracies in `neural_network.MLPRegressor` and `neural_network.MLPClassifier` occurred by the transpiled tanh and identity activation functions ([#6696410](https://github.com/nok/sklearn-porter/commit/66964103083d04eedbd51cd83487808d43073350)).
 - Fix installation problems with pip and Python 3 ([#2935828](https://github.com/nok/sklearn-porter/commit/2935828735fb1a8141c32f5f772172c12877c42d), issue: [#17](https://github.com/nok/sklearn-porter/issues/17))
