@@ -170,13 +170,14 @@ class MLPClassifier(Classifier):
         """
 
         temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
         temp_arr__ = self.temp('arr[][]')
         temp_arr___ = self.temp('arr[][][]')
 
         # Activations:
         layers = list(self._get_activations())
         layers = ', '.join(layers)
-        layers = temp_arr__.format(type='double', name='layers', values=layers)
+        layers = temp_arr_.format(type='int', name='layers', values=layers)
 
         # Coefficients (weights):
         coefficients = []
@@ -226,8 +227,4 @@ class MLPClassifier(Classifier):
         """
         Concatenate the layers sizes of the classifier except the input layer.
         """
-        temp_arr = self.temp('new_arr')
-        for layer in self.layer_units[1:]:
-            yield temp_arr.format(type='double',
-                                  values=(str(int(layer))),
-                                  fill_with='.0')
+        return [str(x) for x in self.layer_units[1:]]

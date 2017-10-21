@@ -2,7 +2,10 @@ var {class_name} = function(hidden, output, layers, weights, bias) {{
 
     this.hidden = hidden.toUpperCase();
     this.output = output.toUpperCase();
-    this.layers = layers;
+    this.network = new Array(layers.length + 1);
+    for (var i = 0, l = layers.length; i < l; i++) {{
+        this.network[i + 1] = new Array(layers[i]).fill(0.);
+    }}
     this.weights = weights;
     this.bias = bias;
 

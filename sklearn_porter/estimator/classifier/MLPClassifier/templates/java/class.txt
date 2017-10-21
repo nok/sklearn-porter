@@ -4,16 +4,23 @@ class {class_name} {{
 
     private Activation hidden;
     private Activation output;
-    private double[][] layers;
+    private double[][] network;
     private double[][][] weights;
     private double[][] bias;
 
-    public {class_name}(String hidden, String output, double[][] layers, double[][][] weights, double[][] bias) {{
+    public {class_name}(String hidden, String output, int[] layers, double[][][] weights, double[][] bias) {{
         this.hidden = Activation.valueOf(hidden.toUpperCase());
         this.output = Activation.valueOf(output.toUpperCase());
-        this.layers = layers;
+        this.network = new double[layers.length + 1][];
+        for (int i = 0, l = layers.length; i < l; i++) {{
+            this.network[i + 1] = new double[layers[i]];
+        }}
         this.weights = weights;
         this.bias = bias;
+    }}
+
+    public Brain(String hidden, String output, int neurons, double[][][] weights, double[][] bias) {{
+        this(hidden, output, new int[] {{ neurons }}, weights, bias);
     }}
 
     private double[] compute(Activation activation, double[] v) {{

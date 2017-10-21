@@ -6,13 +6,14 @@ from sklearn_porter import Porter
 
 
 iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
+X = iris_data.data
+y = iris_data.target
 
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-output = Porter(clf).export()
-# output = Porter(clf, language='java').export()
+porter = Porter(clf)
+output = porter.export()
 print(output)
 
 """

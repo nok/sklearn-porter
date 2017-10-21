@@ -1,22 +1,22 @@
 this.{method_name} = function(neurons) {{
-    var network = [neurons].concat(this.layers);
+    this.network[0] = neurons;
 
-    for (var i = 0; i < network.length - 1; i++) {{
-        for (var j = 0; j < network[i + 1].length; j++) {{
-            for (var l = 0; l < network[i].length; l++) {{
-                network[i + 1][j] += network[i][l] * this.weights[i][l][j];
+    for (var i = 0; i < this.network.length - 1; i++) {{
+        for (var j = 0; j < this.network[i + 1].length; j++) {{
+            for (var l = 0; l < this.network[i].length; l++) {{
+                this.network[i + 1][j] += this.network[i][l] * this.weights[i][l][j];
             }}
-            network[i + 1][j] += this.bias[i][j];
+            this.network[i + 1][j] += this.bias[i][j];
         }}
-        if ((i + 1) < (network.length - 1)) {{
-            network[i + 1] = compute(this.hidden, network[i + 1]);
+        if ((i + 1) < (this.network.length - 1)) {{
+            this.network[i + 1] = compute(this.hidden, this.network[i + 1]);
         }}
     }}
-    network[network.length - 1] = compute(this.output, network[network.length - 1]);
+    this.network[this.network.length - 1] = compute(this.output, this.network[this.network.length - 1]);
 
     var classIdx = 0;
-    for (var i = 0, l = network[network.length - 1].length; i < l; i++) {{
-        classIdx = network[network.length - 1][i] > network[network.length - 1][classIdx] ? i : classIdx;
+    for (var i = 0, l = this.network[this.network.length - 1].length; i < l; i++) {{
+        classIdx = this.network[this.network.length - 1][i] > this.network[this.network.length - 1][classIdx] ? i : classIdx;
     }}
     return classIdx;
 }};
