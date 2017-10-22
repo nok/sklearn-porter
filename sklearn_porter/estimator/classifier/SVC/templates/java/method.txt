@@ -120,7 +120,7 @@ public int {method_name}(double[] features) {{
                 classIdx= i;
             }}
         }}
-        return classes[classIdx];
+        return this.classes[classIdx];
 
     }}
 }}
