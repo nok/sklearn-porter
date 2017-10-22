@@ -2,12 +2,43 @@
 
 class {class_name} {{
 
+    public function __construct($nClasses, $vectors, $coefficients, $intercepts, $weights, $kernel, $gamma, $coef0, $degree) {{
+        $this->nClasses = $nClasses;
+        $this->classes = array_fill(0, $nClasses, 0);
+        for ($i = 0; $i < $nClasses; $i++) {{
+            $this->classes[$i] = $i;
+        }}
+
+        $this->vectors = $vectors;
+        $this->coefficients = $coefficients;
+        $this->intercepts = $intercepts;
+        $this->weights = $weights;
+
+        $this->kernel = strtoupper($kernel);
+        $this->gamma = $gamma;
+        $this->coef0 = $coef0;
+        $this->degree = $degree;
+    }}
+
     {method}
 
 }}
 
 if ($argc > 1) {{
+
+    // Features:
     array_shift($argv);
-    $prediction = {class_name}::{method_name}($argv);
+    $features = $argv;
+
+    // Parameters:
+    {vectors}
+    {coefficients}
+    {intercepts}
+    {weights}
+
+    // Prediction:
+    $clf = new {class_name}({n_classes}, $vectors, $coefficients, $intercepts, $weights, "{kernel}", {gamma}, {coef0}, {degree});
+    $prediction = $clf->{method_name}($features);
     fwrite(STDOUT, $prediction);
+
 }}
