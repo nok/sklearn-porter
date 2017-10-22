@@ -1,14 +1,58 @@
 class {class_name} {{
 
+    private enum Kernel {{ LINEAR, POLY, RBF, SIGMOID }}
+
+    private int nClasses;
+    private int[] classes;
+    private double[][] vectors;
+    private double[][] coefficients;
+    private double[] intercepts;
+    private int[] weights;
+    private Kernel kernel;
+    private double gamma;
+    private double coef0;
+    private double degree;
+
+    public {class_name} (int nClasses, double[][] vectors, double[][] coefficients, double[] intercepts, int[] weights, String kernel, double gamma, double coef0, double degree) {{
+        this.nClasses = nClasses;
+        this.classes = new int[nClasses];
+        for (int i = 0; i < nClasses; i++) {{
+            this.classes[i] = i;
+        }}
+
+        this.vectors = vectors;
+        this.coefficients = coefficients;
+        this.intercepts = intercepts;
+        this.weights = weights;
+
+        this.kernel = Kernel.valueOf(kernel.toUpperCase());
+        this.gamma = gamma;
+        this.coef0 = coef0;
+        this.degree = degree;
+    }}
+
     {method}
 
     public static void main(String[] args) {{
         if (args.length == {n_features}) {{
-            float[] atts = new float[args.length];
+
+            // Features:
+            double[] features = new double[args.length];
             for (int i = 0, l = args.length; i < l; i++) {{
-                atts[i] = Float.parseFloat(args[i]);
+                features[i] = Double.parseDouble(args[i]);
             }}
-            System.out.println({class_name}.{method_name}(atts));
+
+            // Parameters:
+            {vectors}
+            {coefficients}
+            {intercepts}
+            {weights}
+
+            // Prediction:
+            {class_name} clf = new {class_name}({n_classes}, vectors, coefficients, intercepts, weights, "{kernel}", {gamma}, {coef0}, {degree});
+            int estimation = clf.{method_name}(features);
+            System.out.println(estimation);
+
         }}
     }}
 }}

@@ -72,12 +72,18 @@ class SVC(Classifier):
                                   target_method=target_method, **kwargs)
         self.estimator = estimator
 
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
         params = estimator.get_params()
         # Check kernel type:
         kernels = ['linear', 'rbf', 'poly', 'sigmoid']
         if params['kernel'] not in kernels:
             msg = 'The kernel type is not supported.'
             raise ValueError(msg)
+
         # Check rbf gamma value:
         if params['kernel'] == 'rbf' and params['gamma'] == 'auto':
             msg = ('The classifier gamma value have to '
@@ -85,17 +91,60 @@ class SVC(Classifier):
             raise ValueError(msg)
         self.params = params
 
-        self.svs = estimator.support_vectors_
-        self.n_svs = len(estimator.support_vectors_[0])
+        # self.svs = estimator.support_vectors_
+        # self.n_svs = len(estimator.support_vectors_[0])
+        self.n_features = len(estimator.support_vectors_[0])
         self.svs_rows = estimator.n_support_
         self.n_svs_rows = len(estimator.n_support_)
-        self.coeffs = estimator.dual_coef_
-        self.inters = estimator._intercept_  # pylint: disable=W0212
-        self.n_inters = len(estimator._intercept_)  # pylint: disable=W0212
-        self.classes = estimator.classes_
+
+        self.weights = self.temp('arr[]', skipping=True).format(
+            type='int', name='weights', values=', '.join([str(e) for e in self.svs_rows]),
+            n=len(self.svs_rows))
+
+        # self.coeffs = estimator.dual_coef_
+        # self.inters = estimator._intercept_  # pylint: disable=W0212
+        # self.n_inters = len(estimator._intercept_)  # pylint: disable=W0212
+        # self.classes = estimator.classes_
         self.n_classes = len(estimator.classes_)
         self.is_binary = self.n_classes == 2
         self.prefix = 'binary' if self.is_binary else 'multi'
+
+        # Support vectors:
+        vectors = []
+        for vector in estimator.support_vectors_:
+            _vectors = [temp_type.format(self.repr(v)) for v in vector]
+            _vectors = temp_arr.format(', '.join(_vectors))
+            vectors.append(_vectors)
+        vectors = ', '.join(vectors)
+        vectors = self.temp('arr[][]', skipping=True).format(
+            type='double', name='vectors', values=vectors,
+            n=len(estimator.support_vectors_), m=estimator.support_vectors_[0])
+        self.vectors = vectors
+
+        # Coefficients:
+        coeffs = []
+        for coeff in estimator.dual_coef_:
+            _coeffs = [temp_type.format(self.repr(c)) for c in coeff]
+            _coeffs = temp_arr.format(', '.join(_coeffs))
+            coeffs.append(_coeffs)
+        coeffs = ', '.join(coeffs)
+        coeffs = temp_arr__.format(type='double', name='coefficients',
+                                   values=coeffs, n=len(estimator.dual_coef_),
+                                   m=len(estimator.dual_coef_[0]))
+        self.coefficients = coeffs
+
+        # Interceptions:
+        inters = [temp_type.format(self.repr(i)) for i in estimator._intercept_]
+        inters = ', '.join(inters)
+        inters = temp_arr_.format(type='double', name='intercepts',
+                                  values=inters)
+        self.intercepts = inters
+
+        # Kernel:
+        self.kernel = str(params['kernel'])
+        self.gamma = self.repr(self.params['gamma'])
+        self.coef0 = self.repr(self.params['coef0'])
+        self.degree = self.repr(self.params['degree'])
 
     def export(self, class_name, method_name, use_repr=True, use_file=False):
         """
@@ -134,7 +183,9 @@ class SVC(Classifier):
         :return : string
             The transpiled predict method as string.
         """
-        return self.create_class(self.create_method())
+        self.method = self.create_method()
+        output = self.create_class()
+        return output
 
     def create_method(self):
         """
@@ -150,91 +201,91 @@ class SVC(Classifier):
         temp_arr_ = self.temp('arr[]')
         temp_arr__ = self.temp('arr[][]')
 
-        out = '\n'
+        # out = '\n'
 
         # Number of support vectors:
-        n_svs = [temp_type.format(self.repr(v)) for v in self.svs_rows]
-        n_svs = ', '.join(n_svs)
-        out += temp_arr_.format(type='int', name='n_svs', values=n_svs)
-        out += '\n'
+        # n_svs = [temp_type.format(self.repr(v)) for v in self.svs_rows]
+        # n_svs = ', '.join(n_svs)
+        # out += temp_arr_.format(type='int', name='n_svs', values=n_svs)
+        # out += '\n'
 
-        # Support vectors:
-        vectors = []
-        for vector in self.svs:
-            _vectors = [temp_type.format(self.repr(v)) for v in vector]
-            _vectors = temp_arr.format(', '.join(_vectors))
-            vectors.append(_vectors)
-        vectors = ', '.join(vectors)
-        out += self.temp('arr[][]', skipping=True).format(
-            type='double', name='svs', values=vectors,
-            n=len(self.svs), m=self.n_svs)
-        out += '\n'
+        # # Support vectors:
+        # vectors = []
+        # for vector in self.svs:
+        #     _vectors = [temp_type.format(self.repr(v)) for v in vector]
+        #     _vectors = temp_arr.format(', '.join(_vectors))
+        #     vectors.append(_vectors)
+        # vectors = ', '.join(vectors)
+        # out += self.temp('arr[][]', skipping=True).format(
+        #     type='double', name='svs', values=vectors,
+        #     n=len(self.svs), m=self.n_svs)
+        # out += '\n'
 
-        # Coefficients:
-        coeffs = []
-        for coeff in self.coeffs:
-            _coeffs = [temp_type.format(self.repr(c)) for c in coeff]
-            _coeffs = temp_arr.format(', '.join(_coeffs))
-            coeffs.append(_coeffs)
-        coeffs = ', '.join(coeffs)
-        out += temp_arr__.format(type='double', name='coeffs', values=coeffs,
-                                 n=len(self.coeffs), m=len(self.coeffs[0]))
-        out += '\n'
+        # # Coefficients:
+        # coeffs = []
+        # for coeff in self.coeffs:
+        #     _coeffs = [temp_type.format(self.repr(c)) for c in coeff]
+        #     _coeffs = temp_arr.format(', '.join(_coeffs))
+        #     coeffs.append(_coeffs)
+        # coeffs = ', '.join(coeffs)
+        # out += temp_arr__.format(type='double', name='coeffs', values=coeffs,
+        #                          n=len(self.coeffs), m=len(self.coeffs[0]))
+        # out += '\n'
 
         # Interceptions:
-        inters = [temp_type.format(self.repr(i)) for i in self.inters]
-        inters = ', '.join(inters)
-        out += temp_arr_.format(type='double', name='inters', values=inters)
-        out += '\n'
+        # inters = [temp_type.format(self.repr(i)) for i in self.inters]
+        # inters = ', '.join(inters)
+        # out += temp_arr_.format(type='double', name='inters', values=inters)
+        # out += '\n'
 
         # Classes:
-        if not self.is_binary:
-            classes = [temp_type.format(self.repr(c)) for c in self.classes]
-            classes = ', '.join(classes)
-            out += temp_arr_.format(type='int', name='classes', values=classes)
-            out += '\n'
+        # if not self.is_binary:
+        #     classes = [temp_type.format(self.repr(c)) for c in self.classes]
+        #     classes = ', '.join(classes)
+        #     out += temp_arr_.format(type='int', name='classes', values=classes)
+        #     out += '\n'
 
-        # Kernels:
-        if self.params['kernel'] == 'rbf':
-            name = self.prefix + '.kernel.rbf'
-            out += self.temp(name).format(
-                len(self.svs), self.n_svs,
-                self.repr(self.params['gamma']))
-        elif self.params['kernel'] == 'poly':
-            name = self.prefix + '.kernel.poly'
-            out += self.temp(name).format(
-                len(self.svs), self.n_svs,
-                self.repr(self.params['gamma']),
-                self.repr(self.params['coef0']),
-                self.repr(self.params['degree']))
-        elif self.params['kernel'] == 'sigmoid':
-            name = self.prefix + '.kernel.sigmoid'
-            out += self.temp(name).format(
-                len(self.svs), self.n_svs,
-                self.repr(self.params['gamma']),
-                self.repr(self.params['coef0']),
-                self.repr(self.params['degree']))
-        elif self.params['kernel'] == 'linear':
-            name = self.prefix + '.kernel.linear'
-            out += self.temp(name).format(
-                len(self.svs), self.n_svs)
-        out += '\n'
+        # # Kernels:
+        # if self.params['kernel'] == 'rbf':
+        #     name = self.prefix + '.kernel.rbf'
+        #     out += self.temp(name).format(
+        #         len(self.svs), self.n_svs,
+        #         self.repr(self.params['gamma']))
+        # elif self.params['kernel'] == 'poly':
+        #     name = self.prefix + '.kernel.poly'
+        #     out += self.temp(name).format(
+        #         len(self.svs), self.n_svs,
+        #         self.repr(self.params['gamma']),
+        #         self.repr(self.params['coef0']),
+        #         self.repr(self.params['degree']))
+        # elif self.params['kernel'] == 'sigmoid':
+        #     name = self.prefix + '.kernel.sigmoid'
+        #     out += self.temp(name).format(
+        #         len(self.svs), self.n_svs,
+        #         self.repr(self.params['gamma']),
+        #         self.repr(self.params['coef0']),
+        #         self.repr(self.params['degree']))
+        # elif self.params['kernel'] == 'linear':
+        #     name = self.prefix + '.kernel.linear'
+        #     out += self.temp(name).format(
+        #         len(self.svs), self.n_svs)
+        # out += '\n'
 
-        # Decicion:
-        out += self.temp('starts').format(self.n_svs_rows)
-        out += self.temp('ends').format(self.n_svs_rows)
-        name = self.prefix + '.decisions'
-        out += self.temp(name).format(self.n_inters, self.n_svs_rows)
-        name = self.prefix + '.classes'
-        out += self.temp(name).format(self.n_inters, self.n_classes)
+        # # Decicion:
+        # out += self.temp('starts').format(self.n_svs_rows)
+        # out += self.temp('ends').format(self.n_svs_rows)
+        # name = self.prefix + '.decisions'
+        # out += self.temp(name).format(self.n_inters, self.n_svs_rows)
+        # name = self.prefix + '.classes'
+        # out += self.temp(name).format(self.n_inters, self.n_classes)
         n_indents = 0 if self.target_language in ['java', 'js', 'php', 'ruby'] else 1
-        out = self.indent(out, n_indents=2-n_indents)
+        # out = self.indent(out, n_indents=2-n_indents)
 
-        temp_method = self.temp('method', n_indents=1-n_indents, skipping=True)
-        out = temp_method.format(method_name=self.method_name, decicion=out)
-        return out
+        method = self.temp('method', n_indents=1-n_indents,
+                           skipping=True).format(**self.__dict__)
+        return method
 
-    def create_class(self, method):
+    def create_class(self):
         """
         Build the estimator class.
 
@@ -244,7 +295,5 @@ class SVC(Classifier):
             The built class as string.
         """
         temp_class = self.temp('class')
-        out = temp_class.format(class_name=self.class_name,
-                                method_name=self.method_name, method=method,
-                                n_features=self.n_svs)
+        out = temp_class.format(**self.__dict__)
         return out
