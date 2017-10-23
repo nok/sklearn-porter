@@ -1,9 +1,0 @@
-
-double decision = 0.;
-for (k = starts[1]; k < ends[1]; k++) {{
-    decision += kernels[k] * coeffs[0][k];
-}}
-for (k = starts[0]; k < ends[0]; k++) {{
-    decision += kernels[k] * coeffs[0][k];
-}}
-decision += inters[0];
