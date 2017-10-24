@@ -17,13 +17,14 @@ output = porter.export()
 print(output)
 
 """
-var SVC = function(nClasses, vectors, coefficients, intercepts, weights, kernel, gamma, coef0, degree) {
+var SVC = function(nClasses, nRows, vectors, coefficients, intercepts, weights, kernel, gamma, coef0, degree) {
 
     this.nClasses = nClasses;
     this.classes = new Array(nClasses);
     for (var i = 0; i < nClasses; i++) {
         this.classes[i] = i;
     }
+    this.nRows = nRows;
     this.vectors = vectors;
     this.coefficients = coefficients;
     this.intercepts = intercepts;
@@ -80,8 +81,8 @@ var SVC = function(nClasses, vectors, coefficients, intercepts, weights, kernel,
                 break;
         }
     
-        var starts = new Array(this.nClasses);
-        for (var i = 0; i < this.nClasses; i++) {
+        var starts = new Array(this.nRows);
+        for (var i = 0; i < this.nRows; i++) {
             if (i != 0) {
                 var start = 0;
                 for (var j = 0; j < i; j++) {
@@ -93,8 +94,8 @@ var SVC = function(nClasses, vectors, coefficients, intercepts, weights, kernel,
             }
         }
     
-        var ends = new Array(this.nClasses);
-        for (var i = 0; i < this.nClasses; i++) {
+        var ends = new Array(this.nRows);
+        for (var i = 0; i < this.nRows; i++) {
             ends[i] = this.weights[i] + starts[i];
         }
     
@@ -118,46 +119,45 @@ var SVC = function(nClasses, vectors, coefficients, intercepts, weights, kernel,
             }
             return 1;
     
-        } else {
-    
-            var decisions = new Array(this.nClasses);
-            for (var i = 0, d = 0, l = this.nClasses; i < l; i++) {
-                for (var j = i + 1; j < l; j++) {
-                    var tmp = 0.;
-                    for (var k = starts[j]; k < ends[j]; k++) {
-                        tmp += this.coefficients[i][k] * kernels[k];
-                    }
-                    for (var k = starts[i]; k < ends[i]; k++) {
-                        tmp += this.coefficients[j - 1][k] * kernels[k];
-                    }
-                    decisions[d] = tmp + this.intercepts[d];
-                    d++;
-                }
-            }
-    
-            var votes = new Array(this.intercepts.length);
-            for (var i = 0, d = 0, l = this.nClasses; i < l; i++) {
-                for (var j = i + 1; j < l; j++) {
-                    votes[d] = decisions[d] > 0 ? i : j;
-                    d++;
-                }
-            }
-    
-            var amounts = new Array(this.nClasses).fill(0);
-            for (var i = 0, l = votes.length; i < l; i++) {
-                amounts[votes[i]] += 1;
-            }
-    
-            var classVal = -1, classIdx = -1;
-            for (var i = 0, l = amounts.length; i < l; i++) {
-                if (amounts[i] > classVal) {
-                    classVal = amounts[i];
-                    classIdx= i;
-                }
-            }
-            return this.classes[classIdx];
-    
         }
+    
+        var decisions = new Array(this.intercepts.length);
+        for (var i = 0, d = 0, l = this.nRows; i < l; i++) {
+            for (var j = i + 1; j < l; j++) {
+                var tmp = 0.;
+                for (var k = starts[j]; k < ends[j]; k++) {
+                    tmp += this.coefficients[i][k] * kernels[k];
+                }
+                for (var k = starts[i]; k < ends[i]; k++) {
+                    tmp += this.coefficients[j - 1][k] * kernels[k];
+                }
+                decisions[d] = tmp + this.intercepts[d];
+                d++;
+            }
+        }
+    
+        var votes = new Array(this.intercepts.length);
+        for (var i = 0, d = 0, l = this.nRows; i < l; i++) {
+            for (var j = i + 1; j < l; j++) {
+                votes[d] = decisions[d] > 0 ? i : j;
+                d++;
+            }
+        }
+    
+        var amounts = new Array(this.nClasses).fill(0);
+        for (var i = 0, l = votes.length; i < l; i++) {
+            amounts[votes[i]] += 1;
+        }
+    
+        var classVal = -1, classIdx = -1;
+        for (var i = 0, l = amounts.length; i < l; i++) {
+            if (amounts[i] > classVal) {
+                classVal = amounts[i];
+                classIdx= i;
+            }
+        }
+        return this.classes[classIdx];
+    
     }
 
 };
@@ -175,7 +175,7 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
         var weights = [50, 50, 50];
 
         // Prediction:
-        var clf = new SVC(3, vectors, coefficients, intercepts, weights, "rbf", 0.001, 0.0, 3);
+        var clf = new SVC(3, 3, vectors, coefficients, intercepts, weights, "rbf", 0.001, 0.0, 3);
         var prediction = clf.predict(features);
         console.log(prediction);
 

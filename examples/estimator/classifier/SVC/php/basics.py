@@ -21,12 +21,13 @@ print(output)
 
 class SVC {
 
-    public function __construct($nClasses, $vectors, $coefficients, $intercepts, $weights, $kernel, $gamma, $coef0, $degree) {
+    public function __construct($nClasses, $nRows, $vectors, $coefficients, $intercepts, $weights, $kernel, $gamma, $coef0, $degree) {
         $this->nClasses = $nClasses;
         $this->classes = array_fill(0, $nClasses, 0);
         for ($i = 0; $i < $nClasses; $i++) {
             $this->classes[$i] = $i;
         }
+        $this->nRows = $nRows;
 
         $this->vectors = $vectors;
         $this->coefficients = $coefficients;
@@ -86,8 +87,8 @@ class SVC {
                 break;
         }
     
-        $starts = array_fill(0, $this->nClasses, 0);
-        for ($i = 0; $i < $this->nClasses; $i++) {
+        $starts = array_fill(0, $this->nRows, 0);
+        for ($i = 0; $i < $this->nRows; $i++) {
             if ($i != 0) {
                 $start = 0;
                 for ($j = 0; $j < $i; $j++) {
@@ -99,8 +100,8 @@ class SVC {
             }
         }
     
-        $ends = array_fill(0, $this->nClasses, 0);
-        for ($i = 0; $i < $this->nClasses; $i++) {
+        $ends = array_fill(0, $this->nRows, 0);
+        for ($i = 0; $i < $this->nRows; $i++) {
             $ends[$i] = $this->weights[$i] + $starts[$i];
         }
     
@@ -124,47 +125,46 @@ class SVC {
             }
             return 1;
     
-        } else {
-    
-            $decisions = array_fill(0, $this->nClasses, 0);
-            for ($i = 0, $d = 0, $l = $this->nClasses; $i < $l; $i++) {
-                for ($j = $i + 1; $j < $l; $j++) {
-                    $tmp = 0.;
-                    for ($k = $starts[$j]; $k < $ends[$j]; $k++) {
-                        $tmp += $this->coefficients[$i][$k] * $kernels[$k];
-                    }
-                    for ($k = $starts[$i]; $k < $ends[$i]; $k++) {
-                        $tmp += $this->coefficients[$j - 1][$k] * $kernels[$k];
-                    }
-                    $decisions[$d] = $tmp + $this->intercepts[$d];
-                    $d++;
-                }
-            }
-    
-            $votes = array_fill(0, count($this->intercepts), 0);
-            for ($i = 0, $d = 0, $l = $this->nClasses; $i < $l; $i++) {
-                for ($j = $i + 1; $j < $l; $j++) {
-                    $votes[$d] = $decisions[$d] > 0 ? $i : $j;
-                    $d++;
-                }
-            }
-    
-            $amounts = array_fill(0, $this->nClasses, 0);
-            for ($i = 0, $l = count($votes); $i < $l; $i++) {
-                $amounts[$votes[$i]] += 1;
-            }
-    
-            $classVal = -1;
-            $classIdx = -1;
-            for ($i = 0, $l = count($amounts); $i < $l; $i++) {
-                if ($amounts[$i] > $classVal) {
-                    $classVal = $amounts[$i];
-                    $classIdx = $i;
-                }
-            }
-            return $this->classes[$classIdx];
-    
         }
+    
+        $decisions = array_fill(0, count($this->intercepts), 0);
+        for ($i = 0, $d = 0, $l = $this->nRows; $i < $l; $i++) {
+            for ($j = $i + 1; $j < $l; $j++) {
+                $tmp = 0.;
+                for ($k = $starts[$j]; $k < $ends[$j]; $k++) {
+                    $tmp += $this->coefficients[$i][$k] * $kernels[$k];
+                }
+                for ($k = $starts[$i]; $k < $ends[$i]; $k++) {
+                    $tmp += $this->coefficients[$j - 1][$k] * $kernels[$k];
+                }
+                $decisions[$d] = $tmp + $this->intercepts[$d];
+                $d++;
+            }
+        }
+    
+        $votes = array_fill(0, count($this->intercepts), 0);
+        for ($i = 0, $d = 0, $l = $this->nRows; $i < $l; $i++) {
+            for ($j = $i + 1; $j < $l; $j++) {
+                $votes[$d] = $decisions[$d] > 0 ? $i : $j;
+                $d++;
+            }
+        }
+    
+        $amounts = array_fill(0, $this->nClasses, 0);
+        for ($i = 0, $l = count($votes); $i < $l; $i++) {
+            $amounts[$votes[$i]] += 1;
+        }
+    
+        $classVal = -1;
+        $classIdx = -1;
+        for ($i = 0, $l = count($amounts); $i < $l; $i++) {
+            if ($amounts[$i] > $classVal) {
+                $classVal = $amounts[$i];
+                $classIdx = $i;
+            }
+        }
+        return $this->classes[$classIdx];
+    
     }
 
 }
@@ -182,7 +182,7 @@ if ($argc > 1) {
     $weights = [50, 50, 50];
 
     // Prediction:
-    $clf = new SVC(3, $vectors, $coefficients, $intercepts, $weights, "rbf", 0.001, 0.0, 3);
+    $clf = new SVC(3, 3, $vectors, $coefficients, $intercepts, $weights, "rbf", 0.001, 0.0, 3);
     $prediction = $clf->predict($features);
     fwrite(STDOUT, $prediction);
 

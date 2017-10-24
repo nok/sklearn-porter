@@ -34,7 +34,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"><a href="examples/estimator/classifier/SVC/js/basics.ipynb">✓</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/estimator/classifier/SVC/php/basics.ipynb">✓</a></td>
-            <td align="center">✓</td>
+            <td align="center"><a href="examples/estimator/classifier/SVC/ruby/basics.ipynb">✓</a></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">sklearn.svm.NuSVC</a></td>
@@ -43,7 +43,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"><a href="examples/estimator/classifier/NuSVC/js/basics.ipynb">✓</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/estimator/classifier/NuSVC/php/basics.ipynb">✓</a></td>
-            <td align="center">✓</td>
+            <td align="center"><a href="examples/estimator/classifier/NuSVC/ruby/basics.ipynb">✓</a></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>

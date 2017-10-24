@@ -22,6 +22,7 @@ class SVC {
     private enum Kernel { LINEAR, POLY, RBF, SIGMOID }
 
     private int nClasses;
+    private int nRows;
     private int[] classes;
     private double[][] vectors;
     private double[][] coefficients;
@@ -32,12 +33,13 @@ class SVC {
     private double coef0;
     private double degree;
 
-    public SVC (int nClasses, double[][] vectors, double[][] coefficients, double[] intercepts, int[] weights, String kernel, double gamma, double coef0, double degree) {
+    public SVC (int nClasses, int nRows, double[][] vectors, double[][] coefficients, double[] intercepts, int[] weights, String kernel, double gamma, double coef0, double degree) {
         this.nClasses = nClasses;
         this.classes = new int[nClasses];
         for (int i = 0; i < nClasses; i++) {
             this.classes[i] = i;
         }
+        this.nRows = nRows;
 
         this.vectors = vectors;
         this.coefficients = coefficients;
@@ -97,8 +99,8 @@ class SVC {
                 break;
         }
     
-        int[] starts = new int[this.nClasses];
-        for (int i = 0; i < this.nClasses; i++) {
+        int[] starts = new int[this.nRows];
+        for (int i = 0; i < this.nRows; i++) {
             if (i != 0) {
                 int start = 0;
                 for (int j = 0; j < i; j++) {
@@ -110,8 +112,8 @@ class SVC {
             }
         }
     
-        int[] ends = new int[this.nClasses];
-        for (int i = 0; i < this.nClasses; i++) {
+        int[] ends = new int[this.nRows];
+        for (int i = 0; i < this.nRows; i++) {
             ends[i] = this.weights[i] + starts[i];
         }
     
@@ -135,46 +137,45 @@ class SVC {
             }
             return 1;
     
-        } else {
-    
-            double[] decisions = new double[this.nClasses];
-            for (int i = 0, d = 0, l = this.nClasses; i < l; i++) {
-                for (int j = i + 1; j < l; j++) {
-                    double tmp = 0.;
-                    for (int k = starts[j]; k < ends[j]; k++) {
-                        tmp += this.coefficients[i][k] * kernels[k];
-                    }
-                    for (int k = starts[i]; k < ends[i]; k++) {
-                        tmp += this.coefficients[j - 1][k] * kernels[k];
-                    }
-                    decisions[d] = tmp + this.intercepts[d];
-                    d++;
-                }
-            }
-    
-            int[] votes = new int[this.intercepts.length];
-            for (int i = 0, d = 0, l = this.nClasses; i < l; i++) {
-                for (int j = i + 1; j < l; j++) {
-                    votes[d] = decisions[d] > 0 ? i : j;
-                    d++;
-                }
-            }
-    
-            int[] amounts = new int[this.nClasses];
-            for (int i = 0, l = votes.length; i < l; i++) {
-                amounts[votes[i]] += 1;
-            }
-    
-            int classVal = -1, classIdx = -1;
-            for (int i = 0, l = amounts.length; i < l; i++) {
-                if (amounts[i] > classVal) {
-                    classVal = amounts[i];
-                    classIdx= i;
-                }
-            }
-            return classes[classIdx];
-    
         }
+    
+        double[] decisions = new double[this.intercepts.length];
+        for (int i = 0, d = 0, l = this.nRows; i < l; i++) {
+            for (int j = i + 1; j < l; j++) {
+                double tmp = 0.;
+                for (int k = starts[j]; k < ends[j]; k++) {
+                    tmp += this.coefficients[i][k] * kernels[k];
+                }
+                for (int k = starts[i]; k < ends[i]; k++) {
+                    tmp += this.coefficients[j - 1][k] * kernels[k];
+                }
+                decisions[d] = tmp + this.intercepts[d];
+                d++;
+            }
+        }
+    
+        int[] votes = new int[this.intercepts.length];
+        for (int i = 0, d = 0, l = this.nRows; i < l; i++) {
+            for (int j = i + 1; j < l; j++) {
+                votes[d] = decisions[d] > 0 ? i : j;
+                d++;
+            }
+        }
+    
+        int[] amounts = new int[this.nClasses];
+        for (int i = 0, l = votes.length; i < l; i++) {
+            amounts[votes[i]] += 1;
+        }
+    
+        int classVal = -1, classIdx = -1;
+        for (int i = 0, l = amounts.length; i < l; i++) {
+            if (amounts[i] > classVal) {
+                classVal = amounts[i];
+                classIdx= i;
+            }
+        }
+        return this.classes[classIdx];
+    
     }
 
     public static void main(String[] args) {
@@ -193,7 +194,7 @@ class SVC {
             int[] weights = {50, 50, 50};
 
             // Prediction:
-            SVC clf = new SVC(3, vectors, coefficients, intercepts, weights, "rbf", 0.001, 0.0, 3);
+            SVC clf = new SVC(3, 3, vectors, coefficients, intercepts, weights, "rbf", 0.001, 0.0, 3);
             int estimation = clf.predict(features);
             System.out.println(estimation);
 

@@ -1,5 +1,0 @@
-
-if decision > 0
-	return 0
-end
-return 1

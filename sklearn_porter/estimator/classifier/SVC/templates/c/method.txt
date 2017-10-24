@@ -46,9 +46,9 @@ int {method_name} (double features[]) {{
             break;
     }}
 
-    int starts[N_CLASSES];
+    int starts[N_ROWS];
     int start;
-    for (i = 0; i < N_CLASSES; i++) {{
+    for (i = 0; i < N_ROWS; i++) {{
         if (i != 0) {{
             start = 0;
             for (j = 0; j < i; j++) {{
@@ -60,8 +60,8 @@ int {method_name} (double features[]) {{
         }}
     }}
 
-    int ends[N_CLASSES];
-    for (i = 0; i < N_CLASSES; i++) {{
+    int ends[N_ROWS];
+    for (i = 0; i < N_ROWS; i++) {{
         ends[i] = weights[i] + starts[i];
     }}
 
@@ -85,49 +85,48 @@ int {method_name} (double features[]) {{
         }}
         return 1;
 
-    }} else {{
-
-        double decisions[N_INTERCEPTS];
-        double tmp;
-        for (i = 0, d = 0, l = N_ROWS; i < l; i++) {{
-            for (j = i + 1; j < l; j++) {{
-                tmp = 0.;
-                for (k = starts[j]; k < ends[j]; k++) {{
-                    tmp += kernels[k] * coefficients[i][k];
-                }}
-                for (k = starts[i]; k < ends[i]; k++) {{
-                    tmp += kernels[k] * coefficients[j - 1][k];
-                }}
-                decisions[d] = tmp + intercepts[d];
-                d = d + 1;
-            }}
-        }}
-
-        int votes[N_INTERCEPTS];
-        for (i = 0, d = 0, l = N_ROWS; i < l; i++) {{
-            for (j = i + 1; j < l; j++) {{
-                votes[d] = decisions[d] > 0 ? i : j;
-                d = d + 1;
-            }}
-        }}
-
-        int amounts[N_CLASSES];
-        for (i = 0, l = N_CLASSES; i < l; i++) {{
-            amounts[i] = 0;
-        }}
-        for (i = 0; i < N_INTERCEPTS; i++) {{
-            amounts[votes[i]] += 1;
-        }}
-
-        int classVal = -1;
-        int classIdx = -1;
-        for (i = 0; i < N_CLASSES; i++) {{
-            if (amounts[i] > classVal) {{
-                classVal = amounts[i];
-                classIdx= i;
-            }}
-        }}
-        return classIdx;
-
     }}
+
+    double decisions[N_INTERCEPTS];
+    double tmp;
+    for (i = 0, d = 0, l = N_ROWS; i < l; i++) {{
+        for (j = i + 1; j < l; j++) {{
+            tmp = 0.;
+            for (k = starts[j]; k < ends[j]; k++) {{
+                tmp += kernels[k] * coefficients[i][k];
+            }}
+            for (k = starts[i]; k < ends[i]; k++) {{
+                tmp += kernels[k] * coefficients[j - 1][k];
+            }}
+            decisions[d] = tmp + intercepts[d];
+            d = d + 1;
+        }}
+    }}
+
+    int votes[N_INTERCEPTS];
+    for (i = 0, d = 0, l = N_ROWS; i < l; i++) {{
+        for (j = i + 1; j < l; j++) {{
+            votes[d] = decisions[d] > 0 ? i : j;
+            d = d + 1;
+        }}
+    }}
+
+    int amounts[N_CLASSES];
+    for (i = 0, l = N_CLASSES; i < l; i++) {{
+        amounts[i] = 0;
+    }}
+    for (i = 0; i < N_INTERCEPTS; i++) {{
+        amounts[votes[i]] += 1;
+    }}
+
+    int classVal = -1;
+    int classIdx = -1;
+    for (i = 0; i < N_CLASSES; i++) {{
+        if (amounts[i] > classVal) {{
+            classVal = amounts[i];
+            classIdx= i;
+        }}
+    }}
+    return classIdx;
+
 }}

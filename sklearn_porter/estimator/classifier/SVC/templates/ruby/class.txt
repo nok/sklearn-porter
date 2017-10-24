@@ -1,10 +1,42 @@
 class {class_name}
 
-    {method}
+	def initialize (nClasses, nRows, vectors, coefficients, intercepts, weights, kernel, gamma, coef0, degree)
+		@nClasses = nClasses
+		@classes = Array.new(nClasses)
+		for i in 0 ... nClasses
+			@classes[i] = i
+		end
+		@nRows = nRows
+
+		@vectors = vectors
+		@coefficients = coefficients
+		@intercepts = intercepts
+		@weights = weights
+
+		@kernel = kernel.upcase
+		@gamma = gamma
+		@coef0 = coef0
+		@degree = degree
+	end
+
+	{method}
 
 end
 
 if ARGV.length == {n_features}
-    atts = ARGV.collect {{ |i| i.to_f }}
-	puts {class_name}.{method_name}(atts)
+
+	# Features:
+	features = ARGV.collect {{ |i| i.to_f }}
+
+	# Parameters:
+	{vectors}
+	{coefficients}
+	{intercepts}
+	{weights}
+
+	# Prediction:
+	clf = {class_name}.new {n_classes}, {n_svs_rows}, vectors, coefficients, intercepts, weights, "{kernel}", {gamma}, {coef0}, {degree}
+	estimation = clf.{method_name} features
+	puts estimation
+
 end

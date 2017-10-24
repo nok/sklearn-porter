@@ -1,10 +1,11 @@
-var {class_name} = function(nClasses, vectors, coefficients, intercepts, weights, kernel, gamma, coef0, degree) {{
+var {class_name} = function(nClasses, nRows, vectors, coefficients, intercepts, weights, kernel, gamma, coef0, degree) {{
 
     this.nClasses = nClasses;
     this.classes = new Array(nClasses);
     for (var i = 0; i < nClasses; i++) {{
         this.classes[i] = i;
     }}
+    this.nRows = nRows;
     this.vectors = vectors;
     this.coefficients = coefficients;
     this.intercepts = intercepts;
@@ -31,7 +32,7 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
         {weights}
 
         // Prediction:
-        var clf = new {class_name}({n_classes}, vectors, coefficients, intercepts, weights, "{kernel}", {gamma}, {coef0}, {degree});
+        var clf = new {class_name}({n_classes}, {n_svs_rows}, vectors, coefficients, intercepts, weights, "{kernel}", {gamma}, {coef0}, {degree});
         var prediction = clf.{method_name}(features);
         console.log(prediction);
 

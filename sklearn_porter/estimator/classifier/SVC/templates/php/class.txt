@@ -2,12 +2,13 @@
 
 class {class_name} {{
 
-    public function __construct($nClasses, $vectors, $coefficients, $intercepts, $weights, $kernel, $gamma, $coef0, $degree) {{
+    public function __construct($nClasses, $nRows, $vectors, $coefficients, $intercepts, $weights, $kernel, $gamma, $coef0, $degree) {{
         $this->nClasses = $nClasses;
         $this->classes = array_fill(0, $nClasses, 0);
         for ($i = 0; $i < $nClasses; $i++) {{
             $this->classes[$i] = $i;
         }}
+        $this->nRows = $nRows;
 
         $this->vectors = $vectors;
         $this->coefficients = $coefficients;
@@ -37,7 +38,7 @@ if ($argc > 1) {{
     {weights}
 
     // Prediction:
-    $clf = new {class_name}({n_classes}, $vectors, $coefficients, $intercepts, $weights, "{kernel}", {gamma}, {coef0}, {degree});
+    $clf = new {class_name}({n_classes}, {n_svs_rows}, $vectors, $coefficients, $intercepts, $weights, "{kernel}", {gamma}, {coef0}, {degree});
     $prediction = $clf->{method_name}($features);
     fwrite(STDOUT, $prediction);
 
