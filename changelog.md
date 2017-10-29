@@ -15,7 +15,8 @@ All notable changes to this project will be documented in this file.
 - Add test class `Go` in `tests/language/Go.py` to test all implementations for the target programming language Go ([#1d0b5d6](https://github.com/nok/sklearn-porter/commit/1d0b5d6a2bf1a5604ae283cc728e3a83fb17a6ea)).
 - Add Go compiling (`go build -o brain brain.go`) and execution (`./brain`) command ([#5d24f57](https://github.com/nok/sklearn-porter/commit/5d24f57ec50e9935dac8389e243deda7b09659d7)).
 - Add initial Web Workers features in JavaScript templates ([#87d3236](https://github.com/nok/sklearn-porter/commit/87d32365d06ba01cce7667b03f9a4265a1312dad)). 
-- Add possibility to read the estimator from a used [Pipeline](http://scikit-learn.org/stable/modules/generated/`pipeline.Pipeline`.html) ([#b92edff](https://github.com/nok/sklearn-porter/commit/b92edfff278a997d03f6bca65ea99d0bd02f8ba3), issue: [#18](https://github.com/nok/sklearn-porter/issues/18)).
+- Add the feature to read the estimator from a used [Pipeline](http://scikit-learn.org/stable/modules/generated/pipeline.Pipeline.html) ([#b92edff](https://github.com/nok/sklearn-porter/commit/b92edfff278a997d03f6bca65ea99d0bd02f8ba3), issue: [#18](https://github.com/nok/sklearn-porter/issues/18)).
+- Add a new class argument (`num_format=lambda x: str(x)`) to change the default representation of floating-point values ([#7f9fac8](https://github.com/nok/sklearn-porter/commit/7f9fac8eb35371e9374b4cf73519f83dbcb66632)).
 - Use estimator name as default class name (e.g. `MLPClasifier`, `KNeighborsClassifier`, `SVC`, ...) ([#710a854](https://github.com/nok/sklearn-porter/commit/710a854072bf19054cc2c46eff661241ffa92d65)). 
 - Add new estimator:
     - Go:
@@ -36,6 +37,7 @@ All notable changes to this project will be documented in this file.
  
 - Use human-readable placeholders (e.g. `'{class_name}.{method_name}'`) instead of index-based placeholders (e.g. `'{0}.{1}'`) in all main templates of all estimators ([#de02795](https://github.com/nok/sklearn-porter/commit/de02795f3628ccad9d5e85940d37b866e2e7443e)).
 - Change the order of optional and required arguments in the `--help` text ([#54d9973](https://github.com/nok/sklearn-porter/commit/54d99736f5fe144350e990621ba4d145776eecdd)).
+- Change the default representation of floating-point values from `repr(x)` to `str(x)` ([#7f9fac8](https://github.com/nok/sklearn-porter/commit/7f9fac8eb35371e9374b4cf73519f83dbcb66632)).
 - Separate the model data from the algorithm:
     - `neighbors.KNeighborsClassifier` ([#59a0e91](https://github.com/nok/sklearn-porter/commit/59a0e9114daeeb7d81a975c3adfa0ad27be3a426), [#1ac5d8a](https://github.com/nok/sklearn-porter/commit/29412ab55d8ebcdb7914974121c03d64660e5f94))
     - `neural_network.MLPClassifier` ([#635da46](https://github.com/nok/sklearn-porter/commit/635da46dbf29a80d51a16f3bbc28a5ba87eacdd7), [#7d31668](https://github.com/nok/sklearn-porter/commit/7d3166894229f70aafe6a6c9e2e7dbd091589c15), [#78296e2](https://github.com/nok/sklearn-porter/commit/78296e2d893d882240ebb8f54ada07d28ab9fc49), [#4cdcfde](https://github.com/nok/sklearn-porter/commit/4cdcfde6a34e131b8ab7088af880eb081fd8f3dd), [#7820508](https://github.com/nok/sklearn-porter/commit/7820508aad7f1ccf39529023c22b3427471bde68), [#7820508](https://github.com/nok/sklearn-porter/commit/7820508aad7f1ccf39529023c22b3427471bde68))
