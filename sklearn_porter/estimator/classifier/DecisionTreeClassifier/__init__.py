@@ -85,10 +85,8 @@ class DecisionTreeClassifier(Classifier):
             estimator, target_language=target_language,
             target_method=target_method, **kwargs)
         self.estimator = estimator
-        self.n_features = estimator.n_features_
-        self.n_classes = estimator.n_classes_
 
-    def export(self, class_name, method_name, use_repr=True):
+    def export(self, class_name, method_name):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -98,17 +96,22 @@ class DecisionTreeClassifier(Classifier):
             The name of the class in the returned result.
         :param method_name: string
             The name of the method in the returned result.
-        :param use_repr : bool, default True
-            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
+
+        # Arguments:
         self.class_name = class_name
         self.method_name = method_name
-        self.use_repr = use_repr
+
+        # Estimator:
+        est = self.estimator
+
+        self.n_features = est.n_features_
+        self.n_classes = est.n_classes_
 
         if self.target_method == 'predict':
             return self.predict(class_name, method_name)

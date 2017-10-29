@@ -78,7 +78,6 @@ class RandomForestClassifier(Classifier):
         super(RandomForestClassifier, self).__init__(
             estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.estimator = estimator
 
         # Check type of base estimators:
         if not isinstance(estimator.base_estimator, DecisionTreeClassifier):
@@ -90,15 +89,9 @@ class RandomForestClassifier(Classifier):
             msg = "The classifier hasn't any base estimators."
             raise ValueError(msg)
 
-        self.n_classes = estimator.n_classes_
-        self.estimators = []
-        self.n_estimators = 0
-        for idx in range(self.estimator.n_estimators):
-            self.estimators.append(self.estimator.estimators_[idx])
-            self.n_estimators += 1
-            self.n_features = self.estimator.estimators_[idx].n_features_
+        self.estimator = estimator
 
-    def export(self, class_name, method_name, use_repr=True):
+    def export(self, class_name, method_name):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -108,17 +101,28 @@ class RandomForestClassifier(Classifier):
             The name of the class in the returned result.
         :param method_name: string
             The name of the method in the returned result.
-        :param use_repr : bool, default True
-            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
+
+        # Arguments:
         self.class_name = class_name
         self.method_name = method_name
-        self.use_repr = use_repr
+
+        # Estimator:
+        est = self.estimator
+
+        self.n_classes = est.n_classes_
+        self.estimators = []
+        self.n_estimators = 0
+        for idx in range(est.n_estimators):
+            self.estimators.append(est.estimators_[idx])
+            self.n_estimators += 1
+            self.n_features = est.estimators_[idx].n_features_
+
         if self.target_method == 'predict':
             return self.predict()
 

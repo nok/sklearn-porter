@@ -57,43 +57,20 @@ class MLPClassifier(Classifier):
         super(MLPClassifier, self).__init__(
             estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.estimator = estimator
 
         # Activation function ('identity', 'logistic', 'tanh' or 'relu'):
-        self.hidden_activation = self.estimator.activation
-        if self.hidden_activation not in self.hidden_activation_functions:
+        hidden_activation = estimator.activation
+        if hidden_activation not in self.hidden_activation_functions:
             raise ValueError(("The activation function '%s' of the estimator "
-                              "is not supported.") % self.hidden_activation)
+                              "is not supported.") % hidden_activation)
 
         # Output activation function ('softmax' or 'logistic'):
-        self.output_activation = self.estimator.out_activation_
-        if self.output_activation not in self.output_activation_functions:
+        output_activation = estimator.out_activation_
+        if output_activation not in self.output_activation_functions:
             raise ValueError(("The activation function '%s' of the estimator "
-                              "is not supported.") % self.output_activation)
+                              "is not supported.") % output_activation)
 
-        self.n_layers = self.estimator.n_layers_
-        self.n_hidden_layers = self.estimator.n_layers_ - 2
-
-        self.n_inputs = len(self.estimator.coefs_[0])
-        self.n_outputs = self.estimator.n_outputs_
-
-        self.hidden_layer_sizes = self.estimator.hidden_layer_sizes
-        if isinstance(self.hidden_layer_sizes, int):
-            self.hidden_layer_sizes = [self.hidden_layer_sizes]
-        self.hidden_layer_sizes = list(self.hidden_layer_sizes)
-
-        self.layer_units = \
-            [self.n_inputs] + self.hidden_layer_sizes + [self.estimator.n_outputs_]
-
-        # Weights:
-        self.coefficients = self.estimator.coefs_
-
-        # Bias:
-        self.intercepts = self.estimator.intercepts_
-
-        # Binary or multiclass classifier?
-        self.is_binary = self.n_outputs == 1
-        self.prefix = 'binary' if self.is_binary else 'multi'
+        self.estimator = estimator
 
     @property
     def hidden_activation_functions(self):
@@ -105,7 +82,7 @@ class MLPClassifier(Classifier):
         """Get list of supported activation functions for the output layer."""
         return ['softmax', 'logistic']
 
-    def export(self, class_name, method_name, use_repr=True):
+    def export(self, class_name, method_name):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -115,17 +92,46 @@ class MLPClassifier(Classifier):
             The name of the class in the returned result.
         :param method_name: string
             The name of the method in the returned result.
-        :param use_repr : bool, default True
-            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
+
+        # Arguments:
         self.class_name = class_name
         self.method_name = method_name
-        self.use_repr = use_repr
+
+        # Estimator:
+        est = self.estimator
+
+        self.output_activation = est.out_activation_
+        self.hidden_activation = est.activation
+
+        self.n_layers = est.n_layers_
+        self.n_hidden_layers = est.n_layers_ - 2
+
+        self.n_inputs = len(est.coefs_[0])
+        self.n_outputs = est.n_outputs_
+
+        self.hidden_layer_sizes = est.hidden_layer_sizes
+        if isinstance(self.hidden_layer_sizes, int):
+            self.hidden_layer_sizes = [self.hidden_layer_sizes]
+        self.hidden_layer_sizes = list(self.hidden_layer_sizes)
+
+        self.layer_units = \
+            [self.n_inputs] + self.hidden_layer_sizes + [est.n_outputs_]
+
+        # Weights:
+        self.coefficients = est.coefs_
+
+        # Bias:
+        self.intercepts = est.intercepts_
+
+        # Binary or multiclass classifier?
+        self.is_binary = self.n_outputs == 1
+        self.prefix = 'binary' if self.is_binary else 'multi'
 
         if self.target_method == 'predict':
             return self.predict()

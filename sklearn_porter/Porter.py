@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 
 import os
 import sys
+import types
 import subprocess as subp
 
 import numpy as np
@@ -34,8 +35,8 @@ class Porter(object):
     def __init__(self, estimator, language='java', method='predict', **kwargs):
         # pylint: disable=unused-argument
         """
-        Port a trained model to the syntax
-        of a chosen programming language.
+        Transpile a trained estimator to the
+        chosen target programming language.
 
         Parameters
         ----------
@@ -148,7 +149,7 @@ class Porter(object):
         self.template = clazz(**self.__dict__)
 
     def export(self, class_name=None, method_name=None,
-               use_repr=True, details=False, **kwargs):
+               num_format=lambda x: str(x), details=False, **kwargs):
         # pylint: disable=unused-argument
         """
         Transpile a trained model to the syntax of a
@@ -162,12 +163,11 @@ class Porter(object):
         :param method_name : string, default: None
             The name for the ported method.
 
-        :param use_repr : bool, default: True
-            Whether to use repr() for floating-point values or not.
+        :param num_format : lambda x, default: lambda x: str(x)
+            The representation of the floating-point values.
 
         :param details : bool, default False
-            Return additional data for the compilation
-            and execution.
+            Return additional data for the compilation and execution.
 
         Returns
         -------
@@ -182,9 +182,11 @@ class Porter(object):
         if method_name is None:
             method_name = self.target_method
 
+        if isinstance(num_format, types.LambdaType):
+            self.template._num_format = num_format
+
         output = self.template.export(class_name=class_name,
-                                      method_name=method_name,
-                                      use_repr=use_repr)
+                                      method_name=method_name)
         if not details:
             return output
 

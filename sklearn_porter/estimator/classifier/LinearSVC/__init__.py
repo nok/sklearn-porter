@@ -84,8 +84,33 @@ class LinearSVC(Classifier):
         super(LinearSVC, self).__init__(estimator, target_language=target_language,
                                         target_method=target_method, **kwargs)
         self.estimator = estimator
-        self.n_features = len(estimator.coef_[0])
-        self.n_classes = len(estimator.classes_)
+
+    def export(self, class_name, method_name):
+        """
+        Port a trained estimator to the syntax of a chosen programming language.
+
+        Parameters
+        ----------
+        :param class_name: string, default: 'Brain'
+            The name of the class in the returned result.
+        :param method_name: string, default: 'predict'
+            The name of the method in the returned result.
+
+        Returns
+        -------
+        :return : string
+            The transpiled algorithm with the defined placeholders.
+        """
+
+        # Arguments:
+        self.class_name = class_name
+        self.method_name = method_name
+
+        # Estimator:
+        est = self.estimator
+
+        self.n_features = len(est.coef_[0])
+        self.n_classes = len(est.classes_)
         self.is_binary = self.n_classes == 2
         self.prefix = 'binary' if self.is_binary else 'multi'
 
@@ -96,14 +121,14 @@ class LinearSVC(Classifier):
 
         # Coefficients:
         if self.is_binary:
-            coefs = self.estimator.coef_[0]
+            coefs = est.coef_[0]
             coefs = [temp_type.format(self.repr(c)) for c in coefs]
             coefs = ', '.join(coefs)
             coefs = temp_arr_.format(type='double', name='coefficients',
                                      values=coefs, n=self.n_features)
         else:
             coefs = []
-            for coef in self.estimator.coef_:
+            for coef in est.coef_:
                 tmp = [temp_type.format(self.repr(c)) for c in coef]
                 tmp = temp_arr.format(', '.join(tmp))
                 coefs.append(tmp)
@@ -115,39 +140,18 @@ class LinearSVC(Classifier):
 
         # Intercepts:
         if self.is_binary:
-            inters = self.estimator.intercept_[0]
+            inters = est.intercept_[0]
             temp_init = self.temp('init')
             inters = temp_init.format(type='double', name='intercepts',
                                       value=self.repr(inters))
         else:
-            inters = self.estimator.intercept_
+            inters = est.intercept_
             inters = [temp_type.format(self.repr(i)) for i in inters]
             inters = ', '.join(inters)
             inters = temp_arr_.format(type='double', name='intercepts',
                                       values=inters, n=self.n_classes)
         self.intercepts = inters
 
-    def export(self, class_name, method_name, use_repr=True):
-        """
-        Port a trained estimator to the syntax of a chosen programming language.
-
-        Parameters
-        ----------
-        :param class_name: string, default: 'Brain'
-            The name of the class in the returned result.
-        :param method_name: string, default: 'predict'
-            The name of the method in the returned result.
-        :param use_repr : bool, default True
-            Whether to use repr() for floating-point values or not.
-
-        Returns
-        -------
-        :return : string
-            The transpiled algorithm with the defined placeholders.
-        """
-        self.class_name = class_name
-        self.method_name = method_name
-        self.use_repr = use_repr
         if self.target_method == 'predict':
             return self.predict()
 

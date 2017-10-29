@@ -61,7 +61,6 @@ class AdaBoostClassifier(Classifier):
         super(AdaBoostClassifier, self).__init__(
             estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.estimator = estimator
 
         # Check the used algorithm type:
         if estimator.algorithm != 'SAMME.R':
@@ -81,20 +80,8 @@ class AdaBoostClassifier(Classifier):
             raise ValueError(msg)
 
         self.estimator = estimator
-        self.n_classes = estimator.n_classes_
 
-        self.estimators = []
-        self.weights = []
-        self.n_estimators = 0
-        for idx in range(self.estimator.n_estimators):
-            weight = self.estimator.estimator_weights_[idx]
-            if weight > 0:
-                self.estimators.append(self.estimator.estimators_[idx])
-                self.weights.append(self.estimator.estimator_weights_[idx])
-                self.n_estimators += 1
-                self.n_features = self.estimator.estimators_[idx].n_features_
-
-    def export(self, class_name, method_name, use_repr=True):
+    def export(self, class_name, method_name):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -104,17 +91,32 @@ class AdaBoostClassifier(Classifier):
             The name of the class in the returned result.
         :param method_name: string
             The name of the method in the returned result.
-        :param use_repr : bool, default True
-            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
+
+        # Arguments:
         self.class_name = class_name
         self.method_name = method_name
-        self.use_repr = use_repr
+
+        # Estimator:
+        est = self.estimator
+
+        self.n_classes = est.n_classes_
+        self.estimators = []
+        self.weights = []
+        self.n_estimators = 0
+        for idx in range(est.n_estimators):
+            weight = est.estimator_weights_[idx]
+            if weight > 0:
+                self.estimators.append(est.estimators_[idx])
+                self.weights.append(est.estimator_weights_[idx])
+                self.n_estimators += 1
+                self.n_features = est.estimators_[idx].n_features_
+
         if self.target_method == 'predict':
             return self.predict()
 

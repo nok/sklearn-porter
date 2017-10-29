@@ -17,7 +17,7 @@ class Template(object):
         # Default settings:
         self.class_name = 'Brain'
         self.method_name = 'predict'
-        self.use_repr = True
+        self._num_format = lambda x: str(x)
         self.use_file = False
 
     def indent(self, text, n_indents=1, skipping=False):
@@ -106,12 +106,10 @@ class Template(object):
                 err = "Template '{}' wasn't found.".format(name)
                 raise AttributeError(err)
 
-    def repr(self, val):
-        if 'use_repr' in self.__dict__.keys() and bool(self.use_repr) is True:
-            return repr(val)
-        return val
+    def repr(self, value):
+        return self._num_format(value)
 
-    def data(self, d):
-        x = self.__dict__.copy()
-        x.update(d)
-        return x
+    def data(self, dict_):
+        copy = self.__dict__.copy()
+        copy.update(dict_)  # update and extend dictionary
+        return copy

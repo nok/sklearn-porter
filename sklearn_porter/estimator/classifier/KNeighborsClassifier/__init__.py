@@ -50,29 +50,14 @@ class KNeighborsClassifier(Classifier):
         super(KNeighborsClassifier, self).__init__(
             estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.estimator = estimator
 
-        self.n_classes = len(self.estimator.classes_)
-        self.n_templates = len(self.estimator._fit_X)  # pylint: disable=W0212
-        self.n_features = len(self.estimator._fit_X[0])  # pylint: disable=W0212
-        self.n_neighbors = self.estimator.n_neighbors
-
-        self.algorithm = self.estimator.algorithm
-        self.power_param = self.estimator.p
-
-        if self.algorithm != 'brute':
-            from sklearn.neighbors.kd_tree import KDTree  # pylint: disable-msg=E0611
-            from sklearn.neighbors.ball_tree import BallTree  # pylint: disable-msg=E0611
-            tree = self.estimator._tree  # pylint: disable=W0212
-            if isinstance(tree, (KDTree, BallTree)):
-                self.tree = tree
-
-        self.metric = self.estimator.metric
-        if self.estimator.weights != 'uniform':
+        if estimator.weights != 'uniform':
             msg = "Only 'uniform' weights are supported for this classifier."
             raise NotImplementedError(msg)
 
-    def export(self, class_name, method_name, use_repr=True):
+        self.estimator = estimator
+
+    def export(self, class_name, method_name):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -82,17 +67,36 @@ class KNeighborsClassifier(Classifier):
             The name of the class in the returned result.
         :param method_name: string, default: 'predict'
             The name of the method in the returned result.
-        :param use_repr : bool, default True
-            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
+
+        # Arguments:
         self.class_name = class_name
         self.method_name = method_name
-        self.use_repr = use_repr
+
+        # Estimator:
+        est = self.estimator
+
+        self.metric = est.metric
+        self.n_classes = len(est.classes_)
+        self.n_templates = len(est._fit_X)  # pylint: disable=W0212
+        self.n_features = len(est._fit_X[0])  # pylint: disable=W0212
+        self.n_neighbors = est.n_neighbors
+
+        self.algorithm = est.algorithm
+        self.power_param = est.p
+
+        if self.algorithm != 'brute':
+            from sklearn.neighbors.kd_tree import KDTree  # pylint: disable-msg=E0611
+            from sklearn.neighbors.ball_tree import BallTree  # pylint: disable-msg=E0611
+            tree = est._tree  # pylint: disable=W0212
+            if isinstance(tree, (KDTree, BallTree)):
+                self.tree = tree
+
         if self.target_method == 'predict':
             return self.predict()
 
@@ -119,13 +123,7 @@ class KNeighborsClassifier(Classifier):
 
         # Distance computation
         metric_name = '.'.join(['metric', self.metric])
-        distance_comp = self.temp(
-            metric_name, n_indents=1, skipping=True)
-
-        temp_type = self.temp('type')
-        temp_arr = self.temp('arr')
-        temp_arr_ = self.temp('arr[]')
-        temp_arr__ = self.temp('arr[][]')
+        distance_comp = self.temp(metric_name, n_indents=1, skipping=True)
 
         temp_method = self.temp('method.predict', n_indents=1, skipping=True)
         out = temp_method.format(class_name=self.class_name,

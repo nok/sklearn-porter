@@ -51,47 +51,7 @@ class BernoulliNB(Classifier):
             target_method=target_method, **kwargs)
         self.estimator = estimator
 
-        # self.n_features = len(estimator.sigma_[0])
-        self.n_classes = len(estimator.classes_)
-        self.n_features = len(estimator.feature_log_prob_[0])
-
-        # jll = safe_sparse_dot(X, (self.feature_log_prob_ - neg_prob).T)
-        # jll += self.class_log_prior_ + neg_prob.sum(axis=1)
-
-        temp_type = self.temp('type')
-        temp_arr = self.temp('arr')
-        temp_arr_ = self.temp('arr[]')
-        temp_arr__ = self.temp('arr[][]')
-
-        # Create class prior probabilities:
-        priors = [self.temp('type').format(self.repr(p)) for p in
-                  estimator.class_log_prior_]
-        priors = ', '.join(priors)
-        self.priors = temp_arr_.format(type='double', name='priors',
-                                       values=priors)
-
-        # Create negative probabilities:
-        neg_prob = np.log(1 - np.exp(estimator.feature_log_prob_))
-        probs = []
-        for prob in neg_prob:
-            tmp = [temp_type.format(self.repr(p)) for p in prob]
-            tmp = temp_arr.format(', '.join(tmp))
-            probs.append(tmp)
-        probs = ', '.join(probs)
-        self.neg_probs = temp_arr__.format(type='double', name='negProbs',
-                                           values=probs)
-
-        delta_probs = (estimator.feature_log_prob_ - neg_prob).T
-        probs = []
-        for prob in delta_probs:
-            tmp = [temp_type.format(self.repr(p)) for p in prob]
-            tmp = temp_arr.format(', '.join(tmp))
-            probs.append(tmp)
-        probs = ', '.join(probs)
-        self.del_probs = temp_arr__.format(type='double', name='delProbs',
-                                           values=probs)
-
-    def export(self, class_name, method_name, use_repr=True):
+    def export(self, class_name, method_name):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -101,17 +61,56 @@ class BernoulliNB(Classifier):
             The name of the class in the returned result.
         :param method_name: string
             The name of the method in the returned result.
-        :param use_repr : bool, default True
-            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
+
+        # Arguments:
         self.class_name = class_name
         self.method_name = method_name
-        self.use_repr = use_repr
+
+        # Estimator:
+        est = self.estimator
+
+        self.n_classes = len(est.classes_)
+        self.n_features = len(est.feature_log_prob_[0])
+
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
+        # Create class prior probabilities:
+        priors = [self.temp('type').format(self.repr(p)) for p in
+                  est.class_log_prior_]
+        priors = ', '.join(priors)
+        self.priors = temp_arr_.format(type='double', name='priors',
+                                       values=priors)
+
+        # Create negative probabilities:
+        neg_prob = np.log(1 - np.exp(est.feature_log_prob_))
+        probs = []
+        for prob in neg_prob:
+            tmp = [temp_type.format(self.repr(p)) for p in prob]
+            tmp = temp_arr.format(', '.join(tmp))
+            probs.append(tmp)
+        probs = ', '.join(probs)
+        self.neg_probs = temp_arr__.format(type='double', name='negProbs',
+                                           values=probs)
+
+        delta_probs = (est.feature_log_prob_ - neg_prob).T
+        probs = []
+        for prob in delta_probs:
+            tmp = [temp_type.format(self.repr(p)) for p in prob]
+            tmp = temp_arr.format(', '.join(tmp))
+            probs.append(tmp)
+        probs = ', '.join(probs)
+        self.del_probs = temp_arr__.format(type='double', name='delProbs',
+                                           values=probs)
+
         if self.target_method == 'predict':
             return self.predict()
 

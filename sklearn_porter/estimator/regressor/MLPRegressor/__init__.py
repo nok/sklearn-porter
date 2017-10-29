@@ -48,40 +48,20 @@ class MLPRegressor(Regressor):
         super(MLPRegressor, self).__init__(
             estimator, target_language=target_language,
             target_method=target_method, **kwargs)
-        self.estimator = estimator
 
         # Activation function ('identity', 'logistic', 'tanh' or 'relu'):
-        self.hidden_activation = self.estimator.activation
-        if self.hidden_activation not in self.hidden_activation_functions:
+        if estimator.activation not in self.hidden_activation_functions:
             raise ValueError(("The activation function '%s' of the estimator "
-                              "is not supported.") % self.hidden_activation)
+                              "is not supported.") % estimator.activation)
 
-        self.n_layers = self.estimator.n_layers_
-        self.n_hidden_layers = self.estimator.n_layers_ - 2
-
-        self.n_inputs = len(self.estimator.coefs_[0])
-        self.n_outputs = self.estimator.n_outputs_
-
-        self.hidden_layer_sizes = self.estimator.hidden_layer_sizes
-        if isinstance(self.hidden_layer_sizes, int):
-            self.hidden_layer_sizes = [self.hidden_layer_sizes]
-        self.hidden_layer_sizes = list(self.hidden_layer_sizes)
-
-        self.layer_units = \
-            [self.n_inputs] + self.hidden_layer_sizes + [self.estimator.n_outputs_]
-
-        # Weights:
-        self.coefficients = self.estimator.coefs_
-
-        # Bias:
-        self.intercepts = self.estimator.intercepts_
+        self.estimator = estimator
 
     @property
     def hidden_activation_functions(self):
         """Get list of supported activation functions for the hidden layers."""
         return ['relu', 'identity', 'tanh', 'logistic']
 
-    def export(self, class_name, method_name, use_repr=True):
+    def export(self, class_name, method_name):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -91,17 +71,39 @@ class MLPRegressor(Regressor):
             The name of the class in the returned result.
         :param method_name: string
             The name of the method in the returned result.
-        :param use_repr : bool, default True
-            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
+
+        # Arguments:
         self.class_name = class_name
         self.method_name = method_name
-        self.use_repr = use_repr
+
+        # Estimator:
+        est = self.estimator
+
+        self.hidden_activation = est.activation
+        self.n_layers = est.n_layers_
+        self.n_hidden_layers = est.n_layers_ - 2
+        self.n_inputs = len(est.coefs_[0])
+        self.n_outputs = est.n_outputs_
+
+        self.hidden_layer_sizes = est.hidden_layer_sizes
+        if isinstance(self.hidden_layer_sizes, int):
+            self.hidden_layer_sizes = [self.hidden_layer_sizes]
+        self.hidden_layer_sizes = list(self.hidden_layer_sizes)
+
+        self.layer_units = \
+            [self.n_inputs] + self.hidden_layer_sizes + [est.n_outputs_]
+
+        # Weights:
+        self.coefficients = est.coefs_
+
+        # Bias:
+        self.intercepts = est.intercepts_
 
         if self.target_method == 'predict':
             return self.predict()

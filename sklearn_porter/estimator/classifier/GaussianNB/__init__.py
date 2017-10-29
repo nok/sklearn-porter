@@ -52,42 +52,7 @@ class GaussianNB(Classifier):
             target_method=target_method, **kwargs)
         self.estimator = estimator
 
-        self.n_features = len(estimator.sigma_[0])
-        self.n_classes = len(estimator.classes_)
-
-        temp_type = self.temp('type')
-        temp_arr = self.temp('arr')
-        temp_arr_ = self.temp('arr[]')
-        temp_arr__ = self.temp('arr[][]')
-
-        # Create class prior probabilities:
-        priors = [temp_type.format(self.repr(c)) for c in
-                  self.estimator.class_prior_]
-        priors = ', '.join(priors)
-        self.priors = temp_arr_.format(type='double', name='priors',
-                                      values=priors)
-
-        # Create sigmas:
-        sigmas = []
-        for sigma in self.estimator.sigma_:
-            tmp = [temp_type.format(self.repr(s)) for s in sigma]
-            tmp = temp_arr.format(', '.join(tmp))
-            sigmas.append(tmp)
-        sigmas = ', '.join(sigmas)
-        self.sigmas = temp_arr__.format(type='double', name='sigmas',
-                                        values=sigmas)
-
-        # Create thetas:
-        thetas = []
-        for theta in self.estimator.theta_:
-            tmp = [temp_type.format(self.repr(t)) for t in theta]
-            tmp = temp_arr.format(', '.join(tmp))
-            thetas.append(tmp)
-        thetas = ', '.join(thetas)
-        self.thetas = temp_arr__.format(type='double', name='thetas',
-                                        values=thetas)
-
-    def export(self, class_name, method_name, use_repr=True):
+    def export(self, class_name, method_name):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -97,17 +62,54 @@ class GaussianNB(Classifier):
             The name of the class in the returned result.
         :param method_name: string
             The name of the method in the returned result.
-        :param use_repr : bool, default True
-            Whether to use repr() for floating-point values or not.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
+
+        # Arguments:
         self.class_name = class_name
         self.method_name = method_name
-        self.use_repr = use_repr
+
+        # Estimator:
+        est = self.estimator
+
+        self.n_features = len(est.sigma_[0])
+        self.n_classes = len(est.classes_)
+
+        temp_type = self.temp('type')
+        temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
+        # Create class prior probabilities:
+        priors = [temp_type.format(self.repr(c)) for c in est.class_prior_]
+        priors = ', '.join(priors)
+        self.priors = temp_arr_.format(type='double', name='priors',
+                                       values=priors)
+
+        # Create sigmas:
+        sigmas = []
+        for sigma in est.sigma_:
+            tmp = [temp_type.format(self.repr(s)) for s in sigma]
+            tmp = temp_arr.format(', '.join(tmp))
+            sigmas.append(tmp)
+        sigmas = ', '.join(sigmas)
+        self.sigmas = temp_arr__.format(type='double', name='sigmas',
+                                        values=sigmas)
+
+        # Create thetas:
+        thetas = []
+        for theta in est.theta_:
+            tmp = [temp_type.format(self.repr(t)) for t in theta]
+            tmp = temp_arr.format(', '.join(tmp))
+            thetas.append(tmp)
+        thetas = ', '.join(thetas)
+        self.thetas = temp_arr__.format(type='double', name='thetas',
+                                        values=thetas)
+
         if self.target_method == 'predict':
             return self.predict()
 
