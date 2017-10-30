@@ -1,21 +1,20 @@
 this.{method_name} = function(neurons) {{
-    if (neurons.length != {n_features}) return -1;
-    var network = [neurons].concat(layers);
+    this.network[0] = neurons;
 
-    for (var i = 0; i < network.length - 1; i++) {{
-        for (var j = 0; j < network[i + 1].length; j++) {{
-            for (var l = 0; l < network[i].length; l++) {{
-                network[i + 1][j] += network[i][l] * weights[i][l][j];
+    for (var i = 0; i < this.network.length - 1; i++) {{
+        for (var j = 0; j < this.network[i + 1].length; j++) {{
+            for (var l = 0; l < this.network[i].length; l++) {{
+                this.network[i + 1][j] += this.network[i][l] * this.weights[i][l][j];
             }}
-            network[i + 1][j] += bias[i][j];
+            this.network[i + 1][j] += this.bias[i][j];
         }}
-        if ((i + 1) < (network.length - 1)) {{
-            network[i + 1] = compAct(network[i + 1]);
+        if ((i + 1) < (this.network.length - 1)) {{
+            this.network[i + 1] = compute(this.hidden, this.network[i + 1], this.network.length);
         }}
     }}
 
-    if (network[network.length - 1].length > 1) {{
-        return network[network.length - 1];
+    if (this.network[this.network.length - 1].length > 1) {{
+        return this.network[this.network.length - 1];
     }}
-    return layers[layers.length - 1][0];
+    return this.network[this.network.length - 1][0];
 }};

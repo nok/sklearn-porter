@@ -178,23 +178,16 @@ class MLPRegressor(Regressor):
                                        name='bias',
                                        values=intercepts)
 
-        if self.hidden_activation == 'logistic':
-            if self.n_hidden_layers == 1:
-                hidden_act_type = 'activation_fn.logistic_single'
-            else:
-                hidden_act_type = 'activation_fn.logistic_multiple'
-
-        hidden_act = self.temp(hidden_act_type, skipping=True, n_indents=1)
         temp_class = self.temp('class')
         file_name = '{}.js'.format(self.class_name.lower())
         out = temp_class.format(class_name=self.class_name,
                                 method_name=self.method_name, method=method,
                                 n_features=self.n_inputs,
-                                activation_function=hidden_act,
                                 file_name=file_name,
                                 weights=coefficients,
                                 bias=intercepts,
-                                layers=layers)
+                                layers=layers,
+                                hidden_activation=self.hidden_activation)
         return out
 
     def _get_intercepts(self):

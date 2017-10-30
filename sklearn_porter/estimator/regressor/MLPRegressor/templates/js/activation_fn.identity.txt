@@ -1,4 +1,0 @@
-// Activation function (identity):
-var compAct = function(v) {
-    return v;
-};
