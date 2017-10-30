@@ -7,7 +7,7 @@ import filecmp
 import os
 
 from sklearn.externals import joblib
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import LinearSVC
 
 from sklearn_porter import Porter
 
@@ -24,7 +24,7 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
     def setUp(self):
         super(PorterTest, self).setUp()
         self.load_iris_data()
-        self.estimator = DecisionTreeClassifier(random_state=0)
+        self.estimator = LinearSVC(C=1., random_state=0)
         self._port_estimator()
 
     def tearDown(self):

@@ -1,0 +1,27 @@
+var {class_name} = function() {{
+
+    this.findMax = function(nums) {{
+        var index = 0;
+        for (var i = 0; i < nums.length; i++) {{
+            index = nums[i] > nums[index] ? i : index;
+        }}
+        return index;
+    }};
+
+    {method}
+
+}};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
+    if (process.argv.length - 2 === {n_features}) {{
+
+        // Features:
+        var features = process.argv.slice(2);
+
+        // Prediction:
+        var clf = new {class_name}();
+        var prediction = clf.{method_name}(features);
+        console.log(prediction);
+
+    }}
+}}

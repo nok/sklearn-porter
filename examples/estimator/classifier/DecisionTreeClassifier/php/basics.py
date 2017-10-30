@@ -6,93 +6,68 @@ from sklearn_porter import Porter
 
 
 iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
+X = iris_data.data
+y = iris_data.target
 
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-output = Porter(clf, language='php').export()
+porter = Porter(clf, language='php')
+output = porter.export()
 print(output)
 
 """
 <?php
 
-class Brain {
+class DecisionTreeClassifier {
 
-    public static function predict($atts) {
-        if (sizeof($atts) != 4) { return -1; }
+    public function __construct($lChilds, $rChilds, $thresholds, $indices, $classes) {
+        $this->lChilds = $lChilds;
+        $this->rChilds = $rChilds;
+        $this->thresholds = $thresholds;
+        $this->indices = $indices;
+        $this->classes = $classes;
+    }
 
-        $classes = array_fill(0, 3, 0);
+    private function findMax($nums) {
+        $index = 0;
+        for ($i = 0; $i < count($nums); $i++) {
+            $index = $nums[$i] > $nums[$index] ? $i : $index;
+        }
+        return $index;
+    }
 
-        if ($atts[3] <= 0.80000001192092896) {
-            $classes[0] = 50;
-            $classes[1] = 0;
-            $classes[2] = 0;
-        } else {
-            if ($atts[3] <= 1.75) {
-                if ($atts[2] <= 4.9499998092651367) {
-                    if ($atts[3] <= 1.6500000953674316) {
-                        $classes[0] = 0;
-                        $classes[1] = 47;
-                        $classes[2] = 0;
-                    } else {
-                        $classes[0] = 0;
-                        $classes[1] = 0;
-                        $classes[2] = 1;
-                    }
-                } else {
-                    if ($atts[3] <= 1.5499999523162842) {
-                        $classes[0] = 0;
-                        $classes[1] = 0;
-                        $classes[2] = 3;
-                    } else {
-                        if ($atts[2] <= 5.4499998092651367) {
-                            $classes[0] = 0;
-                            $classes[1] = 2;
-                            $classes[2] = 0;
-                        } else {
-                            $classes[0] = 0;
-                            $classes[1] = 0;
-                            $classes[2] = 1;
-                        }
-                    }
-                }
+    public function predict($features) {
+        $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
+        if ($this->thresholds[$node] != -2) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+                return $this->predict($features, $this->lChilds[$node]);
             } else {
-                if ($atts[2] <= 4.8500003814697266) {
-                    if ($atts[0] <= 5.9499998092651367) {
-                        $classes[0] = 0;
-                        $classes[1] = 1;
-                        $classes[2] = 0;
-                    } else {
-                        $classes[0] = 0;
-                        $classes[1] = 0;
-                        $classes[2] = 2;
-                    }
-                } else {
-                    $classes[0] = 0;
-                    $classes[1] = 0;
-                    $classes[2] = 43;
-                }
+                return $this->predict($features, $this->rChilds[$node]);
             }
         }
-
-        $class_idx = 0;
-        $class_val = $classes[0];
-
-        for ($i = 1; $i < 3; $i++) {
-            if ($classes[$i] > $class_val) {
-                $class_idx = $i;
-                $class_val = $classes[$i];
-            }
-        }
-        return $class_idx;
+        return $this->findMax($this->classes[$node]);
     }
 
 }
 
 if ($argc > 1) {
+
+    // Features:
     array_shift($argv);
-    $prediction = Brain::predict($argv);
+    $features = $argv;
+
+    // Parameters:
+    $lChilds = [1, -1, 3, 4, 5, -1, -1, 8, -1, 10, -1, -1, 13, 14, -1, -1, -1];
+    $rChilds = [2, -1, 12, 7, 6, -1, -1, 9, -1, 11, -1, -1, 16, 15, -1, -1, -1];
+    $thresholds = [2.45000004768, -2.0, 1.75, 4.94999980927, 1.65000009537, -2.0, -2.0, 1.54999995232, -2.0, 5.44999980927, -2.0, -2.0, 4.85000038147, 5.94999980927, -2.0, -2.0, -2.0];
+    $indices = [2, 2, 3, 2, 3, 2, 2, 3, 2, 2, 2, 2, 2, 0, 2, 2, 2];
+    $classes = [[50, 50, 50], [50, 0, 0], [0, 50, 50], [0, 49, 5], [0, 47, 1], [0, 47, 0], [0, 0, 1], [0, 2, 4], [0, 0, 3], [0, 2, 1], [0, 2, 0], [0, 0, 1], [0, 1, 45], [0, 1, 2], [0, 1, 0], [0, 0, 2], [0, 0, 43]];
+
+    // Prediction:
+    $clf = new DecisionTreeClassifier($lChilds, $rChilds, $thresholds, $indices, $classes);
+    $prediction = $clf->predict($features);
     fwrite(STDOUT, $prediction);
+
 }
 """

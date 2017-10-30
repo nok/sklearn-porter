@@ -17,52 +17,72 @@ class DecisionTreeClassifier(Classifier):
     # @formatter:off
     TEMPLATES = {
         'c': {
-            'if':       'if (atts[{0}] {1} {2}) {{',
+            'if':       'if (features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
             'indent':   '    ',
             'join':     '; ',
+            'arr_scope': '{{{0}}}',
+            'arr[]':    '{type} {name}[{n}] = {{{values}}};',
+            'arr[][]':  '{type} {name}[{n}][{m}] = {{{values}}};',
         },
         'go': {
-            'if':       'if atts[{0}] {1} {2} {{',
+            'if':       'if features[{0}] {1} {2} {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
             'indent':   '\t',
             'join':     '',
+            'arr_scope': '{{{0}}}',
+            'arr[]':    '{name} := []{type} {{{values}}}',
+            'arr[][]':  '{name} := [][]{type} {{{values}}}',
         },
         'java': {
-            'if':       'if (atts[{0}] {1} {2}) {{',
+            'if':       'if (features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
             'indent':   '    ',
             'join':     '; ',
+            'type':     '{0}',
+            'arr_scope': '{{{0}}}',
+            'arr[]':    '{type}[] {name} = {{{values}}};',
+            'arr[][]':  '{type}[][] {name} = {{{values}}};',
         },
         'js': {
-            'if':       'if (atts[{0}] {1} {2}) {{',
+            'if':       'if (features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
             'indent':   '    ',
             'join':     '; ',
+            'type':     '{0}',
+            'arr_scope': '[{0}]',
+            'arr[]':    'var {name} = [{values}];',
+            'arr[][]':  'var {name} = [{values}];',
         },
         'php': {
-            'if':       'if ($atts[{0}] {1} {2}) {{',
+            'if':       'if ($features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      '$classes[{0}] = {1}',
             'indent':   '    ',
             'join':     '; ',
+            'arr_scope': '[{0}]',
+            'arr[]':    '${name} = [{values}];',
+            'arr[][]':  '${name} = [{values}];',
         },
         'ruby': {
-            'if':       'if atts[{0}] {1} {2}',
+            'if':       'if features[{0}] {1} {2}',
             'else':     'else',
             'endif':    'end',
             'arr':      'classes[{0}] = {1}',
             'indent':   '    ',
             'join':     ' ',
+            'arr_scope': '[{0}]',
+            'arr[]':    '{name} = [{values}]',
+            'arr[][]':  '{name} = [{values}]',
         }
     }
     # @formatter:on
@@ -86,7 +106,7 @@ class DecisionTreeClassifier(Classifier):
             target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name):
+    def export(self, class_name, method_name, embedded=False):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -111,12 +131,56 @@ class DecisionTreeClassifier(Classifier):
         est = self.estimator
 
         self.n_features = est.n_features_
-        self.n_classes = est.n_classes_
+        self.n_classes = len(self.estimator.tree_.value.tolist()[0][0])
+
+        temp_arr_scope = self.temp('arr_scope')
+        temp_arr_ = self.temp('arr[]')
+        temp_arr__ = self.temp('arr[][]')
+
+        feature_indices = []
+        for i in self.estimator.tree_.feature:
+            n_features = self.n_features
+            if self.n_features > 1 or (self.n_features == 1 and i >= 0):
+                feature_indices.append([str(j) for j in range(n_features)][i])
+        self.feature_indices = feature_indices
+
+        left_childs = [str(e) for e in self.estimator.tree_.children_left]
+        left_childs = temp_arr_.format(type='int', name='lChilds',
+                                       values=', '.join(left_childs),
+                                       n=len(left_childs))
+        self.left_childs = left_childs
+
+        right_childs = [str(e) for e in self.estimator.tree_.children_right]
+        right_childs = temp_arr_.format(type='int', name='rChilds',
+                                        values=', '.join(right_childs),
+                                        n=len(right_childs))
+        self.right_childs = right_childs
+
+        thresholds = [self.repr(e) for e in self.estimator.tree_.threshold.tolist()]
+        type_ = 'float64' if self.target_language == 'go' else 'double'
+        thresholds = temp_arr_.format(type=type_, name='thresholds',
+                                      values=', '.join(thresholds),
+                                      n=len(thresholds))
+        self.thresholds = thresholds
+
+        indices = [str(e) for e in feature_indices]
+        indices = temp_arr_.format(type='int', name='indices',
+                                   values=', '.join(indices), n=len(indices))
+        self.indices = indices
+
+        classes = self.estimator.tree_.value.tolist()
+        n = len(classes)
+        m = self.n_classes
+        classes = [', '.join([str(int(x)) for x in e[0]]) for e in classes]
+        classes = ', '.join([temp_arr_scope.format(v) for v in classes])
+        classes = temp_arr__.format(type='int', name='classes', values=classes,
+                                    n=n, m=m)
+        self.classes = classes
 
         if self.target_method == 'predict':
-            return self.predict(class_name, method_name)
+            return self.predict(class_name, method_name, embedded)
 
-    def predict(self, class_name, method_name):
+    def predict(self, class_name, method_name, embedded):
         """
         Transpile the predict method.
 
@@ -125,8 +189,60 @@ class DecisionTreeClassifier(Classifier):
         :return : string
             The transpiled predict method as string.
         """
-        method = self.create_method(class_name, method_name)
-        return self.create_class(method, class_name, method_name)
+        if embedded:
+            method = self.create_method_embedded(class_name, method_name)
+            out = self.create_class_embedded(method, class_name, method_name)
+            return out
+
+        out = self.create_class()
+        return out
+
+    def create_class(self):
+        """
+        Build the estimator class.
+
+        Returns
+        -------
+        :return out : string
+            The built class as string.
+        """
+        temp_class = self.temp('class')
+        out = temp_class.format(**self.__dict__)
+        return out
+
+    def create_method_embedded(self, class_name, method_name):
+        """
+        Build the estimator method or function.
+
+        Returns
+        -------
+        :return out : string
+            The built method as string.
+        """
+        n_indents = 1 if self.target_language in ['java', 'js',
+                                                  'php', 'ruby'] else 0
+        branches = self.indent(self.create_tree(), n_indents=1)
+        temp_method = self.temp('method.embedded', n_indents=n_indents,
+                                skipping=True)
+        out = temp_method.format(class_name=class_name, method_name=method_name,
+                                 n_features=self.n_features,
+                                 n_classes=self.n_classes, branches=branches)
+        return out
+
+    def create_class_embedded(self, method, class_name, method_name):
+        """
+        Build the estimator class.
+
+        Returns
+        -------
+        :return out : string
+            The built class as string.
+        """
+        temp_class = self.temp('class.embedded')
+        out = temp_class.format(class_name=class_name, method_name=method_name,
+                                method=method, n_classes=self.n_classes,
+                                n_features=self.n_features)
+        return out
 
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth):
@@ -156,7 +272,6 @@ class DecisionTreeClassifier(Classifier):
             The ported single tree as function or method.
         """
         out = ''
-        # ind = '\n' + '    ' * depth
         if threshold[node] != -2.:
             out += '\n'
             temp = self.temp('if', n_indents=depth)
@@ -192,47 +307,10 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The tree branches as string.
         """
-        feature_indices = []
-        for i in self.estimator.tree_.feature:
-            n_features = self.n_features
-            if self.n_features > 1 or (self.n_features == 1 and i >= 0):
-                feature_indices.append([str(j) for j in range(n_features)][i])
-
         indentation = 1 if self.target_language in ['java', 'js', 'php', 'ruby'] else 0
         return self.create_branches(
             self.estimator.tree_.children_left,
             self.estimator.tree_.children_right,
             self.estimator.tree_.threshold,
             self.estimator.tree_.value,
-            feature_indices, 0, indentation)
-
-    def create_method(self, class_name, method_name):
-        """
-        Build the estimator method or function.
-
-        Returns
-        -------
-        :return out : string
-            The built method as string.
-        """
-        n_indents = 1 if self.target_language in ['java', 'js', 'php', 'ruby'] else 0
-        branches = self.indent(self.create_tree(), n_indents=1)
-        temp_method = self.temp('method', n_indents=n_indents, skipping=True)
-        out = temp_method.format(class_name=class_name, method_name=method_name,
-                                 n_features=self.n_features,
-                                 n_classes=self.n_classes, branches=branches)
-        return out
-
-    def create_class(self, method, class_name, method_name):
-        """
-        Build the estimator class.
-
-        Returns
-        -------
-        :return out : string
-            The built class as string.
-        """
-        temp_class = self.temp('class')
-        out = temp_class.format(class_name=class_name, method_name=method_name,
-                                method=method, n_features=self.n_features)
-        return out
+            self.feature_indices, 0, indentation)

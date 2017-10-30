@@ -186,7 +186,7 @@ class Porter(object):
             self.template._num_format = num_format
 
         output = self.template.export(class_name=class_name,
-                                      method_name=method_name)
+                                      method_name=method_name, **kwargs)
         if not details:
             return output
 

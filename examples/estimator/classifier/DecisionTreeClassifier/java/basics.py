@@ -17,82 +17,66 @@ output = porter.export()
 print(output)
 
 """
-class Brain {
+class DecisionTreeClassifier {
 
-    public static int predict(float[] atts) {
-        if (atts.length != 4) { return -1; }
-        int[] classes = new int[3];
-            
-        if (atts[2] <= 2.4500000476837158) {
-            classes[0] = 50; 
-            classes[1] = 0; 
-            classes[2] = 0; 
-        } else {
-            if (atts[3] <= 1.75) {
-                if (atts[2] <= 4.9499998092651367) {
-                    if (atts[3] <= 1.6500000953674316) {
-                        classes[0] = 0; 
-                        classes[1] = 47; 
-                        classes[2] = 0; 
-                    } else {
-                        classes[0] = 0; 
-                        classes[1] = 0; 
-                        classes[2] = 1; 
-                    }
-                } else {
-                    if (atts[3] <= 1.5499999523162842) {
-                        classes[0] = 0; 
-                        classes[1] = 0; 
-                        classes[2] = 3; 
-                    } else {
-                        if (atts[2] <= 5.4499998092651367) {
-                            classes[0] = 0; 
-                            classes[1] = 2; 
-                            classes[2] = 0; 
-                        } else {
-                            classes[0] = 0; 
-                            classes[1] = 0; 
-                            classes[2] = 1; 
-                        }
-                    }
-                }
+    private int[] lChilds;
+    private int[] rChilds;
+    private double[] thresholds;
+    private int[] indices;
+    private int[][] classes;
+
+    public DecisionTreeClassifier(int[] lChilds, int[] rChilds, double[] thresholds, int[] indices, int[][] classes) {
+        this.lChilds = lChilds;
+        this.rChilds = rChilds;
+        this.thresholds = thresholds;
+        this.indices = indices;
+        this.classes = classes;
+    }
+
+    public int predict(double[] features) {
+        return this.predict(features, 0);
+    }
+
+    public int predict(double[] features, int node) {
+        if (this.thresholds[node] != -2) {
+            if (features[this.indices[node]] <= this.thresholds[node]) {
+                return predict(features, this.lChilds[node]);
             } else {
-                if (atts[2] <= 4.8500003814697266) {
-                    if (atts[0] <= 5.9499998092651367) {
-                        classes[0] = 0; 
-                        classes[1] = 1; 
-                        classes[2] = 0; 
-                    } else {
-                        classes[0] = 0; 
-                        classes[1] = 0; 
-                        classes[2] = 2; 
-                    }
-                } else {
-                    classes[0] = 0; 
-                    classes[1] = 0; 
-                    classes[2] = 43; 
-                }
+                return predict(features, this.rChilds[node]);
             }
         }
-    
-        int class_idx = 0;
-        int class_val = classes[0];
-        for (int i = 1; i < 3; i++) {
-            if (classes[i] > class_val) {
-                class_idx = i;
-                class_val = classes[i];
-            }
+        return findMax(this.classes[node]);
+    }
+
+    private int findMax(int[] nums) {
+        int index = 0;
+        for (int i = 0; i < nums.length; i++) {
+            index = nums[i] > nums[index] ? i : index;
         }
-        return class_idx;
+        return index;
     }
 
     public static void main(String[] args) {
         if (args.length == 4) {
-            float[] atts = new float[args.length];
+
+            // Features:
+            double[] features = new double[args.length];
             for (int i = 0, l = args.length; i < l; i++) {
-                atts[i] = Float.parseFloat(args[i]);
+                features[i] = Double.parseDouble(args[i]);
             }
-            System.out.println(Brain.predict(atts));
+
+            // Parameters:
+            int[] lChilds = {1, -1, 3, 4, 5, -1, -1, 8, -1, 10, -1, -1, 13, 14, -1, -1, -1};
+            int[] rChilds = {2, -1, 12, 7, 6, -1, -1, 9, -1, 11, -1, -1, 16, 15, -1, -1, -1};
+            double[] thresholds = {2.45000004768, -2.0, 1.75, 4.94999980927, 1.65000009537, -2.0, -2.0, 1.54999995232, -2.0, 6.94999980927, -2.0, -2.0, 4.85000038147, 3.09999990463, -2.0, -2.0, -2.0};
+            int[] indices = {2, 2, 3, 2, 3, 2, 2, 3, 2, 0, 2, 2, 2, 1, 2, 2, 2};
+            int[][] classes = {{50, 50, 50}, {50, 0, 0}, {0, 50, 50}, {0, 49, 5}, {0, 47, 1}, {0, 47, 0}, {0, 0, 1}, {0, 2, 4}, {0, 0, 3}, {0, 2, 1}, {0, 2, 0}, {0, 0, 1}, {0, 1, 45}, {0, 1, 2}, {0, 0, 2}, {0, 1, 0}, {0, 0, 43}};
+
+            // Prediction:
+            DecisionTreeClassifier clf = new DecisionTreeClassifier(lChilds, rChilds, thresholds, indices, classes);
+            int estimation = clf.predict(features);
+            System.out.println(estimation);
+
         }
     }
 }
