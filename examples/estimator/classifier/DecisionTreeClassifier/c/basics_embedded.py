@@ -77,16 +77,11 @@ int predict(float atts[4]) {
         }
     }
 
-    int class_val = -1;
-    int class_idx = -1;
-    int i;
-    for (i = 0; i < 3; i++) {
-        if (classes[i] > class_val) {
-            class_idx = i;
-            class_val = classes[i];
-        }
+    int index = 0;
+    for (int i = 0; i < 3; i++) {
+        index = classes[i] > classes[index] ? i : index;
     }
-    return class_idx;
+    return index;
 }
 
 int main(int argc, const char * argv[]) {
