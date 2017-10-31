@@ -191,11 +191,11 @@ clf.fit(X, y)
 
 # Export:
 porter = Porter(clf, language='java')
-output = porter.export()
+output = porter.export(embedded=True)
 print(output)
 ```
 
-The exported [result](examples/estimator/classifier/DecisionTreeClassifier/java/basics.py#L18-L98) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
+The exported [result](examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.py#L25-L75) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
 
 ### Prediction
 
