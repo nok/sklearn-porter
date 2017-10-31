@@ -1,10 +1,9 @@
-int {method_name}_{method_id}(float atts[]) {{
-    int classes[{n_classes}];
+public static int {method_name}_{method_id}(float[] features) {{
+    int[] classes = new int[{n_classes}];
     {tree_branches}
     int class_idx = 0;
     int class_val = classes[0];
-    int i;
-    for (i = 1; i < {n_classes}; i++) {{
+    for (int i = 1; i < {n_classes}; i++) {{
         if (classes[i] > class_val) {{
             class_idx = i;
             class_val = classes[i];

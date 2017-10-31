@@ -1,0 +1,6 @@
+trees.push(function(features) {{
+    var classes = new Array({n_classes});
+    {tree_branches}
+
+    return findMax(classes);
+}});

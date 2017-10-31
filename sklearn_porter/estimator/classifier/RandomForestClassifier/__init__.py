@@ -14,12 +14,12 @@ class RandomForestClassifier(Classifier):
     """
 
     SUPPORTED_METHODS = ['predict']
-    SUPPORTED_LANGUAGES = ['c', 'java', 'js']
+    SUPPORTED_LANGUAGES = ['c', 'java', 'js', 'php', 'ruby']
 
     # @formatter:off
     TEMPLATES = {
         'c': {
-            'if':       'if (atts[{0}] {1} {2}) {{',
+            'if':       'if (features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
@@ -27,7 +27,7 @@ class RandomForestClassifier(Classifier):
             'join':     '; ',
         },
         'java': {
-            'if':       'if (atts[{0}] {1} {2}) {{',
+            'if':       'if (features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
@@ -35,7 +35,7 @@ class RandomForestClassifier(Classifier):
             'join':     '; ',
         },
         'js': {
-            'if':       'if (atts[{0}] {1} {2}) {{',
+            'if':       'if (features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
@@ -43,7 +43,7 @@ class RandomForestClassifier(Classifier):
             'join':     '; ',
         },
         'php': {
-            'if':       'if ($atts[{0}] {1} {2}) {{',
+            'if':       'if ($features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      '$classes[{0}] = {1}',
@@ -51,7 +51,7 @@ class RandomForestClassifier(Classifier):
             'join':     '; ',
         },
         'ruby': {
-            'if':       'if atts[{0}] {1} {2}',
+            'if':       'if features[{0}] {1} {2}',
             'else':     'else',
             'endif':    'end',
             'arr':      'classes[{0}] = {1}',
@@ -91,7 +91,7 @@ class RandomForestClassifier(Classifier):
 
         self.estimator = estimator
 
-    def export(self, class_name, method_name):
+    def export(self, class_name, method_name, embedded=False):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -108,6 +108,9 @@ class RandomForestClassifier(Classifier):
             The transpiled algorithm with the defined placeholders.
         """
 
+        # TODO: Add non embedded templates and remove the following line:
+        embedded = True
+
         # Arguments:
         self.class_name = class_name
         self.method_name = method_name
@@ -115,18 +118,15 @@ class RandomForestClassifier(Classifier):
         # Estimator:
         est = self.estimator
 
+        self.estimators = [est.estimators_[idx] for idx in range(est.n_estimators)]
+        self.n_estimators = len(self.estimators)
+        self.n_features = est.estimators_[0].n_features_
         self.n_classes = est.n_classes_
-        self.estimators = []
-        self.n_estimators = 0
-        for idx in range(est.n_estimators):
-            self.estimators.append(est.estimators_[idx])
-            self.n_estimators += 1
-            self.n_features = est.estimators_[idx].n_features_
 
         if self.target_method == 'predict':
-            return self.predict()
+            return self.predict(embedded)
 
-    def predict(self):
+    def predict(self, embedded):
         """
         Transpile the predict method.
 
@@ -135,7 +135,13 @@ class RandomForestClassifier(Classifier):
         :return : string
             The transpiled predict method as string.
         """
-        return self.create_class(self.create_method())
+        if embedded:
+            method = self.create_method_embedded()
+            out = self.create_class_embedded(method)
+            return out
+
+        out = self.create_class()
+        return out
 
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth):
@@ -217,14 +223,14 @@ class RandomForestClassifier(Classifier):
             estimator.tree_.children_left, estimator.tree_.children_right,
             estimator.tree_.threshold, estimator.tree_.value, indices, 0, 1)
 
-        temp_single_method = self.temp('single_method')
+        temp_single_method = self.temp('embedded.single_method')
         out = temp_single_method.format(method_name=self.method_name,
                                         method_id=str(estimator_index),
                                         n_classes=self.n_classes,
                                         tree_branches=tree_branches)
         return out
 
-    def create_method(self):
+    def create_method_embedded(self):
         """
         Build the estimator methods or functions.
 
@@ -235,7 +241,8 @@ class RandomForestClassifier(Classifier):
         """
         # Generate method or function names:
         fn_names = []
-        temp_method_calls = self.temp('method_calls', n_indents=2, skipping=True)
+        temp_method_calls = self.temp('embedded.method_calls',
+                                      n_indents=2, skipping=True)
         for idx, estimator in enumerate(self.estimators):
             fn_name = self.method_name + '_' + str(idx)
             fn_name = temp_method_calls.format(class_name=self.class_name,
@@ -252,16 +259,18 @@ class RandomForestClassifier(Classifier):
         fns = '\n'.join(fns)
 
         # Merge generated content:
-        n_indents = 1 if self.target_language in ['java', 'js', 'php', 'ruby'] else 0
-        temp_method = self.temp('method')
-        out = temp_method.format(method_name=self.method_name,
+        n_indents = 1 if self.target_language in ['java', 'js',
+                                                  'php', 'ruby'] else 0
+        temp_method = self.temp('embedded.method')
+        out = temp_method.format(class_name=self.class_name,
+                                 method_name=self.method_name,
                                  method_calls=fn_names, methods=fns,
                                  n_estimators=self.n_estimators,
                                  n_classes=self.n_classes)
         out = self.indent(out, n_indents=n_indents, skipping=True)
         return out
 
-    def create_class(self, method):
+    def create_class_embedded(self, method):
         """
         Build the estimator class.
 
@@ -270,8 +279,13 @@ class RandomForestClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        temp_class = self.temp('class')
+        temp_class = self.temp('embedded.class')
         out = temp_class.format(class_name=self.class_name,
                                 method_name=self.method_name,
                                 method=method, n_features=self.n_features)
+        return out
+
+    def create_class(self):
+        temp_class = self.temp('class')
+        out = temp_class.format(**self.__dict__)
         return out

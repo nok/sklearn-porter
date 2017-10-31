@@ -140,7 +140,7 @@ class DecisionTreeClassifier(Classifier):
         feature_indices = []
         for i in self.estimator.tree_.feature:
             n_features = self.n_features
-            if self.n_features > 1 or (self.n_features == 1 and i >= 0):
+            if n_features > 1 or (n_features == 1 and i >= 0):
                 feature_indices.append([str(j) for j in range(n_features)][i])
         self.feature_indices = feature_indices
 

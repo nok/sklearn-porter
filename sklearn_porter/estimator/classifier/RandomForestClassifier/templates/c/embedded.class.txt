@@ -5,11 +5,11 @@
 {method}
 
 int main(int argc, const char * argv[]) {{
-    float atts[argc-1];
+    float features[argc-1];
     int i;
     for (i = 1; i < argc; i++) {{
-        atts[i-1] = atof(argv[i]);
+        features[i-1] = atof(argv[i]);
     }}
-    printf("%d", {method_name}(atts));
+    printf("%d", {method_name}(features));
     return 0;
 }}

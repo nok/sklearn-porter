@@ -6,13 +6,15 @@ from sklearn_porter import Porter
 
 
 iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
+X = iris_data.data
+y = iris_data.target
 
 clf = RandomForestClassifier(n_estimators=15, max_depth=None,
                              min_samples_split=2, random_state=0)
 clf.fit(X, y)
 
-output = Porter(clf, language='c').export()
+porter = Porter(clf, language='c')
+output = porter.export(embedded=True)
 print(output)
 
 """
@@ -23,18 +25,18 @@ print(output)
 int predict_0(float atts[]) {
     int classes[3];
     
-    if (atts[3] <= 0.75) {
+    if (features[3] <= 0.75) {
         classes[0] = 47; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[2] <= 4.8500003814697266) {
-            if (atts[3] <= 1.6500000953674316) {
+        if (features[2] <= 4.85000038147) {
+            if (features[3] <= 1.65000009537) {
                 classes[0] = 0; 
                 classes[1] = 42; 
                 classes[2] = 0; 
             } else {
-                if (atts[1] <= 3.0) {
+                if (features[1] <= 3.0) {
                     classes[0] = 0; 
                     classes[1] = 0; 
                     classes[2] = 3; 
@@ -45,12 +47,12 @@ int predict_0(float atts[]) {
                 }
             }
         } else {
-            if (atts[0] <= 6.5999999046325684) {
+            if (features[0] <= 6.59999990463) {
                 classes[0] = 0; 
                 classes[1] = 0; 
                 classes[2] = 27; 
             } else {
-                if (atts[2] <= 5.1999998092651367) {
+                if (features[2] <= 5.19999980927) {
                     classes[0] = 0; 
                     classes[1] = 1; 
                     classes[2] = 0; 
@@ -77,19 +79,19 @@ int predict_0(float atts[]) {
 int predict_1(float atts[]) {
     int classes[3];
     
-    if (atts[3] <= 0.80000001192092896) {
+    if (features[3] <= 0.800000011921) {
         classes[0] = 46; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[3] <= 1.75) {
-            if (atts[2] <= 4.9499998092651367) {
+        if (features[3] <= 1.75) {
+            if (features[2] <= 4.94999980927) {
                 classes[0] = 0; 
                 classes[1] = 58; 
                 classes[2] = 0; 
             } else {
-                if (atts[2] <= 5.4499998092651367) {
-                    if (atts[1] <= 2.4500000476837158) {
+                if (features[2] <= 5.44999980927) {
+                    if (features[1] <= 2.45000004768) {
                         classes[0] = 0; 
                         classes[1] = 0; 
                         classes[2] = 2; 
@@ -105,8 +107,8 @@ int predict_1(float atts[]) {
                 }
             }
         } else {
-            if (atts[2] <= 4.8500003814697266) {
-                if (atts[1] <= 3.0999999046325684) {
+            if (features[2] <= 4.85000038147) {
+                if (features[1] <= 3.09999990463) {
                     classes[0] = 0; 
                     classes[1] = 0; 
                     classes[2] = 2; 
@@ -137,13 +139,13 @@ int predict_1(float atts[]) {
 int predict_2(float atts[]) {
     int classes[3];
     
-    if (atts[0] <= 5.5500001907348633) {
-        if (atts[3] <= 0.80000001192092896) {
+    if (features[0] <= 5.55000019073) {
+        if (features[3] <= 0.800000011921) {
             classes[0] = 49; 
             classes[1] = 0; 
             classes[2] = 0; 
         } else {
-            if (atts[3] <= 1.6000000238418579) {
+            if (features[3] <= 1.60000002384) {
                 classes[0] = 0; 
                 classes[1] = 12; 
                 classes[2] = 0; 
@@ -154,13 +156,13 @@ int predict_2(float atts[]) {
             }
         }
     } else {
-        if (atts[3] <= 1.5499999523162842) {
-            if (atts[3] <= 0.75) {
+        if (features[3] <= 1.54999995232) {
+            if (features[3] <= 0.75) {
                 classes[0] = 2; 
                 classes[1] = 0; 
                 classes[2] = 0; 
             } else {
-                if (atts[2] <= 5.0) {
+                if (features[2] <= 5.0) {
                     classes[0] = 0; 
                     classes[1] = 32; 
                     classes[2] = 0; 
@@ -171,13 +173,13 @@ int predict_2(float atts[]) {
                 }
             }
         } else {
-            if (atts[2] <= 4.6500000953674316) {
+            if (features[2] <= 4.65000009537) {
                 classes[0] = 0; 
                 classes[1] = 1; 
                 classes[2] = 0; 
             } else {
-                if (atts[3] <= 1.7000000476837158) {
-                    if (atts[2] <= 5.4499998092651367) {
+                if (features[3] <= 1.70000004768) {
+                    if (features[2] <= 5.44999980927) {
                         classes[0] = 0; 
                         classes[1] = 1; 
                         classes[2] = 0; 
@@ -209,14 +211,14 @@ int predict_2(float atts[]) {
 int predict_3(float atts[]) {
     int classes[3];
     
-    if (atts[0] <= 5.4499998092651367) {
-        if (atts[1] <= 2.8000001907348633) {
-            if (atts[1] <= 2.4500000476837158) {
+    if (features[0] <= 5.44999980927) {
+        if (features[1] <= 2.80000019073) {
+            if (features[1] <= 2.45000004768) {
                 classes[0] = 0; 
                 classes[1] = 5; 
                 classes[2] = 0; 
             } else {
-                if (atts[0] <= 5.0) {
+                if (features[0] <= 5.0) {
                     classes[0] = 0; 
                     classes[1] = 0; 
                     classes[2] = 3; 
@@ -232,20 +234,20 @@ int predict_3(float atts[]) {
             classes[2] = 0; 
         }
     } else {
-        if (atts[0] <= 6.25) {
-            if (atts[3] <= 1.7000000476837158) {
-                if (atts[3] <= 0.60000002384185791) {
+        if (features[0] <= 6.25) {
+            if (features[3] <= 1.70000004768) {
+                if (features[3] <= 0.600000023842) {
                     classes[0] = 3; 
                     classes[1] = 0; 
                     classes[2] = 0; 
                 } else {
-                    if (atts[1] <= 2.25) {
-                        if (atts[3] <= 1.25) {
+                    if (features[1] <= 2.25) {
+                        if (features[3] <= 1.25) {
                             classes[0] = 0; 
                             classes[1] = 1; 
                             classes[2] = 0; 
                         } else {
-                            if (atts[2] <= 4.75) {
+                            if (features[2] <= 4.75) {
                                 classes[0] = 0; 
                                 classes[1] = 3; 
                                 classes[2] = 0; 
@@ -267,7 +269,7 @@ int predict_3(float atts[]) {
                 classes[2] = 8; 
             }
         } else {
-            if (atts[2] <= 4.9499998092651367) {
+            if (features[2] <= 4.94999980927) {
                 classes[0] = 0; 
                 classes[1] = 10; 
                 classes[2] = 0; 
@@ -293,19 +295,19 @@ int predict_3(float atts[]) {
 int predict_4(float atts[]) {
     int classes[3];
     
-    if (atts[3] <= 0.69999998807907104) {
+    if (features[3] <= 0.699999988079) {
         classes[0] = 50; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[3] <= 1.75) {
-            if (atts[2] <= 5.0500001907348633) {
-                if (atts[2] <= 4.9499998092651367) {
+        if (features[3] <= 1.75) {
+            if (features[2] <= 5.05000019073) {
+                if (features[2] <= 4.94999980927) {
                     classes[0] = 0; 
                     classes[1] = 56; 
                     classes[2] = 0; 
                 } else {
-                    if (atts[3] <= 1.6000000238418579) {
+                    if (features[3] <= 1.60000002384) {
                         classes[0] = 0; 
                         classes[1] = 0; 
                         classes[2] = 1; 
@@ -316,7 +318,7 @@ int predict_4(float atts[]) {
                     }
                 }
             } else {
-                if (atts[0] <= 6.0500001907348633) {
+                if (features[0] <= 6.05000019073) {
                     classes[0] = 0; 
                     classes[1] = 2; 
                     classes[2] = 0; 
@@ -347,14 +349,14 @@ int predict_4(float atts[]) {
 int predict_5(float atts[]) {
     int classes[3];
     
-    if (atts[3] <= 0.80000001192092896) {
+    if (features[3] <= 0.800000011921) {
         classes[0] = 49; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[2] <= 4.9499998092651367) {
-            if (atts[0] <= 4.9499998092651367) {
-                if (atts[3] <= 1.3500000238418579) {
+        if (features[2] <= 4.94999980927) {
+            if (features[0] <= 4.94999980927) {
+                if (features[3] <= 1.35000002384) {
                     classes[0] = 0; 
                     classes[1] = 1; 
                     classes[2] = 0; 
@@ -364,22 +366,22 @@ int predict_5(float atts[]) {
                     classes[2] = 1; 
                 }
             } else {
-                if (atts[2] <= 4.75) {
+                if (features[2] <= 4.75) {
                     classes[0] = 0; 
                     classes[1] = 49; 
                     classes[2] = 0; 
                 } else {
-                    if (atts[1] <= 2.5999999046325684) {
+                    if (features[1] <= 2.59999990463) {
                         classes[0] = 0; 
                         classes[1] = 1; 
                         classes[2] = 0; 
                     } else {
-                        if (atts[0] <= 6.0500001907348633) {
+                        if (features[0] <= 6.05000019073) {
                             classes[0] = 0; 
                             classes[1] = 1; 
                             classes[2] = 0; 
                         } else {
-                            if (atts[3] <= 1.5999999046325684) {
+                            if (features[3] <= 1.59999990463) {
                                 classes[0] = 0; 
                                 classes[1] = 1; 
                                 classes[2] = 0; 
@@ -413,13 +415,13 @@ int predict_5(float atts[]) {
 int predict_6(float atts[]) {
     int classes[3];
     
-    if (atts[3] <= 0.69999998807907104) {
+    if (features[3] <= 0.699999988079) {
         classes[0] = 46; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[2] <= 4.75) {
-            if (atts[0] <= 4.9499998092651367) {
+        if (features[2] <= 4.75) {
+            if (features[0] <= 4.94999980927) {
                 classes[0] = 0; 
                 classes[1] = 0; 
                 classes[2] = 2; 
@@ -429,10 +431,10 @@ int predict_6(float atts[]) {
                 classes[2] = 0; 
             }
         } else {
-            if (atts[2] <= 5.1499996185302734) {
-                if (atts[0] <= 6.5999999046325684) {
-                    if (atts[3] <= 1.7000000476837158) {
-                        if (atts[3] <= 1.5499999523162842) {
+            if (features[2] <= 5.14999961853) {
+                if (features[0] <= 6.59999990463) {
+                    if (features[3] <= 1.70000004768) {
+                        if (features[3] <= 1.54999995232) {
                             classes[0] = 0; 
                             classes[1] = 0; 
                             classes[2] = 2; 
@@ -473,26 +475,26 @@ int predict_6(float atts[]) {
 int predict_7(float atts[]) {
     int classes[3];
     
-    if (atts[2] <= 2.5999999046325684) {
+    if (features[2] <= 2.59999990463) {
         classes[0] = 58; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[2] <= 4.75) {
+        if (features[2] <= 4.75) {
             classes[0] = 0; 
             classes[1] = 37; 
             classes[2] = 0; 
         } else {
-            if (atts[2] <= 5.1499996185302734) {
-                if (atts[3] <= 1.75) {
-                    if (atts[0] <= 6.5) {
-                        if (atts[2] <= 4.9499998092651367) {
+            if (features[2] <= 5.14999961853) {
+                if (features[3] <= 1.75) {
+                    if (features[0] <= 6.5) {
+                        if (features[2] <= 4.94999980927) {
                             classes[0] = 0; 
                             classes[1] = 1; 
                             classes[2] = 0; 
                         } else {
-                            if (atts[0] <= 6.1500000953674316) {
-                                if (atts[3] <= 1.5499999523162842) {
+                            if (features[0] <= 6.15000009537) {
+                                if (features[3] <= 1.54999995232) {
                                     classes[0] = 0; 
                                     classes[1] = 0; 
                                     classes[2] = 2; 
@@ -539,15 +541,15 @@ int predict_7(float atts[]) {
 int predict_8(float atts[]) {
     int classes[3];
     
-    if (atts[3] <= 0.69999998807907104) {
+    if (features[3] <= 0.699999988079) {
         classes[0] = 42; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[0] <= 6.25) {
-            if (atts[2] <= 4.8000001907348633) {
-                if (atts[0] <= 4.9499998092651367) {
-                    if (atts[1] <= 2.4500000476837158) {
+        if (features[0] <= 6.25) {
+            if (features[2] <= 4.80000019073) {
+                if (features[0] <= 4.94999980927) {
+                    if (features[1] <= 2.45000004768) {
                         classes[0] = 0; 
                         classes[1] = 1; 
                         classes[2] = 0; 
@@ -562,12 +564,12 @@ int predict_8(float atts[]) {
                     classes[2] = 0; 
                 }
             } else {
-                if (atts[3] <= 1.5499999523162842) {
+                if (features[3] <= 1.54999995232) {
                     classes[0] = 0; 
                     classes[1] = 0; 
                     classes[2] = 4; 
                 } else {
-                    if (atts[3] <= 1.7000000476837158) {
+                    if (features[3] <= 1.70000004768) {
                         classes[0] = 0; 
                         classes[1] = 2; 
                         classes[2] = 0; 
@@ -579,8 +581,8 @@ int predict_8(float atts[]) {
                 }
             }
         } else {
-            if (atts[3] <= 1.75) {
-                if (atts[2] <= 5.0500001907348633) {
+            if (features[3] <= 1.75) {
+                if (features[2] <= 5.05000019073) {
                     classes[0] = 0; 
                     classes[1] = 15; 
                     classes[2] = 0; 
@@ -611,18 +613,18 @@ int predict_8(float atts[]) {
 int predict_9(float atts[]) {
     int classes[3];
     
-    if (atts[2] <= 2.5999999046325684) {
+    if (features[2] <= 2.59999990463) {
         classes[0] = 55; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[2] <= 4.9499998092651367) {
-            if (atts[0] <= 5.9499998092651367) {
+        if (features[2] <= 4.94999980927) {
+            if (features[0] <= 5.94999980927) {
                 classes[0] = 0; 
                 classes[1] = 23; 
                 classes[2] = 0; 
             } else {
-                if (atts[3] <= 1.6499999761581421) {
+                if (features[3] <= 1.64999997616) {
                     classes[0] = 0; 
                     classes[1] = 16; 
                     classes[2] = 0; 
@@ -633,13 +635,13 @@ int predict_9(float atts[]) {
                 }
             }
         } else {
-            if (atts[0] <= 6.5999999046325684) {
+            if (features[0] <= 6.59999990463) {
                 classes[0] = 0; 
                 classes[1] = 0; 
                 classes[2] = 33; 
             } else {
-                if (atts[0] <= 6.75) {
-                    if (atts[3] <= 2.0) {
+                if (features[0] <= 6.75) {
+                    if (features[3] <= 2.0) {
                         classes[0] = 0; 
                         classes[1] = 1; 
                         classes[2] = 0; 
@@ -671,33 +673,33 @@ int predict_9(float atts[]) {
 int predict_10(float atts[]) {
     int classes[3];
     
-    if (atts[3] <= 0.80000001192092896) {
+    if (features[3] <= 0.800000011921) {
         classes[0] = 52; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[2] <= 4.75) {
+        if (features[2] <= 4.75) {
             classes[0] = 0; 
             classes[1] = 37; 
             classes[2] = 0; 
         } else {
-            if (atts[3] <= 1.75) {
-                if (atts[2] <= 4.9499998092651367) {
+            if (features[3] <= 1.75) {
+                if (features[2] <= 4.94999980927) {
                     classes[0] = 0; 
                     classes[1] = 4; 
                     classes[2] = 0; 
                 } else {
-                    if (atts[1] <= 2.6500000953674316) {
+                    if (features[1] <= 2.65000009537) {
                         classes[0] = 0; 
                         classes[1] = 0; 
                         classes[2] = 2; 
                     } else {
-                        if (atts[3] <= 1.5499999523162842) {
+                        if (features[3] <= 1.54999995232) {
                             classes[0] = 0; 
                             classes[1] = 0; 
                             classes[2] = 2; 
                         } else {
-                            if (atts[2] <= 5.4499998092651367) {
+                            if (features[2] <= 5.44999980927) {
                                 classes[0] = 0; 
                                 classes[1] = 2; 
                                 classes[2] = 0; 
@@ -710,8 +712,8 @@ int predict_10(float atts[]) {
                     }
                 }
             } else {
-                if (atts[2] <= 4.8500003814697266) {
-                    if (atts[1] <= 3.0999999046325684) {
+                if (features[2] <= 4.85000038147) {
+                    if (features[1] <= 3.09999990463) {
                         classes[0] = 0; 
                         classes[1] = 0; 
                         classes[2] = 6; 
@@ -743,19 +745,19 @@ int predict_10(float atts[]) {
 int predict_11(float atts[]) {
     int classes[3];
     
-    if (atts[2] <= 2.5999999046325684) {
+    if (features[2] <= 2.59999990463) {
         classes[0] = 47; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[2] <= 4.75) {
+        if (features[2] <= 4.75) {
             classes[0] = 0; 
             classes[1] = 40; 
             classes[2] = 0; 
         } else {
-            if (atts[2] <= 4.9499998092651367) {
-                if (atts[1] <= 3.0499999523162842) {
-                    if (atts[3] <= 1.5999999046325684) {
+            if (features[2] <= 4.94999980927) {
+                if (features[1] <= 3.04999995232) {
+                    if (features[3] <= 1.59999990463) {
                         classes[0] = 0; 
                         classes[1] = 2; 
                         classes[2] = 0; 
@@ -770,13 +772,13 @@ int predict_11(float atts[]) {
                     classes[2] = 0; 
                 }
             } else {
-                if (atts[0] <= 6.0500001907348633) {
-                    if (atts[2] <= 5.0500001907348633) {
+                if (features[0] <= 6.05000019073) {
+                    if (features[2] <= 5.05000019073) {
                         classes[0] = 0; 
                         classes[1] = 0; 
                         classes[2] = 4; 
                     } else {
-                        if (atts[0] <= 5.9499998092651367) {
+                        if (features[0] <= 5.94999980927) {
                             classes[0] = 0; 
                             classes[1] = 0; 
                             classes[2] = 7; 
@@ -809,13 +811,13 @@ int predict_11(float atts[]) {
 int predict_12(float atts[]) {
     int classes[3];
     
-    if (atts[3] <= 0.80000001192092896) {
+    if (features[3] <= 0.800000011921) {
         classes[0] = 54; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[1] <= 2.4500000476837158) {
-            if (atts[2] <= 4.75) {
+        if (features[1] <= 2.45000004768) {
+            if (features[2] <= 4.75) {
                 classes[0] = 0; 
                 classes[1] = 12; 
                 classes[2] = 0; 
@@ -825,8 +827,8 @@ int predict_12(float atts[]) {
                 classes[2] = 1; 
             }
         } else {
-            if (atts[3] <= 1.6000000238418579) {
-                if (atts[2] <= 5.0) {
+            if (features[3] <= 1.60000002384) {
+                if (features[2] <= 5.0) {
                     classes[0] = 0; 
                     classes[1] = 23; 
                     classes[2] = 0; 
@@ -836,8 +838,8 @@ int predict_12(float atts[]) {
                     classes[2] = 2; 
                 }
             } else {
-                if (atts[3] <= 1.75) {
-                    if (atts[0] <= 5.8000001907348633) {
+                if (features[3] <= 1.75) {
+                    if (features[0] <= 5.80000019073) {
                         classes[0] = 0; 
                         classes[1] = 0; 
                         classes[2] = 3; 
@@ -869,18 +871,18 @@ int predict_12(float atts[]) {
 int predict_13(float atts[]) {
     int classes[3];
     
-    if (atts[0] <= 5.4499998092651367) {
-        if (atts[3] <= 0.80000001192092896) {
+    if (features[0] <= 5.44999980927) {
+        if (features[3] <= 0.800000011921) {
             classes[0] = 36; 
             classes[1] = 0; 
             classes[2] = 0; 
         } else {
-            if (atts[2] <= 4.1999998092651367) {
+            if (features[2] <= 4.19999980927) {
                 classes[0] = 0; 
                 classes[1] = 6; 
                 classes[2] = 0; 
             } else {
-                if (atts[1] <= 2.75) {
+                if (features[1] <= 2.75) {
                     classes[0] = 0; 
                     classes[1] = 0; 
                     classes[2] = 1; 
@@ -892,8 +894,8 @@ int predict_13(float atts[]) {
             }
         }
     } else {
-        if (atts[2] <= 4.9000000953674316) {
-            if (atts[1] <= 3.5999999046325684) {
+        if (features[2] <= 4.90000009537) {
+            if (features[1] <= 3.59999990463) {
                 classes[0] = 0; 
                 classes[1] = 43; 
                 classes[2] = 0; 
@@ -903,8 +905,8 @@ int predict_13(float atts[]) {
                 classes[2] = 0; 
             }
         } else {
-            if (atts[3] <= 1.7000000476837158) {
-                if (atts[3] <= 1.5499999523162842) {
+            if (features[3] <= 1.70000004768) {
+                if (features[3] <= 1.54999995232) {
                     classes[0] = 0; 
                     classes[1] = 0; 
                     classes[2] = 2; 
@@ -935,19 +937,19 @@ int predict_13(float atts[]) {
 int predict_14(float atts[]) {
     int classes[3];
     
-    if (atts[2] <= 2.5999999046325684) {
+    if (features[2] <= 2.59999990463) {
         classes[0] = 52; 
         classes[1] = 0; 
         classes[2] = 0; 
     } else {
-        if (atts[3] <= 1.7000000476837158) {
-            if (atts[0] <= 7.0) {
-                if (atts[2] <= 5.0) {
+        if (features[3] <= 1.70000004768) {
+            if (features[0] <= 7.0) {
+                if (features[2] <= 5.0) {
                     classes[0] = 0; 
                     classes[1] = 48; 
                     classes[2] = 0; 
                 } else {
-                    if (atts[0] <= 6.0500001907348633) {
+                    if (features[0] <= 6.05000019073) {
                         classes[0] = 0; 
                         classes[1] = 1; 
                         classes[2] = 0; 
