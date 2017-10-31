@@ -1,17 +1,12 @@
 {methods}
-int {method_name} (float atts[]) {{
+public static int {method_name}(float[] features) {{
     int n_classes = {n_classes};
-    int classes[n_classes];
-    int i;
-    for (i = 0; i < n_classes; i++) {{
-        classes[i] = 0;
-    }}
-
+    int[] classes = new int[n_classes];
     {method_calls}
 
     int class_idx = 0;
     int class_val = classes[0];
-    for (i = 1; i < n_classes; i++) {{
+    for (int i = 1; i < n_classes; i++) {{
         if (classes[i] > class_val) {{
             class_idx = i;
             class_val = classes[i];

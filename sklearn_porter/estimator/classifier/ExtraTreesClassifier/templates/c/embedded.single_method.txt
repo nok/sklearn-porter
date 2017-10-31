@@ -1,7 +1,9 @@
-var {method_name}_{method_id} = function(atts) {{
-    var classes = new Array({n_classes});
+int {method_name}_{method_id}(float features[]) {{
+    int classes[{n_classes}];
     {tree_branches}
-    var i = 0, class_idx = 0, class_val = classes[0];
+    int class_idx = 0;
+    int class_val = classes[0];
+    int i;
     for (i = 1; i < {n_classes}; i++) {{
         if (classes[i] > class_val) {{
             class_idx = i;
@@ -9,4 +11,4 @@ var {method_name}_{method_id} = function(atts) {{
         }}
     }}
     return class_idx;
-}};
+}}
