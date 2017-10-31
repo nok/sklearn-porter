@@ -19,7 +19,7 @@ print(output)
 """
 var DecisionTreeClassifier = function() {
 
-    this.findMax = function(nums) {
+    var findMax = function(nums) {
         var index = 0;
         for (var i = 0; i < nums.length; i++) {
             index = nums[i] > nums[index] ? i : index;
@@ -82,7 +82,7 @@ var DecisionTreeClassifier = function() {
             }
         }
     
-        return this.findMax(classes);
+        return findMax(classes);
     };
 
 };

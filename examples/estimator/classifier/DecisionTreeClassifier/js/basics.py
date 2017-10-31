@@ -25,7 +25,7 @@ var DecisionTreeClassifier = function(lChilds, rChilds, thresholds, indices, cla
     this.indices = indices;
     this.classes = classes;
 
-    this.findMax = function(nums) {
+    var findMax = function(nums) {
         var index = 0;
         for (var i = 0; i < nums.length; i++) {
             index = nums[i] > nums[index] ? i : index;
@@ -42,7 +42,7 @@ var DecisionTreeClassifier = function(lChilds, rChilds, thresholds, indices, cla
                 return this.predict(features, this.rChilds[node]);
             }
         }
-        return this.findMax(this.classes[node]);
+        return findMax(this.classes[node]);
     };
 
 };
