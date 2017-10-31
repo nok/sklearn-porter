@@ -147,15 +147,14 @@ class MLPRegressor(Regressor):
         hidden_act_type = 'activation_fn.' + self.hidden_activation
 
         temp_arr = self.temp('arr')
+        temp_arr_ = self.temp('arr[]')
         temp_arr__ = self.temp('arr[][]')
         temp_arr___ = self.temp('arr[][][]')
 
         # Activations:
         layers = list(self._get_activations())
         layers = ', '.join(layers)
-        layers = temp_arr__.format(data_type='double',
-                                   name='layers',
-                                   values=layers)
+        layers = temp_arr_.format(type='int', name='layers', values=layers)
 
         # Coefficients (weights):
         coefficients = []
@@ -203,8 +202,4 @@ class MLPRegressor(Regressor):
         """
         Concatenate the layers sizes of the classifier except the input layer.
         """
-        temp_arr = self.temp('new_arr')
-        for layer in self.layer_units[1:]:
-            yield temp_arr.format(data_type='double',
-                                  values=(str(int(layer))),
-                                  fill_with='.0')
+        return [str(x) for x in self.layer_units[1:]]
