@@ -61,37 +61,21 @@ var {class_name} = function(hidden, layers, weights, bias) {{
 
 }};
 
-// Parameters:
-const {layers}
-const {weights}
-const {bias}
-
-// Estimator:
-var reg = new {class_name}('{hidden_activation}', layers, weights, bias);
-
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
     if (process.argv.length - 2 === {n_features}) {{
+
+        // Features:
         var features = process.argv.slice(2);
+
+        // Parameters:
+        const {layers}
+        const {weights}
+        const {bias}
+
+        // Prediction:
+        var reg = new {class_name}('{hidden_activation}', layers, weights, bias);
         var prediction = reg.{method_name}(features);
         console.log(prediction);
+
     }}
 }}
-
-// Web Worker (main.js):
-// if (typeof window !== 'undefined' && window.Worker) {{
-//     var worker = new Worker('{file_name}');
-//     worker.onmessage = function(e) {{
-//         console.log('Prediction: ' + e.data);
-//     }};
-//     worker.postMessage([/* feature vector */]);
-//     worker.postMessage([/* feature vector */]);
-// }}
-
-// Web Worker ({file_name}):
-var onmessage = function(e) {{
-    if (e.data.length === {n_features}) {{
-        var features = e.data;
-        var prediction = reg.{method_name}(features);
-        postMessage(prediction);
-    }}
-}};

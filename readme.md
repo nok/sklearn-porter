@@ -56,30 +56,30 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
-            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics_embedded.ipynb">✓</a></td>
-            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.ipynb">✓</a></td>
-            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics_embedded.ipynb">✓</a></td>
-            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/go/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/go/basics_embedded.ipynb">✓</a></td>
-            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/php/basics.ipynb">✓</a>,  <a href="examples/estimator/classifier/DecisionTreeClassifier/php/basics_embedded.ipynb">✓</a></td></td>
-            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/ruby/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/ruby/basics_embedded.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics_embedded.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics_embedded.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/go/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/go/basics_embedded.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/php/basics.ipynb">✓</a>,  <a href="examples/estimator/classifier/DecisionTreeClassifier/php/basics_embedded.ipynb">✓ ᴱ</a></td></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/ruby/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/ruby/basics_embedded.ipynb">✓ ᴱ</a></td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></td>
-            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/c/basics_embedded.ipynb">✓</a></td>
-            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/java/basics_embedded.ipynb">✓</a></td>
-            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/js/basics_embedded.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/c/basics_embedded.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/java/basics_embedded.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/js/basics_embedded.ipynb">✓ ᴱ</a></td>
             <td align="center"></td>
-            <td align="center">✓</td>
-            <td align="center">✓</td>
+            <td align="center">✓ ᴱ</td>
+            <td align="center">✓ ᴱ</td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
-            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/c/basics.ipynb">✓</a></td>
-            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/java/basics.ipynb">✓</a></td>
-            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/js/basics.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/c/basics.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/java/basics.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/js/basics.ipynb">✓ ᴱ</a></td>
             <td align="center"></td>
-            <td align="center">✓</td>
-            <td align="center">✓</td>
+            <td align="center">✓ ᴱ</td>
+            <td align="center">✓ ᴱ</td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
@@ -103,7 +103,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/estimator/classifier/MLPClassifier/java/basics.ipynb">✓</a></td>
-            <td align="center"><a href="examples/estimator/classifier/MLPClassifier/js/basics.ipynb">✓ ᵂᵂ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/MLPClassifier/js/basics.ipynb">✓</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -134,7 +134,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">sklearn.neural_network.MLPRegressor</a></td>
             <td align="center"></td>
             <td align="center"></td>
-            <td align="center"><a href="examples/estimator/regressor/MLPRegressor/js/basics.ipynb">✓ ᵂᵂ</a></td>
+            <td align="center"><a href="examples/estimator/regressor/MLPRegressor/js/basics.ipynb">✓</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -142,19 +142,19 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
     </tbody>
 </table>
 
-✓ = is full-featured, ○ = has minor exceptions, ᵂᵂ = supports [Web Workers](https://www.w3.org/TR/workers/), * = default language
+✓ = is full-featured,　ᴱ = embedded model data,　* = default language
 
 ## Installation
 
 ```bash
-pip install sklearn-porter
+$ pip install sklearn-porter
 ```
 
 If you want the [latest changes](changelog.md#unreleased), you can install the module from the master (development) branch:
 
 ```bash
-pip uninstall -y sklearn-porter
-pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/master
+$ pip uninstall -y sklearn-porter
+$ pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/master
 ```
 
 ## Minimum requirements
@@ -176,7 +176,7 @@ If you want to transpile a [multilayer perceptron](http://scikit-learn.org/stabl
 
 ### Export
 
-The following example shows how you can port a [decision tree model](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
+The following example shows how you can port a [decision tree estimator](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
 
 ```python
 from sklearn.datasets import load_iris
@@ -206,9 +206,9 @@ Run the prediction(s) in the target programming language directly:
 porter = Porter(clf, language='java')
 
 # Prediction(s):
-Y_preds = porter.predict(X)
-y_pred = porter.predict(X[0])
-y_pred = porter.predict([1., 2., 3., 4.])
+Y_java = porter.predict(X)
+y_java = porter.predict(X[0])
+y_java = porter.predict([1., 2., 3., 4.])
 ```
 
 ### Accuracy
@@ -227,7 +227,15 @@ print(accuracy) # 1.0
 
 ### Command-line interface
 
-This example shows how you can port a model from the command line. First of all you have to store the model to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
+First of all have a quick view on the available arguments:
+
+```
+$ python -m sklearn_porter [-h] --input <PICKLE_FILE> [--output <DEST_DIR>]
+                           [--class_name <CLASS_NAME>] [--method_name <METHOD_NAME>]
+                           [--pipe] [--c] [--java] [--js] [--go] [--php] [--ruby]
+```
+
+The following example shows how you can save an trained estimator to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
 
 ```python
 # ...
@@ -236,46 +244,39 @@ This example shows how you can port a model from the command line. First of all 
 joblib.dump(clf, 'estimator.pkl')
 ```
 
-After that the model can be transpiled by using the following command:
+After that the estimator can be transpiled to JavaScript by using the following command:
 
 ```
-python -m sklearn_porter --input <PICKLE_FILE> [--output <DEST_DIR>] [--class_name <NAME>] [--method_name <NAME>] [--pipe] [--c] [--java] [--js] [--go] [--php] [--ruby]
-python -m sklearn_porter -i <PICKLE_FILE> [-o <DEST_DIR>] [--class_name <NAME>] [--method_name <NAME>] [-p] [--c] [--java] [--js] [--go] [--php] [--ruby]
-```
-
-For instance the following command transpiles the estimator to the target programming language JavaScript:
-
-```
-python -m sklearn_porter -i estimator.pkl --js
+$ python -m sklearn_porter -i estimator.pkl --js
 ```
 
 The target programming language is changeable on the fly: 
 
 ```
-python -m sklearn_porter -i estimator.pkl --c
-python -m sklearn_porter -i estimator.pkl --go
-python -m sklearn_porter -i estimator.pkl --php
-python -m sklearn_porter -i estimator.pkl --java
-python -m sklearn_porter -i estimator.pkl --ruby
+$ python -m sklearn_porter -i estimator.pkl --c
+$ python -m sklearn_porter -i estimator.pkl --go
+$ python -m sklearn_porter -i estimator.pkl --php
+$ python -m sklearn_porter -i estimator.pkl --java
+$ python -m sklearn_porter -i estimator.pkl --ruby
 ```
 
-The transpiled estimator is useable for further processing by using the `--pipe` parameter:
+For further processing the argument `--pipe` can be used to pass the result:
 
 ```
-python -m sklearn_porter -i estimator.pkl --js --pipe > estimator.js
+$ python -m sklearn_porter -i estimator.pkl --js --pipe > estimator.js
 ```
 
-For instance the generated JavaScript code can be minified by using [UglifyJS](https://github.com/mishoo/UglifyJS2):
+For instance the result can be minified by using [UglifyJS](https://github.com/mishoo/UglifyJS2):
 
 ```
-python -m sklearn_porter -i estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js 
+$ python -m sklearn_porter -i estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js 
 ```
 
-Further information will be shown by using the `--help` parameter:
+Further information will be shown by using the `--help` argument:
 
 ```
-python -m sklearn_porter --help
-python -m sklearn_porter -h
+$ python -m sklearn_porter --help
+$ python -m sklearn_porter -h
 ```
 
 
@@ -283,13 +284,15 @@ python -m sklearn_porter -h
 
 ### Environment
 
-Install the required [environment modules](environment.yml) by executing the script [environment.sh](recipes/environment.sh):
+Install the required [environment modules](environment.yml) by executing the script [environment.sh](scripts/environment.sh):
 
 ```bash
-bash ./recipes/environment.sh
+$ bash ./scripts/environment.sh
 ```
 
 ```bash
+#!/usr/bin/env bash
+
 conda env create -c conda-forge -n sklearn-porter python=2 -f environment.yml
 source activate sklearn-porter
 ```
@@ -305,39 +308,43 @@ The following compilers or intepreters are required to cover all tests:
 
 ### Testing
 
-The tests cover module functions as well as matching predictions of transpiled models. Run [all tests](tests) by executing the script [test.sh](recipes/test.sh):
+The tests cover module functions as well as matching predictions of transpiled estimators. Run [all tests](tests) by executing the script [test.sh](scripts/test.sh):
 
 ```bash
-bash ./recipes/test.sh
+$ bash ./scripts/test.sh
 ```
 
 ```bash
+#!/usr/bin/env bash
+
 python -m unittest discover -vp '*Test.py'
 ```
 
 The test files have a specific pattern: `'[Algorithm][Language]Test.py'`:
 
 ```bash
-python -m unittest discover -vp 'RandomForest*Test.py'
-python -m unittest discover -vp '*JavaTest.py'
+$ python -m unittest discover -vp 'RandomForest*Test.py'
+$ python -m unittest discover -vp '*JavaTest.py'
 ```
 
-While you are developing new features or fixes, you can reduce the test duration by setting the number of model tests:
+While you are developing new features or fixes, you can reduce the test duration by setting the number of tests:
 
 ```bash
-N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discover -vp '*Test.py'
+$ N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discover -vp '*Test.py'
 ```
 
 
 ### Quality
 
-It's highly recommended to ensure the code quality. For that I use [Pylint](https://github.com/PyCQA/pylint/), which you can run by executing the script [lint.sh](recipes/lint.sh): 
+It's highly recommended to ensure the code quality. For that I use [Pylint](https://github.com/PyCQA/pylint/), which you can run by executing the script [lint.sh](scripts/lint.sh): 
 
 ```bash
-bash ./recipes/lint.sh
+$ bash ./scripts/lint.sh
 ```
 
 ```bash
+#!/usr/bin/env bash
+
 find ./sklearn_porter -name '*.py' -exec pylint {} \;
 ```
 
