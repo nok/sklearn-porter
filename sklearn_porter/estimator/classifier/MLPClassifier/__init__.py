@@ -12,7 +12,7 @@ class MLPClassifier(Classifier):
     --------
     sklearn.neural_network.MLPClassifier
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.neural_network.MLPClassifier.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html
     """
 
     SUPPORTED_METHODS = ['predict']

@@ -10,7 +10,7 @@ class ExtraTreesClassifier(RandomForestClassifier):
     --------
     sklearn.ensemble.ExtraTreesClassifier
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html
     """
 
     def __init__(self, estimator, target_language='java',

@@ -8,7 +8,9 @@ class BernoulliNB(Classifier):
     """
     See also
     --------
-    ...
+    sklearn.naive_bayes.BernoulliNB
+
+    http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html
     """
 
     SUPPORTED_METHODS = ['predict']

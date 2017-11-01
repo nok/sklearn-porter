@@ -10,7 +10,7 @@ class AdaBoostClassifier(Classifier):
     --------
     sklearn.ensemble.AdaBoostClassifier
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
     """
 
     SUPPORTED_METHODS = ['predict']

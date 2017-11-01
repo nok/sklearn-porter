@@ -9,7 +9,7 @@ class KNeighborsClassifier(Classifier):
     --------
     sklearn.neighbors.KNeighborsClassifier
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.neighbors.KNeighborsClassifier.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html
     """
 
     SUPPORTED_METHODS = ['predict']

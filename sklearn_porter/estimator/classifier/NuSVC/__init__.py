@@ -9,7 +9,7 @@ class NuSVC(SVC):
     --------
     sklearn.svm.NuSVC
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.svm.NuSVC.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html
     """
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):

@@ -10,7 +10,7 @@ class RandomForestClassifier(Classifier):
     --------
     sklearn.ensemble.RandomForestClassifier
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
     """
 
     SUPPORTED_METHODS = ['predict']

@@ -10,7 +10,7 @@ class SVC(Classifier):
     --------
     sklearn.svm.SVC
 
-    http://scikit-learn.org/0.18/modules/generated/sklearn.svm.SVC.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
     """
 
     SUPPORTED_METHODS = ['predict']
