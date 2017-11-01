@@ -211,17 +211,17 @@ y_java = porter.predict(X[0])
 y_java = porter.predict([1., 2., 3., 4.])
 ```
 
-### Accuracy
+### Integrity
 
-Always compute the accuracy between the original and the ported estimator:
+Always compute and test the integrity between the original and the transpiled estimator:
 
 ```python
 # ...
 porter = Porter(clf, language='java')
 
 # Accuracy:
-accuracy = porter.predict_test(X)
-print(accuracy) # 1.0
+integrity = porter.integrity_score(X)
+print(integrity)  # 1.0
 ```
 
 

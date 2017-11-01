@@ -40,10 +40,10 @@ class Porter(object):
 
         Parameters
         ----------
-        language : {'c', 'go', 'java', 'js', 'php', 'ruby'}, default 'java'
+        language : {'c', 'go', 'java', 'js', 'php', 'ruby'}, default: 'java'
             The required target programming language.
 
-        method : {'predict', 'predict_proba'}, default 'predict'
+        method : {'predict', 'predict_proba'}, default: 'predict'
             The target prediction method.
         """
 
@@ -211,7 +211,8 @@ class Porter(object):
         }
         return output
 
-    def port(self, class_name='Brain', method_name='predict', details=False):
+    def port(self, class_name=None, method_name=None,
+               num_format=lambda x: str(x), details=False, **kwargs):
         # pylint: disable=unused-argument
         """
         Transpile a trained model to the syntax of a
@@ -219,13 +220,16 @@ class Porter(object):
 
         Parameters
         ----------
-        :param class_name : string, default 'Brain'
+        :param class_name : string, default: None
             The name for the ported class.
 
-        :param method_name : string, default 'predict'
+        :param method_name : string, default: None
             The name for the ported method.
 
-        :param details : bool, default False
+        :param num_format : lambda x, default: lambda x: str(x)
+            The representation of the floating-point values.
+
+        :param details : bool, default: False
             Return additional data for the compilation
             and execution.
 
@@ -294,8 +298,8 @@ class Porter(object):
 
         return regressors
 
-    def predict(self, X, class_name='Brain', method_name='predict',
-                tnp_dir='tmp', keep_tmp_dir=False, use_repr=True):
+    def predict(self, X, class_name=None, method_name=None,
+                tnp_dir='tmp', keep_tmp_dir=False, num_format=lambda x: str(x)):
         """
         Predict using the transpiled model.
 
@@ -304,28 +308,34 @@ class Porter(object):
         :param X : {array-like}, shape (n_features) or (n_samples, n_features)
             The input data.
 
-        :param class_name : string, default 'Brain'
+        :param class_name : string, default: None
             The name for the ported class.
 
-        :param method_name : string, default 'predict'
+        :param method_name : string, default: None
             The name for the ported method.
 
-        :param tnp_dir : string, default 'tmp'
+        :param tnp_dir : string, default: 'tmp'
             The path to the temporary directory for
             storing the transpiled (and compiled) model.
 
-        :param keep_tmp_dir : bool, default False
+        :param keep_tmp_dir : bool, default: False
             Whether to delete the temporary directory
             or not.
             
-        :param use_repr : bool, default: True
-            Whether to use repr() for floating-point values or not.
+        :param num_format : lambda x, default: lambda x: str(x)
+            The representation of the floating-point values.
 
         Returns
         -------
             y : int or array-like, shape (n_samples,)
             The predicted class or classes.
         """
+
+        if class_name is None:
+            class_name = self.estimator_name
+
+        if method_name is None:
+            method_name = self.target_method
 
         # Dependencies:
         if not hasattr(self, '_tested_dependencies'):
@@ -345,7 +355,8 @@ class Porter(object):
         # Transpiled model:
         details = self.export(class_name=class_name,
                               method_name=method_name,
-                              use_repr=use_repr, details=True)
+                              num_format=num_format,
+                              details=True)
         filename = Porter._get_filename(class_name, self.target_language)
         target_file = os.path.join(tnp_dir, filename)
         with open(target_file, str('w')) as file_:
@@ -385,7 +396,8 @@ class Porter(object):
 
         return pred_y
 
-    def predict_test(self, X, normalize=True, use_repr=True):
+    def integrity_score(self, X, method='predict', normalize=True,
+                        num_format=lambda x: str(x)):
         """
         Compute the accuracy of the ported classifier.
 
@@ -394,12 +406,15 @@ class Porter(object):
         :param X : ndarray, shape (n_samples, n_features)
             Input data.
 
-        :param normalize : bool, optional (default=True)
+        :param method : string, default: 'predict'
+            The method which should be tested.
+
+        :param normalize : bool, default: True
             If ``False``, return the number of correctly classified samples.
             Otherwise, return the fraction of correctly classified samples.
             
-        :param use_repr : bool, default: True
-            Whether to use repr() for floating-point values or not.
+        :param num_format : lambda x, default: lambda x: str(x)
+            The representation of the floating-point values.
 
         Returns
         -------
@@ -413,19 +428,23 @@ class Porter(object):
         X = np.array(X)
         if not X.ndim > 1:
             X = np.array([X])
-        y_true = self.estimator.predict(X)
-        y_pred = self.predict(X, use_repr=use_repr)
-        return accuracy_score(y_true, y_pred, normalize=normalize)
+
+        method = str(method).strip().lower()
+        if method not in ['predict', 'predict_proba']:
+            error = "The given method '{}' isn't supported.".format(method)
+            raise AttributeError(error)
+
+        if method == 'predict':
+            y_true = self.estimator.predict(X)
+            y_pred = self.predict(X, tnp_dir='tmp_integrity_score', keep_tmp_dir=True, num_format=num_format)
+            return accuracy_score(y_true, y_pred, normalize=normalize)
+
+        return False
 
     def _test_dependencies(self):
         """
         Check all target programming and operating
         system dependencies.
-
-        Parameters
-        ----------
-        :param language : {'c', 'go', 'java', 'js', 'php', 'ruby'}
-            The target programming language.
         """
         lang = self.target_language
 
@@ -435,14 +454,15 @@ class Porter(object):
 
         # Dependencies:
         depends = {
-            'c': ('gcc'),
-            'java': ('java', 'javac'),
-            'js': ('node'),
-            'go': ('go'),
-            'php': ('php'),
-            'ruby': ('ruby')
+            'c': ['gcc'],
+            'java': ['java', 'javac'],
+            'js': ['node'],
+            'go': ['go'],
+            'php': ['php'],
+            'ruby': ['ruby']
         }
-        all_depends = depends.get(lang) + ('mkdir', 'rm')
+        all_depends = depends.get(lang) + ['mkdir', 'rm']
+        all_depends = [str(e) for e in all_depends]
 
         cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
         for exe in all_depends:
