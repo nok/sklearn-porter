@@ -137,13 +137,6 @@ class DecisionTreeClassifier(Classifier):
         temp_arr_ = self.temp('arr[]')
         temp_arr__ = self.temp('arr[][]')
 
-        feature_indices = []
-        for i in self.estimator.tree_.feature:
-            n_features = self.n_features
-            if n_features > 1 or (n_features == 1 and i >= 0):
-                feature_indices.append([str(j) for j in range(n_features)][i])
-        self.feature_indices = feature_indices
-
         left_childs = [str(e) for e in self.estimator.tree_.children_left]
         left_childs = temp_arr_.format(type='int', name='lChilds',
                                        values=', '.join(left_childs),
@@ -163,7 +156,7 @@ class DecisionTreeClassifier(Classifier):
                                       n=len(thresholds))
         self.thresholds = thresholds
 
-        indices = [str(e) for e in feature_indices]
+        indices = [str(e) for e in self.estimator.tree_.feature]
         indices = temp_arr_.format(type='int', name='indices',
                                    values=', '.join(indices), n=len(indices))
         self.indices = indices

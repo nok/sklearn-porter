@@ -213,11 +213,7 @@ class RandomForestClassifier(Classifier):
         :return : string
             The created method.
         """
-        indices = []
-        for i in estimator.tree_.feature:
-            n_features = estimator.n_features_
-            if self.n_features > 1 or (self.n_features == 1 and i >= 0):
-                indices.append([str(j) for j in range(n_features)][i])
+        indices = [self.repr(e) for e in estimator.tree_.feature]
 
         tree_branches = self.create_branches(
             estimator.tree_.children_left, estimator.tree_.children_right,
