@@ -20,19 +20,3 @@ class AdaBoostClassifierCTest(C, Classifier, unittest.TestCase):
 
     def tearDown(self):
         super(AdaBoostClassifierCTest, self).tearDown()
-
-    @unittest.skip('Skip random features test.')
-    def test_random_features_w_iris_data(self):
-        pass
-
-    @unittest.skip('Skip random features test.')
-    def test_random_features_w_binary_data(self):
-        pass
-
-    @unittest.skip('TODO')
-    def test_random_features_w_digits_data(self):
-        pass
-
-    @unittest.skip('TODO')
-    def test_existing_features_w_digits_data(self):
-        pass

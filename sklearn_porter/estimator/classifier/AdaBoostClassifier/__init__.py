@@ -18,7 +18,7 @@ class AdaBoostClassifier(Classifier):
     # @formatter:off
     TEMPLATES = {
         'c': {
-            'if':       'if (atts[{0}] {1} {2}) {{',
+            'if':       'if (features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
@@ -98,6 +98,10 @@ class AdaBoostClassifier(Classifier):
             The transpiled algorithm with the defined placeholders.
         """
 
+        if self.target_language in ['c']:
+            embedded = True
+
+        # TODO: Force the embedded mode, remove after the updates.
         embedded = True
 
         # Arguments:

@@ -1,4 +1,4 @@
-double *{method_name}_{method_index}(float atts[]) {{
+double *{method_name}_{method_index}(double features[]) {{
     double *classes = malloc(sizeof(double) * {n_classes});
     {methods}
     return classes;
