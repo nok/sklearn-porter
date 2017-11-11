@@ -301,7 +301,7 @@ source activate sklearn-porter
 The following compilers or intepreters are required to cover all tests:
 
 - [GCC](https://gcc.gnu.org) (`>=4.2`)
-- [Java](https://java.com) (`>=1.6`)
+- [Java](https://java.com) (`>=1.7`)
 - [PHP](http://www.php.net/) (`>=7`)
 - [Ruby](https://www.ruby-lang.org) (`>=2.4.1`)
 - [Go](https://golang.org/) (`>=1.7.4`)
