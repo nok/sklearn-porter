@@ -1,5 +1,6 @@
+
 {methods}
-public static int {method_name}(float[] atts) {{
+public static int {method_name}(double[] features) {{
     int n_estimators = {n_estimators};
     int n_classes = {n_classes};
 
@@ -37,13 +38,6 @@ public static int {method_name}(float[] atts) {{
             classes[j] += preds[i][j];
         }}
     }}
-    int idx = 0;
-    double val = Double.NEGATIVE_INFINITY;
-    for (i = 0; i < n_classes; i++) {{
-        if (classes[i] > val) {{
-            idx = i;
-            val = classes[i];
-        }}
-    }}
-    return idx;
+
+    return {class_name}.findMax(classes);
 }}

@@ -26,7 +26,7 @@ class AdaBoostClassifier(Classifier):
             'join':     '; ',
         },
         'java': {
-            'if':       'if (atts[{0}] {1} {2}) {{',
+            'if':       'if (features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
@@ -98,7 +98,6 @@ class AdaBoostClassifier(Classifier):
             The transpiled algorithm with the defined placeholders.
         """
 
-        # if self.target_language in ['c', 'java']:
         embedded = True
 
         # Arguments:
@@ -119,8 +118,6 @@ class AdaBoostClassifier(Classifier):
                 self.weights.append(est.estimator_weights_[idx])
                 self.n_estimators += 1
                 self.n_features = est.estimators_[idx].n_features_
-
-
 
         if self.target_method == 'predict':
             return self.predict(embedded)
@@ -252,7 +249,7 @@ class AdaBoostClassifier(Classifier):
         fn_names = ''
         if self.target_language in ['c', 'java']:
             fn_names = []
-            temp_method_calls = self.temp('method_calls', n_indents=2,
+            temp_method_calls = self.temp('embedded.method_calls', n_indents=2,
                                           skipping=True)
             for idx, estimator in enumerate(self.estimators):
                 cl_name = self.class_name
@@ -268,6 +265,7 @@ class AdaBoostClassifier(Classifier):
         n_indents = 1 if self.target_language in ['java', 'js'] else 0
         temp_method = self.temp('embedded.method')
         method = temp_method.format(method_name=self.method_name,
+                                    class_name=self.class_name,
                                     method_calls=fn_names, methods=fns,
                                     n_estimators=self.n_estimators,
                                     n_classes=self.n_classes)
