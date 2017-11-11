@@ -1,5 +1,5 @@
-var {method_name}_{method_index} = function(atts) {{
+forest.push(function(features) {{
     var classes = new Array({n_classes});
     {methods}
     return classes;
-}};
+}});

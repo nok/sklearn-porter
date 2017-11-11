@@ -7,14 +7,16 @@ from sklearn_porter import Porter
 
 
 iris_data = load_iris()
-X, y = iris_data.data, iris_data.target
+X = iris_data.data
+y = iris_data.target
 
 base_estimator = DecisionTreeClassifier(max_depth=4, random_state=0)
 clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100,
                          random_state=0)
 clf.fit(X, y)
 
-output = Porter(clf, language='js').export()
+porter = Porter(clf, language='js')
+output = porter.export()
 print(output)
 
 """

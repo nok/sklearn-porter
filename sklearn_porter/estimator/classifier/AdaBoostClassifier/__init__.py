@@ -34,7 +34,7 @@ class AdaBoostClassifier(Classifier):
             'join':     '; ',
         },
         'js': {
-            'if':       'if (atts[{0}] {1} {2}) {{',
+            'if':       'if (features[{0}] {1} {2}) {{',
             'else':     '} else {',
             'endif':    '}',
             'arr':      'classes[{0}] = {1}',
@@ -81,7 +81,7 @@ class AdaBoostClassifier(Classifier):
 
         self.estimator = estimator
 
-    def export(self, class_name, method_name):
+    def export(self, class_name, method_name, embedded=False):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -97,6 +97,9 @@ class AdaBoostClassifier(Classifier):
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
+
+        # if self.target_language in ['c', 'java']:
+        embedded = True
 
         # Arguments:
         self.class_name = class_name
@@ -117,10 +120,12 @@ class AdaBoostClassifier(Classifier):
                 self.n_estimators += 1
                 self.n_features = est.estimators_[idx].n_features_
 
-        if self.target_method == 'predict':
-            return self.predict()
 
-    def predict(self):
+
+        if self.target_method == 'predict':
+            return self.predict(embedded)
+
+    def predict(self, embedded):
         """
         Transpile the predict method.
 
@@ -129,10 +134,17 @@ class AdaBoostClassifier(Classifier):
         :return : string
             The transpiled predict method as string.
         """
-        return self.create_class(self.create_method())
+        if embedded:
+            method = self.create_method_embedded()
+            out = self.create_class_embedded(method)
+            return out
+
+        # return self.create_class(self.create_method())
+        out = self.create_class()
+        return out
 
     def create_branches(self, left_nodes, right_nodes, threshold,
-                        value, features, node, depth):
+                        value, features, node, depth, init=False):
         """
         Parse and port a single tree estimator.
 
@@ -160,8 +172,9 @@ class AdaBoostClassifier(Classifier):
         """
         out = ''
         if threshold[node] != -2.:
-            out += '\n'
-            temp = self.temp('if', n_indents=depth)
+            if not init:
+                out += '\n'
+            temp = self.temp('if', n_indents=depth, skipping=init)
             out += temp.format(features[node], '<=', self.repr(threshold[node]))
             if left_nodes[node] != -1.:
                 out += self.create_branches(
@@ -210,16 +223,16 @@ class AdaBoostClassifier(Classifier):
         tree_branches = self.create_branches(
             estimator.tree_.children_left, estimator.tree_.children_right,
             estimator.tree_.threshold, estimator.tree_.value,
-            feature_indices, 0, 1)
+            feature_indices, 0, 1, init=True)
 
-        temp_single_method = self.temp('single_method')
-        out = temp_single_method.format(method_name=self.method_name,
-                                        method_index=str(estimator_index),
-                                        methods=tree_branches,
-                                        n_classes=self.n_classes)
+        temp_tree = self.temp('embedded.tree')
+        out = temp_tree.format(method_name=self.method_name,
+                               method_index=str(estimator_index),
+                               methods=tree_branches,
+                               n_classes=self.n_classes)
         return out
 
-    def create_method(self):
+    def create_method_embedded(self):
         """
         Build the estimator methods or functions.
 
@@ -228,20 +241,6 @@ class AdaBoostClassifier(Classifier):
         :return out : string
             The built methods as merged string.
         """
-        # Generate method or function names:
-        fn_names = []
-        temp_method_calls = self.temp('method_calls', n_indents=2,
-                                      skipping=True)
-        for idx, estimator in enumerate(self.estimators):
-            cl_name = self.class_name
-            fn_name = self.method_name + '_' + str(idx)
-            fn_name = temp_method_calls.format(class_name=cl_name,
-                                               method_name=fn_name,
-                                               method_index=idx)
-            fn_names.append(fn_name)
-        fn_names = '\n'.join(fn_names)
-        fn_names = self.indent(fn_names, n_indents=1, skipping=True)
-
         # Generate related trees:
         fns = []
         for idx, estimator in enumerate(self.estimators):
@@ -249,9 +248,25 @@ class AdaBoostClassifier(Classifier):
             fns.append(tree)
         fns = '\n'.join(fns)
 
+        # Generate method or function names:
+        fn_names = ''
+        if self.target_language in ['c', 'java']:
+            fn_names = []
+            temp_method_calls = self.temp('method_calls', n_indents=2,
+                                          skipping=True)
+            for idx, estimator in enumerate(self.estimators):
+                cl_name = self.class_name
+                fn_name = self.method_name + '_' + str(idx)
+                fn_name = temp_method_calls.format(class_name=cl_name,
+                                                   method_name=fn_name,
+                                                   method_index=idx)
+                fn_names.append(fn_name)
+            fn_names = '\n'.join(fn_names)
+            fn_names = self.indent(fn_names, n_indents=1, skipping=True)
+
         # Merge generated content:
         n_indents = 1 if self.target_language in ['java', 'js'] else 0
-        temp_method = self.temp('method')
+        temp_method = self.temp('embedded.method')
         method = temp_method.format(method_name=self.method_name,
                                     method_calls=fn_names, methods=fns,
                                     n_estimators=self.n_estimators,
@@ -259,7 +274,7 @@ class AdaBoostClassifier(Classifier):
         method = self.indent(method, n_indents=n_indents, skipping=True)
         return method
 
-    def create_class(self, method):
+    def create_class_embedded(self, method):
         """
         Build the estimator class.
 
@@ -269,8 +284,18 @@ class AdaBoostClassifier(Classifier):
             The built class as string.
         """
 
-        temp_class = self.temp('class')
+        temp_class = self.temp('embedded.class')
         out = temp_class.format(class_name=self.class_name,
                                 method_name=self.method_name, method=method,
                                 n_features=self.n_features)
         return out
+
+    def create_class(self):
+
+        # {left_childs}
+        # {right_childs}
+        # {thresholds}
+        # {indices}
+        # {classes}
+
+        return '-'
