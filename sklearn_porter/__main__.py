@@ -98,6 +98,7 @@ def main():
         method_name = str(args.get('method_name'))
         output = porter.export(class_name=class_name,
                                method_name=method_name,
+                               output=str(args.get('output')),
                                details=True)
     except Exception as e:
         sys.exit('Error: {}'.format(str(e)))

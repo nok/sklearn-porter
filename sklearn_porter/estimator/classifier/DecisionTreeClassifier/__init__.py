@@ -106,7 +106,7 @@ class DecisionTreeClassifier(Classifier):
             target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name, embedded=False):
+    def export(self, class_name, method_name, embedded=False, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 

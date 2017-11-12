@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import os
+import json
+from json import encoder
 import sklearn
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
@@ -81,7 +84,8 @@ class AdaBoostClassifier(Classifier):
 
         self.estimator = estimator
 
-    def export(self, class_name, method_name, embedded=False):
+    def export(self, class_name, method_name,
+               export_data=False, export_dir='.'):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -97,13 +101,6 @@ class AdaBoostClassifier(Classifier):
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
-
-        if self.target_language in ['c']:
-            embedded = True
-
-        # TODO: Force the embedded mode, remove after the updates.
-        embedded = True
-
         # Arguments:
         self.class_name = class_name
         self.method_name = method_name
@@ -111,38 +108,40 @@ class AdaBoostClassifier(Classifier):
         # Estimator:
         est = self.estimator
 
-        self.n_classes = est.n_classes_
+        # Basic parameters:
         self.estimators = []
-        self.weights = []
-        self.n_estimators = 0
         for idx in range(est.n_estimators):
-            weight = est.estimator_weights_[idx]
-            if weight > 0:
+            if est.estimator_weights_[idx] > 0:
                 self.estimators.append(est.estimators_[idx])
-                self.weights.append(est.estimator_weights_[idx])
-                self.n_estimators += 1
-                self.n_features = est.estimators_[idx].n_features_
+        self.n_classes = est.n_classes_
+        self.n_features = est.estimators_[0].n_features_
+        self.n_estimators = len(self.estimator)
 
         if self.target_method == 'predict':
-            return self.predict(embedded)
 
-    def predict(self, embedded):
-        """
-        Transpile the predict method.
+            # Exported data:
+            if export_data and os.path.isdir(export_dir):
+                model_data = []
+                for est in self.estimators:
+                    model_data.append({
+                        'childrenLeft': est.tree_.children_left.tolist(),
+                        'childrenRight': est.tree_.children_right.tolist(),
+                        'thresholds': est.tree_.threshold.tolist(),
+                        'classes': [e[0] for e in est.tree_.value.tolist()],
+                        'indices': est.tree_.feature.tolist()
+                    })
+                encoder.FLOAT_REPR = lambda o: self.repr(o)
+                path = os.path.join(export_dir, 'data.json')
+                with open(path, 'w') as fp:
+                    json.dump(model_data, fp)
 
-        Returns
-        -------
-        :return : string
-            The transpiled predict method as string.
-        """
-        if embedded:
+                temp_class = self.temp('exported.class')
+                return temp_class.format(class_name=self.class_name,
+                                         method_name=self.method_name)
+
+            # Deep embedded data:
             method = self.create_method_embedded()
-            out = self.create_class_embedded(method)
-            return out
-
-        # return self.create_class(self.create_method())
-        out = self.create_class()
-        return out
+            return self.create_class_embedded(method)
 
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth, init=False):
@@ -291,13 +290,3 @@ class AdaBoostClassifier(Classifier):
                                 method_name=self.method_name, method=method,
                                 n_features=self.n_features)
         return out
-
-    def create_class(self):
-
-        # {left_childs}
-        # {right_childs}
-        # {thresholds}
-        # {indices}
-        # {classes}
-
-        return '-'

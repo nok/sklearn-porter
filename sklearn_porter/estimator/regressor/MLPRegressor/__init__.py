@@ -61,7 +61,7 @@ class MLPRegressor(Regressor):
         """Get list of supported activation functions for the hidden layers."""
         return ['relu', 'identity', 'tanh', 'logistic']
 
-    def export(self, class_name, method_name):
+    def export(self, class_name, method_name, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 

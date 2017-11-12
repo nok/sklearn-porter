@@ -85,7 +85,7 @@ class LinearSVC(Classifier):
                                         target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name):
+    def export(self, class_name, method_name, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 

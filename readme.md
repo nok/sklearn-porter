@@ -22,7 +22,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="left" width="40%">Classification</td>
             <td align="center" width="10%">C</td>
             <td align="center" width="10%">Java *</td>
-            <td align="center" width="10%">JavaScript</td>
+            <td align="center" width="10%">JS</td>
             <td align="center" width="10%">Go</td>
             <td align="center" width="10%">PHP</td>
             <td align="center" width="10%">Ruby</td>
@@ -84,7 +84,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
             <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/c/basics_embedded.ipynb">✓ ᴱ</a></td>
-            <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/java/basics_embedded.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/java/basics_imported.ipynb">✓ ᴵ</a>, <a href="examples/estimator/classifier/AdaBoostClassifier/java/basics_embedded.ipynb">✓ ᴱ</a></td>
             <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/js/basics_embedded.ipynb">✓ ᴱ</a></td>
             <td align="center"></td>
             <td align="center"></td>
@@ -142,7 +142,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
     </tbody>
 </table>
 
-✓ = is full-featured,　ᴱ = embedded model data,　* = default language
+✓ = is full-featured,　ᴱ = with embedded model data,　ᴵ = with imported model data,　* = default language
 
 ## Installation
 
@@ -301,7 +301,7 @@ source activate sklearn-porter
 The following compilers or intepreters are required to cover all tests:
 
 - [GCC](https://gcc.gnu.org) (`>=4.2`)
-- [Java](https://java.com) (`>=1.7`)
+- [Java](https://java.com) (`>=1.6`)
 - [PHP](http://www.php.net/) (`>=7`)
 - [Ruby](https://www.ruby-lang.org) (`>=2.4.1`)
 - [Go](https://golang.org/) (`>=1.7.4`)
