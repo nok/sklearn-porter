@@ -85,3 +85,20 @@ var {class_name} = function(jsonFile) {{
     }};
 
 }};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
+    if (process.argv.length - 2 === {n_features}) {{
+
+        // Features:
+        var features = process.argv.slice(2);
+
+        // Estimator and parameters:
+        var clf = new {class_name}('http://localhost:8000/data.json');
+
+        // Prediction:
+        clf.{method_name}(features).then(function(prediction) {{
+            console.log(prediction);
+        }});
+
+    }}
+}}

@@ -137,7 +137,8 @@ class AdaBoostClassifier(Classifier):
 
                 temp_class = self.temp('exported.class')
                 return temp_class.format(class_name=self.class_name,
-                                         method_name=self.method_name)
+                                         method_name=self.method_name,
+                                         n_features=self.n_features)
 
             # Deep embedded data:
             method = self.create_method_embedded()
