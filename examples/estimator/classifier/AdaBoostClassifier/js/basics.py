@@ -16,7 +16,7 @@ clf = AdaBoostClassifier(base_estimator=base_estimator, n_estimators=100,
 clf.fit(X, y)
 
 porter = Porter(clf, language='js')
-output = porter.export()
+output = porter.export(export_data=True)
 print(output)
 
 """

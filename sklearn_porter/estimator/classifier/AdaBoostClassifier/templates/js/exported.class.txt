@@ -1,3 +1,7 @@
+if (typeof XMLHttpRequest === 'undefined') {{
+    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+}}
+
 var {class_name} = function(jsonFile) {{
     this.forest = undefined;
 
@@ -87,13 +91,14 @@ var {class_name} = function(jsonFile) {{
 }};
 
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
-    if (process.argv.length - 2 === {n_features}) {{
-
-        // Features:
-        var features = process.argv.slice(2);
+    if (process.argv[2].trim().endsWith('.json')) {{
 
         // Estimator and parameters:
-        var clf = new {class_name}('http://localhost:8000/data.json');
+        var json = process.argv[2];
+        var clf = new {class_name}(json);
+
+        // Features:
+        var features = process.argv.slice(3);
 
         // Prediction:
         clf.{method_name}(features).then(function(prediction) {{

@@ -46,6 +46,7 @@ install:
   - wget http://central.maven.org/maven2/com/google/code/gson/gson/2.8.2/gson-2.8.2.jar
   - mv gson-2.8.2.jar gson.jar
   - SKLEARN_PORTER_HOME=$(pwd)
+  - npm install xmlhttprequest
 before_script:
   - python --version
   - gcc --version
@@ -55,5 +56,6 @@ before_script:
   - go version
   - php --version
   - ruby --version
+  - python -m $(python -c 'import sys; print("http.server" if sys.version_info[:2] > (2,7) else "SimpleHTTPServer")')
 script:
   - python -m unittest discover -vp '*Test.py'

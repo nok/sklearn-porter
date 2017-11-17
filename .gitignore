@@ -34,3 +34,5 @@ Tmp.*
 .ipynb_checkpoints
 
 *.jar
+
+node_modules
