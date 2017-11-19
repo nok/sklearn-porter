@@ -56,6 +56,6 @@ before_script:
   - go version
   - php --version
   - ruby --version
-  - python -m $(python -c 'import sys; print("http.server" if sys.version_info[:2] > (2,7) else "SimpleHTTPServer")')
+  - python -m $(python -c 'import sys; print("http.server" if sys.version_info[:2] > (2,7) else "SimpleHTTPServer")') 8080
 script:
   - python -m unittest discover -vp '*Test.py'
