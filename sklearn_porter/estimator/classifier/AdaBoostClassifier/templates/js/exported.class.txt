@@ -93,8 +93,10 @@ var {class_name} = function(jsonFile) {{
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
     if (process.argv[2].trim().endsWith('.json')) {{
 
-        // Estimator and parameters:
+        // Parameters:
         var json = process.argv[2];
+
+        // Estimator:
         var clf = new {class_name}(json);
 
         // Features:

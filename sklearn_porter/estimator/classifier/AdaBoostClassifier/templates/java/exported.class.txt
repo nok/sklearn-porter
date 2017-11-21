@@ -103,8 +103,10 @@ class {class_name} {{
                 features[i-1] = Double.parseDouble(args[i]);
             }}
 
-            // Estimator with parameters:
+            // Parameters:
             String modelData = args[0];
+
+            // Estimators:
             {class_name} clf = new {class_name}(modelData);
 
             // Prediction:

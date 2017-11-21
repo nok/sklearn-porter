@@ -24,7 +24,12 @@ examples/tests
 examples/api/*.c
 examples/api/*.java
 examples/api/*.js
-examples/estimator/*.json
+examples/estimator/**/*.json
+examples/estimator/**/*.java
+examples/estimator/**/*.class
+examples/estimator/**/*.jar
+examples/estimator/**/*.js
+examples/estimator/**/*.c
 
 .temp/
 temp/
