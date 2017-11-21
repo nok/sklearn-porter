@@ -21,9 +21,10 @@ src/*.java
 src/*.class
 
 examples/tests
-examples/cli/*.c
-examples/cli/*.java
-examples/cli/*.js
+examples/api/*.c
+examples/api/*.java
+examples/api/*.js
+examples/estimator/*.json
 
 .temp/
 temp/
