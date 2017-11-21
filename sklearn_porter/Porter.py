@@ -384,8 +384,8 @@ class Porter(object):
         # Multiple feature sets:
         if exec_cmd is not None and len(X.shape) > 1:
             pred_y = np.empty(X.shape[0], dtype=int)
-            for idx, x in enumerate(X):
-                full_exec_cmd = exec_cmd + [str(feature).strip() for feature in x]
+            for idx, features in enumerate(X):
+                full_exec_cmd = exec_cmd + [str(f).strip() for f in features]
                 pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
                                          cwd=tnp_dir)
                 pred_y[idx] = int(pred)
@@ -436,7 +436,8 @@ class Porter(object):
 
         if method == 'predict':
             y_true = self.estimator.predict(X)
-            y_pred = self.predict(X, tnp_dir='tmp_integrity_score', keep_tmp_dir=True, num_format=num_format)
+            y_pred = self.predict(X, tnp_dir='tmp_integrity_score',
+                                  keep_tmp_dir=True, num_format=num_format)
             return accuracy_score(y_true, y_pred, normalize=normalize)
 
         return False
