@@ -2,10 +2,6 @@ language: python
 dist: trusty
 notifications:
   email: false
-branches:
-  only:
-  - master
-  - stable
 python:
   - "2.7"
   - "3.2"

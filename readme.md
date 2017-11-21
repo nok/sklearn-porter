@@ -1,7 +1,7 @@
 
 # sklearn-porter
 
-[![Build Status](https://img.shields.io/travis/nok/sklearn-porter/master.svg)](https://travis-ci.org/nok/sklearn-porter)
+[![Build Status](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter)
 [![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
 [![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
 [![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
@@ -150,7 +150,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
 $ pip install sklearn-porter
 ```
 
-If you want the [latest changes](changelog.md#unreleased), you can install the module from the master (development) branch:
+If you want the [latest changes](https://github.com/nok/sklearn-porter/blob/master/changelog.md#unreleased), you can install the module from the [master](https://github.com/nok/sklearn-porter/tree/master) branch:
 
 ```bash
 $ pip uninstall -y sklearn-porter
