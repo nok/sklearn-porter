@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import os
+import json
+from json import encoder
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
@@ -57,7 +60,8 @@ class KNeighborsClassifier(Classifier):
 
         self.estimator = estimator
 
-    def export(self, class_name, method_name, **kwargs):
+    def export(self, class_name, method_name,
+               export_data=False, export_dir='.'):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -81,12 +85,12 @@ class KNeighborsClassifier(Classifier):
         # Estimator:
         est = self.estimator
 
+        # Basic parameters:
         self.metric = est.metric
         self.n_classes = len(est.classes_)
         self.n_templates = len(est._fit_X)  # pylint: disable=W0212
         self.n_features = len(est._fit_X[0])  # pylint: disable=W0212
         self.n_neighbors = est.n_neighbors
-
         self.algorithm = est.algorithm
         self.power_param = est.p
 
@@ -98,6 +102,25 @@ class KNeighborsClassifier(Classifier):
                 self.tree = tree
 
         if self.target_method == 'predict':
+            # Exported data:
+            if export_data and os.path.isdir(export_dir):
+                model_data = {
+                    'X': est._fit_X.tolist(),  # pylint: disable=W0212
+                    'y': est._y.tolist(),  # pylint: disable=W0212
+                    'kNeighbors': self.n_neighbors,
+                    'nClasses': self.n_classes,
+                    'power': self.power_param
+                }
+                encoder.FLOAT_REPR = lambda o: self.repr(o)
+                path = os.path.join(export_dir, 'data.json')
+                with open(path, 'w') as fp:
+                    json.dump(model_data, fp)
+
+                temp_class = self.temp('exported.class')
+                return temp_class.format(class_name=self.class_name,
+                                         method_name=self.method_name,
+                                         n_features=self.n_features)
+
             return self.predict()
 
     def predict(self):
@@ -122,10 +145,10 @@ class KNeighborsClassifier(Classifier):
         """
 
         # Distance computation
-        metric_name = '.'.join(['metric', self.metric])
+        metric_name = '.'.join(['separated', 'metric', self.metric])
         distance_comp = self.temp(metric_name, n_indents=1, skipping=True)
 
-        temp_method = self.temp('method.predict', n_indents=1, skipping=True)
+        temp_method = self.temp('separated.method.predict', n_indents=1, skipping=True)
         out = temp_method.format(class_name=self.class_name,
                                  method_name=self.method_name,
                                  distance_computation=distance_comp)
@@ -146,7 +169,7 @@ class KNeighborsClassifier(Classifier):
         temp_arr_ = self.temp('arr[]')
         temp_arr__ = self.temp('arr[][]')
 
-        # Templates
+        # Samples:
         temps = []
         for atts in enumerate(self.estimator._fit_X):  # pylint: disable=W0212
             tmp = [temp_type.format(self.repr(a)) for a in atts[1]]
@@ -156,14 +179,14 @@ class KNeighborsClassifier(Classifier):
         temps = temp_arr__.format(type='double', name='X', values=temps,
                                   n=self.n_templates, m=self.n_features)
 
-        # Classes
+        # Classes:
         classes = self.estimator._y  # pylint: disable=W0212
         classes = [temp_type.format(int(c)) for c in classes]
         classes = ', '.join(classes)
         classes = temp_arr_.format(type='int', name='y', values=classes,
                                    n=self.n_templates)
 
-        temp_class = self.temp('class')
+        temp_class = self.temp('separated.class')
         out = temp_class.format(class_name=self.class_name,
                                 method_name=self.method_name, method=method,
                                 n_features=self.n_features, X=temps, y=classes,
