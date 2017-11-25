@@ -95,7 +95,7 @@ class {class_name} {{
     }}
 
     public static void main(String[] args) throws IOException {{
-        if (args[0].endsWith(".json")) {{
+        if (args.length > 0 && args[0].endsWith(".json")) {{
 
             // Features:
             double[] features = new double[args.length-1];
