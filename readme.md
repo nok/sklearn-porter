@@ -57,7 +57,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
             <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics_embedded.ipynb">✓ ᴱ</a></td>
-            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics_embedded.ipynb">✓ ᴱ</a></td>
             <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/go/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/go/basics_embedded.ipynb">✓ ᴱ</a></td>
             <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/php/basics.ipynb">✓</a>,  <a href="examples/estimator/classifier/DecisionTreeClassifier/php/basics_embedded.ipynb">✓ ᴱ</a></td></td>

@@ -191,8 +191,8 @@ class DecisionTreeClassifier(Classifier):
             'leftChilds': self.estimator.tree_.children_left.tolist(),
             'rightChilds': self.estimator.tree_.children_right.tolist(),
             'thresholds': self.estimator.tree_.threshold.tolist(),
-            'indices': self.estimator.tree_.feature,
-            'classes': self.estimator.tree_.value.tolist()
+            'indices': self.estimator.tree_.feature.tolist(),
+            'classes': [c[0] for c in self.estimator.tree_.value.tolist()]
         }
         encoder.FLOAT_REPR = lambda o: self.repr(o)
         path = os.path.join(export_dir, 'data.json')
