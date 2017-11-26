@@ -20,7 +20,7 @@ class Java(Checker):
     def _init_test(self):
         self.tmp_fn = 'Brain'
 
-    def _port_estimator(self, export_data=False):
+    def _port_estimator(self, export_data=False, embed_data=False):
         self.estimator.fit(self.X, self.y)
         subp.call('rm -rf tmp'.split())
         subp.call('mkdir tmp'.split())
@@ -35,7 +35,8 @@ class Java(Checker):
                                     export_dir='tmp')
             else:
                 out = porter.export(class_name='Brain',
-                                    method_name='foo')
+                                    method_name='foo',
+                                    embed_data=embed_data)
             f.write(out)
         if export_data:
             cmd = 'javac -cp ./gson.jar {}'.format(path).split()

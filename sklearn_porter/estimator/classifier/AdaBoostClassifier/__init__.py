@@ -85,7 +85,8 @@ class AdaBoostClassifier(Classifier):
         self.estimator = estimator
 
     def export(self, class_name, method_name,
-               export_data=False, export_dir='.'):
+               export_data=False, export_dir='.',
+               embed_data=True, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 

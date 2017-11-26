@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 
-import unittest
-import numpy as np
+from unittest import TestCase
 
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from tests.estimator.classifier.ClassifierExported import ClassifierExported as Classifier
+from tests.estimator.classifier.Classifier import Classifier
+from tests.estimator.classifier.ExportedData import ExportedData
 from tests.language.Java import Java
 
 
-class AdaBoostClassifierJavaTest(Java, Classifier, unittest.TestCase):
+class AdaBoostClassifierJavaTest(Java, Classifier, ExportedData, TestCase):
 
     def setUp(self):
         super(AdaBoostClassifierJavaTest, self).setUp()

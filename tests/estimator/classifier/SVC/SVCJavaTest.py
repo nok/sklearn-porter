@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from unittest import TestCase
+
 import numpy as np
 
 from sklearn.svm.classes import SVC
@@ -9,7 +11,7 @@ from tests.estimator.classifier.Classifier import Classifier
 from tests.language.Java import Java
 
 
-class SVCJavaTest(Java, Classifier, unittest.TestCase):
+class SVCJavaTest(Java, Classifier, TestCase):
 
     def setUp(self):
         super(SVCJavaTest, self).setUp()
@@ -51,23 +53,23 @@ class SVCJavaTest(Java, Classifier, unittest.TestCase):
         self.assertListEqual(preds, ground_truth)
 
     @unittest.skip('The generated code would be too large.')
-    def test_existing_features_w_binary_data(self):
+    def test_existing_features__binary_data__default(self):
         pass
 
     @unittest.skip('The generated code would be too large.')
-    def test_random_features_w_binary_data(self):
+    def test_random_features__binary_data__default(self):
         pass
 
     @unittest.skip('The generated code would be too large.')
-    def test_existing_features_w_digits_data(self):
+    def test_existing_features__digits_data__default(self):
         pass
 
     @unittest.skip('The generated code would be too large.')
-    def test_random_features_w_digits_data(self):
+    def test_random_features__digits_data__default(self):
         pass
 
     @unittest.skip('The generated code would be too large.')
-    def test_rbf_kernel_w_binary_data(self):
+    def test_rbf_kernel__binary_data__default(self):
         pass
 
     @unittest.skip('The generated code would be too large.')

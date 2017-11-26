@@ -191,7 +191,7 @@ clf.fit(X, y)
 
 # Export:
 porter = Porter(clf, language='java')
-output = porter.export(embedded=True)
+output = porter.export(embed_data=True)
 print(output)
 ```
 

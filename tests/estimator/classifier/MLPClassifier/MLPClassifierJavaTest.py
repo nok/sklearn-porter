@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from unittest import TestCase
+
 import numpy as np
 
 from sklearn.neural_network.multilayer_perceptron import MLPClassifier
@@ -40,7 +41,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_relu_w_mult_layers(self):
+    def test_activation_fn_relu__mult_layers(self):
         self.estimator = MLPClassifier(activation='relu',
                                        hidden_layer_sizes=[15, 5],
                                        learning_rate_init=.1)
@@ -57,7 +58,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_relu_w_binary_data(self):
+    def test_activation_fn_relu__binary_data(self):
         self.estimator = MLPClassifier(activation='relu',
                                        hidden_layer_sizes=15,
                                        learning_rate_init=.1)
@@ -74,7 +75,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_relu_w_mult_layers_w_binary_data(self):
+    def test_activation_fn_relu__mult_layers__binary_data(self):
         self.estimator = MLPClassifier(activation='relu',
                                        hidden_layer_sizes=[15, 5],
                                        learning_rate_init=.1)
@@ -108,7 +109,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_identity_w_mult_layers(self):
+    def test_activation_fn_identity__mult_layers(self):
         self.estimator = MLPClassifier(activation='identity',
                                        hidden_layer_sizes=[15, 5],
                                        learning_rate_init=.1)
@@ -125,7 +126,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_identity_w_binary_data(self):
+    def test_activation_fn_identity__binary_data(self):
         self.estimator = MLPClassifier(activation='identity',
                                        hidden_layer_sizes=15,
                                        learning_rate_init=.1)
@@ -142,7 +143,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_identity_w_mult_layers_w_binary_data(self):
+    def test_activation_fn_identity__mult_layers__binary_data(self):
         self.estimator = MLPClassifier(activation='identity',
                                        hidden_layer_sizes=[15, 5],
                                        learning_rate_init=.1)
@@ -176,7 +177,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_tanh_w_mult_layers(self):
+    def test_activation_fn_tanh__mult_layers(self):
         self.estimator = MLPClassifier(activation='tanh',
                                        hidden_layer_sizes=[15, 5],
                                        learning_rate_init=.1)
@@ -193,7 +194,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_tanh_w_binary_data(self):
+    def test_activation_fn_tanh__binary_data(self):
         self.estimator = MLPClassifier(activation='tanh',
                                        hidden_layer_sizes=15,
                                        learning_rate_init=.1)
@@ -210,7 +211,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_tanh_w_mult_layers_w_binary_data(self):
+    def test_activation_fn_tanh__mult_layers__binary_data(self):
         self.estimator = MLPClassifier(activation='tanh',
                                        hidden_layer_sizes=[15, 5],
                                        learning_rate_init=.1)
@@ -244,7 +245,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_logistic_w_mult_layers(self):
+    def test_activation_fn_logistic__mult_layers(self):
         self.estimator = MLPClassifier(activation='logistic',
                                        hidden_layer_sizes=[15, 5],
                                        learning_rate_init=.1)
@@ -261,7 +262,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_logistic_w_binary_data(self):
+    def test_activation_fn_logistic__binary_data(self):
         self.estimator = MLPClassifier(activation='logistic',
                                        hidden_layer_sizes=15,
                                        learning_rate_init=.1)
@@ -278,7 +279,7 @@ class MLPClassifierJavaTest(Java, Classifier, TestCase):
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-    def test_activation_fn_logistic_w_mult_layers_w_binary_data(self):
+    def test_activation_fn_logistic__mult_layers__binary_data(self):
         self.estimator = MLPClassifier(activation='logistic',
                                        hidden_layer_sizes=[15, 5],
                                        learning_rate_init=.1)

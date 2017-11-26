@@ -20,7 +20,7 @@ class JavaScript(Checker):
     def _init_test(self):
         self.tmp_fn = os.path.join('tmp', 'brain.js')
 
-    def _port_estimator(self, export_data=False):
+    def _port_estimator(self, export_data=False, embed_data=False):
         self.estimator.fit(self.X, self.y)
         subp.call('rm -rf tmp'.split())
         subp.call('mkdir tmp'.split())
@@ -33,7 +33,8 @@ class JavaScript(Checker):
                                     export_dir='tmp')
             else:
                 out = porter.export(class_name='Brain',
-                                    method_name='foo')
+                                    method_name='foo',
+                                    embed_data=embed_data)
             f.write(out)
 
     def pred_in_py(self, features, cast=True):

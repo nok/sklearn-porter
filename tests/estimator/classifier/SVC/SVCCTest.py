@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from unittest import TestCase
+
 import numpy as np
 
 from sklearn.svm.classes import SVC

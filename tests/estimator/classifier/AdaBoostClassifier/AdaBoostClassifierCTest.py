@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import unittest
+from unittest import TestCase
 
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -9,7 +9,7 @@ from tests.estimator.classifier.Classifier import Classifier
 from tests.language.C import C
 
 
-class AdaBoostClassifierCTest(C, Classifier, unittest.TestCase):
+class AdaBoostClassifierCTest(C, Classifier, TestCase):
 
     def setUp(self):
         super(AdaBoostClassifierCTest, self).setUp()

@@ -13,7 +13,7 @@ clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
 porter = Porter(clf)
-output = porter.export(embedded=True)
+output = porter.export(embed_data=True)
 print(output)
 
 """

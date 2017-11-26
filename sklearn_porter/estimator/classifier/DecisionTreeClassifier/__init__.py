@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import os
+import json
+from json import encoder
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
@@ -106,7 +109,9 @@ class DecisionTreeClassifier(Classifier):
             target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name, embedded=False, **kwargs):
+    def export(self, class_name, method_name,
+               export_data=False, export_dir='.',
+               embed_data=False, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -171,9 +176,30 @@ class DecisionTreeClassifier(Classifier):
         self.classes = classes
 
         if self.target_method == 'predict':
-            return self.predict(embedded)
+            # Exported:
+            if export_data and os.path.isdir(export_dir):
+                self.export_data(export_dir)
+                return self.predict('exported')
+            # Embedded:
+            if embed_data:
+                return self.predict('embedded')
+            # Separated:
+            return self.predict('separated')
 
-    def predict(self, embedded):
+    def export_data(self, export_dir):
+        model_data = {
+            'leftChilds': self.estimator.tree_.children_left.tolist(),
+            'rightChilds': self.estimator.tree_.children_right.tolist(),
+            'thresholds': self.estimator.tree_.threshold.tolist(),
+            'indices': self.estimator.tree_.feature,
+            'classes': self.estimator.tree_.value.tolist()
+        }
+        encoder.FLOAT_REPR = lambda o: self.repr(o)
+        path = os.path.join(export_dir, 'data.json')
+        with open(path, 'w') as fp:
+            json.dump(model_data, fp)
+
+    def predict(self, temp_type='separated'):
         """
         Transpile the predict method.
 
@@ -182,64 +208,34 @@ class DecisionTreeClassifier(Classifier):
         :return : string
             The transpiled predict method as string.
         """
-        if embedded:
-            method = self.create_method_embedded()
-            out = self.create_class_embedded(method)
-            return out
 
-        out = self.create_class()
-        return out
+        if temp_type == 'exported':
+            temp = self.temp('exported.class')
+            return temp.format(class_name=self.class_name,
+                               method_name=self.method_name,
+                               n_features=self.n_features)
 
-    def create_class(self):
-        """
-        Build the estimator class.
+        if temp_type == 'separated':
+            temp = self.temp('separated.class')
+            return temp.format(**self.__dict__)
 
-        Returns
-        -------
-        :return out : string
-            The built class as string.
-        """
-        temp_class = self.temp('separated.class')
-        out = temp_class.format(**self.__dict__)
-        return out
-
-    def create_method_embedded(self):
-        """
-        Build the estimator method or function.
-
-        Returns
-        -------
-        :return out : string
-            The built method as string.
-        """
-        n_indents = 1 if self.target_language in ['java', 'js',
-                                                  'php', 'ruby'] else 0
-        branches = self.indent(self.create_tree(), n_indents=1)
-        temp_method = self.temp('embedded.method', n_indents=n_indents,
-                                skipping=True)
-        out = temp_method.format(class_name=self.class_name,
-                                 method_name=self.method_name,
-                                 n_classes=self.n_classes,
-                                 n_features=self.n_features,
-                                 branches=branches)
-        return out
-
-    def create_class_embedded(self, method):
-        """
-        Build the estimator class.
-
-        Returns
-        -------
-        :return out : string
-            The built class as string.
-        """
-        temp_class = self.temp('embedded.class')
-        out = temp_class.format(class_name=self.class_name,
-                                method_name=self.method_name,
-                                n_classes=self.n_classes,
-                                n_features=self.n_features,
-                                method=method)
-        return out
+        if temp_type == 'embedded':
+            n_indents = 1 if self.target_language in ['java', 'js',
+                                                      'php', 'ruby'] else 0
+            branches = self.indent(self.create_tree(), n_indents=1)
+            meth_temp = self.temp('embedded.method', n_indents=n_indents,
+                                  skipping=True)
+            meth = meth_temp.format(class_name=self.class_name,
+                                    method_name=self.method_name,
+                                    n_classes=self.n_classes,
+                                    n_features=self.n_features,
+                                    branches=branches)
+            temp_class = self.temp('embedded.class')
+            return temp_class.format(class_name=self.class_name,
+                                     method_name=self.method_name,
+                                     n_classes=self.n_classes,
+                                     n_features=self.n_features,
+                                     method=meth)
 
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth):
@@ -311,4 +307,4 @@ class DecisionTreeClassifier(Classifier):
             self.estimator.tree_.children_right,
             self.estimator.tree_.threshold,
             self.estimator.tree_.value,
-            self.feature_indices, 0, indentation)
+            self.indices, 0, indentation)
