@@ -44,6 +44,8 @@ class {class_name} {{
 
             // Prediction:
             {class_name} clf = new {class_name}({n_neighbors}, {n_classes}, {power}, X, y);
+
+            // Prediction:
             int estimation = clf.{method_name}(features);
             System.out.println(estimation);
 

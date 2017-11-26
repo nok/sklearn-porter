@@ -28,6 +28,8 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
 
         // Estimator:
         var clf = new {class_name}({n_neighbors}, {n_classes}, {power}, X, y);
+
+        // Prediction:
         var prediction = clf.{method_name}(features);
         console.log(prediction);
 

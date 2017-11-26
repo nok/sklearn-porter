@@ -115,14 +115,14 @@ var AdaBoostClassifier = function(jsonFile) {
 if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
     if (process.argv[2].trim().endsWith('.json')) {
 
+        // Features:
+        var features = process.argv.slice(3);
+
         // Parameters:
         var json = process.argv[2];
 
         // Estimator:
         var clf = new AdaBoostClassifier(json);
-
-        // Features:
-        var features = process.argv.slice(3);
 
         // Prediction:
         clf.predict(features).then(function(prediction) {
