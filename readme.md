@@ -94,7 +94,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">sklearn.neighbors.KNeighborsClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/estimator/classifier/KNeighborsClassifier/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/KNeighborsClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
-            <td align="center"><a href="examples/estimator/classifier/KNeighborsClassifier/js/basics.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/KNeighborsClassifier/js/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/KNeighborsClassifier/js/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
