@@ -84,9 +84,8 @@ class AdaBoostClassifier(Classifier):
 
         self.estimator = estimator
 
-    def export(self, class_name, method_name,
-               export_data=False, export_dir='.',
-               embed_data=True, **kwargs):
+    def export(self, class_name, method_name, export_data=False, export_dir='.',
+               **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -119,31 +118,39 @@ class AdaBoostClassifier(Classifier):
         self.n_estimators = len(self.estimator)
 
         if self.target_method == 'predict':
-
-            # Exported data:
+            # Exported:
             if export_data and os.path.isdir(export_dir):
-                model_data = []
-                for est in self.estimators:
-                    model_data.append({
-                        'childrenLeft': est.tree_.children_left.tolist(),
-                        'childrenRight': est.tree_.children_right.tolist(),
-                        'thresholds': est.tree_.threshold.tolist(),
-                        'classes': [e[0] for e in est.tree_.value.tolist()],
-                        'indices': est.tree_.feature.tolist()
-                    })
-                encoder.FLOAT_REPR = lambda o: self.repr(o)
-                path = os.path.join(export_dir, 'data.json')
-                with open(path, 'w') as fp:
-                    json.dump(model_data, fp)
+                self.export_data(export_dir)
+                return self.predict('exported')
+            # Embedded:
+            return self.predict('embedded')
 
-                temp_class = self.temp('exported.class')
-                return temp_class.format(class_name=self.class_name,
-                                         method_name=self.method_name,
-                                         n_features=self.n_features)
+    def predict(self, temp_type):
+        # Exported:
+        if temp_type == 'exported':
+            temp = self.temp('exported.class')
+            return temp.format(class_name=self.class_name,
+                               method_name=self.method_name,
+                               n_features=self.n_features)
+        # Embedded:
+        if temp_type == 'embedded':
+            meth = self.create_embedded_meth()
+            return self.create_embedded_class(meth)
 
-            # Deep embedded data:
-            method = self.create_method_embedded()
-            return self.create_class_embedded(method)
+    def export_data(self, export_dir):
+        model_data = []
+        for est in self.estimators:
+            model_data.append({
+                'childrenLeft': est.tree_.children_left.tolist(),
+                'childrenRight': est.tree_.children_right.tolist(),
+                'thresholds': est.tree_.threshold.tolist(),
+                'classes': [e[0] for e in est.tree_.value.tolist()],
+                'indices': est.tree_.feature.tolist()
+            })
+        encoder.FLOAT_REPR = lambda o: self.repr(o)
+        path = os.path.join(export_dir, 'data.json')
+        with open(path, 'w') as fp:
+            json.dump(model_data, fp)
 
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth, init=False):
@@ -234,7 +241,7 @@ class AdaBoostClassifier(Classifier):
                                n_classes=self.n_classes)
         return out
 
-    def create_method_embedded(self):
+    def create_embedded_meth(self):
         """
         Build the estimator methods or functions.
 
@@ -277,7 +284,7 @@ class AdaBoostClassifier(Classifier):
         method = self.indent(method, n_indents=n_indents, skipping=True)
         return method
 
-    def create_class_embedded(self, method):
+    def create_embedded_class(self, method):
         """
         Build the estimator class.
 

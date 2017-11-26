@@ -91,7 +91,9 @@ class RandomForestClassifier(Classifier):
 
         self.estimator = estimator
 
-    def export(self, class_name, method_name, embedded=False, **kwargs):
+    def export(self, class_name, method_name,
+               export_data=False, export_dir='.',
+               embed_data=True, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -109,7 +111,7 @@ class RandomForestClassifier(Classifier):
         """
 
         # TODO: Add non embedded templates and remove the following line:
-        embedded = True
+        embed_data = True
 
         # Arguments:
         self.class_name = class_name
@@ -124,7 +126,7 @@ class RandomForestClassifier(Classifier):
         self.n_classes = est.n_classes_
 
         if self.target_method == 'predict':
-            return self.predict(embedded)
+            return self.predict(embed_data)
 
     def predict(self, embedded):
         """
