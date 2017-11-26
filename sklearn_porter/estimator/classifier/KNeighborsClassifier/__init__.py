@@ -61,8 +61,7 @@ class KNeighborsClassifier(Classifier):
         self.estimator = estimator
 
     def export(self, class_name, method_name,
-               export_data=False, export_dir='.',
-               embed_data=False, **kwargs):
+               export_data=False, export_dir='.', **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -103,28 +102,27 @@ class KNeighborsClassifier(Classifier):
                 self.tree = tree
 
         if self.target_method == 'predict':
-            # Exported data:
+            # Exported:
             if export_data and os.path.isdir(export_dir):
-                model_data = {
-                    'X': est._fit_X.tolist(),  # pylint: disable=W0212
-                    'y': est._y.tolist(),  # pylint: disable=W0212
-                    'kNeighbors': self.n_neighbors,
-                    'nClasses': self.n_classes,
-                    'power': self.power_param
-                }
-                encoder.FLOAT_REPR = lambda o: self.repr(o)
-                path = os.path.join(export_dir, 'data.json')
-                with open(path, 'w') as fp:
-                    json.dump(model_data, fp)
+                self.export_data(export_dir)
+                return self.predict('exported')
+            # Separated:
+            return self.predict('separated')
 
-                temp_class = self.temp('exported.class')
-                return temp_class.format(class_name=self.class_name,
-                                         method_name=self.method_name,
-                                         n_features=self.n_features)
+    def export_data(self, export_dir):
+        model_data = {
+            'X': self.estimator._fit_X.tolist(),  # pylint: disable=W0212
+            'y': self.estimator._y.tolist(),  # pylint: disable=W0212
+            'kNeighbors': self.n_neighbors,
+            'nClasses': self.n_classes,
+            'power': self.power_param
+        }
+        encoder.FLOAT_REPR = lambda o: self.repr(o)
+        path = os.path.join(export_dir, 'data.json')
+        with open(path, 'w') as fp:
+            json.dump(model_data, fp)
 
-            return self.predict()
-
-    def predict(self):
+    def predict(self, temp_type):
         """
         Transpile the predict method.
 
@@ -133,7 +131,16 @@ class KNeighborsClassifier(Classifier):
         :return : string
             The transpiled predict method as string.
         """
-        return self.create_class(self.create_method())
+        # Exported:
+        if temp_type == 'exported':
+            temp = self.temp('exported.class')
+            return temp.format(class_name=self.class_name,
+                               method_name=self.method_name,
+                               n_features=self.n_features)
+        # Separated:
+        if temp_type == 'separated':
+            meth = self.create_method()
+            return self.create_class(meth)
 
     def create_method(self):
         """
