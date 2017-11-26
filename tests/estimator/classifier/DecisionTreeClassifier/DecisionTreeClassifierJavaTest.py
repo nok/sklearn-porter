@@ -7,10 +7,12 @@ from sklearn.tree import DecisionTreeClassifier
 
 from tests.estimator.classifier.Classifier import Classifier
 from tests.estimator.classifier.ExportedData import ExportedData
+from tests.estimator.classifier.EmbeddedData import EmbeddedData
 from tests.language.Java import Java
 
 
-class DecisionTreeClassifierJavaTest(Java, Classifier, ExportedData, TestCase):
+class DecisionTreeClassifierJavaTest(Java, Classifier, ExportedData,
+                                     EmbeddedData, TestCase):
 
     def setUp(self):
         super(DecisionTreeClassifierJavaTest, self).setUp()

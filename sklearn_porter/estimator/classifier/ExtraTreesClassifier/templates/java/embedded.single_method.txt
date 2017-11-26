@@ -1,4 +1,4 @@
-public static int {method_name}_{method_id}(float[] features) {{
+public static int {method_name}_{method_id}(double[] features) {{
     int[] classes = new int[{n_classes}];
     {tree_branches}
     int class_idx = 0;

@@ -6,10 +6,11 @@ from unittest import TestCase
 from sklearn.ensemble import ExtraTreesClassifier
 
 from tests.estimator.classifier.Classifier import Classifier
+from tests.estimator.classifier.ExportedData import ExportedData
 from tests.language.Java import Java
 
 
-class ExtraTreesClassifierJavaTest(Java, Classifier, TestCase):
+class ExtraTreesClassifierJavaTest(Java, Classifier, ExportedData, TestCase):
 
     def setUp(self):
         super(ExtraTreesClassifierJavaTest, self).setUp()

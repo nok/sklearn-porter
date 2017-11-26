@@ -14,12 +14,12 @@ clf = RandomForestClassifier(n_estimators=15, max_depth=None,
 clf.fit(X, y)
 
 porter = Porter(clf)
-output = porter.export(embedded=True)
+output = porter.export(embed_data=True)
 print(output)
 
 """
 class RandomForestClassifier {
-    public static int predict_0(float[] atts) {
+    public static int predict_0(double[] features) {
         int[] classes = new int[3];
         
         if (features[3] <= 0.75) {
@@ -72,7 +72,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_1(float[] atts) {
+    public static int predict_1(double[] features) {
         int[] classes = new int[3];
         
         if (features[3] <= 0.800000011921) {
@@ -131,7 +131,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_2(float[] atts) {
+    public static int predict_2(double[] features) {
         int[] classes = new int[3];
         
         if (features[0] <= 5.55000019073) {
@@ -202,7 +202,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_3(float[] atts) {
+    public static int predict_3(double[] features) {
         int[] classes = new int[3];
         
         if (features[0] <= 5.44999980927) {
@@ -285,7 +285,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_4(float[] atts) {
+    public static int predict_4(double[] features) {
         int[] classes = new int[3];
         
         if (features[3] <= 0.699999988079) {
@@ -338,7 +338,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_5(float[] atts) {
+    public static int predict_5(double[] features) {
         int[] classes = new int[3];
         
         if (features[3] <= 0.800000011921) {
@@ -403,7 +403,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_6(float[] atts) {
+    public static int predict_6(double[] features) {
         int[] classes = new int[3];
         
         if (features[3] <= 0.699999988079) {
@@ -462,7 +462,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_7(float[] atts) {
+    public static int predict_7(double[] features) {
         int[] classes = new int[3];
         
         if (features[2] <= 2.59999990463) {
@@ -527,7 +527,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_8(float[] atts) {
+    public static int predict_8(double[] features) {
         int[] classes = new int[3];
         
         if (features[3] <= 0.699999988079) {
@@ -598,7 +598,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_9(float[] atts) {
+    public static int predict_9(double[] features) {
         int[] classes = new int[3];
         
         if (features[2] <= 2.59999990463) {
@@ -657,7 +657,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_10(float[] atts) {
+    public static int predict_10(double[] features) {
         int[] classes = new int[3];
         
         if (features[3] <= 0.800000011921) {
@@ -728,7 +728,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_11(float[] atts) {
+    public static int predict_11(double[] features) {
         int[] classes = new int[3];
         
         if (features[2] <= 2.59999990463) {
@@ -793,7 +793,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_12(float[] atts) {
+    public static int predict_12(double[] features) {
         int[] classes = new int[3];
         
         if (features[3] <= 0.800000011921) {
@@ -852,7 +852,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_13(float[] atts) {
+    public static int predict_13(double[] features) {
         int[] classes = new int[3];
         
         if (features[0] <= 5.44999980927) {
@@ -917,7 +917,7 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict_14(float[] atts) {
+    public static int predict_14(double[] features) {
         int[] classes = new int[3];
         
         if (features[2] <= 2.59999990463) {
@@ -964,24 +964,24 @@ class RandomForestClassifier {
         return class_idx;
     }
     
-    public static int predict(float[] atts) {
+    public static int predict(double[] features) {
         int n_classes = 3;
         int[] classes = new int[n_classes];
-        classes[RandomForestClassifier.predict_0(atts)]++;
-        classes[RandomForestClassifier.predict_1(atts)]++;
-        classes[RandomForestClassifier.predict_2(atts)]++;
-        classes[RandomForestClassifier.predict_3(atts)]++;
-        classes[RandomForestClassifier.predict_4(atts)]++;
-        classes[RandomForestClassifier.predict_5(atts)]++;
-        classes[RandomForestClassifier.predict_6(atts)]++;
-        classes[RandomForestClassifier.predict_7(atts)]++;
-        classes[RandomForestClassifier.predict_8(atts)]++;
-        classes[RandomForestClassifier.predict_9(atts)]++;
-        classes[RandomForestClassifier.predict_10(atts)]++;
-        classes[RandomForestClassifier.predict_11(atts)]++;
-        classes[RandomForestClassifier.predict_12(atts)]++;
-        classes[RandomForestClassifier.predict_13(atts)]++;
-        classes[RandomForestClassifier.predict_14(atts)]++;
+        classes[RandomForestClassifier.predict_0(features)]++;
+        classes[RandomForestClassifier.predict_1(features)]++;
+        classes[RandomForestClassifier.predict_2(features)]++;
+        classes[RandomForestClassifier.predict_3(features)]++;
+        classes[RandomForestClassifier.predict_4(features)]++;
+        classes[RandomForestClassifier.predict_5(features)]++;
+        classes[RandomForestClassifier.predict_6(features)]++;
+        classes[RandomForestClassifier.predict_7(features)]++;
+        classes[RandomForestClassifier.predict_8(features)]++;
+        classes[RandomForestClassifier.predict_9(features)]++;
+        classes[RandomForestClassifier.predict_10(features)]++;
+        classes[RandomForestClassifier.predict_11(features)]++;
+        classes[RandomForestClassifier.predict_12(features)]++;
+        classes[RandomForestClassifier.predict_13(features)]++;
+        classes[RandomForestClassifier.predict_14(features)]++;
     
         int class_idx = 0;
         int class_val = classes[0];
@@ -996,11 +996,17 @@ class RandomForestClassifier {
 
     public static void main(String[] args) {
         if (args.length == 4) {
-            float[] atts = new float[args.length];
+
+            // Features:
+            double[] features = new double[args.length];
             for (int i = 0, l = args.length; i < l; i++) {
-                atts[i] = Float.parseFloat(args[i]);
+                features[i] = Double.parseDouble(args[i]);
             }
-            System.out.println(RandomForestClassifier.predict(atts));
+
+            // Prediction:
+            int prediction = RandomForestClassifier.predict(features);
+            System.out.println(prediction);
+
         }
     }
 }

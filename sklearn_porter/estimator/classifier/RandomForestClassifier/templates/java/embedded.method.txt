@@ -1,5 +1,5 @@
 {methods}
-public static int {method_name}(float[] features) {{
+public static int {method_name}(double[] features) {{
     int n_classes = {n_classes};
     int[] classes = new int[n_classes];
     {method_calls}

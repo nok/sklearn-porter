@@ -66,7 +66,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></td>
             <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/c/basics_embedded.ipynb">✓ ᴱ</a></td>
-            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/java/basics_embedded.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/java/basics_embedded.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/RandomForestClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/js/basics_embedded.ipynb">✓ ᴱ</a></td>
             <td align="center"></td>
             <td align="center">✓ ᴱ</td>
@@ -75,7 +75,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
             <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/c/basics.ipynb">✓ ᴱ</a></td>
-            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/java/basics.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/java/basics_embedded.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/ExtraTreesClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/js/basics.ipynb">✓ ᴱ</a></td>
             <td align="center"></td>
             <td align="center">✓ ᴱ</td>

@@ -15,7 +15,6 @@ class AdaBoostClassifier(Classifier):
 
     http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
     """
-
     SUPPORTED_METHODS = ['predict']
 
     # @formatter:off
@@ -46,7 +45,6 @@ class AdaBoostClassifier(Classifier):
         }
     }
     # @formatter:on
-
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
@@ -84,8 +82,9 @@ class AdaBoostClassifier(Classifier):
 
         self.estimator = estimator
 
-    def export(self, class_name, method_name, export_data=False, export_dir='.',
-               **kwargs):
+    def export(self, class_name, method_name,
+               export_data=False, export_dir='.',
+               embed_data=True, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -235,11 +234,10 @@ class AdaBoostClassifier(Classifier):
             feature_indices, 0, 1, init=True)
 
         temp_tree = self.temp('embedded.tree')
-        out = temp_tree.format(method_name=self.method_name,
-                               method_index=str(estimator_index),
-                               methods=tree_branches,
-                               n_classes=self.n_classes)
-        return out
+        return temp_tree.format(method_name=self.method_name,
+                                method_index=str(estimator_index),
+                                methods=tree_branches,
+                                n_classes=self.n_classes)
 
     def create_embedded_meth(self):
         """
@@ -281,8 +279,7 @@ class AdaBoostClassifier(Classifier):
                                     method_calls=fn_names, methods=fns,
                                     n_estimators=self.n_estimators,
                                     n_classes=self.n_classes)
-        method = self.indent(method, n_indents=n_indents, skipping=True)
-        return method
+        return self.indent(method, n_indents=n_indents, skipping=True)
 
     def create_embedded_class(self, method):
         """
@@ -293,9 +290,7 @@ class AdaBoostClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-
         temp_class = self.temp('embedded.class')
-        out = temp_class.format(class_name=self.class_name,
-                                method_name=self.method_name, method=method,
-                                n_features=self.n_features)
-        return out
+        return temp_class.format(class_name=self.class_name,
+                                 method_name=self.method_name, method=method,
+                                 n_features=self.n_features)

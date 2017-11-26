@@ -17,7 +17,7 @@ class {class_name} {{
         private int[] indices;
         private double[][] classes;
 
-        private double[] predict (double[] features, int node) {{
+        private int predict (double[] features, int node) {{
             if (this.thresholds[node] != -2) {{
                 if (features[this.indices[node]] <= this.thresholds[node]) {{
                     return this.predict(features, this.childrenLeft[node]);
@@ -25,9 +25,9 @@ class {class_name} {{
                     return this.predict(features, this.childrenRight[node]);
                 }}
             }}
-            return this.classes[node];
+            return {class_name}.findMax(this.classes[node]);
         }}
-        private double[] predict (double[] features) {{
+        private int predict (double[] features) {{
             return this.predict(features, 0);
         }}
     }}
@@ -45,7 +45,7 @@ class {class_name} {{
         this.nClasses = this.forest.get(0).classes[0].length;
     }}
 
-    private int findMax(double[] nums) {{
+    private static int findMax(double[] nums) {{
         int index = 0;
         for (int i = 0; i < nums.length; i++) {{
             index = nums[i] > nums[index] ? i : index;
@@ -54,44 +54,11 @@ class {class_name} {{
     }}
 
     public int {method_name}(double[] features) {{
-        double[][] preds = new double[this.nEstimators][this.nClasses];
-        double normalizer, sum;
-        int i, j;
-
-        for (i = 0; i < this.nEstimators; i++) {{
-            preds[i] = this.forest.get(i).predict(features, 0);
-        }}
-        for (i = 0; i < this.nEstimators; i++) {{
-            normalizer = 0.;
-            for (j = 0; j < this.nClasses; j++) {{
-                normalizer += preds[i][j];
-            }}
-            if (normalizer == 0.) {{
-                normalizer = 1.;
-            }}
-            for (j = 0; j < this.nClasses; j++) {{
-                preds[i][j] = preds[i][j] / normalizer;
-                if (preds[i][j] <= 2.2204460492503131e-16) {{
-                    preds[i][j] = 2.2204460492503131e-16;
-                }}
-                preds[i][j] = Math.log(preds[i][j]);
-            }}
-            sum = 0.;
-            for (j = 0; j < this.nClasses; j++) {{
-                sum += preds[i][j];
-            }}
-            for (j = 0; j < this.nClasses; j++) {{
-                preds[i][j] = (this.nClasses - 1) * (preds[i][j] - (1. / this.nClasses) * sum);
-            }}
-        }}
         double[] classes = new double[this.nClasses];
-        for (i = 0; i < this.nEstimators; i++) {{
-            for (j = 0; j < this.nClasses; j++) {{
-                classes[j] += preds[i][j];
-            }}
+        for (int i = 0; i < this.nEstimators; i++) {{
+            classes[this.forest.get(i).predict(features, 0)]++;
         }}
-
-        return this.findMax(classes);
+        return {class_name}.findMax(classes);
     }}
 
     public static void main(String[] args) throws IOException {{

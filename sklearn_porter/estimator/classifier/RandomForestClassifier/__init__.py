@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import os
+import json
+from json import encoder
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
@@ -110,9 +113,6 @@ class RandomForestClassifier(Classifier):
             The transpiled algorithm with the defined placeholders.
         """
 
-        # TODO: Add non embedded templates and remove the following line:
-        embed_data = True
-
         # Arguments:
         self.class_name = class_name
         self.method_name = method_name
@@ -126,24 +126,40 @@ class RandomForestClassifier(Classifier):
         self.n_classes = est.n_classes_
 
         if self.target_method == 'predict':
-            return self.predict(embed_data)
+            # Exported:
+            if export_data and os.path.isdir(export_dir):
+                self.export_data(export_dir)
+                return self.predict('exported')
+            # Embedded:
+            return self.predict('embedded')
 
-    def predict(self, embedded):
-        """
-        Transpile the predict method.
-
-        Returns
-        -------
-        :return : string
-            The transpiled predict method as string.
-        """
-        if embedded:
+    def predict(self, temp_type):
+        # Exported:
+        if temp_type == 'exported':
+            temp = self.temp('exported.class')
+            return temp.format(class_name=self.class_name,
+                               method_name=self.method_name,
+                               n_features=self.n_features)
+        # Embedded:
+        if temp_type == 'embedded':
             method = self.create_method_embedded()
             out = self.create_class_embedded(method)
             return out
 
-        out = self.create_class()
-        return out
+    def export_data(self, export_dir):
+        model_data = []
+        for est in self.estimators:
+            model_data.append({
+                'childrenLeft': est.tree_.children_left.tolist(),
+                'childrenRight': est.tree_.children_right.tolist(),
+                'thresholds': est.tree_.threshold.tolist(),
+                'classes': [e[0] for e in est.tree_.value.tolist()],
+                'indices': est.tree_.feature.tolist()
+            })
+        encoder.FLOAT_REPR = lambda o: self.repr(o)
+        path = os.path.join(export_dir, 'data.json')
+        with open(path, 'w') as fp:
+            json.dump(model_data, fp)
 
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth):

@@ -210,32 +210,32 @@ class DecisionTreeClassifier(Classifier):
         """
 
         if temp_type == 'exported':
-            temp = self.temp('exported.class')
-            return temp.format(class_name=self.class_name,
-                               method_name=self.method_name,
-                               n_features=self.n_features)
+            exported_temp = self.temp('exported.class')
+            return exported_temp.format(class_name=self.class_name,
+                                        method_name=self.method_name,
+                                        n_features=self.n_features)
 
         if temp_type == 'separated':
-            temp = self.temp('separated.class')
-            return temp.format(**self.__dict__)
+            separated_temp = self.temp('separated.class')
+            return separated_temp.format(**self.__dict__)
 
         if temp_type == 'embedded':
             n_indents = 1 if self.target_language in ['java', 'js',
                                                       'php', 'ruby'] else 0
             branches = self.indent(self.create_tree(), n_indents=1)
-            meth_temp = self.temp('embedded.method', n_indents=n_indents,
-                                  skipping=True)
-            meth = meth_temp.format(class_name=self.class_name,
-                                    method_name=self.method_name,
-                                    n_classes=self.n_classes,
-                                    n_features=self.n_features,
-                                    branches=branches)
-            temp_class = self.temp('embedded.class')
-            return temp_class.format(class_name=self.class_name,
-                                     method_name=self.method_name,
-                                     n_classes=self.n_classes,
-                                     n_features=self.n_features,
-                                     method=meth)
+            embedded_temp = self.temp('embedded.method', n_indents=n_indents,
+                                      skipping=True)
+            method = embedded_temp.format(class_name=self.class_name,
+                                          method_name=self.method_name,
+                                          n_classes=self.n_classes,
+                                          n_features=self.n_features,
+                                          branches=branches)
+            embedded_temp = self.temp('embedded.class')
+            return embedded_temp.format(class_name=self.class_name,
+                                        method_name=self.method_name,
+                                        n_classes=self.n_classes,
+                                        n_features=self.n_features,
+                                        method=method)
 
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth):
@@ -300,6 +300,11 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The tree branches as string.
         """
+        feature_indices = []
+        for i in self.estimator.tree_.feature:
+            n_features = self.n_features
+            if self.n_features > 1 or (self.n_features == 1 and i >= 0):
+                feature_indices.append([str(j) for j in range(n_features)][i])
         indentation = 1 if self.target_language in ['java', 'js',
                                                     'php', 'ruby'] else 0
         return self.create_branches(
@@ -307,4 +312,4 @@ class DecisionTreeClassifier(Classifier):
             self.estimator.tree_.children_right,
             self.estimator.tree_.threshold,
             self.estimator.tree_.value,
-            self.indices, 0, indentation)
+            feature_indices, 0, indentation)
