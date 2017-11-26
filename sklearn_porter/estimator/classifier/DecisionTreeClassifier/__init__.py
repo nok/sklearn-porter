@@ -199,7 +199,7 @@ class DecisionTreeClassifier(Classifier):
         :return out : string
             The built class as string.
         """
-        temp_class = self.temp('class')
+        temp_class = self.temp('separated.class')
         out = temp_class.format(**self.__dict__)
         return out
 
