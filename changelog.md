@@ -32,6 +32,16 @@ All notable changes to this project will be documented in this file.
         - `tree.DecisionTreeClassifier` ([#a404c4f](https://github.com/nok/sklearn-porter/commit/a404c4f383a62d98ac543c617234c0a907b8267a))
         - `ensemble.RandomForestClassifier` ([#3775501](https://github.com/nok/sklearn-porter/commit/3775501b77436c0b5b5132e11893d0c4add0cb7b))
         - `ensemble.ExtraTreesClassifier` ([#81b9914](https://github.com/nok/sklearn-porter/commit/81b99149116f00a790e0df33d60e381cafc89bf2))
+- Add support to export and import model data:
+    - Java:
+        - `ensemble.AdaBoostClassifier` [notebook](examples/estimator/classifier/AdaBoostClassifier/java/basics_imported.ipynb) ([#79d846f](https://github.com/nok/sklearn-porter/commit/79d846f71af4a37de4655d86ab5e42d11311d5ed))
+        - `neighbors.KNeighborsClassifier` [notebook](examples/estimator/classifier/KNeighborsClassifier/java/basics_imported.ipynb) ([#1b81d3f](https://github.com/nok/sklearn-porter/commit/1b81d3f0e9cbe52203bbfde4cf73df17eacf4fdd#diff-86bc174b477eabd59f582e0e2882dcb3R54))
+    - JavaScript:
+        - `ensemble.AdaBoostClassifier` [notebook](examples/estimator/classifier/AdaBoostClassifier/js/basics_imported.ipynb) ([#9fdcc49](https://github.com/nok/sklearn-porter/commit/9fdcc49355617668c3bf451a8d5828880245a4ae), [#dd70ac7](https://github.com/nok/sklearn-porter/commit/dd70ac7e63cecad9028e9dea32efb7e1d2e43237), [#2401fba](https://github.com/nok/sklearn-porter/commit/2401fba9938880bf420de0253e489c22e7b040e4))
+        - `neighbors.KNeighborsClassifier` [notebook](examples/estimator/classifier/KNeighborsClassifier/js/basics_imported.ipynb) ([#f915b70](https://github.com/nok/sklearn-porter/commit/f915b70568b4212e7fb8d616058a927f98b186da))
+- Add new recipes:
+    - JavaScript:
+        - [MLPClassifier Web Workers](examples/recipes/use_javascript_web_workers) ([#187efac](https://github.com/nok/sklearn-porter/commit/187efac3fa045e177a1980244bef302a462fcf4e))
 
 ### Changed
  
