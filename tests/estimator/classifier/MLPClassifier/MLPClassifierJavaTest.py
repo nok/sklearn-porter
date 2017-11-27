@@ -7,10 +7,11 @@ import numpy as np
 from sklearn.neural_network.multilayer_perceptron import MLPClassifier
 
 from tests.estimator.classifier.Classifier import Classifier
+from tests.estimator.classifier.ExportedData import ExportedData
 from tests.language.Java import Java
 
 
-class MLPClassifierJavaTest(Java, Classifier, TestCase):
+class MLPClassifierJavaTest(Java, Classifier, ExportedData, TestCase):
 
     def setUp(self):
         super(MLPClassifierJavaTest, self).setUp()

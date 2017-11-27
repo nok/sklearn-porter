@@ -143,8 +143,7 @@ class RandomForestClassifier(Classifier):
         # Embedded:
         if temp_type == 'embedded':
             method = self.create_method_embedded()
-            out = self.create_class_embedded(method)
-            return out
+            return self.create_class_embedded(method)
 
     def export_data(self, export_dir):
         model_data = []

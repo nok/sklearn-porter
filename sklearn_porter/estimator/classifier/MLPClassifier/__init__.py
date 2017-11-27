@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import os
+import json
+from json import encoder
 import numpy as np
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
@@ -82,7 +85,9 @@ class MLPClassifier(Classifier):
         """Get list of supported activation functions for the output layer."""
         return ['softmax', 'logistic']
 
-    def export(self, class_name, method_name, **kwargs):
+    def export(self, class_name, method_name,
+               export_data=False, export_dir='.',
+               **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -98,7 +103,6 @@ class MLPClassifier(Classifier):
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
-
         # Arguments:
         self.class_name = class_name
         self.method_name = method_name
@@ -134,9 +138,14 @@ class MLPClassifier(Classifier):
         self.prefix = 'binary' if self.is_binary else 'multi'
 
         if self.target_method == 'predict':
-            return self.predict()
+            # Exported:
+            if export_data and os.path.isdir(export_dir):
+                self.export_data(export_dir)
+                return self.predict('exported')
+            # Separated:
+            return self.predict('separated')
 
-    def predict(self):
+    def predict(self, temp_type):
         """
         Transpile the predict method.
 
@@ -145,36 +154,12 @@ class MLPClassifier(Classifier):
         :return : string
             The transpiled predict method as string.
         """
-        return self.create_class(self.create_method())
-
-    def create_method(self):
-        """
-        Build the estimator method or function.
-
-        Returns
-        -------
-        :return out : string
-            The built method as string.
-        """
-        method_type = 'method.{}'.format(self.prefix)
-        temp_method = self.temp(method_type, skipping=True, n_indents=1)
-        method = temp_method.format(class_name=self.class_name,
-                                    method_name=self.method_name,
-                                    n_features=self.n_inputs,
-                                    n_classes=self.n_outputs)
-        out = self.indent(method, n_indents=0, skipping=True)
-        return out
-
-    def create_class(self, method):
-        """
-        Build the estimator class.
-
-        Returns
-        -------
-        :return out : string
-            The built class as string.
-        """
-
+        # Exported:
+        if temp_type == 'exported':
+            temp = self.temp('exported.class')
+            return temp.format(class_name=self.class_name,
+                               method_name=self.method_name)
+        # Separated:
         temp_arr = self.temp('arr')
         temp_arr_ = self.temp('arr[]')
         temp_arr__ = self.temp('arr[][]')
@@ -206,19 +191,30 @@ class MLPClassifier(Classifier):
                                        name='bias',
                                        values=intercepts)
 
-        temp_class = self.temp('class')
+        temp_class = self.temp('separated.class')
         file_name = '{}.js'.format(self.class_name.lower())
-        out = temp_class.format(class_name=self.class_name,
-                                method_name=self.method_name,
-                                hidden_activation=self.hidden_activation,
-                                output_activation=self.output_activation,
-                                n_features=self.n_inputs,
-                                weights=coefficients,
-                                bias=intercepts,
-                                layers=layers,
-                                method=method,
-                                file_name=file_name)
-        return out
+        return temp_class.format(class_name=self.class_name,
+                                 method_name=self.method_name,
+                                 hidden_activation=self.hidden_activation,
+                                 output_activation=self.output_activation,
+                                 n_features=self.n_inputs,
+                                 weights=coefficients,
+                                 bias=intercepts,
+                                 layers=layers,
+                                 file_name=file_name)
+
+    def export_data(self, export_dir):
+        model_data = {
+            'layers': [int(l) for l in list(self._get_activations())],
+            'weights': [c.tolist() for c in self.coefficients],
+            'bias': [i.tolist() for i in self.intercepts],
+            'hidden_activation': self.hidden_activation,
+            'output_activation': self.output_activation
+        }
+        encoder.FLOAT_REPR = lambda o: self.repr(o)
+        path = os.path.join(export_dir, 'data.json')
+        with open(path, 'w') as fp:
+            json.dump(model_data, fp)
 
     def _get_intercepts(self):
         """
