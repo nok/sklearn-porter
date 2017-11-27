@@ -15,20 +15,20 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
 <table>
     <tbody>
         <tr>
-            <td align="center" width="40%"><strong>Algorithm</strong></td>
-            <td align="center" colspan="6" width="60%"><strong>Programming language</strong></td>
+            <td align="center" width="22%"><strong>Algorithm</strong></td>
+            <td align="center" colspan="6" width="78%"><strong>Programming language</strong></td>
         </tr>
         <tr>
-            <td align="left" width="40%">Classification</td>
-            <td align="center" width="10%">C</td>
-            <td align="center" width="10%">Java *</td>
-            <td align="center" width="10%">JS</td>
-            <td align="center" width="10%">Go</td>
-            <td align="center" width="10%">PHP</td>
-            <td align="center" width="10%">Ruby</td>
+            <td align="left" width="22%">Classification</td>
+            <td align="center" width="13%">C</td>
+            <td align="center" width="13%">Java *</td>
+            <td align="center" width="13%">JS</td>
+            <td align="center" width="13%">Go</td>
+            <td align="center" width="13%">PHP</td>
+            <td align="center" width="13%">Ruby</td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">sklearn.svm.SVC</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">SVC</a></td>
             <td align="center"><a href="examples/estimator/classifier/SVC/c/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/SVC/java/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/SVC/js/basics.ipynb">✓</a></td>
@@ -37,7 +37,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"><a href="examples/estimator/classifier/SVC/ruby/basics.ipynb">✓</a></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">sklearn.svm.NuSVC</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">NuSVC</a></td>
             <td align="center"><a href="examples/estimator/classifier/NuSVC/c/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/NuSVC/java/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/NuSVC/js/basics.ipynb">✓</a></td>
@@ -46,7 +46,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"><a href="examples/estimator/classifier/NuSVC/ruby/basics.ipynb">✓</a></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">sklearn.svm.LinearSVC</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">LinearSVC</a></td>
             <td align="center"><a href="examples/estimator/classifier/LinearSVC/c/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/LinearSVC/java/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/LinearSVC/js/basics.ipynb">✓</a></td>
@@ -55,7 +55,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"><a href="examples/estimator/classifier/LinearSVC/ruby/basics.ipynb">✓</a></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">sklearn.tree.DecisionTreeClassifier</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">DecisionTreeClassifier</a></td>
             <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics_embedded.ipynb">✓ ᴱ</a></td>
             <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics_embedded.ipynb">✓ ᴱ</a></td>
@@ -64,7 +64,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/ruby/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/ruby/basics_embedded.ipynb">✓ ᴱ</a></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">sklearn.ensemble.RandomForestClassifier</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">RandomForestClassifier</a></td>
             <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/c/basics_embedded.ipynb">✓ ᴱ</a></td>
             <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/java/basics_embedded.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/RandomForestClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/js/basics_embedded.ipynb">✓ ᴱ</a></td>
@@ -73,7 +73,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center">✓ ᴱ</td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">sklearn.ensemble.ExtraTreesClassifier</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">ExtraTreesClassifier</a></td>
             <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/c/basics.ipynb">✓ ᴱ</a></td>
             <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/java/basics_embedded.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/ExtraTreesClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/js/basics.ipynb">✓ ᴱ</a></td>
@@ -82,7 +82,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center">✓ ᴱ</td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">sklearn.ensemble.AdaBoostClassifier</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">AdaBoostClassifier</a></td>
             <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/c/basics_embedded.ipynb">✓ ᴱ</a></td>
             <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/java/basics_embedded.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/AdaBoostClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/js/basics_embedded.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/AdaBoostClassifier/js/basics_imported.ipynb">✓ ᴵ</a></td>
@@ -91,7 +91,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">sklearn.neighbors.KNeighborsClassifier</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">KNeighborsClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/estimator/classifier/KNeighborsClassifier/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/KNeighborsClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/KNeighborsClassifier/js/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/KNeighborsClassifier/js/basics_imported.ipynb">✓ ᴵ</a></td>
@@ -100,7 +100,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">sklearn.naive_bayes.GaussianNB</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">GaussianNB</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/estimator/classifier/GaussianNB/java/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/GaussianNB/js/basics.ipynb">✓</a></td>
@@ -109,7 +109,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">sklearn.naive_bayes.BernoulliNB</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">BernoulliNB</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/estimator/classifier/BernoulliNB/java/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/BernoulliNB/js/basics.ipynb">✓</a></td>
@@ -118,7 +118,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html">sklearn.neural_network.MLPClassifier</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html">MLPClassifier</a></td>
             <td align="center"></td>
             <td align="center"><a href="examples/estimator/classifier/MLPClassifier/java/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/MLPClassifier/js/basics.ipynb">✓</a></td>
@@ -127,11 +127,11 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"></td>
         </tr>
         <tr>
-            <td align="left" width="40%">Regression</td>
-            <td colspan="6" width="10%"></td>
+            <td align="left" width="22%">Regression</td>
+            <td colspan="6" width="78%"></td>
         </tr>
         <tr>
-            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">sklearn.neural_network.MLPRegressor</a></td>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">MLPRegressor</a></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"><a href="examples/estimator/regressor/MLPRegressor/js/basics.ipynb">✓</a></td>
