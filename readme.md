@@ -29,7 +29,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a></td>
-            <td align="center"><a href="examples/estimator/classifier/SVC/java/basics.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/SVC/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/SVC/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/SVC/js/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/SVC/c/basics.ipynb">✓</a></td>
             <td align="center"></td>
@@ -38,7 +38,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a></td>
-            <td align="center"><a href="examples/estimator/classifier/NuSVC/java/basics.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/NuSVC/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/NuSVC/java/basics_imported.ipynb">✓ ᴵ</a></td>
             <td align="center"><a href="examples/estimator/classifier/NuSVC/js/basics.ipynb">✓</a></td>
             <td align="center"><a href="examples/estimator/classifier/NuSVC/c/basics.ipynb">✓</a></td>
             <td align="center"></td>

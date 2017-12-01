@@ -6,10 +6,11 @@ from unittest import TestCase
 from sklearn.svm.classes import NuSVC
 
 from tests.estimator.classifier.Classifier import Classifier
+from tests.estimator.classifier.ExportedData import ExportedData
 from tests.language.Java import Java
 
 
-class NuSVCJavaTest(Java, Classifier, TestCase):
+class NuSVCJavaTest(Java, Classifier, ExportedData, TestCase):
 
     def setUp(self):
         super(NuSVCJavaTest, self).setUp()

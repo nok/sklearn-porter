@@ -8,10 +8,11 @@ import numpy as np
 from sklearn.svm.classes import SVC
 
 from tests.estimator.classifier.Classifier import Classifier
+from tests.estimator.classifier.ExportedData import ExportedData
 from tests.language.Java import Java
 
 
-class SVCJavaTest(Java, Classifier, TestCase):
+class SVCJavaTest(Java, Classifier, ExportedData, TestCase):
 
     def setUp(self):
         super(SVCJavaTest, self).setUp()

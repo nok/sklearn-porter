@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+import os
+import json
+from json import encoder
 import types
 from ..Classifier import Classifier
 
@@ -73,7 +76,9 @@ class SVC(Classifier):
                                   target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name, **kwargs):
+    def export(self, class_name, method_name,
+               export_data=False, export_dir='.',
+               **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -172,10 +177,17 @@ class SVC(Classifier):
         self.coef0 = self.repr(self.params['coef0'])
         self.degree = self.repr(self.params['degree'])
 
-        if self.target_method == 'predict':
-            return self.predict()
 
-    def predict(self):
+        if self.target_method == 'predict':
+            # Exported:
+            if export_data and os.path.isdir(export_dir):
+                self.export_data(export_dir)
+                return self.predict('exported')
+            # Separated:
+            return self.predict('separated')
+
+
+    def predict(self, temp_type):
         """
         Transpile the predict method.
 
@@ -184,9 +196,33 @@ class SVC(Classifier):
         :return : string
             The transpiled predict method as string.
         """
+        # Exported:
+        if temp_type == 'exported':
+            temp = self.temp('exported.class')
+            return temp.format(class_name=self.class_name,
+                               method_name=self.method_name)
+
+        # Separated
         self.method = self.create_method()
-        output = self.create_class()
-        return output
+        return self.create_class()
+
+    def export_data(self, export_dir):
+        model_data = {
+            'vectors': self.estimator.support_vectors_.tolist(),
+            'coefficients': self.estimator.dual_coef_.tolist(),
+            'intercepts': self.estimator._intercept_.tolist(),
+            'weights': self.estimator.n_support_.tolist(),
+            'kernel': self.kernel,
+            'gamma': float(self.gamma),
+            'coef0': float(self.coef0),
+            'degree': float(self.degree),
+            'nClasses': int(self.n_classes),
+            'nRows': int(self.n_svs_rows)
+        }
+        encoder.FLOAT_REPR = lambda o: self.repr(o)
+        path = os.path.join(export_dir, 'data.json')
+        with open(path, 'w') as fp:
+            json.dump(model_data, fp)
 
     def create_method(self):
         """
@@ -199,7 +235,7 @@ class SVC(Classifier):
         """
         n_indents = 1 if self.target_language in ['java', 'js',
                                                   'php', 'ruby'] else 0
-        method = self.temp('method', n_indents=n_indents,
+        method = self.temp('separated.method', n_indents=n_indents,
                            skipping=True).format(**self.__dict__)
         return method
 
@@ -212,6 +248,6 @@ class SVC(Classifier):
         :return out : string
             The built class as string.
         """
-        temp_class = self.temp('class')
+        temp_class = self.temp('separated.class')
         out = temp_class.format(**self.__dict__)
         return out
