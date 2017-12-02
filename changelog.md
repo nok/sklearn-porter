@@ -36,6 +36,7 @@ All notable changes to this project will be documented in this file.
     - Java:
         - `svm.SVC` [notebook](examples/estimator/classifier/SVC/java/basics_imported.ipynb) ([#e753252](https://github.com/nok/sklearn-porter/commit/e75325255a91bb9ca00a4e34c5393c6b05a41d6f))
         - `svm.NuSVC` [notebook](examples/estimator/classifier/NuSVC/java/basics_imported.ipynb) ([#e753252](https://github.com/nok/sklearn-porter/commit/e75325255a91bb9ca00a4e34c5393c6b05a41d6f))
+        - `svm.LinearSVC` [notebook](examples/estimator/classifier/LinearSVC/java/basics_imported.ipynb) ([#562ed8c](https://github.com/nok/sklearn-porter/commit/562ed8c77cc3b9e1fa3f9b5219ec842c290219e6))
         - `ensemble.AdaBoostClassifier` [notebook](examples/estimator/classifier/AdaBoostClassifier/java/basics_imported.ipynb) ([#79d846f](https://github.com/nok/sklearn-porter/commit/79d846f71af4a37de4655d86ab5e42d11311d5ed))
         - `ensemble.RandomForestClassifier` [notebook](examples/estimator/classifier/RandomForestClassifier/java/basics_imported.ipynb) ([#9979a94](https://github.com/nok/sklearn-porter/commit/9979a948f51fef527b792babe06103c2c0dd5db4))
         - `ensemble.ExtraTreesClassifier` [notebook](examples/estimator/classifier/ExtraTreesClassifier/java/basics_imported.ipynb) ([#9979a94](https://github.com/nok/sklearn-porter/commit/9979a948f51fef527b792babe06103c2c0dd5db4))
