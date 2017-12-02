@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import os
+import json
+from json import encoder
+
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
@@ -85,7 +89,9 @@ class LinearSVC(Classifier):
                                         target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name, **kwargs):
+    def export(self, class_name, method_name,
+               export_data=False, export_dir='.',
+               **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -153,9 +159,14 @@ class LinearSVC(Classifier):
         self.intercepts = inters
 
         if self.target_method == 'predict':
-            return self.predict()
+            # Exported:
+            if export_data and os.path.isdir(export_dir):
+                self.export_data(export_dir)
+                return self.predict('exported')
+            # Separated:
+            return self.predict('separated')
 
-    def predict(self):
+    def predict(self, temp_type):
         """
         Transpile the predict method.
 
@@ -164,9 +175,25 @@ class LinearSVC(Classifier):
         :return : string
             The transpiled predict method as string.
         """
+        # Exported:
+        if temp_type == 'exported':
+            temp = self.temp('exported.{}.class'.format(self.prefix))
+            return temp.format(class_name=self.class_name,
+                               method_name=self.method_name)
+
+        # Separated
         self.method = self.create_method()
-        output = self.create_class()
-        return output
+        return self.create_class()
+
+    def export_data(self, export_dir):
+        model_data = {
+            'coefficients': (self.estimator.coef_[0] if self.is_binary else self.estimator.coef_).tolist(),
+            'intercepts': (self.estimator.intercept_[0] if self.is_binary else self.estimator.intercept_).tolist(),
+        }
+        encoder.FLOAT_REPR = lambda o: self.repr(o)
+        path = os.path.join(export_dir, 'data.json')
+        with open(path, 'w') as fp:
+            json.dump(model_data, fp)
 
     def create_method(self):
         """
@@ -178,7 +205,7 @@ class LinearSVC(Classifier):
             The built method as string.
         """
         n_indents = 0 if self.target_language in ['c', 'go'] else 1
-        method_type = '{}.method'.format(self.prefix)
+        method_type = 'separated.{}.method'.format(self.prefix)
         method_temp = self.temp(method_type, n_indents=n_indents, skipping=True)
         output = method_temp.format(**self.__dict__)
         return output
@@ -194,9 +221,9 @@ class LinearSVC(Classifier):
         """
         if self.target_language in ['java', 'go']:
             n_indents = 1 if self.target_language == 'java' else 0
-            class_head_temp = self.temp('{}.class'.format(self.prefix),
+            class_head_temp = self.temp('separated.{}.class'.format(self.prefix),
                                         n_indents=n_indents, skipping=True)
             self.class_head = class_head_temp.format(**self.__dict__)
 
-        output = self.temp('class').format(**self.__dict__)
+        output = self.temp('separated.class').format(**self.__dict__)
         return output

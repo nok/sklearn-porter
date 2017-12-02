@@ -13,10 +13,11 @@ from sklearn.svm.classes import LinearSVC
 from sklearn_porter import Porter
 
 from tests.estimator.classifier.Classifier import Classifier
+from tests.estimator.classifier.ExportedData import ExportedData
 from tests.language.Java import Java
 
 
-class LinearSVCJavaTest(Java, Classifier, TestCase):
+class LinearSVCJavaTest(Java, Classifier, ExportedData, TestCase):
 
     def setUp(self):
         super(LinearSVCJavaTest, self).setUp()
