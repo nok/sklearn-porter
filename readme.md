@@ -120,7 +120,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html">neural_network.MLPClassifier</a></td>
             <td align="center"><a href="examples/estimator/classifier/MLPClassifier/java/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/MLPClassifier/java/basics_imported.ipynb">✓ ᴵ</a></td>
-            <td align="center"><a href="examples/estimator/classifier/MLPClassifier/js/basics.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/MLPClassifier/js/basics.ipynb">✓</a>, <a href="examples/estimator/classifier/MLPClassifier/js/basics_imported.ipynb">✓ ᴵ</a></td></td>
             <td align="center"></td>
             <td align="center"></td>
             <td align="center"></td>
