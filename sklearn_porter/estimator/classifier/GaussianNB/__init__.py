@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import os
+import json
+from json import encoder
+
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
@@ -52,7 +56,9 @@ class GaussianNB(Classifier):
             target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name, **kwargs):
+    def export(self, class_name, method_name,
+               export_data=False, export_dir='.',
+               **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -111,9 +117,14 @@ class GaussianNB(Classifier):
                                         values=thetas)
 
         if self.target_method == 'predict':
-            return self.predict()
+            # Exported:
+            if export_data and os.path.isdir(export_dir):
+                self.export_data(export_dir)
+                return self.predict('exported')
+            # Separated:
+            return self.predict('separated')
 
-    def predict(self):
+    def predict(self, temp_type):
         """
         Transpile the predict method.
 
@@ -122,7 +133,26 @@ class GaussianNB(Classifier):
         :return : string
             The transpiled predict method as string.
         """
-        return self.create_class(self.create_method())
+        # Exported:
+        if temp_type == 'exported':
+            temp = self.temp('exported.class')
+            return temp.format(class_name=self.class_name,
+                               method_name=self.method_name)
+
+        # Separated
+        method = self.create_method()
+        return self.create_class(method)
+
+    def export_data(self, export_dir):
+        model_data = {
+            'priors': self.estimator.class_prior_.tolist(),
+            'sigmas': self.estimator.sigma_.tolist(),
+            'thetas': self.estimator.theta_.tolist()
+        }
+        encoder.FLOAT_REPR = lambda o: self.repr(o)
+        path = os.path.join(export_dir, 'data.json')
+        with open(path, 'w') as fp:
+            json.dump(model_data, fp)
 
     def create_method(self):
         """
@@ -133,7 +163,7 @@ class GaussianNB(Classifier):
         :return out : string
             The built method as string.
         """
-        temp_method = self.temp('method.predict', n_indents=1, skipping=True)
+        temp_method = self.temp('separated.method.predict', n_indents=1, skipping=True)
         out = temp_method.format(**self.__dict__)
         return out
 
@@ -147,6 +177,6 @@ class GaussianNB(Classifier):
             The built class as string.
         """
         self.__dict__.update(dict(method=method))
-        temp_class = self.temp('class')
+        temp_class = self.temp('separated.class')
         out = temp_class.format(**self.__dict__)
         return out

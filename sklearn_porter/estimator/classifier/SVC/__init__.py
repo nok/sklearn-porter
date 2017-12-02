@@ -4,7 +4,8 @@ import os
 import json
 from json import encoder
 import types
-from ..Classifier import Classifier
+
+from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
 class SVC(Classifier):
@@ -176,7 +177,6 @@ class SVC(Classifier):
         self.gamma = self.repr(self.params['gamma'])
         self.coef0 = self.repr(self.params['coef0'])
         self.degree = self.repr(self.params['degree'])
-
 
         if self.target_method == 'predict':
             # Exported:
