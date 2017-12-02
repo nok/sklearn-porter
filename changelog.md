@@ -48,6 +48,7 @@ All notable changes to this project will be documented in this file.
     - JavaScript:
         - `ensemble.AdaBoostClassifier` [notebook](examples/estimator/classifier/AdaBoostClassifier/js/basics_imported.ipynb) ([#9fdcc49](https://github.com/nok/sklearn-porter/commit/9fdcc49355617668c3bf451a8d5828880245a4ae), [#dd70ac7](https://github.com/nok/sklearn-porter/commit/dd70ac7e63cecad9028e9dea32efb7e1d2e43237), [#2401fba](https://github.com/nok/sklearn-porter/commit/2401fba9938880bf420de0253e489c22e7b040e4))
         - `neighbors.KNeighborsClassifier` [notebook](examples/estimator/classifier/KNeighborsClassifier/js/basics_imported.ipynb) ([#f915b70](https://github.com/nok/sklearn-porter/commit/f915b70568b4212e7fb8d616058a927f98b186da))
+        - `neural_network.MLPClassifier` [notebook](examples/estimator/classifier/MLPClassifier/js/basics_imported.ipynb) ([#ce23148](https://github.com/nok/sklearn-porter/commit/ce2314893d013a1c4ac2fd9965d1d61fe324834c))
 - Add new recipes:
     - JavaScript:
         - [MLPClassifier Web Workers](examples/recipes/use_javascript_web_workers) ([#187efac](https://github.com/nok/sklearn-porter/commit/187efac3fa045e177a1980244bef302a462fcf4e))
