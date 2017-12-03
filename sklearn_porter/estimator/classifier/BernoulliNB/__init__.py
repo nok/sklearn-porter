@@ -59,7 +59,7 @@ class BernoulliNB(Classifier):
 
     def export(self, class_name, method_name,
                export_data=False, export_dir='.', export_filename='data.json',
-               **kwargs):
+               export_append_checksum=False, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
@@ -75,6 +75,8 @@ class BernoulliNB(Classifier):
             The directory where the model data should be saved.
         :param export_filename : string
             The filename of the exported model data.
+        :param export_append_checksum : bool
+            Whether to append the checksum to the filename or not.
 
         Returns
         -------
@@ -127,7 +129,8 @@ class BernoulliNB(Classifier):
         if self.target_method == 'predict':
             # Exported:
             if export_data and os.path.isdir(export_dir):
-                self.export_data(export_dir, export_filename)
+                self.export_data(export_dir, export_filename,
+                                 export_append_checksum)
                 return self.predict('exported')
             # Separated:
             return self.predict('separated')
@@ -156,7 +159,7 @@ class BernoulliNB(Classifier):
         method = self.create_method()
         return self.create_class(method)
 
-    def export_data(self, directory, filename):
+    def export_data(self, directory, filename, with_md5_hash=False):
         """
         Save model data in a JSON file.
 
@@ -166,6 +169,8 @@ class BernoulliNB(Classifier):
             The directory.
         :param filename : string
             The filename.
+        :param with_md5_hash : bool
+            Whether to append the checksum to the filename or not.
         """
         neg_prob = np.log(1 - np.exp(self.estimator.feature_log_prob_))
         delta_probs = (self.estimator.feature_log_prob_ - neg_prob).T
@@ -175,9 +180,14 @@ class BernoulliNB(Classifier):
             'delProbs': delta_probs.tolist()
         }
         encoder.FLOAT_REPR = lambda o: self.repr(o)
+        json_data = json.dumps(model_data, sort_keys=True)
+        if with_md5_hash:
+            import hashlib
+            json_hash = hashlib.md5(json_data).hexdigest()
+            filename = filename.split('.json')[0] + '_' + json_hash + '.json'
         path = os.path.join(directory, filename)
         with open(path, 'w') as fp:
-            json.dump(model_data, fp)
+            fp.write(json_data)
 
     def create_method(self):
         """

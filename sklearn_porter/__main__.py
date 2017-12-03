@@ -48,6 +48,12 @@ def parse_args(args):
         action='store_true',
         help='Whether to export the model data or not.')
     optional.add_argument(
+        '--checksum',
+        required=False,
+        default=False,
+        action='store_true',
+        help='Whether to append the checksum to the filename or not.')
+    optional.add_argument(
         '--pipe', '-p',
         required=False,
         default=False,
@@ -106,13 +112,16 @@ def main():
 
     # Port estimator:
     try:
-        porter = Porter(estimator, language=language)
         class_name = args.get('class_name')
         method_name = args.get('method_name')
+        with_export = bool(args.get('export'))
+        with_checksum = bool(args.get('checksum'))
+        porter = Porter(estimator, language=language)
         output = porter.export(class_name=class_name,
                                method_name=method_name,
                                export_dir=dest_dir,
-                               export_data=bool(args.get('export')),
+                               export_data=with_export,
+                               export_append_checksum=with_checksum,
                                details=True)
     except Exception as e:
         sys.exit('Error: {}'.format(str(e)))
