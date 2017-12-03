@@ -233,7 +233,7 @@ First of all have a quick view on the available arguments:
 $ python -m sklearn_porter [-h] --input <PICKLE_FILE> [--output <DEST_DIR>] \
                            [--class_name <CLASS_NAME>] [--method_name <METHOD_NAME>] \
                            [--c] [--java] [--js] [--go] [--php] [--ruby] \
-                           [--pipe]
+                           [--export] [--pipe]
 ```
 
 The following example shows how you can save an trained estimator to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):

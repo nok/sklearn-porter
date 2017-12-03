@@ -33,7 +33,7 @@ def parse_args(args):
             'stored.'))
     optional.add_argument(
         '--class_name',
-        default='Brain',
+        default=None,
         required=False,
         help='Define the class name in the final output.')
     optional.add_argument(
@@ -41,6 +41,12 @@ def parse_args(args):
         default='predict',
         required=False,
         help='Define the method name in the final output.')
+    optional.add_argument(
+        '--export', '-e',
+        required=False,
+        default=False,
+        action='store_true',
+        help='Whether to export the model data or not.')
     optional.add_argument(
         '--pipe', '-p',
         required=False,
@@ -91,37 +97,36 @@ def main():
             language = key
             break
 
+    # Define destination path:
+    dest_dir = str(args.get('output'))
+    if dest_dir == '' or not os.path.isdir(dest_dir):
+        dest_dir = input_path.split(os.sep)
+        del dest_dir[-1]
+        dest_dir = os.sep.join(dest_dir)
+
     # Port estimator:
     try:
         porter = Porter(estimator, language=language)
-        class_name = str(args.get('class_name'))
-        method_name = str(args.get('method_name'))
+        class_name = args.get('class_name')
+        method_name = args.get('method_name')
         output = porter.export(class_name=class_name,
                                method_name=method_name,
-                               output=str(args.get('output')),
+                               export_dir=dest_dir,
+                               export_data=bool(args.get('export')),
                                details=True)
     except Exception as e:
         sys.exit('Error: {}'.format(str(e)))
     else:
         # Print transpiled estimator to the console:
         if bool(args.get('pipe', False)):
-            print(output.get('model'))
+            print(output.get('estimator'))
             sys.exit(0)
 
-        # Define destination path:
-        dest_dir = str(args.get('output'))
         filename = output.get('filename')
-        if dest_dir != '' and os.path.isdir(dest_dir):
-            dest_path = os.path.join(dest_dir, filename)
-        else:
-            dest_dir = input_path.split(os.sep)
-            del dest_dir[-1]
-            dest_dir += [filename]
-            dest_path = os.sep.join(dest_dir)
-
+        dest_path = dest_dir + os.sep + filename
         # Save transpiled estimator:
         with open(dest_path, 'w') as file_:
-            file_.write(output.get('model'))
+            file_.write(output.get('estimator'))
 
 
 if __name__ == "__main__":

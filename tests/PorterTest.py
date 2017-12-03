@@ -65,7 +65,7 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
         joblib.dump(self.estimator, pkl_path)
 
         # Port estimator:
-        cmd = 'python -m sklearn_porter -i {}'.format(pkl_path).split()
+        cmd = 'python -m sklearn_porter -i {} --class_name Brain'.format(pkl_path).split()
         subp.call(cmd)
         # Compare file contents:
         equal = filecmp.cmp(cp_src, cp_dest)

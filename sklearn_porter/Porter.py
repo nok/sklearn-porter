@@ -176,10 +176,10 @@ class Porter(object):
             with further information.
         """
 
-        if class_name is None:
+        if class_name is None or class_name == '':
             class_name = self.estimator_name
 
-        if method_name is None:
+        if method_name is None or method_name == '':
             method_name = self.target_method
 
         if isinstance(num_format, types.LambdaType):
@@ -196,7 +196,7 @@ class Porter(object):
                                                   class_name,
                                                   language)
         output = {
-            'model': str(output),
+            'estimator': str(output),
             'filename': filename,
             'class_name': class_name,
             'method_name': method_name,
@@ -495,12 +495,12 @@ class Porter(object):
             filename : str
             The generated filename.
         """
-        name = str(class_name).lower()
+        name = str(class_name).strip()
         lang = str(language)
 
         # Name:
         if language in ['java', 'php']:
-            name = name.capitalize()
+            name = "".join([name[0].upper() + name[1:]])
 
         # Suffix:
         suffix = {
