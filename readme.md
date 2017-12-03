@@ -19,7 +19,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center" colspan="6" width="68%"><strong>Programming language</strong></td>
         </tr>
         <tr>
-            <td align="left" width="32%">Classification</td>
+            <td align="left" width="32%">Classifier</td>
             <td align="center" width="13%">Java *</td>
             <td align="center" width="11%">JS</td>
             <td align="center" width="11%">C</td>
@@ -127,7 +127,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
             <td align="center"></td>
         </tr>
         <tr>
-            <td align="left" width="32%">Regression</td>
+            <td align="left" width="32%">Regressor</td>
             <td colspan="6" width="68%"></td>
         </tr>
         <tr>
