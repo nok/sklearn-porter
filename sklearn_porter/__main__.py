@@ -54,6 +54,12 @@ def parse_args(args):
         action='store_true',
         help='Whether to append the checksum to the filename or not.')
     optional.add_argument(
+        '--data',
+        required=False,
+        default=False,
+        action='store_true',
+        help='Whether to export just the model data or all.')
+    optional.add_argument(
         '--pipe', '-p',
         required=False,
         default=False,
@@ -131,11 +137,13 @@ def main():
             print(output.get('estimator'))
             sys.exit(0)
 
-        filename = output.get('filename')
-        dest_path = dest_dir + os.sep + filename
-        # Save transpiled estimator:
-        with open(dest_path, 'w') as file_:
-            file_.write(output.get('estimator'))
+        only_data = bool(args.get('data'))
+        if not only_data:
+            filename = output.get('filename')
+            dest_path = dest_dir + os.sep + filename
+            # Save transpiled estimator:
+            with open(dest_path, 'w') as file_:
+                file_.write(output.get('estimator'))
 
 
 if __name__ == "__main__":
