@@ -67,9 +67,9 @@ class MLPRegressor(Regressor):
 
         Parameters
         ----------
-        :param class_name: string
+        :param class_name : string
             The name of the class in the returned result.
-        :param method_name: string
+        :param method_name : string
             The name of the method in the returned result.
 
         Returns
@@ -77,7 +77,6 @@ class MLPRegressor(Regressor):
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
-
         # Arguments:
         self.class_name = class_name
         self.method_name = method_name
@@ -125,15 +124,14 @@ class MLPRegressor(Regressor):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built method as string.
         """
         temp_method = self.temp('method', skipping=True, n_indents=1)
-        out = temp_method.format(class_name=self.class_name,
-                                 method_name=self.method_name,
-                                 n_features=self.n_inputs,
-                                 n_classes=self.n_outputs)
-        return out
+        return temp_method.format(class_name=self.class_name,
+                                  method_name=self.method_name,
+                                  n_features=self.n_inputs,
+                                  n_classes=self.n_outputs)
 
     def create_class(self, method):
         """
@@ -141,11 +139,9 @@ class MLPRegressor(Regressor):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built class as string.
         """
-        hidden_act_type = 'activation_fn.' + self.hidden_activation
-
         temp_arr = self.temp('arr')
         temp_arr_ = self.temp('arr[]')
         temp_arr__ = self.temp('arr[][]')
@@ -179,15 +175,14 @@ class MLPRegressor(Regressor):
 
         temp_class = self.temp('class')
         file_name = '{}.js'.format(self.class_name.lower())
-        out = temp_class.format(class_name=self.class_name,
-                                method_name=self.method_name, method=method,
-                                n_features=self.n_inputs,
-                                file_name=file_name,
-                                weights=coefficients,
-                                bias=intercepts,
-                                layers=layers,
-                                hidden_activation=self.hidden_activation)
-        return out
+        return temp_class.format(class_name=self.class_name,
+                                 method_name=self.method_name, method=method,
+                                 n_features=self.n_inputs,
+                                 file_name=file_name,
+                                 weights=coefficients,
+                                 bias=intercepts,
+                                 layers=layers,
+                                 hidden_activation=self.hidden_activation)
 
     def _get_intercepts(self):
         """

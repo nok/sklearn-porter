@@ -78,24 +78,29 @@ class SVC(Classifier):
         self.estimator = estimator
 
     def export(self, class_name, method_name,
-               export_data=False, export_dir='.',
+               export_data=False, export_dir='.', export_filename='data.json',
                **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string, default: 'Brain'
+        :param class_name : string, default: 'Brain'
             The name of the class in the returned result.
-        :param method_name: string, default: 'predict'
+        :param method_name : string, default: 'predict'
             The name of the method in the returned result.
+        :param export_data : bool
+            Whether the model data should be saved or not.
+        :param export_dir : string
+            The directory where the model data should be saved.
+        :param export_filename : string
+            The filename of the exported model data.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
-
         # Arguments:
         self.class_name = class_name
         self.method_name = method_name
@@ -181,15 +186,19 @@ class SVC(Classifier):
         if self.target_method == 'predict':
             # Exported:
             if export_data and os.path.isdir(export_dir):
-                self.export_data(export_dir)
+                self.export_data(export_dir, export_filename)
                 return self.predict('exported')
             # Separated:
             return self.predict('separated')
 
-
     def predict(self, temp_type):
         """
         Transpile the predict method.
+
+        Parameters
+        ----------
+        :param temp_type: string
+            The kind of export type (embedded, separated, exported).
 
         Returns
         -------
@@ -201,12 +210,21 @@ class SVC(Classifier):
             temp = self.temp('exported.class')
             return temp.format(class_name=self.class_name,
                                method_name=self.method_name)
-
         # Separated
         self.method = self.create_method()
         return self.create_class()
 
-    def export_data(self, export_dir):
+    def export_data(self, directory, filename):
+        """
+        Save model data in a JSON file.
+
+        Parameters
+        ----------
+        :param directory : string
+            The directory.
+        :param filename : string
+            The filename.
+        """
         model_data = {
             'vectors': self.estimator.support_vectors_.tolist(),
             'coefficients': self.estimator.dual_coef_.tolist(),
@@ -220,7 +238,7 @@ class SVC(Classifier):
             'nRows': int(self.n_svs_rows)
         }
         encoder.FLOAT_REPR = lambda o: self.repr(o)
-        path = os.path.join(export_dir, 'data.json')
+        path = os.path.join(directory, filename)
         with open(path, 'w') as fp:
             json.dump(model_data, fp)
 
@@ -230,14 +248,13 @@ class SVC(Classifier):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built method as string.
         """
         n_indents = 1 if self.target_language in ['java', 'js',
                                                   'php', 'ruby'] else 0
-        method = self.temp('separated.method', n_indents=n_indents,
-                           skipping=True).format(**self.__dict__)
-        return method
+        return self.temp('separated.method', n_indents=n_indents,
+                         skipping=True).format(**self.__dict__)
 
     def create_class(self):
         """
@@ -245,9 +262,8 @@ class SVC(Classifier):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built class as string.
         """
         temp_class = self.temp('separated.class')
-        out = temp_class.format(**self.__dict__)
-        return out
+        return temp_class.format(**self.__dict__)

@@ -90,24 +90,29 @@ class LinearSVC(Classifier):
         self.estimator = estimator
 
     def export(self, class_name, method_name,
-               export_data=False, export_dir='.',
+               export_data=False, export_dir='.', export_filename='data.json',
                **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string, default: 'Brain'
+        :param class_name : string, default: 'Brain'
             The name of the class in the returned result.
-        :param method_name: string, default: 'predict'
+        :param method_name : string, default: 'predict'
             The name of the method in the returned result.
+        :param export_data : bool
+            Whether the model data should be saved or not.
+        :param export_dir : string
+            The directory where the model data should be saved.
+        :param export_filename : string
+            The filename of the exported model data.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
-
         # Arguments:
         self.class_name = class_name
         self.method_name = method_name
@@ -161,7 +166,7 @@ class LinearSVC(Classifier):
         if self.target_method == 'predict':
             # Exported:
             if export_data and os.path.isdir(export_dir):
-                self.export_data(export_dir)
+                self.export_data(export_dir, export_filename)
                 return self.predict('exported')
             # Separated:
             return self.predict('separated')
@@ -169,6 +174,11 @@ class LinearSVC(Classifier):
     def predict(self, temp_type):
         """
         Transpile the predict method.
+
+        Parameters
+        ----------
+        :param temp_type : string
+            The kind of export type (embedded, separated, exported).
 
         Returns
         -------
@@ -185,13 +195,26 @@ class LinearSVC(Classifier):
         self.method = self.create_method()
         return self.create_class()
 
-    def export_data(self, export_dir):
+    def export_data(self, directory, filename):
+        """
+        Save model data in a JSON file.
+
+        Parameters
+        ----------
+        :param directory : string
+            The directory.
+        :param filename : string
+            The filename.
+        """
+        est = self.estimator
+        coefs = est.coef_[0] if self.is_binary else est.coef_
+        inters = est.intercept_[0] if self.is_binary else est.intercept_
         model_data = {
-            'coefficients': (self.estimator.coef_[0] if self.is_binary else self.estimator.coef_).tolist(),
-            'intercepts': (self.estimator.intercept_[0] if self.is_binary else self.estimator.intercept_).tolist(),
+            'coefficients': coefs.tolist(),
+            'intercepts': inters.tolist(),
         }
         encoder.FLOAT_REPR = lambda o: self.repr(o)
-        path = os.path.join(export_dir, 'data.json')
+        path = os.path.join(directory, filename)
         with open(path, 'w') as fp:
             json.dump(model_data, fp)
 
@@ -201,14 +224,13 @@ class LinearSVC(Classifier):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built method as string.
         """
         n_indents = 0 if self.target_language in ['c', 'go'] else 1
         method_type = 'separated.{}.method'.format(self.prefix)
         method_temp = self.temp(method_type, n_indents=n_indents, skipping=True)
-        output = method_temp.format(**self.__dict__)
-        return output
+        return method_temp.format(**self.__dict__)
 
     def create_class(self):
         """
@@ -216,7 +238,7 @@ class LinearSVC(Classifier):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built class as string.
         """
         if self.target_language in ['java', 'go']:
@@ -225,5 +247,4 @@ class LinearSVC(Classifier):
                                         n_indents=n_indents, skipping=True)
             self.class_head = class_head_temp.format(**self.__dict__)
 
-        output = self.temp('separated.class').format(**self.__dict__)
-        return output
+        return self.temp('separated.class').format(**self.__dict__)

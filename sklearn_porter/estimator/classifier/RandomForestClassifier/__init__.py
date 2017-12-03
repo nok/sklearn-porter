@@ -95,24 +95,26 @@ class RandomForestClassifier(Classifier):
         self.estimator = estimator
 
     def export(self, class_name, method_name,
-               export_data=False, export_dir='.',
+               export_data=False, export_dir='.', export_filename='data.json',
                embed_data=True, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string
+        :param class_name : string
             The name of the class in the returned result.
-        :param method_name: string
+        :param method_name : string
             The name of the method in the returned result.
-
-        Returns
-        -------
-        :return : string
-            The transpiled algorithm with the defined placeholders.
+        :param export_data : bool
+            Whether the model data should be saved or not.
+        :param export_dir : string
+            The directory where the model data should be saved.
+        :param export_filename : string
+            The filename of the exported model data.
+        :param embed_data : bool
+            Whether the model data should be embedded in the template or not.
         """
-
         # Arguments:
         self.class_name = class_name
         self.method_name = method_name
@@ -120,7 +122,8 @@ class RandomForestClassifier(Classifier):
         # Estimator:
         est = self.estimator
 
-        self.estimators = [est.estimators_[idx] for idx in range(est.n_estimators)]
+        self.estimators = [est.estimators_[idx] for idx
+                           in range(est.n_estimators)]
         self.n_estimators = len(self.estimators)
         self.n_features = est.estimators_[0].n_features_
         self.n_classes = est.n_classes_
@@ -128,12 +131,25 @@ class RandomForestClassifier(Classifier):
         if self.target_method == 'predict':
             # Exported:
             if export_data and os.path.isdir(export_dir):
-                self.export_data(export_dir)
+                self.export_data(export_dir, export_filename)
                 return self.predict('exported')
             # Embedded:
             return self.predict('embedded')
 
     def predict(self, temp_type):
+        """
+        Transpile the predict method.
+
+        Parameters
+        ----------
+        :param temp_type : string
+            The kind of export type (embedded, separated, exported).
+
+        Returns
+        -------
+        :return : string
+            The transpiled predict method as string.
+        """
         # Exported:
         if temp_type == 'exported':
             temp = self.temp('exported.class')
@@ -145,7 +161,17 @@ class RandomForestClassifier(Classifier):
             method = self.create_method_embedded()
             return self.create_class_embedded(method)
 
-    def export_data(self, export_dir):
+    def export_data(self, directory, filename):
+        """
+        Save model data in a JSON file.
+
+        Parameters
+        ----------
+        :param directory : string
+            The directory.
+        :param filename : string
+            The filename.
+        """
         model_data = []
         for est in self.estimators:
             model_data.append({
@@ -156,7 +182,7 @@ class RandomForestClassifier(Classifier):
                 'indices': est.tree_.feature.tolist()
             })
         encoder.FLOAT_REPR = lambda o: self.repr(o)
-        path = os.path.join(export_dir, 'data.json')
+        path = os.path.join(directory, filename)
         with open(path, 'w') as fp:
             json.dump(model_data, fp)
 
@@ -184,7 +210,7 @@ class RandomForestClassifier(Classifier):
 
         Returns
         -------
-        :return : string
+        :return out : string
             The ported single tree as function or method.
         """
         out = ''  # returned output
@@ -237,11 +263,10 @@ class RandomForestClassifier(Classifier):
             estimator.tree_.threshold, estimator.tree_.value, indices, 0, 1)
 
         temp_single_method = self.temp('embedded.single_method')
-        out = temp_single_method.format(method_name=self.method_name,
-                                        method_id=str(estimator_index),
-                                        n_classes=self.n_classes,
-                                        tree_branches=tree_branches)
-        return out
+        return temp_single_method.format(method_name=self.method_name,
+                                         method_id=str(estimator_index),
+                                         n_classes=self.n_classes,
+                                         tree_branches=tree_branches)
 
     def create_method_embedded(self):
         """
@@ -249,7 +274,7 @@ class RandomForestClassifier(Classifier):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built methods as merged string.
         """
         # Generate method or function names:
@@ -280,8 +305,7 @@ class RandomForestClassifier(Classifier):
                                  method_calls=fn_names, methods=fns,
                                  n_estimators=self.n_estimators,
                                  n_classes=self.n_classes)
-        out = self.indent(out, n_indents=n_indents, skipping=True)
-        return out
+        return self.indent(out, n_indents=n_indents, skipping=True)
 
     def create_class_embedded(self, method):
         """
@@ -289,16 +313,14 @@ class RandomForestClassifier(Classifier):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built class as string.
         """
         temp_class = self.temp('embedded.class')
-        out = temp_class.format(class_name=self.class_name,
-                                method_name=self.method_name,
-                                method=method, n_features=self.n_features)
-        return out
+        return temp_class.format(class_name=self.class_name,
+                                 method_name=self.method_name,
+                                 method=method, n_features=self.n_features)
 
     def create_class(self):
         temp_class = self.temp('class')
-        out = temp_class.format(**self.__dict__)
-        return out
+        return temp_class.format(**self.__dict__)

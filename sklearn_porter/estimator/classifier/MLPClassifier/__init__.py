@@ -86,17 +86,23 @@ class MLPClassifier(Classifier):
         return ['softmax', 'logistic']
 
     def export(self, class_name, method_name,
-               export_data=False, export_dir='.',
+               export_data=False, export_dir='.', export_filename='data.json',
                **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string
+        :param class_name : string
             The name of the class in the returned result.
-        :param method_name: string
+        :param method_name : string
             The name of the method in the returned result.
+        :param export_data : bool
+            Whether the model data should be saved or not.
+        :param export_dir : string
+            The directory where the model data should be saved.
+        :param export_filename : string
+            The filename of the exported model data.
 
         Returns
         -------
@@ -140,7 +146,7 @@ class MLPClassifier(Classifier):
         if self.target_method == 'predict':
             # Exported:
             if export_data and os.path.isdir(export_dir):
-                self.export_data(export_dir)
+                self.export_data(export_dir, export_filename)
                 return self.predict('exported')
             # Separated:
             return self.predict('separated')
@@ -148,6 +154,11 @@ class MLPClassifier(Classifier):
     def predict(self, temp_type):
         """
         Transpile the predict method.
+
+        Parameters
+        ----------
+        :param temp_type : string
+            The kind of export type (embedded, separated, exported).
 
         Returns
         -------
@@ -203,7 +214,17 @@ class MLPClassifier(Classifier):
                                  layers=layers,
                                  file_name=file_name)
 
-    def export_data(self, export_dir):
+    def export_data(self, directory, filename):
+        """
+        Save model data in a JSON file.
+
+        Parameters
+        ----------
+        :param directory : string
+            The directory.
+        :param filename : string
+            The filename.
+        """
         model_data = {
             'layers': [int(l) for l in list(self._get_activations())],
             'weights': [c.tolist() for c in self.coefficients],
@@ -212,7 +233,7 @@ class MLPClassifier(Classifier):
             'output_activation': self.output_activation
         }
         encoder.FLOAT_REPR = lambda o: self.repr(o)
-        path = os.path.join(export_dir, 'data.json')
+        path = os.path.join(directory, filename)
         with open(path, 'w') as fp:
             json.dump(model_data, fp)
 

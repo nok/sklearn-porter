@@ -61,23 +61,29 @@ class KNeighborsClassifier(Classifier):
         self.estimator = estimator
 
     def export(self, class_name, method_name,
-               export_data=False, export_dir='.', **kwargs):
+               export_data=False, export_dir='.', export_filename='data.json',
+               **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name: string, default: 'Brain'
+        :param class_name : string, default: 'Brain'
             The name of the class in the returned result.
-        :param method_name: string, default: 'predict'
+        :param method_name : string, default: 'predict'
             The name of the method in the returned result.
+        :param export_data : bool
+            Whether the model data should be saved or not.
+        :param export_dir : string
+            The directory where the model data should be saved.
+        :param export_filename : string
+            The filename of the exported model data.
 
         Returns
         -------
         :return : string
             The transpiled algorithm with the defined placeholders.
         """
-
         # Arguments:
         self.class_name = class_name
         self.method_name = method_name
@@ -104,12 +110,22 @@ class KNeighborsClassifier(Classifier):
         if self.target_method == 'predict':
             # Exported:
             if export_data and os.path.isdir(export_dir):
-                self.export_data(export_dir)
+                self.export_data(export_dir, export_filename)
                 return self.predict('exported')
             # Separated:
             return self.predict('separated')
 
-    def export_data(self, export_dir):
+    def export_data(self, directory, filename):
+        """
+        Save model data in a JSON file.
+
+        Parameters
+        ----------
+        :param directory : string
+            The directory.
+        :param filename : string
+            The filename.
+        """
         model_data = {
             'X': self.estimator._fit_X.tolist(),  # pylint: disable=W0212
             'y': self.estimator._y.tolist(),  # pylint: disable=W0212
@@ -118,13 +134,18 @@ class KNeighborsClassifier(Classifier):
             'power': self.power_param
         }
         encoder.FLOAT_REPR = lambda o: self.repr(o)
-        path = os.path.join(export_dir, 'data.json')
+        path = os.path.join(directory, filename)
         with open(path, 'w') as fp:
             json.dump(model_data, fp)
 
     def predict(self, temp_type):
         """
         Transpile the predict method.
+
+        Parameters
+        ----------
+        :param temp_type : string
+            The kind of export type (embedded, separated, exported).
 
         Returns
         -------
@@ -148,19 +169,18 @@ class KNeighborsClassifier(Classifier):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built method as string.
         """
-
         # Distance computation
         metric_name = '.'.join(['separated', 'metric', self.metric])
         distance_comp = self.temp(metric_name, n_indents=1, skipping=True)
 
-        temp_method = self.temp('separated.method.predict', n_indents=1, skipping=True)
-        out = temp_method.format(class_name=self.class_name,
+        temp_method = self.temp('separated.method.predict', n_indents=1,
+                                skipping=True)
+        return temp_method.format(class_name=self.class_name,
                                  method_name=self.method_name,
                                  distance_computation=distance_comp)
-        return out
 
     def create_class(self, method):
         """
@@ -168,10 +188,9 @@ class KNeighborsClassifier(Classifier):
 
         Returns
         -------
-        :return out : string
+        :return : string
             The built class as string.
         """
-
         temp_type = self.temp('type')
         temp_arr = self.temp('arr')
         temp_arr_ = self.temp('arr[]')
@@ -195,11 +214,10 @@ class KNeighborsClassifier(Classifier):
                                    n=self.n_templates)
 
         temp_class = self.temp('separated.class')
-        out = temp_class.format(class_name=self.class_name,
-                                method_name=self.method_name, method=method,
-                                n_features=self.n_features, X=temps, y=classes,
-                                n_neighbors=self.n_neighbors,
-                                n_templates=self.n_templates,
-                                n_classes=self.n_classes,
-                                power=self.power_param)
-        return out
+        return temp_class.format(class_name=self.class_name,
+                                 method_name=self.method_name, method=method,
+                                 n_features=self.n_features, X=temps, y=classes,
+                                 n_neighbors=self.n_neighbors,
+                                 n_templates=self.n_templates,
+                                 n_classes=self.n_classes,
+                                 power=self.power_param)
