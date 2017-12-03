@@ -12,6 +12,9 @@ All notable changes to this project will be documented in this file.
 - Add for each target programming language a new new command-line argument (e.g. `--java`, `--c` or `--go`) ([#41b93a0](https://github.com/nok/sklearn-porter/commit/41b93a0bff44dd045e711a08a53fe8c75d8d460a)).
 - Add argument `--class_name` and `--method_name` to define the class and method name in the final output directly ([#6f2a1d9](https://github.com/nok/sklearn-porter/commit/6f2a1d97b5cddb6232a4fcf0d469cf167a019fdf)). 
 - Add pipe functionality and the related command-line argument (`--pipe` or `-p`) ([#8a57746](https://github.com/nok/sklearn-porter/commit/8a57746e4e97b137032fa7401e37792d496c0aa2)).
+- Add `--export` argument to dump the model data and use the specific templates ([#0669645](https://github.com/nok/sklearn-porter/commit/0669645acdfa8cbe39a8446f95f671c580cc2026)).
+- Add `--checksum` argument to append the computed md5 checksum at the end of the dumped model data file ([#cd12827](https://github.com/nok/sklearn-porter/commit/cd12827cb136d0711c555fe321f72d6aa8326143)).
+- Add `--data` argument to kust export the model data ([#fad499a](https://github.com/nok/sklearn-porter/commit/fad499a4448f55d8c344f1088cca54a5c267c3e9)).
 - Add test class `Go` in `tests/language/Go.py` to test all implementations for the target programming language Go ([#1d0b5d6](https://github.com/nok/sklearn-porter/commit/1d0b5d6a2bf1a5604ae283cc728e3a83fb17a6ea)).
 - Add Go compiling (`go build -o brain brain.go`) and execution (`./brain`) command ([#5d24f57](https://github.com/nok/sklearn-porter/commit/5d24f57ec50e9935dac8389e243deda7b09659d7)).
 - Add initial Web Workers features in JavaScript templates ([#87d3236](https://github.com/nok/sklearn-porter/commit/87d32365d06ba01cce7667b03f9a4265a1312dad)) and a create seperate example ([#187efac](https://github.com/nok/sklearn-porter/commit/187efac3fa045e177a1980244bef302a462fcf4e)). 
