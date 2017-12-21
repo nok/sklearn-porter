@@ -17,7 +17,7 @@ class RandomForestClassifier(Classifier):
     """
 
     SUPPORTED_METHODS = ['predict']
-    SUPPORTED_LANGUAGES = ['c', 'java', 'js', 'php', 'ruby']
+    SUPPORTED_LANGUAGES = ['c', 'go', 'java', 'js', 'php', 'ruby']
 
     # @formatter:off
     TEMPLATES = {
@@ -28,6 +28,14 @@ class RandomForestClassifier(Classifier):
             'arr':      'classes[{0}] = {1}',
             'indent':   '    ',
             'join':     '; ',
+        },
+        'go': {
+            'if':       'if features[{0}] {1} {2} {{',
+            'else':     '} else {',
+            'endif':    '}',
+            'arr':      'classes[{0}] = {1}',
+            'indent':   '\t',
+            'join':     '',
         },
         'java': {
             'if':       'if (features[{0}] {1} {2}) {{',
