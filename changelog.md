@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 
 
+## 0.6.1
+
+### Added
+
+- Add new estimator:
+    - Go:
+        - `ensemble.RandomForestClassifier` ([PR #24](https://github.com/nok/sklearn-porter/pull/24) by [tpotega](https://github.com/tpotega))
+
+### Fixed
+
+- Fix wrong method signature of the DecisionTreeClassifier in C ([Issue #23](https://github.com/nok/sklearn-porter/issues/23) by [sanjivsoni17](https://github.com/sanjivsoni17))
+
+
 ## 0.6.0
 
 ### Added
