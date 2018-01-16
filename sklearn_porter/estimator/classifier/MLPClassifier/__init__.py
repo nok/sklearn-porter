@@ -3,10 +3,7 @@
 import os
 import json
 from json import encoder
-import numpy as np
 from sklearn_porter.estimator.classifier.Classifier import Classifier
-
-np.set_printoptions(precision=64)
 
 
 class MLPClassifier(Classifier):

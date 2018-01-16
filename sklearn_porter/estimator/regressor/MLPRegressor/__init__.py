@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import numpy as np
 from sklearn_porter.estimator.regressor.Regressor import Regressor
-
-np.set_printoptions(precision=64)
 
 
 class MLPRegressor(Regressor):
