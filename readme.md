@@ -224,6 +224,7 @@ integrity = porter.integrity_score(X)
 print(integrity)  # 1.0
 ```
 
+_Please note that the integrity check isn't supported on Windows operation systems._
 
 ### Command-line interface
 
