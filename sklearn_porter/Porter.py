@@ -360,7 +360,7 @@ class Porter(object):
         filename = Porter._get_filename(class_name, self.target_language)
         target_file = os.path.join(tnp_dir, filename)
         with open(target_file, str('w')) as file_:
-            file_.write(details.get('model'))
+            file_.write(details.get('estimator'))
 
         # Compilation command:
         comp_cmd = details.get('cmd').get('compilation')
@@ -554,11 +554,11 @@ class Porter(object):
             # ./brain
             'c': os.path.join('.', cname),
             # java -classpath . Brain
-            'java': 'java -classpath . {}'.format(cname.capitalize()),
+            'java': 'java -classpath . {}'.format(cname),
             # node brain.js
             'js': 'node {}'.format(fname),
             # php -f Brain.php
-            'php': 'php -f {}'.format(cname.capitalize()),
+            'php': 'php -f {}'.format(cname),
             # ruby brain.rb
             'ruby': 'ruby {}'.format(fname),
             # ./brain
