@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import os
 import sys
+import os
+import os.path
 import argparse
 
-from . import Porter
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from sklearn_porter.Porter import Porter
 
 
 def parse_args(args):

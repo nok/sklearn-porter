@@ -9,12 +9,12 @@ import os
 from sklearn.externals import joblib
 from sklearn.svm import LinearSVC
 
-from sklearn_porter import Porter
+from sklearn_porter.Porter import Porter
 
-from utils.Timer import Timer
-from utils.DependencyChecker import DependencyChecker as Checker
-from estimator.classifier.Classifier import Classifier
-from language.Java import Java
+from tests.utils.Timer import Timer
+from tests.utils.DependencyChecker import DependencyChecker as Checker
+from tests.estimator.classifier.Classifier import Classifier
+from tests.language.Java import Java
 
 
 class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):

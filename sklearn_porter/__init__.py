@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-from .Porter import Porter
+from sklearn_porter.Porter import Porter
