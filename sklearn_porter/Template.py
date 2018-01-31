@@ -98,7 +98,8 @@ class Template(object):
                                 self.estimator_type, class_name, 'templates',
                                 self.target_language, name + '.txt')
             if os.path.isfile(path):
-                template = open(path, 'r').read()
+                with open(path, 'r') as file_:
+                    template = file_.read()
                 if n_indents is not None:
                     template = self.indent(template, n_indents, skipping)
                 return template
