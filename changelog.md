@@ -3,6 +3,15 @@
 All notable changes to this project will be documented in this file.
 
 
+## 0.6.2
+
+### Fixed
+
+- Fix getter of transpiled estimator and remove filename manipulations ([#b5efe78](https://github.com/nok/sklearn-porter/commit/b5efe78de9dd721f9135f65c525a3e8ab8b06f79))
+- Fix and add binary to string conversion in Python 3.x ([#bdcfb1f](https://github.com/nok/sklearn-porter/commit/bdcfb1ff4c076485a5fc3b00beaf81becec0717b))
+- Fix and close open template file(s) ([#b5efe78](https://github.com/nok/sklearn-porter/commit/b5efe78de9dd721f9135f65c525a3e8ab8b06f79))
+
+
 ## 0.6.1
 
 ### Added
