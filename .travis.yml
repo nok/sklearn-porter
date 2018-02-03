@@ -63,9 +63,9 @@ before_script:
   - echo "======================================================"
   - echo -e "START LOCAL SERVER \n"
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
-      python -m SimpleHTTPServer 8080 &>/dev/null &;
+      python -m SimpleHTTPServer 8080 &>/dev/null &
     else
-      python -m http.server 8080 &>/dev/null &;
+      python -m http.server 8080 &>/dev/null &
     fi
 script:
   - echo "======================================================"
