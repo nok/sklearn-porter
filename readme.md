@@ -144,6 +144,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
 
 ✓ = is full-featured,　ᴱ = with embedded model data,　ᴵ = with imported model data,　* = default language
 
+
 ## Installation
 
 ```bash
@@ -157,26 +158,28 @@ $ pip uninstall -y sklearn-porter
 $ pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/master
 ```
 
+
 ## Minimum requirements
 
+The minimum requirements to use the module are defined in the [requirements.txt](requirements.txt):
+
 ```
-- python>=2.7.3
+- numpy>=1.8.2
+- scipy>=0.14.0
 - scikit-learn>=0.14.1
 ```
 
-If you want to transpile a [multilayer perceptron](http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html), you have to upgrade the scikit-learn package:
-
 ```
 - python>=2.7.3
-- scikit-learn>=0.18.0
 ```
 
 
 ## Usage
 
+
 ### Export
 
-The following example shows how you can port a [decision tree estimator](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
+The following example demonstrates how you can transpile a [decision tree estimator](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
 
 ```python
 from sklearn.datasets import load_iris
@@ -197,6 +200,7 @@ print(output)
 
 The exported [result](examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.py#L25-L75) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
 
+
 ### Prediction
 
 Run the prediction(s) in the target programming language directly:
@@ -213,7 +217,7 @@ y_java = porter.predict([1., 2., 3., 4.])
 
 ### Integrity
 
-Always compute and test the integrity between the original and the transpiled estimator:
+Always compute and check the integrity between the original and the transpiled estimator:
 
 ```python
 # ...
@@ -248,13 +252,13 @@ joblib.dump(clf, 'estimator.pkl')
 
 After that the estimator can be transpiled to JavaScript by using the following command:
 
-```
+```bash
 $ python -m sklearn_porter -i estimator.pkl --js
 ```
 
-The target programming language is changeable on the fly: 
+The target programming language is changeable on the fly:
 
-```
+```bash
 $ python -m sklearn_porter -i estimator.pkl --c
 $ python -m sklearn_porter -i estimator.pkl --go
 $ python -m sklearn_porter -i estimator.pkl --php
@@ -264,19 +268,19 @@ $ python -m sklearn_porter -i estimator.pkl --ruby
 
 For further processing the argument `--pipe` can be used to pass the result:
 
-```
+```bash
 $ python -m sklearn_porter -i estimator.pkl --js --pipe > estimator.js
 ```
 
 For instance the result can be minified by using [UglifyJS](https://github.com/mishoo/UglifyJS2):
 
-```
-$ python -m sklearn_porter -i estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js 
+```bash
+$ python -m sklearn_porter -i estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
 ```
 
 Further information will be shown by using the `--help` argument:
 
-```
+```bash
 $ python -m sklearn_porter --help
 $ python -m sklearn_porter -h
 ```
@@ -284,33 +288,74 @@ $ python -m sklearn_porter -h
 
 ## Development
 
+
 ### Environment
 
-Install the required [environment modules](environment.yml) by executing the script [environment.sh](scripts/environment.sh):
+Either you install just the minimum requirements (see [requirements.txt](requirements.txt)) for testing:
 
 ```bash
-$ bash ./scripts/environment.sh
+$ conda create -n sklearn-porter python=2  # or python=3
+$ source activate sklearn-porter
+$ pip install -U pip
+$ pip install -r requirements.txt
 ```
+
+Or you install all recommended packages (see [environment.yml](environment.yml)) for broader development:
 
 ```bash
-#!/usr/bin/env bash
-
-conda env create -c conda-forge -n sklearn-porter python=2 -f environment.yml
-source activate sklearn-porter
+$ conda env create -n sklearn-porter -c conda-forge python=2 -f environment.yml  # for macOS users
+$ # conda create -n sklearn-porter -c conda-forge python=2 scikit-learn pylint jupyter nb_conda twine
+$ source activate sklearn-porter
 ```
 
-The following compilers or intepreters are required to cover all tests:
+Independently, the following compilers and intepreters are required to cover all tests:
 
-- [GCC](https://gcc.gnu.org) (`>=4.2`)
-- [Java](https://java.com) (`>=1.6`)
-- [PHP](http://www.php.net/) (`>=7`)
-- [Ruby](https://www.ruby-lang.org) (`>=2.4.1`)
-- [Go](https://golang.org/) (`>=1.7.4`)
-- [Node.js](https://nodejs.org) (`>=6`)
+<table>
+    <thead>
+        <tr>
+            <td><strong>Name</strong></td>
+            <td><strong>Version</strong></td>
+            <td><strong>Command</strong></td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a href="https://gcc.gnu.org">GCC</a></td>
+            <td><code>>=4.2</code></td>
+            <td><code>gcc --version</code></td>
+        </tr>
+        <tr>
+            <td><a href="https://java.com">Java</a></td>
+            <td><code>>=1.6</code></td>
+            <td><code>java -version</code></td>
+        </tr>
+        <tr>
+            <td><a href="http://www.php.net">PHP</a></td>
+            <td><code>>=7</code></td>
+            <td><code>php --version</code></td>
+        </tr>
+        <tr>
+            <td><a href="https://www.ruby-lang.org">Ruby</a></td>
+            <td><code>>=2.4.1</code></td>
+            <td><code>ruby --version</code></td>
+        </tr>
+        <tr>
+            <td><a href="https://golang.org">Go</a></td>
+            <td><code>>=1.7.4</code></td>
+            <td><code>go version</code></td>
+        </tr>
+        <tr>
+            <td><a href="https://nodejs.org">Node.js</a></td>
+            <td><code>>=6</code></td>
+            <td><code>node --version</code></td>
+        </tr>
+    </tbody>
+</table>
+
 
 ### Testing
 
-The tests cover module functions as well as matching predictions of transpiled estimators. Run [all tests](tests) by executing the script [test.sh](scripts/test.sh):
+The tests cover module functions as well as matching predictions of transpiled estimators. Run all tests:
 
 ```bash
 $ bash ./scripts/test.sh
@@ -319,7 +364,24 @@ $ bash ./scripts/test.sh
 ```bash
 #!/usr/bin/env bash
 
+# Activate the relevant environment:
+source activate sklearn-porter
+
+# Start local server which is required for the JavaScript tests:
+if [[ $(python -c "import sys; print(sys.version_info[:1][0]);") == "2" ]]; then
+  python -m SimpleHTTPServer 8080 &>/dev/null & serve_pid=$!;
+else
+  python -m http.server 8080 &>/dev/null & serve_pid=$!;
+fi
+
+# Run all tests:
 python -m unittest discover -vp '*Test.py'
+
+# Close the previous started server:
+kill $serve_pid
+
+# Deactivate the previous activated envrionment:
+source deactivate &>/dev/null
 ```
 
 The test files have a specific pattern: `'[Algorithm][Language]Test.py'`:
@@ -329,7 +391,7 @@ $ python -m unittest discover -vp 'RandomForest*Test.py'
 $ python -m unittest discover -vp '*JavaTest.py'
 ```
 
-While you are developing new features or fixes, you can reduce the test duration by setting the number of tests:
+While you are developing new features or fixes, you can reduce the test duration by changing the number of tests:
 
 ```bash
 $ N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discover -vp '*Test.py'
@@ -338,7 +400,7 @@ $ N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discove
 
 ### Quality
 
-It's highly recommended to ensure the code quality. For that I use [Pylint](https://github.com/PyCQA/pylint/), which you can run by executing the script [lint.sh](scripts/lint.sh): 
+It's highly recommended to ensure the code quality. For that I use [Pylint](https://github.com/PyCQA/pylint/). Run the linter:
 
 ```bash
 $ bash ./scripts/lint.sh
@@ -362,7 +424,7 @@ If you use this implementation in you work, please add a reference/citation to t
   url = {https://github.com/nok/sklearn-porter},
   year = {2016--2017}
 }
-``` 
+```
 
 
 ## License
