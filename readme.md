@@ -309,9 +309,9 @@ Independently, the following compilers and intepreters are required to cover all
 <table>
     <thead>
         <tr>
-            <td><strong>Name</strong></td>
-            <td><strong>Version</strong></td>
-            <td><strong>Command</strong></td>
+            <td width="33%"><strong>Name</strong></td>
+            <td width="33%"><strong>Version</strong></td>
+            <td width="33%"><strong>Command</strong></td>
         </tr>
     </thead>
     <tbody>
