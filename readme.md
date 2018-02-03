@@ -169,10 +169,6 @@ The minimum requirements to use the module are defined in the [requirements.txt]
 - scikit-learn>=0.14.1
 ```
 
-```
-- python>=2.7.3
-```
-
 
 ## Usage
 
