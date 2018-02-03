@@ -356,11 +356,11 @@ find ./sklearn_porter -name '*.py' -exec pylint {} \;
 If you use this implementation in you work, please add a reference/citation to the paper. You can use the following BibTeX entry:
 
 ```
-@misc{SkPoDaMo,
+@unpublished{skpodamo,
   author = {Darius Morawiec},
-  title = {sklearn-porter: Transpile trained scikit-learn estimators to C, Java, JavaScript and others},
-  url = {https://github.com/nok/sklearn-porter},
-  year = {2016--2017}
+  title = {sklearn-porter},
+  note = {Transpile trained scikit-learn estimators to C, Java, JavaScript and others},
+  url = {https://github.com/nok/sklearn-porter}
 }
 ``` 
 
