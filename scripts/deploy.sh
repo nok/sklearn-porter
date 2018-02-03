@@ -1,32 +1,29 @@
 #!/usr/bin/env bash
 
-# Requirements:
-# pip install twine
+# Set local variables:
+NAME=sklearn-porter
+ANACONDA_ENV=sklearn-porter
 
-# Environment:
-name=sklearn-porter
-anaconda_env=sklearn-porter
+source activate $ANACONDA_ENV
 
-# Set variables:
-source activate $anaconda_env
+# Remove previous builds:
 rm -rf ./build/*
 rm -rf ./dist/*
 
-# Read the version:
-version=`python -c "from sklearn_porter.Porter import Porter; print(Porter.__version__);"`
+# Read package version:
+VERSION=`python -c "from sklearn_porter.Porter import Porter; print(Porter.__version__);"`
 
-# Define the target environment:
+# Define the deployment platform:
 target=https://test.pypi.org/legacy/
-if [[ $# -eq 1 ]] ; then
+if [[ $# -eq 1 ]]; then
     target=https://upload.pypi.org/legacy/
 fi
 
-# Build package:
+# Build the package:
 python ./setup.py sdist bdist_wheel
 
-# Upload:
-read -r -p "Upload $name@$version to '$target'? [y/N] " response
-if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]
-then
+# Upload the package:
+read -r -p "Upload $NAME@$VERSION to '$target'? [y/N] " response
+if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     twine upload ./dist/* --repository-url $target
 fi

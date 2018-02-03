@@ -4,8 +4,6 @@ notifications:
   email: false
 python:
   - "2.7"
-  - "3.2"
-  - "3.3"
   - "3.4"
   - "3.5"
   - "3.6"
@@ -16,6 +14,7 @@ php:
 compiler:
   - gcc
 before_install:
+  - SKLEARN_PORTER_HOME=$(pwd)
   - sudo apt-add-repository ppa:brightbox/ruby-ng -y
   - sudo apt-add-repository ppa:ondrej/php -y
   - sudo apt-get update -q
@@ -23,6 +22,9 @@ install:
   - sudo apt-get install ruby2.3 -y
   - sudo ln -s /usr/local/ruby2.3 /usr/local/ruby
   - sudo apt-get install php7.0 -y
+  - wget -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.2/gson-2.8.2.jar
+  - npm install xmlhttprequest
+  - unset JAVA_TOOL_OPTIONS && unset _JAVA_OPTIONS
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
@@ -36,22 +38,22 @@ install:
   - conda update -q conda
   - conda install -n root _license
   - conda info -a
-  - conda env create -q -n sklearn-porter python=$TRAVIS_PYTHON_VERSION -f environment.yml
-  - pip install -U pip
+  - conda create -y -n sklearn-porter python=$TRAVIS_PYTHON_VERSION
   - source activate sklearn-porter
-  - wget http://central.maven.org/maven2/com/google/code/gson/gson/2.8.2/gson-2.8.2.jar
-  - mv gson-2.8.2.jar gson.jar
-  - SKLEARN_PORTER_HOME=$(pwd)
-  - npm install xmlhttprequest
-before_script:
+  - pip install -U pip
+  - pip install -r requirements.txt
   - python --version
   - gcc --version
   - java -version
-  - unset JAVA_TOOL_OPTIONS && unset _JAVA_OPTIONS
   - node --version
   - go version
   - php --version
   - ruby --version
-  - python -m $(python -c 'import sys; print("http.server" if sys.version_info[:2] > (2,7) else "SimpleHTTPServer")') 8080 &
+before_script:
+  - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
+      python -m SimpleHTTPServer 8080 &>/dev/null &
+    else
+      python -m http.server 8080 &>/dev/null &
+    fi
 script:
   - python -m unittest discover -vp '*Test.py'
