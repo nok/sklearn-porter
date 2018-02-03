@@ -16,23 +16,17 @@ php:
 compiler:
   - gcc
 before_install:
-  - echo "======================================================"
-  - echo -e "SETUP SYSTEM \n"
   - SKLEARN_PORTER_HOME=$(pwd)
   - sudo apt-add-repository ppa:brightbox/ruby-ng -y
   - sudo apt-add-repository ppa:ondrej/php -y
   - sudo apt-get update -q
 install:
-  - echo "======================================================"
-  - echo -e "SETUP DEPENDENCIES \n"
   - sudo apt-get install ruby2.3 -y
   - sudo ln -s /usr/local/ruby2.3 /usr/local/ruby
   - sudo apt-get install php7.0 -y
   - wget -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.2/gson-2.8.2.jar
   - npm install xmlhttprequest
   - unset JAVA_TOOL_OPTIONS && unset _JAVA_OPTIONS
-  - echo "======================================================"
-  - echo -e "SETUP ENVIRONMENT \n"
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
       wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
     else
@@ -50,8 +44,6 @@ install:
   - source activate sklearn-porter
   - pip install -U pip
   - pip install -r requirements.txt
-  - echo "======================================================"
-  - echo -e "PRINT VERSIONS \n"
   - python --version
   - gcc --version
   - java -version
@@ -60,14 +52,10 @@ install:
   - php --version
   - ruby --version
 before_script:
-  - echo "======================================================"
-  - echo -e "START LOCAL SERVER \n"
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
       python -m SimpleHTTPServer 8080 &>/dev/null &
     else
       python -m http.server 8080 &>/dev/null &
     fi
 script:
-  - echo "======================================================"
-  - echo -e "START TESTING \n"
   - python -m unittest discover -vp '*Test.py'
