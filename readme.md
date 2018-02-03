@@ -365,9 +365,9 @@ source activate sklearn-porter
 
 # Start local server which is required for the JavaScript tests:
 if [[ $(python -c "import sys; print(sys.version_info[:1][0]);") == "2" ]]; then
-  python -m SimpleHTTPServer 8080 &>/dev/null & serve_pid=$!;
+  python -m SimpleHTTPServer 8080 &>/dev/null & serve_pid=$!
 else
-  python -m http.server 8080 &>/dev/null & serve_pid=$!;
+  python -m http.server 8080 &>/dev/null & serve_pid=$!
 fi
 
 # Run all tests:
