@@ -182,13 +182,13 @@ from sklearn.datasets import load_iris
 from sklearn.tree import tree
 from sklearn_porter import Porter
 
-# Load data and train the classifier:
+# load data and train the classifier:
 samples = load_iris()
 X, y = samples.data, samples.target
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-# Export:
+# export:
 porter = Porter(clf, language='java')
 output = porter.export(embed_data=True)
 print(output)
@@ -205,7 +205,7 @@ Run the prediction(s) in the target programming language directly:
 # ...
 porter = Porter(clf, language='java')
 
-# Prediction(s):
+# prediction(s):
 Y_java = porter.predict(X)
 y_java = porter.predict(X[0])
 y_java = porter.predict([1., 2., 3., 4.])
@@ -219,7 +219,7 @@ Always compute and check the integrity between the original and the transpiled e
 # ...
 porter = Porter(clf, language='java')
 
-# Accuracy:
+# accuracy:
 integrity = porter.integrity_score(X)
 print(integrity)  # 1.0
 ```
@@ -242,7 +242,7 @@ The following example shows how you can save an trained estimator to the [pickle
 ```python
 # ...
 
-# Extract estimator:
+# extract estimator:
 joblib.dump(clf, 'estimator.pkl')
 ```
 
@@ -360,23 +360,23 @@ $ bash ./scripts/test.sh
 ```bash
 #!/usr/bin/env bash
 
-# Activate the relevant environment:
+# activate the relevant environment:
 source activate sklearn-porter
 
-# Start local server which is required for the JavaScript tests:
+# start local server which is required for the JavaScript tests:
 if [[ $(python -c "import sys; print(sys.version_info[:1][0]);") == "2" ]]; then
   python -m SimpleHTTPServer 8080 &>/dev/null & serve_pid=$!
 else
   python -m http.server 8080 &>/dev/null & serve_pid=$!
 fi
 
-# Run all tests:
+# run all tests:
 python -m unittest discover -vp '*Test.py'
 
-# Close the previous started server:
+# close the previous started server:
 kill $serve_pid
 
-# Deactivate the previous activated envrionment:
+# deactivate the previous activated environment:
 source deactivate &>/dev/null
 ```
 
