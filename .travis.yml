@@ -4,8 +4,6 @@ notifications:
   email: false
 python:
   - "2.7"
-  - "3.2"
-  - "3.3"
   - "3.4"
   - "3.5"
   - "3.6"
@@ -40,7 +38,7 @@ install:
   - conda update -q conda
   - conda install -n root _license
   - conda info -a
-  - conda create -q -n sklearn-porter python=$TRAVIS_PYTHON_VERSION
+  - conda create -y -n sklearn-porter python=$TRAVIS_PYTHON_VERSION
   - source activate sklearn-porter
   - pip install -U pip
   - pip install -r requirements.txt
