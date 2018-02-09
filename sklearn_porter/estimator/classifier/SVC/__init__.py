@@ -115,20 +115,13 @@ class SVC(Classifier):
 
         # Estimator:
         est = self.estimator
-        params = est.get_params()
+        self.params = est.get_params()
 
         # Check kernel type:
-        kernels = ['linear', 'rbf', 'poly', 'sigmoid']
-        if params['kernel'] not in kernels:
+        supported_kernels = ['linear', 'rbf', 'poly', 'sigmoid']
+        if self.params['kernel'] not in supported_kernels:
             msg = 'The kernel type is not supported.'
             raise ValueError(msg)
-
-        # Check rbf gamma value:
-        if params['kernel'] == 'rbf' and params['gamma'] == 'auto':
-            msg = ('The classifier gamma value have to '
-                   'be set (currently it is \'auto\').')
-            raise ValueError(msg)
-        self.params = params
 
         self.n_features = len(est.support_vectors_[0])
         self.svs_rows = est.n_support_
@@ -179,9 +172,17 @@ class SVC(Classifier):
         self.n_intercepts = len(est._intercept_)
 
         # Kernel:
-        self.kernel = str(params['kernel'])[0] if self.target_language == 'c'\
-            else str(params['kernel'])
-        self.gamma = self.repr(self.params['gamma'])
+        self.kernel = str(self.params['kernel'])
+        if self.target_language == 'c':
+            self.kernel = self.kernel[0]
+
+        # Gamma:
+        self.gamma = self.params['gamma']
+        if self.gamma == 'auto':
+            self.gamma = 1. / self.n_features
+        self.gamma = self.repr(self.gamma)
+
+        # Coefficient and degree:
         self.coef0 = self.repr(self.params['coef0'])
         self.degree = self.repr(self.params['degree'])
 
