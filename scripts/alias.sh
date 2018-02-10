@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-#!/bin/bash
 
 function porter() {
   if [[ "$(pip list --format=columns | grep sklearn-porter)" ]]
