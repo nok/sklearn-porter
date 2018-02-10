@@ -256,7 +256,7 @@ The target programming language is changeable on the fly:
 
 ```bash
 $ python -m sklearn_porter -i estimator.pkl --c
-$ python -m sklearn_porter -i estimator.pkl --go
+$ python -m sklearn_porter -i estimator.pkl --java
 $ python -m sklearn_porter -i estimator.pkl --php
 $ python -m sklearn_porter -i estimator.pkl --java
 $ python -m sklearn_porter -i estimator.pkl --ruby
@@ -280,6 +280,21 @@ Further information will be shown by using the `--help` argument:
 $ python -m sklearn_porter --help
 $ python -m sklearn_porter -h
 ```
+
+Tip: You can install a handy [function](scripts/alias.sh) to use the porter directly:
+
+```
+$ cat scripts/alias.sh >> ~/.bash_profile && source ~/.bash_profile
+``` 
+
+```
+$ porter [-h] --input <PICKLE_FILE> [--output <DEST_DIR>] \
+         [--class_name <CLASS_NAME>] [--method_name <METHOD_NAME>] \
+         [--c] [--java] [--js] [--go] [--php] [--ruby] \
+         [--export] [--checksum] [--data] [--pipe]
+```
+
+But don't forget to activate the right environment where the porter has been installed.
 
 
 ## Development
@@ -354,7 +369,7 @@ Independently, the following compilers and intepreters are required to cover all
 The tests cover module functions as well as matching predictions of transpiled estimators. Run all tests:
 
 ```bash
-$ bash ./scripts/test.sh
+$ bash scripts/test.sh
 ```
 
 ```bash
@@ -399,13 +414,13 @@ $ N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discove
 It's highly recommended to ensure the code quality. For that I use [Pylint](https://github.com/PyCQA/pylint/). Run the linter:
 
 ```bash
-$ bash ./scripts/lint.sh
+$ bash scripts/lint.sh
 ```
 
 ```bash
 #!/usr/bin/env bash
 
-find ./sklearn_porter -name '*.py' -exec pylint {} \;
+find sklearn_porter -name '*.py' -exec pylint {} \;
 ```
 
 
