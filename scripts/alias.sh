@@ -7,6 +7,6 @@ function porter() {
     local LIBS=$(python -c "$CMDS")
     python $LIBS/sklearn_porter "$@"
   else
-     echo "Cammond not found."
+     echo "Command not found. Is the right environment active?"
   fi
 }
