@@ -7,9 +7,10 @@ class MLPRegressor(Regressor):
     """
     See also
     --------
-    sklearn.neural_network.MLPClassifier
+    sklearn.neural_network.MLPRegressor
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.neural_network.MLPRegressor.html
     """
 
     SUPPORTED_METHODS = ['predict']
@@ -31,7 +32,8 @@ class MLPRegressor(Regressor):
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------

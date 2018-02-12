@@ -145,6 +145,8 @@ class Porter(object):
                     " '{}' isn't supported.".format(self.target_method)
             raise AttributeError(error)
 
+        self._tested_dependencies = False
+
         # Create instance with all parameters:
         self.template = clazz(**self.__dict__)
 
@@ -212,7 +214,7 @@ class Porter(object):
         return output
 
     def port(self, class_name=None, method_name=None,
-               num_format=lambda x: str(x), details=False, **kwargs):
+             num_format=lambda x: str(x), details=False, **kwargs):
         # pylint: disable=unused-argument
         """
         Transpile a trained model to the syntax of a
@@ -321,7 +323,7 @@ class Porter(object):
         :param keep_tmp_dir : bool, default: False
             Whether to delete the temporary directory
             or not.
-            
+
         :param num_format : lambda x, default: lambda x: str(x)
             The representation of the floating-point values.
 
@@ -338,7 +340,7 @@ class Porter(object):
             method_name = self.target_method
 
         # Dependencies:
-        if not hasattr(self, '_tested_dependencies'):
+        if not self._tested_dependencies:
             self._test_dependencies()
             self._tested_dependencies = True
 
@@ -412,7 +414,7 @@ class Porter(object):
         :param normalize : bool, default: True
             If ``False``, return the number of correctly classified samples.
             Otherwise, return the fraction of correctly classified samples.
-            
+
         :param num_format : lambda x, default: lambda x: str(x)
             The representation of the floating-point values.
 

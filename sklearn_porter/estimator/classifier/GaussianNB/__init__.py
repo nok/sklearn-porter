@@ -11,9 +11,10 @@ class GaussianNB(Classifier):
     """
     See also
     --------
-    sklearn.naive_bayes.BernoulliNB
+    sklearn.naive_bayes.GaussianNB
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.naive_bayes.GaussianNB.html
     """
 
     SUPPORTED_METHODS = ['predict']
@@ -44,11 +45,11 @@ class GaussianNB(Classifier):
 
         Parameters
         ----------
-        :param estimator : AdaBoostClassifier
+        :param estimator : GaussianNB
             An instance of a trained GaussianNB estimator.
-        :param target_language : string
+        :param target_language : string, default: 'java'
             The target programming language.
-        :param target_method : string
+        :param target_method : string, default: 'predict'
             The target method of the estimator.
         """
         super(GaussianNB, self).__init__(
@@ -56,8 +57,8 @@ class GaussianNB(Classifier):
             target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name,
-               export_data=False, export_dir='.', export_filename='data.json',
+    def export(self, class_name, method_name, export_data=False,
+               export_dir='.', export_filename='data.json',
                export_append_checksum=False, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
@@ -68,13 +69,13 @@ class GaussianNB(Classifier):
             The name of the class in the returned result.
         :param method_name : string
             The name of the method in the returned result.
-        :param export_data : bool
+        :param export_data : bool, default: False
             Whether the model data should be saved or not.
-        :param export_dir : string
+        :param export_dir : string, default: '.' (current directory)
             The directory where the model data should be saved.
-        :param export_filename : string
+        :param export_filename : string, default: 'data.json'
             The filename of the exported model data.
-        :param export_append_checksum : bool
+        :param export_append_checksum : bool, default: False
             Whether to append the checksum to the filename or not.
 
         Returns
@@ -192,7 +193,8 @@ class GaussianNB(Classifier):
         :return : string
             The built method as string.
         """
-        temp_method = self.temp('separated.method.predict', n_indents=1, skipping=True)
+        temp_method = self.temp('separated.method.predict', n_indents=1,
+                                skipping=True)
         return temp_method.format(**self.__dict__)
 
     def create_class(self, method):

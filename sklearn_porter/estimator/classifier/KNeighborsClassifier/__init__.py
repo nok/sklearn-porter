@@ -12,7 +12,8 @@ class KNeighborsClassifier(Classifier):
     --------
     sklearn.neighbors.KNeighborsClassifier
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.neighbors.KNeighborsClassifier.html
     """
 
     SUPPORTED_METHODS = ['predict']
@@ -39,15 +40,16 @@ class KNeighborsClassifier(Classifier):
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
         :param estimator : KNeighborsClassifier
-            An instance of a trained AdaBoostClassifier estimator.
-        :param target_language : string
+            An instance of a trained KNeighborsClassifier estimator.
+        :param target_language : string, default: 'java'
             The target programming language.
-        :param target_method : string
+        :param target_method : string, default: 'predict'
             The target method of the estimator.
         """
         super(KNeighborsClassifier, self).__init__(
@@ -60,25 +62,25 @@ class KNeighborsClassifier(Classifier):
 
         self.estimator = estimator
 
-    def export(self, class_name, method_name,
-               export_data=False, export_dir='.', export_filename='data.json',
+    def export(self, class_name, method_name, export_data=False,
+               export_dir='.', export_filename='data.json',
                export_append_checksum=False, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name : string, default: 'Brain'
+        :param class_name : string
             The name of the class in the returned result.
-        :param method_name : string, default: 'predict'
+        :param method_name : string
             The name of the method in the returned result.
-        :param export_data : bool
+        :param export_data : bool, default: False
             Whether the model data should be saved or not.
-        :param export_dir : string
+        :param export_dir : string, default: '.' (current directory)
             The directory where the model data should be saved.
-        :param export_filename : string
+        :param export_filename : string, default: 'data.json'
             The filename of the exported model data.
-        :param export_append_checksum : bool
+        :param export_append_checksum : bool, default: False
             Whether to append the checksum to the filename or not.
 
         Returns
@@ -128,7 +130,7 @@ class KNeighborsClassifier(Classifier):
             The directory.
         :param filename : string
             The filename.
-        :param with_md5_hash : bool
+        :param with_md5_hash : bool, default: False
             Whether to append the checksum to the filename or not.
         """
         model_data = {
@@ -189,8 +191,8 @@ class KNeighborsClassifier(Classifier):
         temp_method = self.temp('separated.method.predict', n_indents=1,
                                 skipping=True)
         return temp_method.format(class_name=self.class_name,
-                                 method_name=self.method_name,
-                                 distance_computation=distance_comp)
+                                  method_name=self.method_name,
+                                  distance_computation=distance_comp)
 
     def create_class(self, method):
         """

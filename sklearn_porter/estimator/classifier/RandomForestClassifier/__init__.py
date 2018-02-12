@@ -13,7 +13,8 @@ class RandomForestClassifier(Classifier):
     --------
     sklearn.ensemble.RandomForestClassifier
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.ensemble.RandomForestClassifier.html
     """
 
     SUPPORTED_METHODS = ['predict']
@@ -79,11 +80,11 @@ class RandomForestClassifier(Classifier):
 
         Parameters
         ----------
-        :param estimator : AdaBoostClassifier
+        :param estimator : RandomForestClassifier
             An instance of a trained RandomForestClassifier estimator.
-        :param target_language : string
+        :param target_language : string, default: 'java'
             The target programming language.
-        :param target_method : string
+        :param target_method : string, default: 'predict'
             The target method of the estimator.
         """
         super(RandomForestClassifier, self).__init__(
@@ -114,15 +115,15 @@ class RandomForestClassifier(Classifier):
             The name of the class in the returned result.
         :param method_name : string
             The name of the method in the returned result.
-        :param export_data : bool
+        :param export_data : bool, default: False
             Whether the model data should be saved or not.
-        :param export_dir : string
+        :param export_dir : string, default: '.' (current directory)
             The directory where the model data should be saved.
-        :param export_filename : string
+        :param export_filename : string, default: 'data.json'
             The filename of the exported model data.
-        :param export_append_checksum : bool
+        :param export_append_checksum : bool, default: False
             Whether to append the checksum to the filename or not.
-        :param embed_data : bool
+        :param embed_data : bool, default: True
             Whether the model data should be embedded in the template or not.
         """
         # Arguments:

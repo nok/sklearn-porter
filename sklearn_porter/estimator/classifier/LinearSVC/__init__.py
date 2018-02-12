@@ -13,7 +13,8 @@ class LinearSVC(Classifier):
     --------
     sklearn.svm.LinearSVC
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.svm.LinearSVC.html
     """
 
     SUPPORTED_METHODS = ['predict']
@@ -74,26 +75,29 @@ class LinearSVC(Classifier):
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
         :param estimator : LinearSVC
-            An instance of a trained AdaBoostClassifier estimator.
+            An instance of a trained LinearSVC estimator.
         :param target_language : string
             The target programming language.
         :param target_method : string
             The target method of the estimator.
         """
-        super(LinearSVC, self).__init__(estimator, target_language=target_language,
+        super(LinearSVC, self).__init__(estimator,
+                                        target_language=target_language,
                                         target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name,
-               export_data=False, export_dir='.', export_filename='data.json',
+    def export(self, class_name, method_name, export_data=False,
+               export_dir='.', export_filename='data.json',
                export_append_checksum=False, **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
@@ -101,13 +105,13 @@ class LinearSVC(Classifier):
             The name of the class in the returned result.
         :param method_name : string, default: 'predict'
             The name of the method in the returned result.
-        :param export_data : bool
+        :param export_data : bool, default: False
             Whether the model data should be saved or not.
-        :param export_dir : string
+        :param export_dir : string, default: '.' (current directory)
             The directory where the model data should be saved.
-        :param export_filename : string
+        :param export_filename : string, default: 'data.json'
             The filename of the exported model data.
-        :param export_append_checksum : bool
+        :param export_append_checksum : bool, default: False
             Whether to append the checksum to the filename or not.
 
         Returns
@@ -239,7 +243,8 @@ class LinearSVC(Classifier):
         """
         n_indents = 0 if self.target_language in ['c', 'go'] else 1
         method_type = 'separated.{}.method'.format(self.prefix)
-        method_temp = self.temp(method_type, n_indents=n_indents, skipping=True)
+        method_temp = self.temp(method_type, n_indents=n_indents,
+                                skipping=True)
         return method_temp.format(**self.__dict__)
 
     def create_class(self):
@@ -253,8 +258,8 @@ class LinearSVC(Classifier):
         """
         if self.target_language in ['java', 'go']:
             n_indents = 1 if self.target_language == 'java' else 0
-            class_head_temp = self.temp('separated.{}.class'.format(self.prefix),
-                                        n_indents=n_indents, skipping=True)
+            class_head_temp = self.temp('separated.{}.class'.format(
+                self.prefix), n_indents=n_indents, skipping=True)
             self.class_head = class_head_temp.format(**self.__dict__)
 
         return self.temp('separated.class').format(**self.__dict__)

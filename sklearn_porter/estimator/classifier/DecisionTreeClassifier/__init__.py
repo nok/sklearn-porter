@@ -12,7 +12,8 @@ class DecisionTreeClassifier(Classifier):
     --------
     sklearn.tree.DecisionTreeClassifier
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.tree.DecisionTreeClassifier.html
     """
 
     SUPPORTED_METHODS = ['predict']
@@ -93,15 +94,16 @@ class DecisionTreeClassifier(Classifier):
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
-        :param estimator : AdaBoostClassifier
+        :param estimator : DecisionTreeClassifier
             An instance of a trained DecisionTreeClassifier estimator.
-        :param target_language : string
+        :param target_language : string, default: 'java'
             The target programming language.
-        :param target_method : string
+        :param target_method : string, default: 'predict'
             The target method of the estimator.
         """
         super(DecisionTreeClassifier, self).__init__(
@@ -109,11 +111,12 @@ class DecisionTreeClassifier(Classifier):
             target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name,
-               export_data=False, export_dir='.', export_filename='data.json',
+    def export(self, class_name, method_name, export_data=False,
+               export_dir='.', export_filename='data.json',
                export_append_checksum=False, embed_data=False, **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
@@ -121,15 +124,15 @@ class DecisionTreeClassifier(Classifier):
             The name of the class in the returned result.
         :param method_name : string
             The name of the method in the returned result.
-        :param export_data : bool
+        :param export_data : bool, default: False
             Whether the model data should be saved or not.
-        :param export_dir : string
+        :param export_dir : string, default: '.' (current directory)
             The directory where the model data should be saved.
-        :param export_filename : string
+        :param export_filename : string, default: 'data.json'
             The filename of the exported model data.
-        :param export_append_checksum : bool
+        :param export_append_checksum : bool, default: False
             Whether to append the checksum to the filename or not.
-        :param embed_data : bool
+        :param embed_data : bool, default: False
             Whether the model data should be embedded in the template or not.
 
         Returns
@@ -163,7 +166,8 @@ class DecisionTreeClassifier(Classifier):
                                         n=len(right_childs))
         self.right_childs = right_childs
 
-        thresholds = [self.repr(e) for e in self.estimator.tree_.threshold.tolist()]
+        thresholds = [self.repr(e) for e in
+                      self.estimator.tree_.threshold.tolist()]
         type_ = 'float64' if self.target_language == 'go' else 'double'
         thresholds = temp_arr_.format(type=type_, name='thresholds',
                                       values=', '.join(thresholds),
@@ -206,7 +210,7 @@ class DecisionTreeClassifier(Classifier):
             The directory.
         :param filename : string
             The filename.
-        :param with_md5_hash : bool
+        :param with_md5_hash : bool, default: False
             Whether to append the checksum to the filename or not.
         """
         model_data = {

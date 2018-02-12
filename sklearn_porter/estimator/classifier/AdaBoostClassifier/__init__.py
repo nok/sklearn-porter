@@ -13,7 +13,8 @@ class AdaBoostClassifier(Classifier):
     --------
     sklearn.ensemble.AdaBoostClassifier
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.ensemble.AdaBoostClassifier.html
     """
     SUPPORTED_METHODS = ['predict']
 
@@ -49,15 +50,16 @@ class AdaBoostClassifier(Classifier):
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
         :param estimator : AdaBoostClassifier
             An instance of a trained AdaBoostClassifier estimator.
-        :param target_language : string
+        :param target_language : string, default: 'java'
             The target programming language.
-        :param target_method : string
+        :param target_method : string, default: 'predict'
             The target method of the estimator.
         """
         super(AdaBoostClassifier, self).__init__(
@@ -87,7 +89,8 @@ class AdaBoostClassifier(Classifier):
                export_data=False, export_dir='.', export_filename='data.json',
                export_append_checksum=False, embed_data=True, **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
@@ -103,7 +106,7 @@ class AdaBoostClassifier(Classifier):
             The filename of the exported model data.
         :param export_append_checksum : bool
             Whether to append the checksum to the filename or not.
-        :param embed_data : bool
+        :param embed_data : bool, default: True
             Whether the model data should be embedded in the template or not.
 
         Returns
@@ -190,8 +193,8 @@ class AdaBoostClassifier(Classifier):
             json_hash = hashlib.md5(json_data).hexdigest()
             filename = filename.split('.json')[0] + '_' + json_hash + '.json'
         path = os.path.join(directory, filename)
-        with open(path, 'w') as fp:
-            fp.write(json_data)
+        with open(path, 'w') as file_:
+            file_.write(json_data)
 
     def create_branches(self, left_nodes, right_nodes, threshold,
                         value, features, node, depth, init=False):
@@ -214,6 +217,8 @@ class AdaBoostClassifier(Classifier):
             The current node.
         :param depth : int
             The tree depth.
+        :param init : bool, default: True
+            Whether it's the initial tree or not.
 
         Returns
         -------

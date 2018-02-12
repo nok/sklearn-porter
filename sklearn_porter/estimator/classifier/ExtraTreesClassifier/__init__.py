@@ -10,21 +10,23 @@ class ExtraTreesClassifier(RandomForestClassifier):
     --------
     sklearn.ensemble.ExtraTreesClassifier
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.ensemble.ExtraTreesClassifier.html
     """
 
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
-        :param estimator : AdaBoostClassifier
+        :param estimator : ExtraTreesClassifier
             An instance of a trained ExtraTreesClassifier estimator.
-        :param target_language : string
+        :param target_language : string, default: 'java'
             The target programming language.
-        :param target_method : string
+        :param target_method : string, default: 'predict'
             The target method of the estimator.
         """
         super(ExtraTreesClassifier, self).__init__(

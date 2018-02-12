@@ -94,8 +94,10 @@ class Template(object):
                 return self.temp(keys, template, skipping=False)
         else:
             class_name = self.__class__.__name__
+            estimator_type = getattr(self, 'estimator_type') if \
+                hasattr(self, 'estimator_type') else 'classifier'
             path = os.path.join(os.path.dirname(__file__), 'estimator',
-                                self.estimator_type, class_name, 'templates',
+                                estimator_type, class_name, 'templates',
                                 self.target_language, name + '.txt')
             if os.path.isfile(path):
                 with open(path, 'r') as file_:

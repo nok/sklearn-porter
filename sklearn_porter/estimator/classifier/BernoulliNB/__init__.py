@@ -14,7 +14,8 @@ class BernoulliNB(Classifier):
     --------
     sklearn.naive_bayes.BernoulliNB
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.naive_bayes.BernoulliNB.html
     """
 
     SUPPORTED_METHODS = ['predict']
@@ -41,11 +42,12 @@ class BernoulliNB(Classifier):
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
-        :param estimator : AdaBoostClassifier
+        :param estimator : BernoulliNB
             An instance of a trained BernoulliNB estimator.
         :param target_language : string
             The target programming language.
@@ -57,11 +59,12 @@ class BernoulliNB(Classifier):
             target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name,
-               export_data=False, export_dir='.', export_filename='data.json',
+    def export(self, class_name, method_name, export_data=False,
+               export_dir='.', export_filename='data.json',
                export_append_checksum=False, **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
@@ -69,13 +72,13 @@ class BernoulliNB(Classifier):
             The name of the class in the returned result.
         :param method_name : string
             The name of the method in the returned result.
-        :param export_data : bool
+        :param export_data : bool, default: False
             Whether the model data should be saved or not.
-        :param export_dir : string
+        :param export_dir : string, default: '.' (current directory)
             The directory where the model data should be saved.
-        :param export_filename : string
+        :param export_filename : string, default: 'data.json'
             The filename of the exported model data.
-        :param export_append_checksum : bool
+        :param export_append_checksum : bool, default: False
             Whether to append the checksum to the filename or not.
 
         Returns
@@ -169,7 +172,7 @@ class BernoulliNB(Classifier):
             The directory.
         :param filename : string
             The filename.
-        :param with_md5_hash : bool
+        :param with_md5_hash : bool, default: False
             Whether to append the checksum to the filename or not.
         """
         neg_prob = np.log(1 - np.exp(self.estimator.feature_log_prob_))
@@ -199,8 +202,8 @@ class BernoulliNB(Classifier):
             The built method as string.
         """
         n_indents = 1 if self.target_language in ['java', 'js'] else 0
-        temp_method = self.temp('separated.method.predict', n_indents=n_indents,
-                                skipping=True)
+        temp_method = self.temp('separated.method.predict',
+                                n_indents=n_indents, skipping=True)
         return temp_method.format(**self.__dict__)
 
     def create_class(self, method):

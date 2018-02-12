@@ -14,7 +14,8 @@ class SVC(Classifier):
     --------
     sklearn.svm.SVC
 
-    http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
+    http://scikit-learn.org/stable/modules/generated/
+    sklearn.svm.SVC.html
     """
 
     SUPPORTED_METHODS = ['predict']
@@ -62,40 +63,41 @@ class SVC(Classifier):
     def __init__(self, estimator, target_language='java',
                  target_method='predict', **kwargs):
         """
-        Port a trained estimator to the syntax of a chosen programming language.
+        Port a trained estimator to the syntax of a chosen programming
+        language.
 
         Parameters
         ----------
-        :param estimator : AdaBoostClassifier
+        :param estimator : SVC
             An instance of a trained SVC estimator.
-        :param target_language : string
+        :param target_language : string, default: 'java'
             The target programming language.
-        :param target_method : string
+        :param target_method : string, default: 'predict'
             The target method of the estimator.
         """
         super(SVC, self).__init__(estimator, target_language=target_language,
                                   target_method=target_method, **kwargs)
         self.estimator = estimator
 
-    def export(self, class_name, method_name,
-               export_data=False, export_dir='.', export_filename='data.json',
+    def export(self, class_name, method_name, export_data=False,
+               export_dir='.', export_filename='data.json',
                export_append_checksum=False, **kwargs):
         """
         Port a trained estimator to the syntax of a chosen programming language.
 
         Parameters
         ----------
-        :param class_name : string, default: 'Brain'
+        :param class_name : string
             The name of the class in the returned result.
-        :param method_name : string, default: 'predict'
+        :param method_name : string
             The name of the method in the returned result.
-        :param export_data : bool
+        :param export_data : bool, default: False
             Whether the model data should be saved or not.
-        :param export_dir : string
+        :param export_dir : string, default: '.' (current directory)
             The directory where the model data should be saved.
-        :param export_filename : string
+        :param export_filename : string, default: 'data.json'
             The filename of the exported model data.
-        :param export_append_checksum : bool
+        :param export_append_checksum : bool, default: False
             Whether to append the checksum to the filename or not.
 
         Returns

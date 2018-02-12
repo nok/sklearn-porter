@@ -6,7 +6,6 @@ import os.path
 import argparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
 from sklearn_porter.Porter import Porter
 
 
@@ -132,8 +131,9 @@ def main():
                                export_data=with_export,
                                export_append_checksum=with_checksum,
                                details=True)
-    except Exception as e:
-        sys.exit('Error: {}'.format(str(e)))
+    except Exception as exception:
+        # Catch any exception and exit the process:
+        sys.exit('Error: {}'.format(str(exception)))
     else:
         # Print transpiled estimator to the console:
         if bool(args.get('pipe', False)):
