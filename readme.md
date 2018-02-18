@@ -243,7 +243,7 @@ The following example shows how you can save an trained estimator to the [pickle
 # ...
 
 # extract estimator:
-joblib.dump(clf, 'estimator.pkl')
+joblib.dump(clf, 'estimator.pkl', compress=0)
 ```
 
 After that the estimator can be transpiled to JavaScript by using the following command:
