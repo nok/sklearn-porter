@@ -137,7 +137,7 @@ class SVC(Classifier):
         self.n_svs_rows = len(est.n_support_)
 
         self.weights = self.temp('arr[]', skipping=True).format(
-            type='int', name='weights', values=', '.join([str(e) for e in
+            type='int' if self.target_language!='pascal' else 'Integer', name='weights', values=', '.join([str(e) for e in
                                                           self.svs_rows]),
             n=len(self.svs_rows))
         self.n_weights = len(self.svs_rows)
