@@ -1,0 +1,36 @@
+
+Uses SysUtils, Math;
+
+const
+	N_FEATURES = {n_features};
+	N_CLASSES = {n_classes};
+	N_VECTORS = {n_vectors};
+	N_ROWS ={n_svs_rows};
+	N_COEFFICIENTS = {n_coefficients};
+	N_INTERCEPTS = {n_intercepts};
+	KERNEL_TYPE = '{kernel}';
+	KERNEL_GAMMA = {gamma};
+	KERNEL_COEF = {coef0};
+	KERNEL_DEGREE = {degree};
+	{vectors}
+	{coefficients}
+	{intercepts}
+	{weights}
+
+{method}
+
+ 
+var
+	features: array of Double;
+	i: Integer;
+begin
+
+	SetLength(features, ParamCount -2);
+	for i := 2 to ParamCount do
+	begin
+		features[i-2] := StrToFloat(ParamStr(i));
+	end;
+
+	Writeln(classifier(features));
+end.
+

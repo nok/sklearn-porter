@@ -1,0 +1,186 @@
+function classifier (var features: array of Double): Integer;
+var
+    i, j, k, d, l: Integer;
+    classVal, classIdx: Integer;
+    kernels: array[0..N_VECTORS] of 	Double;
+    kernel: Double;
+    
+    decisions: array[0.. N_INTERCEPTS] of Double;
+    decision: Double;
+    tmp: Double;
+
+    votes: array[0..N_INTERCEPTS] of Integer;
+    amounts: array[0..N_CLASSES] of Integer;
+    
+    starts: array[0..N_ROWS] of Integer;
+    start: Integer;
+    
+    ends: array[0..N_ROWS] of Integer;
+    
+    kernel_type_str: String;
+begin
+    
+    kernel_type_str := KERNEL_TYPE;
+
+    case kernel_type_str of
+    'l':
+        begin
+            // <x,x'>
+            for i := 0 to N_VECTORS do
+            begin
+                kernel := 0.0;
+                for j:=0 to N_FEATURES do
+                begin
+                    kernel := kernel + vectors[i][j];
+                end;
+                kernels[i] := vectors[i][j] * features[j];
+            end;
+        end;
+    'p':
+        begin
+            // (y<x,x'>+r)^d
+            for i := 0 to N_VECTORS do
+            begin
+                kernel := 0.0;
+                for j:=0 to N_FEATURES do
+                begin
+                    kernel := kernel + vectors[i][j];
+                end;
+                kernels[i] := power((KERNEL_GAMMA * kernel) + KERNEL_COEF, KERNEL_DEGREE);
+            end;
+        end;
+    'r':
+        begin
+            // exp(-y|x-x'|^2)
+            for i := 0 to N_VECTORS do
+            begin
+                kernel := 0.0;
+                for j:=0 to N_FEATURES do
+                begin
+                    kernel := kernel + vectors[i][j];
+                end;
+                kernels[i] := exp(-KERNEL_GAMMA * kernel);
+            end;
+        end;
+    's':
+        begin
+            // tanh(y<x,x'>+r)
+            for i := 0 to N_VECTORS do
+            begin
+                kernel := 0.0;
+                for j:=0 to N_FEATURES do
+                begin
+                    kernel := kernel + vectors[i][j];
+                end;
+                kernels[i] := tanh((KERNEL_GAMMA * kernel) + KERNEL_COEF);
+            end;
+        end;
+    end;
+
+    for i:=0 to N_ROWS do
+    begin
+        if i<>0 then
+        begin
+            start := 0;
+            for j:=0 to i do
+            begin
+                start := start + weights[j];
+            end;
+            starts[i] := start;
+        end
+        else
+        begin
+            starts[0] := 0;
+        end;
+    end;
+    
+    for i:=0 to N_ROWS do
+    begin
+        ends[i] := weights[i] + starts[i];
+    end;
+    
+    if N_CLASSES = 2 then
+    begin
+        for i:=0 to N_VECTORS do
+        begin
+            kernels[i] := -kernels[i];
+        end;
+
+        decision := 0.0;
+        for k:= starts[1] to ends[1] do
+        begin
+            decision := decision + kernels[k] * coefficients[0][k];
+        end;
+        for k := starts[0] to ends[0] do
+        begin
+            decision := decision + kernels[k] * coefficients[0][k];
+        end;
+        decision += intercepts[0];
+
+        if decision > 0 then
+        begin
+            classifier := 0;
+        end
+        else
+        begin
+            classifier := 1;
+        end;
+        
+    end
+    else
+    begin
+        d:=0;
+        l:= N_ROWS;
+        for i:=0 to l do
+            for j:=i+1 to l do
+            begin
+                tmp := 0;
+                for k:=starts[j] to ends[j] do
+                begin
+                    tmp += tmp + kernels[k] * coefficients[i][k];
+                end;
+                for k:=starts[i] to ends[i] do
+                begin
+                    tmp += tmp + kernels[k] * coefficients[j - 1][k];
+                end;
+                decisions[d] := tmp + intercepts[d];
+                d := d + 1;
+            end;
+        begin
+        end;
+        
+        d:=0;
+        l:= N_ROWS;
+        for i:=0 to l do
+        begin
+            for j:=i+1 to l do
+            begin
+                if decisions[d] > 0 then votes[d] := i else votes[d] := j;
+            end;
+        end;
+
+
+        for i:=0 to N_CLASSES do
+        begin
+            amounts[i] := 0;
+        end;
+        for i:=0 to N_INTERCEPTS do
+        begin
+            amounts[votes[i]] := amounts[votes[i]] + 1;
+        end;
+        
+        classVal := -1;
+        classIdx := -1;
+        for i:=0 to N_CLASSES do
+        begin
+            if (amounts[i] > classVal) then
+            begin
+                classVal := amounts[i];
+                classIdx := i;
+            end;
+        end;
+        
+        classifier := classIdx;
+    end;    
+end;
+

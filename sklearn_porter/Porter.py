@@ -49,7 +49,7 @@ class Porter(object):
 
         # Check language support:
         language = str(language).strip().lower()
-        if language not in ['c', 'go', 'java', 'js', 'php', 'ruby']:
+        if language not in ['c', 'go', 'java', 'js', 'php', 'ruby', 'pascal']:
             error = "The given language '{}' isn't supported.".format(language)
             raise AttributeError(error)
         self.target_language = language
@@ -544,6 +544,7 @@ class Porter(object):
         comp_vars = {
             # gcc brain.c -o brain
             'c': 'gcc {} -lm -o {}'.format(fname, cname),
+            'pascal': 'fpc -objfpc {} -o {}'.format(fname, cname),
             # javac Brain.java
             'java': 'javac {}'.format(fname),
             # go build -o brain brain.go
@@ -555,6 +556,7 @@ class Porter(object):
         exec_vars = {
             # ./brain
             'c': os.path.join('.', cname),
+            'pascal': os.path.join('.', cname),
             # java -classpath . Brain
             'java': 'java -classpath . {}'.format(cname),
             # node brain.js

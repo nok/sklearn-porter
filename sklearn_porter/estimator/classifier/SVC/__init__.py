@@ -29,6 +29,13 @@ class SVC(Classifier):
             'arr[][]':  '{type} {name}[{n}][{m}] = {{{values}}};',
             'indent':   '    ',
         },
+        'pascal': {
+            'type':     '{0}',
+            'arr':      '({0})',
+            'arr[]':    '{name}: array[0..{n}-1] of {type} = ({values});',
+            'arr[][]':  '{name}: array[0..{n}-1,0..{m}-1] of {type} = ({values});',
+            'indent':   '    ',
+        },
         'java': {
             'type':     '{0}',
             'arr':      '{{{0}}}',
