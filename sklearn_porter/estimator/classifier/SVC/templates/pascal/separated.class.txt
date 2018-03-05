@@ -25,10 +25,10 @@ var
 	i: Integer;
 begin
 
-	SetLength(features, ParamCount -2);
-	for i := 2 to ParamCount do
+	SetLength(features, ParamCount -1);
+	for i := 1 to ParamCount do
 	begin
-		features[i-2] := StrToFloat(ParamStr(i));
+		features[i-1] := StrToFloat(ParamStr(i));
 	end;
 
 	Writeln(classifier(features));
