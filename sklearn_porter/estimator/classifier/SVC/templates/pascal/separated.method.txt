@@ -2,27 +2,27 @@ function classifier (var features: array of Double): Integer;
 var
     i, j, k, d, l: Integer;
     classVal, classIdx: Integer;
-    kernels: array[0..N_VECTORS] of 	Double;
+    kernels: array[0..N_VECTORS-1] of 	Double;
     kernel: Double;
     
-    decisions: array[0.. N_INTERCEPTS] of Double;
+    decisions: array[0.. N_INTERCEPTS-1] of Double;
     decision: Double;
     tmp: Double;
 
-    votes: array[0..N_INTERCEPTS] of Integer;
-    amounts: array[0..N_CLASSES] of Integer;
+    votes: array[0..N_INTERCEPTS-1] of Integer;
+    amounts: array[0..N_CLASSES-1] of Integer;
     
-    starts: array[0..N_ROWS] of Integer;
+    starts: array[0..N_ROWS-1] of Integer;
     start: Integer;
     
-    ends: array[0..N_ROWS] of Integer;
+    ends: array[0..N_ROWS-1] of Integer;
     
     kernel_type_str: String;
 begin
     
     kernel_type_str := KERNEL_TYPE;
 
-    case kernel_type_str of
+    case kernel_type_str[1] of
     'l':
         begin
             // <x,x'>
