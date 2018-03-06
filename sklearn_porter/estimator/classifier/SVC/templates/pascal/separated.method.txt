@@ -26,10 +26,10 @@ begin
     'l':
         begin
             // <x,x'>
-            for i := 0 to N_VECTORS do
+            for i := 0 to N_VECTORS-1 do
             begin
                 kernel := 0.0;
-                for j:=0 to N_FEATURES do
+                for j:=0 to N_FEATURES-1 do
                 begin
                     kernel := kernel + vectors[i][j];
                 end;
@@ -39,10 +39,10 @@ begin
     'p':
         begin
             // (y<x,x'>+r)^d
-            for i := 0 to N_VECTORS do
+            for i := 0 to N_VECTORS-1 do
             begin
                 kernel := 0.0;
-                for j:=0 to N_FEATURES do
+                for j:=0 to N_FEATURES-1 do
                 begin
                     kernel := kernel + vectors[i][j];
                 end;
@@ -52,12 +52,12 @@ begin
     'r':
         begin
             // exp(-y|x-x'|^2)
-            for i := 0 to N_VECTORS do
+            for i := 0 to N_VECTORS-1 do
             begin
                 kernel := 0.0;
-                for j:=0 to N_FEATURES do
+                for j:=0 to N_FEATURES-1 do
                 begin
-                    kernel := kernel + vectors[i][j];
+                    kernel := power(vectors[i][j] - features[j], 2);
                 end;
                 kernels[i] := exp(-KERNEL_GAMMA * kernel);
             end;
@@ -65,10 +65,10 @@ begin
     's':
         begin
             // tanh(y<x,x'>+r)
-            for i := 0 to N_VECTORS do
+            for i := 0 to N_VECTORS-1 do
             begin
                 kernel := 0.0;
-                for j:=0 to N_FEATURES do
+                for j:=0 to N_FEATURES-1 do
                 begin
                     kernel := kernel + vectors[i][j];
                 end;
@@ -77,12 +77,12 @@ begin
         end;
     end;
 
-    for i:=0 to N_ROWS do
+    for i:=0 to N_ROWS-1 do
     begin
         if i<>0 then
         begin
             start := 0;
-            for j:=0 to i do
+            for j:=0 to i-1 do
             begin
                 start := start + weights[j];
             end;
@@ -94,14 +94,14 @@ begin
         end;
     end;
     
-    for i:=0 to N_ROWS do
+    for i:=0 to N_ROWS-1 do
     begin
         ends[i] := weights[i] + starts[i];
     end;
     
     if N_CLASSES = 2 then
     begin
-        for i:=0 to N_VECTORS do
+        for i:=0 to N_VECTORS-1 do
         begin
             kernels[i] := -kernels[i];
         end;
@@ -130,16 +130,16 @@ begin
     else
     begin
         d:=0;
-        l:= N_ROWS;
+        l:= N_ROWS-1;
         for i:=0 to l do
             for j:=i+1 to l do
             begin
                 tmp := 0;
-                for k:=starts[j] to ends[j] do
+                for k:=starts[j] to ends[j]-1 do
                 begin
                     tmp += tmp + kernels[k] * coefficients[i][k];
                 end;
-                for k:=starts[i] to ends[i] do
+                for k:=starts[i] to ends[i]-1 do
                 begin
                     tmp += tmp + kernels[k] * coefficients[j - 1][k];
                 end;
@@ -150,28 +150,29 @@ begin
         end;
         
         d:=0;
-        l:= N_ROWS;
+        l:= N_ROWS-1;
         for i:=0 to l do
         begin
             for j:=i+1 to l do
             begin
                 if decisions[d] > 0 then votes[d] := i else votes[d] := j;
+                d:=d+1;
             end;
         end;
 
 
-        for i:=0 to N_CLASSES do
+        for i:=0 to N_CLASSES-1 do
         begin
             amounts[i] := 0;
         end;
-        for i:=0 to N_INTERCEPTS do
+        for i:=0 to N_INTERCEPTS-1 do
         begin
             amounts[votes[i]] := amounts[votes[i]] + 1;
         end;
         
         classVal := -1;
         classIdx := -1;
-        for i:=0 to N_CLASSES do
+        for i:=0 to N_CLASSES-1 do
         begin
             if (amounts[i] > classVal) then
             begin
