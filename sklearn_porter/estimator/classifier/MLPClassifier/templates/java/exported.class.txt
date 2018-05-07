@@ -76,10 +76,10 @@ class {class_name} {{
 
         for (int i = 0; i < this.clf.network.length - 1; i++) {{
             for (int j = 0; j < this.clf.network[i + 1].length; j++) {{
+                this.clf.network[i + 1][j] = this.clf.bias[i][j];
                 for (int l = 0; l < this.clf.network[i].length; l++) {{
                     this.clf.network[i + 1][j] += this.clf.network[i][l] * this.clf.weights[i][l][j];
                 }}
-                this.clf.network[i + 1][j] += this.clf.bias[i][j];
             }}
             if ((i + 1) < (this.clf.network.length - 1)) {{
                 this.clf.network[i + 1] = this.compute(this.clf.hidden, this.clf.network[i + 1]);
