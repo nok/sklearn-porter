@@ -20,5 +20,5 @@ python -m unittest discover -vp '*Test.py'
 # Close the previous started server:
 kill $serve_pid
 
-# Deactivate the previous activated envrionment:
+# Deactivate the previous activated environment:
 source deactivate &>/dev/null
