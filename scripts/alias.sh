@@ -7,6 +7,6 @@ function porter() {
     local LIBS=$(python -c "$CMDS")
     python $LIBS/sklearn_porter "$@"
   else
-     echo "Command not found. Is the right environment active?"
+     echo "Error: The module 'sklearn-porter' could not be found. Is 'sklearn-porter' installed and the right environment active?"
   fi
 }
