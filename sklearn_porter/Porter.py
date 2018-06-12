@@ -5,7 +5,6 @@ from __future__ import unicode_literals
 import os
 import sys
 import types
-import subprocess as subp
 
 import numpy as np
 
@@ -20,6 +19,8 @@ from sklearn.svm.classes import NuSVC
 from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
+
+from sklearn_porter.utils.Shell import Shell
 
 
 class Porter(object):
@@ -131,17 +132,16 @@ class Porter(object):
                                     self.target_language)
         has_template = os.path.isdir(template_dir)
         if not has_template:
-            error = "Currently there is no support of the combination " \
-                    "of the estimator '{}' and the target programming " \
-                    "language '{}'.".format(self.estimator_name,
-                                            self.target_language)
+            error = "Currently the chosen target programming language '{}' " \
+                    "isn't supported for the estimator '{}'." \
+                    "".format(self.estimator_name, self.target_language)
             raise AttributeError(error)
 
         # Set target prediction method:
         has_method = self.target_method in \
                      set(getattr(clazz, 'SUPPORTED_METHODS'))
         if not has_method:
-            error = "Currently the given model method" \
+            error = "Currently the chosen model method" \
                     " '{}' isn't supported.".format(self.target_method)
             raise AttributeError(error)
 
@@ -194,8 +194,7 @@ class Porter(object):
 
         language = self.target_language
         filename = Porter._get_filename(class_name, language)
-        comp_cmd, exec_cmd = Porter._get_commands(filename,
-                                                  class_name,
+        comp_cmd, exec_cmd = Porter._get_commands(filename, class_name,
                                                   language)
         output = {
             'estimator': str(output),
@@ -300,8 +299,8 @@ class Porter(object):
 
         return regressors
 
-    def predict(self, X, class_name=None, method_name=None,
-                tnp_dir='tmp', keep_tmp_dir=False, num_format=lambda x: str(x)):
+    def predict(self, X, class_name=None, method_name=None, tnp_dir='tmp',
+                keep_tmp_dir=False, num_format=lambda x: str(x)):
         """
         Predict using the transpiled model.
 
@@ -351,8 +350,8 @@ class Porter(object):
             raise AttributeError(error)
 
         # Cleanup:
-        subp.call(['rm', '-rf', tnp_dir])
-        subp.call(['mkdir', tnp_dir])
+        Shell.call('rm -rf {}'.format(tnp_dir))
+        Shell.call('mkdir {}'.format(tnp_dir))
 
         # Transpiled model:
         details = self.export(class_name=class_name,
@@ -367,8 +366,7 @@ class Porter(object):
         # Compilation command:
         comp_cmd = details.get('cmd').get('compilation')
         if comp_cmd is not None:
-            comp_cmd = str(comp_cmd).split()
-            subp.call(comp_cmd, cwd=tnp_dir)
+            Shell.call(comp_cmd, cwd=tnp_dir)
 
         # Execution command:
         exec_cmd = details.get('cmd').get('execution')
@@ -379,8 +377,7 @@ class Porter(object):
         # Single feature set:
         if exec_cmd is not None and len(X.shape) == 1:
             full_exec_cmd = exec_cmd + [str(sample).strip() for sample in X]
-            pred_y = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
-                                       cwd=tnp_dir)
+            pred_y = Shell.check_output(full_exec_cmd, cwd=tnp_dir)
             pred_y = int(pred_y)
 
         # Multiple feature sets:
@@ -388,13 +385,12 @@ class Porter(object):
             pred_y = np.empty(X.shape[0], dtype=int)
             for idx, features in enumerate(X):
                 full_exec_cmd = exec_cmd + [str(f).strip() for f in features]
-                pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
-                                         cwd=tnp_dir)
+                pred = Shell.check_output(full_exec_cmd, cwd=tnp_dir)
                 pred_y[idx] = int(pred)
 
         # Cleanup:
         if not keep_tmp_dir:
-            subp.call(['rm', '-rf', tnp_dir])
+            Shell.call('rm -rf {}'.format(tnp_dir))
 
         return pred_y
 
@@ -470,7 +466,7 @@ class Porter(object):
         cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
         for exe in all_depends:
             cmd = cmd.format(exe)
-            status = subp.check_output(cmd, shell=True, stderr=subp.STDOUT)
+            status = Shell.check_output(cmd)
             if sys.version_info >= (3, 3) and isinstance(status, bytes):
                 status = status.decode('utf-8')
             status = str(status).strip()

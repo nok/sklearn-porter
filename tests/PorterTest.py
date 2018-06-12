@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import random
-import subprocess as subp
 import unittest
 import filecmp
 import os
@@ -10,6 +9,7 @@ from sklearn.externals import joblib
 from sklearn.svm import LinearSVC
 
 from sklearn_porter.Porter import Porter
+from sklearn_porter.utils.Shell import Shell
 
 from tests.utils.Timer import Timer
 from tests.utils.DependencyChecker import DependencyChecker as Checker
@@ -42,8 +42,8 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
 
     def test_python_command_execution(self):
         """Test command line execution."""
-        subp.call('rm -rf tmp'.split())
-        subp.call('mkdir tmp'.split())
+        Shell.call('rm -rf tmp')
+        Shell.call('mkdir tmp')
         filename = '{}.java'.format(self.tmp_fn)
         cp_src = os.path.join('tmp', filename)
         with open(cp_src, 'w') as f:
@@ -51,13 +51,13 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
             out = porter.export(method_name='predict', class_name=self.tmp_fn)
             f.write(out)
         # $ javac tmp/Tmp.java
-        subp.call(['javac', cp_src])
+        Shell.call(['javac', cp_src])
 
         # Rename estimator for comparison:
         filename = '{}_2.java'.format(self.tmp_fn)
         cp_dest = os.path.join('tmp', filename)
         # $ mv tmp/Brain.java tmp/Brain_2.java
-        subp.call(['mv', cp_src, cp_dest])
+        Shell.call(['mv', cp_src, cp_dest])
 
         # Dump estimator:
         filename = '{}.pkl'.format(self.tmp_fn)
@@ -65,8 +65,8 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
         joblib.dump(self.estimator, pkl_path)
 
         # Port estimator:
-        cmd = 'python -m sklearn_porter -i {} --class_name Brain'.format(pkl_path).split()
-        subp.call(cmd)
+        cmd = 'python -m sklearn_porter -i {} --class_name Brain'.format(pkl_path)
+        Shell.call(cmd)
         # Compare file contents:
         equal = filecmp.cmp(cp_src, cp_dest)
 
