@@ -42,3 +42,4 @@ Tmp.*
 *.jar
 
 node_modules
+package-lock.json
