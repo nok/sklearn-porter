@@ -19,7 +19,6 @@ class SeparatedData():
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-
     def test_random_features__iris_data__default(self):
         self.load_iris_data()
         self._port_estimator()
@@ -33,7 +32,6 @@ class SeparatedData():
         self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
-
 
     def test_random_features__digits_data__default(self):
         self.load_digits_data()
@@ -49,7 +47,6 @@ class SeparatedData():
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-
     def test_existing_features__binary_data__default(self):
         self.load_binary_data()
         self._port_estimator()
@@ -62,7 +59,6 @@ class SeparatedData():
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
 
-
     def test_existing_features__iris_data__default(self):
         self.load_iris_data()
         self._port_estimator()
@@ -74,7 +70,6 @@ class SeparatedData():
         self._clear_estimator()
         # noinspection PyUnresolvedReferences
         self.assertListEqual(preds, ground_truth)
-
 
     def test_existing_features__digits_data__default(self):
         self.load_digits_data()
