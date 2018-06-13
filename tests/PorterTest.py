@@ -5,6 +5,8 @@ import unittest
 import filecmp
 import os
 
+import numpy as np
+
 from sklearn.externals import joblib
 from sklearn.svm import LinearSVC
 
@@ -65,7 +67,8 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
         joblib.dump(self.estimator, pkl_path)
 
         # Port estimator:
-        cmd = 'python -m sklearn_porter -i {} --class_name Brain'.format(pkl_path)
+        cmd = 'python -m sklearn_porter -i {}' \
+              ' --class_name Brain'.format(pkl_path)
         Shell.call(cmd)
         # Compare file contents:
         equal = filecmp.cmp(cp_src, cp_dest)
@@ -74,14 +77,10 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
 
     def test_java_command_execution(self):
         """Test whether the prediction of random features match or not."""
-        # Create random features:
-        Y, Y_py = [], []
-        for n in range(self.N_RANDOM_FEATURE_SETS):
-            x = [random.uniform(0., 10.) for n in range(self.n_features)]
-            y_py = int(self.estimator.predict([x])[0])
-            Y_py.append(y_py)
-            y = self.pred_in_custom(x)
-            Y.append(y)
+        size = (self.N_RANDOM_FEATURE_SETS, self.n_features)
+        X = np.random.uniform(0., 10., size)
+        Y_py = self.estimator.predict(X).tolist()
+        Y = [int(self.pred_in_custom(x)) for x in X]
         self.assertEqual(Y_py, Y)
 
     def test_filename_generation_for_java(self):
