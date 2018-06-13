@@ -92,8 +92,8 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
 
     def test_filename_generation_for_php(self):
         language = 'php'
-        self.assertEqual(Porter._get_filename('mdl', language), 'mdl.php')
-        self.assertEqual(Porter._get_filename(' mdl ', language), 'mdl.php')
+        self.assertEqual(Porter._get_filename('mdl', language), 'Mdl.php')
+        self.assertEqual(Porter._get_filename(' mdl ', language), 'Mdl.php')
         self.assertEqual(Porter._get_filename('MDL', language), 'MDL.php')
 
     def test_filename_generation_for_c(self):
@@ -119,3 +119,28 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
         self.assertEqual(Porter._get_filename('mdl', language), 'mdl.rb')
         self.assertEqual(Porter._get_filename(' mdl ', language), 'mdl.rb')
         self.assertEqual(Porter._get_filename('MDL', language), 'MDL.rb')
+
+    def test_commands_generation_for_java(self):
+        comp_cmd, exec_cmd = Porter._get_commands('Mdl.java', 'Mdl', 'java')
+        self.assertEqual(comp_cmd, 'javac Mdl.java')
+        self.assertEqual(exec_cmd, 'java -classpath . Mdl')
+
+    def test_commands_generation_for_php(self):
+        comp_cmd, exec_cmd = Porter._get_commands('Mdl.php', 'Mdl', 'php')
+        self.assertEqual(comp_cmd, None)
+        self.assertEqual(exec_cmd, 'php -f Mdl.php')
+
+    def test_commands_generation_for_c(self):
+        comp_cmd, exec_cmd = Porter._get_commands('mdl.c', 'mdl', 'c')
+        self.assertEqual(comp_cmd, 'gcc mdl.c -lm -o mdl')
+        self.assertEqual(exec_cmd, './mdl')
+
+    def test_commands_generation_for_js(self):
+        comp_cmd, exec_cmd = Porter._get_commands('mdl.js', 'mdl', 'js')
+        self.assertEqual(comp_cmd, None)
+        self.assertEqual(exec_cmd, 'node mdl.js')
+
+    def test_commands_generation_for_go(self):
+        comp_cmd, exec_cmd = Porter._get_commands('mdl.go', 'mdl', 'go')
+        self.assertEqual(comp_cmd, 'go build -o mdl mdl.go')
+        self.assertEqual(exec_cmd, './mdl')

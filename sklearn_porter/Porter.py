@@ -532,7 +532,7 @@ class Porter(object):
             comp_cmd, exec_cmd : (str, str)
             The compilation and execution command.
         """
-        cname = str(class_name).lower()
+        cname = str(class_name)
         fname = str(filename)
         lang = str(language)
 
@@ -556,7 +556,7 @@ class Porter(object):
             # node brain.js
             'js': 'node {}'.format(fname),
             # php -f Brain.php
-            'php': 'php -f {}'.format(cname),
+            'php': 'php -f {}'.format(fname),
             # ruby brain.rb
             'ruby': 'ruby {}'.format(fname),
             # ./brain
