@@ -86,36 +86,36 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
 
     def test_filename_generation_for_java(self):
         language = 'java'
-        self.assertEqual(Porter._get_filename('test', language), 'Test.java')
-        self.assertEqual(Porter._get_filename(' test ', language), 'Test.java')
-        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.java')
+        self.assertEqual(Porter._get_filename('mdl', language), 'Mdl.java')
+        self.assertEqual(Porter._get_filename(' mdl ', language), 'Mdl.java')
+        self.assertEqual(Porter._get_filename('MDL', language), 'MDL.java')
 
     def test_filename_generation_for_php(self):
         language = 'php'
-        self.assertEqual(Porter._get_filename('test', language), 'Test.php')
-        self.assertEqual(Porter._get_filename(' test ', language), 'Test.php')
-        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.php')
+        self.assertEqual(Porter._get_filename('mdl', language), 'mdl.php')
+        self.assertEqual(Porter._get_filename(' mdl ', language), 'mdl.php')
+        self.assertEqual(Porter._get_filename('MDL', language), 'MDL.php')
 
     def test_filename_generation_for_c(self):
         language = 'c'
-        self.assertEqual(Porter._get_filename('test', language), 'test.c')
-        self.assertEqual(Porter._get_filename(' test ', language), 'test.c')
-        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.c')
+        self.assertEqual(Porter._get_filename('mdl', language), 'mdl.c')
+        self.assertEqual(Porter._get_filename(' mdl ', language), 'mdl.c')
+        self.assertEqual(Porter._get_filename('MDL', language), 'MDL.c')
 
     def test_filename_generation_for_js(self):
         language = 'js'
-        self.assertEqual(Porter._get_filename('test', language), 'test.js')
-        self.assertEqual(Porter._get_filename(' test ', language), 'test.js')
-        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.js')
+        self.assertEqual(Porter._get_filename('mdl', language), 'mdl.js')
+        self.assertEqual(Porter._get_filename(' mdl ', language), 'mdl.js')
+        self.assertEqual(Porter._get_filename('MDL', language), 'MDL.js')
 
     def test_filename_generation_for_go(self):
         language = 'go'
-        self.assertEqual(Porter._get_filename('test', language), 'test.go')
-        self.assertEqual(Porter._get_filename(' test ', language), 'test.go')
-        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.go')
+        self.assertEqual(Porter._get_filename('mdl', language), 'mdl.go')
+        self.assertEqual(Porter._get_filename(' mdl ', language), 'mdl.go')
+        self.assertEqual(Porter._get_filename('MDL', language), 'MDL.go')
 
     def test_filename_generation_for_ruby(self):
         language = 'ruby'
-        self.assertEqual(Porter._get_filename('test', language), 'test.rb')
-        self.assertEqual(Porter._get_filename(' test ', language), 'test.rb')
-        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.rb')
+        self.assertEqual(Porter._get_filename('mdl', language), 'mdl.rb')
+        self.assertEqual(Porter._get_filename(' mdl ', language), 'mdl.rb')
+        self.assertEqual(Porter._get_filename('MDL', language), 'MDL.rb')
