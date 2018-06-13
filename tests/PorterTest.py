@@ -83,3 +83,39 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
             y = self.pred_in_custom(x)
             Y.append(y)
         self.assertEqual(Y_py, Y)
+
+    def test_filename_generation_for_java(self):
+        language = 'java'
+        self.assertEqual(Porter._get_filename('test', language), 'Test.java')
+        self.assertEqual(Porter._get_filename(' test ', language), 'Test.java')
+        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.java')
+
+    def test_filename_generation_for_php(self):
+        language = 'php'
+        self.assertEqual(Porter._get_filename('test', language), 'Test.php')
+        self.assertEqual(Porter._get_filename(' test ', language), 'Test.php')
+        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.php')
+
+    def test_filename_generation_for_c(self):
+        language = 'c'
+        self.assertEqual(Porter._get_filename('test', language), 'test.c')
+        self.assertEqual(Porter._get_filename(' test ', language), 'test.c')
+        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.c')
+
+    def test_filename_generation_for_js(self):
+        language = 'js'
+        self.assertEqual(Porter._get_filename('test', language), 'test.js')
+        self.assertEqual(Porter._get_filename(' test ', language), 'test.js')
+        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.js')
+
+    def test_filename_generation_for_go(self):
+        language = 'go'
+        self.assertEqual(Porter._get_filename('test', language), 'test.go')
+        self.assertEqual(Porter._get_filename(' test ', language), 'test.go')
+        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.go')
+
+    def test_filename_generation_for_ruby(self):
+        language = 'ruby'
+        self.assertEqual(Porter._get_filename('test', language), 'test.rb')
+        self.assertEqual(Porter._get_filename(' test ', language), 'test.rb')
+        self.assertEqual(Porter._get_filename('TEST', language), 'TEST.rb')
