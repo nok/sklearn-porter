@@ -18,7 +18,7 @@ class JavaScript(Checker):
         self._init_test()
 
     def _init_test(self):
-        self.tmp_fn = os.path.join('tmp', 'brain.js')
+        self.tmp_fn = os.path.join('tmp', 'Brain.js')
 
     def _port_estimator(self, export_data=False, embed_data=False):
         self.estimator.fit(self.X, self.y)

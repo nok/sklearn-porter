@@ -199,7 +199,7 @@ The exported [result](examples/estimator/classifier/DecisionTreeClassifier/java/
 
 ### Prediction
 
-Run the prediction(s) in the target programming language directly:
+You can run the prediction(s) in the target programming language directly:
 
 ```python
 # ...
@@ -213,7 +213,7 @@ y_java = porter.predict([1., 2., 3., 4.])
 
 ### Integrity
 
-Always compute and check the integrity between the original and the transpiled estimator:
+You should always check and compute the integrity between the original and the transpiled estimator:
 
 ```python
 # ...
@@ -228,7 +228,7 @@ _Please note that the integrity check isn't supported on Windows operation syste
 
 ### Command-line interface
 
-First of all have a quick view on the available arguments:
+First of all here is an overview on the available arguments:
 
 ```
 $ python -m sklearn_porter [-h] --input <PICKLE_FILE> [--output <DEST_DIR>] \
@@ -237,7 +237,7 @@ $ python -m sklearn_porter [-h] --input <PICKLE_FILE> [--output <DEST_DIR>] \
                            [--export] [--checksum] [--data] [--pipe]
 ```
 
-The following example shows how you can save an trained estimator to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
+The following example shows how you can save a trained estimator to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
 
 ```python
 # ...
