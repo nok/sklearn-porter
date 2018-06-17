@@ -125,7 +125,7 @@ class SVC(Classifier):
             msg = 'The kernel type is not supported.'
             raise ValueError(msg)
 
-        self.n_features = len(est.support_vectors_[0])
+        self.n_features = max(est.support_vectors_[0].shape)
         self.svs_rows = est.n_support_
         self.n_svs_rows = len(est.n_support_)
 
@@ -148,9 +148,9 @@ class SVC(Classifier):
         vectors = ', '.join(vectors)
         vectors = self.temp('arr[][]', skipping=True).format(
             type='double', name='vectors', values=vectors,
-            n=len(est.support_vectors_), m=len(est.support_vectors_[0]))
+            n=est.support_vectors_.shape[0], m=max(est.support_vectors_[0].shape))
         self.vectors = vectors
-        self.n_vectors = len(est.support_vectors_)
+        self.n_vectors = est.support_vectors_.shape[0]
 
         # Coefficients:
         coeffs = []
@@ -160,10 +160,10 @@ class SVC(Classifier):
             coeffs.append(_coeffs)
         coeffs = ', '.join(coeffs)
         coeffs = temp_arr__.format(type='double', name='coefficients',
-                                   values=coeffs, n=len(est.dual_coef_),
-                                   m=len(est.dual_coef_[0]))
+                                   values=coeffs, n=est.dual_coef_.shape[0],
+                                   m=max(est.dual_coef_[0].shape))
         self.coefficients = coeffs
-        self.n_coefficients = len(est.dual_coef_)
+        self.n_coefficients = est.dual_coef_.shape[0]
 
         # Interceptions:
         inters = [temp_type.format(self.repr(i)) for i in est._intercept_]
