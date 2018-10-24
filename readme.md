@@ -281,10 +281,10 @@ $ python -m sklearn_porter --help
 $ python -m sklearn_porter -h
 ```
 
-Tip: You can install a handy [function](scripts/alias.sh) to use the porter directly:
+Tip: You can install a handy [function](recipes/alias.sh) to use the porter directly:
 
 ```
-$ cat scripts/alias.sh >> ~/.bash_profile && source ~/.bash_profile
+$ cat recipes/alias.sh >> ~/.bash_profile && source ~/.bash_profile
 ``` 
 
 ```
@@ -369,7 +369,7 @@ Independently, the following compilers and intepreters are required to cover all
 The tests cover module functions as well as matching predictions of transpiled estimators. Run all tests:
 
 ```bash
-$ bash scripts/test.sh
+$ bash recipes/test.sh
 ```
 
 ```bash
@@ -414,7 +414,7 @@ $ N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discove
 It's highly recommended to ensure the code quality. For that I use [Pylint](https://github.com/PyCQA/pylint/). Run the linter:
 
 ```bash
-$ bash scripts/lint.sh
+$ bash recipes/lint.sh
 ```
 
 ```bash
