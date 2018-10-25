@@ -22,38 +22,23 @@ install:
   - sudo apt-get install ruby2.3 -y
   - sudo ln -s /usr/local/ruby2.3 /usr/local/ruby
   - sudo apt-get install php7.0 -y
-  - wget -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.2/gson-2.8.2.jar
+  - wget -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar
   - npm install xmlhttprequest
   - unset JAVA_TOOL_OPTIONS && unset _JAVA_OPTIONS
-  - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
-      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
-    else
-      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
-    fi
-  - bash miniconda.sh -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - hash -r
-  - conda config --set always_yes yes --set changeps1 no
-  - conda config --add channels conda-forge
-  - conda update -q conda
-  - conda install -n root _license
-  - conda info -a
-  - conda create -y -n sklearn-porter python=$TRAVIS_PYTHON_VERSION
-  - source activate sklearn-porter
   - pip install -U pip
-  - pip install -r requirements.txt
-  - python --version
+  - make install install.requirements.development
+before_script:
   - gcc --version
   - java -version
   - node --version
   - go version
   - php --version
   - ruby --version
-before_script:
+  - python --version
   - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
       python -m SimpleHTTPServer 8080 &>/dev/null &
     else
       python -m http.server 8080 &>/dev/null &
     fi
 script:
-  - python -m unittest discover -vp '*Test.py'
+  - pytest tests -v -o python_files=*Test.py

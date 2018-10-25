@@ -12,8 +12,8 @@ from tests.utils.Timer import Timer
 
 class Regressor(Timer):
 
-    N_RANDOM_FEATURE_SETS = 30
-    N_EXISTING_FEATURE_SETS = 30
+    TEST_N_RANDOM_FEATURE_SETS = 30
+    TEST_N_EXISTING_FEATURE_SETS = 30
 
     def setUp(self):
         np.random.seed(5)
@@ -26,7 +26,7 @@ class Regressor(Timer):
         self._stop_test()
 
     def _init_env(self):
-        for param in ['N_RANDOM_FEATURE_SETS', 'N_EXISTING_FEATURE_SETS']:
+        for param in ['TEST_N_RANDOM_FEATURE_SETS', 'TEST_N_EXISTING_FEATURE_SETS']:
             n = os.environ.get(param, None)
             if n is not None and str(n).strip().isdigit():
                 n = int(n)
@@ -44,7 +44,7 @@ class Regressor(Timer):
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         match = []
-        for _ in range(self.N_RANDOM_FEATURE_SETS):
+        for _ in range(self.TEST_N_RANDOM_FEATURE_SETS):
             x = np.random.uniform(amin, amax, self.n_features)
             match.append(self.pred_in_custom(x, cast=False) -
                          self.pred_in_py(x, cast=False) < 0.0001)
@@ -55,7 +55,7 @@ class Regressor(Timer):
     def test_existing_features_new(self):
         self._port_estimator()
         match = []
-        n = min(self.N_EXISTING_FEATURE_SETS, len(self.X))
+        n = min(self.TEST_N_EXISTING_FEATURE_SETS, len(self.X))
         for x in self.X[:n]:
             match.append(self.pred_in_custom(x, cast=False) -
                          self.pred_in_py(x, cast=False) < 0.0001)

@@ -29,7 +29,7 @@ class SVCJavaTest(Java, Classifier, ExportedData, TestCase):
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         preds, ground_truth = [], []
-        for _ in range(self.N_RANDOM_FEATURE_SETS):
+        for _ in range(self.TEST_N_RANDOM_FEATURE_SETS):
             x = np.random.uniform(amin, amax, self.n_features)
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
@@ -45,7 +45,7 @@ class SVCJavaTest(Java, Classifier, ExportedData, TestCase):
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         preds, ground_truth = [], []
-        for _ in range(self.N_RANDOM_FEATURE_SETS):
+        for _ in range(self.TEST_N_RANDOM_FEATURE_SETS):
             x = np.random.uniform(amin, amax, self.n_features)
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))
@@ -60,7 +60,7 @@ class SVCJavaTest(Java, Classifier, ExportedData, TestCase):
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         preds, ground_truth = [], []
-        for _ in range(self.N_RANDOM_FEATURE_SETS):
+        for _ in range(self.TEST_N_RANDOM_FEATURE_SETS):
             x = np.random.uniform(amin, amax, self.n_features)
             preds.append(self.pred_in_custom(x))
             ground_truth.append(self.pred_in_py(x))

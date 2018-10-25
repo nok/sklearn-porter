@@ -1,0 +1,3 @@
+twine>=1.12.1
+pylint>=1.9.3
+pytest>=3.9.2

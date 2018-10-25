@@ -15,8 +15,8 @@ from tests.estimator.classifier.SeparatedData import SeparatedData
 
 class Classifier(Timer, SeparatedData):
 
-    N_RANDOM_FEATURE_SETS = 30
-    N_EXISTING_FEATURE_SETS = 30
+    TEST_N_RANDOM_FEATURE_SETS = 20
+    TEST_N_EXISTING_FEATURE_SETS = 20
 
     def setUp(self):
         np.random.seed(5)
@@ -28,7 +28,7 @@ class Classifier(Timer, SeparatedData):
         self._stop_test()
 
     def _init_env(self):
-        for param in ['N_RANDOM_FEATURE_SETS', 'N_EXISTING_FEATURE_SETS']:
+        for param in ['TEST_N_RANDOM_FEATURE_SETS', 'TEST_N_EXISTING_FEATURE_SETS']:
             n = os.environ.get(param, None)
             if n is not None and str(n).strip().isdigit():
                 n = int(n)

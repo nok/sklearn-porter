@@ -159,17 +159,6 @@ $ pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/maste
 ```
 
 
-## Minimum requirements
-
-The minimum requirements to use the module are defined in the [requirements.txt](requirements.txt):
-
-```
-- numpy>=1.8.2
-- scipy>=0.14.0
-- scikit-learn>=0.14.1
-```
-
-
 ## Usage
 
 
@@ -197,20 +186,6 @@ print(output)
 The exported [result](examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.py#L25-L75) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
 
 
-### Prediction
-
-You can run the prediction(s) in the target programming language directly:
-
-```python
-# ...
-porter = Porter(clf, language='java')
-
-# prediction(s):
-Y_java = porter.predict(X)
-y_java = porter.predict(X[0])
-y_java = porter.predict([1., 2., 3., 4.])
-```
-
 ### Integrity
 
 You should always check and compute the integrity between the original and the transpiled estimator:
@@ -224,17 +199,43 @@ integrity = porter.integrity_score(X)
 print(integrity)  # 1.0
 ```
 
-_Please note that the integrity check isn't supported on Windows operation systems._
 
-### Command-line interface
+### Prediction
 
-First of all here is an overview on the available arguments:
+You can compute the prediction(s) in the target programming language:
+
+```python
+# ...
+porter = Porter(clf, language='java')
+
+# prediction(s):
+Y_java = porter.predict(X)
+y_java = porter.predict(X[0])
+y_java = porter.predict([1., 2., 3., 4.])
+```
+
+### Notebooks
+
+You can run and test all notebooks by starting a Jupyter notebook server locally:
+
+```bash
+$ make start.examples
+$ make stop.examples
+```
+
+## Command-line interface
+
+In general you can use the porter on the command line. Either you use `python -m sklearn_porter [-h]` or you install an executable to use `porter [-h]` directly:
+
+```bash
+$ make install.alias
+```
 
 ```
-$ python -m sklearn_porter [-h] --input <PICKLE_FILE> [--output <DEST_DIR>] \
-                           [--class_name <CLASS_NAME>] [--method_name <METHOD_NAME>] \
-                           [--c] [--java] [--js] [--go] [--php] [--ruby] \
-                           [--export] [--checksum] [--data] [--pipe]
+$ porter [-h] --input <PICKLE_FILE> [--output <DEST_DIR>] \
+         [--class_name <CLASS_NAME>] [--method_name <METHOD_NAME>] \
+         [--c] [--java] [--js] [--go] [--php] [--ruby] \
+         [--export] [--checksum] [--data] [--pipe]
 ```
 
 The following example shows how you can save a trained estimator to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
@@ -249,52 +250,30 @@ joblib.dump(clf, 'estimator.pkl', compress=0)
 After that the estimator can be transpiled to JavaScript by using the following command:
 
 ```bash
-$ python -m sklearn_porter -i estimator.pkl --js
+$ porter -i estimator.pkl --js
 ```
 
 The target programming language is changeable on the fly:
 
 ```bash
-$ python -m sklearn_porter -i estimator.pkl --c
-$ python -m sklearn_porter -i estimator.pkl --java
-$ python -m sklearn_porter -i estimator.pkl --php
-$ python -m sklearn_porter -i estimator.pkl --java
-$ python -m sklearn_porter -i estimator.pkl --ruby
+$ porter -i estimator.pkl --c
+$ porter -i estimator.pkl --java
+$ porter -i estimator.pkl --php
+$ porter -i estimator.pkl --java
+$ porter -i estimator.pkl --ruby
 ```
 
 For further processing the argument `--pipe` can be used to pass the result:
 
 ```bash
-$ python -m sklearn_porter -i estimator.pkl --js --pipe > estimator.js
+$ porter -i estimator.pkl --js --pipe > estimator.js
 ```
 
 For instance the result can be minified by using [UglifyJS](https://github.com/mishoo/UglifyJS2):
 
 ```bash
-$ python -m sklearn_porter -i estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
+$ porter -i estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
 ```
-
-Further information will be shown by using the `--help` argument:
-
-```bash
-$ python -m sklearn_porter --help
-$ python -m sklearn_porter -h
-```
-
-Tip: You can install a handy [function](recipes/alias.sh) to use the porter directly:
-
-```
-$ cat recipes/alias.sh >> ~/.bash_profile && source ~/.bash_profile
-``` 
-
-```
-$ porter [-h] --input <PICKLE_FILE> [--output <DEST_DIR>] \
-         [--class_name <CLASS_NAME>] [--method_name <METHOD_NAME>] \
-         [--c] [--java] [--js] [--go] [--php] [--ruby] \
-         [--export] [--checksum] [--data] [--pipe]
-```
-
-But don't forget to activate the right environment where the porter has been installed.
 
 
 ## Development
@@ -302,21 +281,11 @@ But don't forget to activate the right environment where the porter has been ins
 
 ### Environment
 
-Either you install just the minimum requirements (see [requirements.txt](requirements.txt)) for testing:
+You have to install required modules for broader development:
 
 ```bash
-$ conda create -n sklearn-porter python=2  # or python=3
-$ source activate sklearn-porter
-$ pip install -U pip
-$ pip install -r requirements.txt
-```
-
-Or you install all recommended packages (see [environment.yml](environment.yml)) for broader development:
-
-```bash
-$ conda env create -n sklearn-porter -c conda-forge python=2 -f environment.yml  # for macOS users
-$ # conda create -n sklearn-porter -c conda-forge python=2 scikit-learn pylint jupyter nb_conda twine
-$ source activate sklearn-porter
+$ make install.environment
+$ make install.requirements.development
 ```
 
 Independently, the following compilers and intepreters are required to cover all tests:
@@ -366,61 +335,33 @@ Independently, the following compilers and intepreters are required to cover all
 
 ### Testing
 
-The tests cover module functions as well as matching predictions of transpiled estimators. Run all tests:
+The tests cover module functions as well as matching predictions of transpiled estimators. Start all tests with:
 
 ```bash
-$ bash recipes/test.sh
-```
-
-```bash
-#!/usr/bin/env bash
-
-# activate the relevant environment:
-source activate sklearn-porter
-
-# start local server which is required for the JavaScript tests:
-if [[ $(python -c "import sys; print(sys.version_info[:1][0]);") == "2" ]]; then
-  python -m SimpleHTTPServer 8080 &>/dev/null & serve_pid=$!
-else
-  python -m http.server 8080 &>/dev/null & serve_pid=$!
-fi
-
-# run all tests:
-python -m unittest discover -vp '*Test.py'
-
-# close the previous started server:
-kill $serve_pid
-
-# deactivate the previous activated environment:
-source deactivate &>/dev/null
+$ make test 
 ```
 
 The test files have a specific pattern: `'[Algorithm][Language]Test.py'`:
 
 ```bash
-$ python -m unittest discover -vp 'RandomForest*Test.py'
-$ python -m unittest discover -vp '*JavaTest.py'
+$ pytest tests -v -o python_files='RandomForest*Test.py'
+$ pytest tests -v -o python_files='*JavaTest.py'
 ```
 
 While you are developing new features or fixes, you can reduce the test duration by changing the number of tests:
 
 ```bash
-$ N_RANDOM_FEATURE_SETS=15 N_EXISTING_FEATURE_SETS=30 python -m unittest discover -vp '*Test.py'
+$ N_RANDOM_FEATURE_SETS=5 N_EXISTING_FEATURE_SETS=10 \
+  pytest tests -v -o python_files='*JavaTest.py'
 ```
 
 
 ### Quality
 
-It's highly recommended to ensure the code quality. For that I use [Pylint](https://github.com/PyCQA/pylint/). Run the linter:
+It's highly recommended to ensure the code quality. For that [Pylint](https://github.com/PyCQA/pylint/) is used. Start the linter with:
 
 ```bash
-$ bash recipes/lint.sh
-```
-
-```bash
-#!/usr/bin/env bash
-
-find sklearn_porter -name '*.py' -exec pylint {} \;
+$ make lint
 ```
 
 

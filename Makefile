@@ -1,24 +1,71 @@
-SHELL := /bin/bash
+BASH := /bin/bash
 
-TEST = '*Test.py'
+TEST_N_RANDOM_FEATURE_SETS=25
+TEST_N_EXISTING_FEATURE_SETS=25
 
-all: test clean
+#
+# Requirements
+#
 
-test:
-	echo "Start testing ..."
-	python -m unittest discover -vp $(TEST)
+install.environment:
+	$(info Start [install.environment] ...)
+	$(BASH) recipes/install.environment.sh
 
-test-light:
-	echo "Start (light) testing ..."
-	N_RANDOM_FEATURE_SETS=5 N_EXISTING_FEATURE_SETS=5 \
-		python -m unittest discover -vp $(TEST)
+install.requirements:
+	$(info Start [install.requirements] ...)
+	$(BASH) recipes/install.requirements.sh
 
-lint:
-	echo "Start linting ..."
+install.requirements.examples: install.requirements
+	$(info Start [install.requirements.examples] ...)
+	$(BASH) recipes/install.requirements.examples.sh
+
+install.requirements.development: install.requirements.examples
+	$(info Start [install.requirements.development] ...)
+	$(BASH) recipes/install.requirements.development.sh
+
+#
+# Examples
+#
+
+install.alias:
+	$(info Start [install.alias] ...)
+	$(BASH) recipes/install.alias.sh
+
+start.examples: install.requirements.examples examples.pid
+
+examples.pid:
+	$(info Start [examples.pid] ...)
+	jupyter-lab --notebook-dir='examples' > /dev/null 2>&1 & echo $$! > $@;
+
+stop.examples: examples.pid
+	kill `cat $<` && rm $<
+
+.PHONY: start.examples stop.examples
+
+#
+# Development
+#
+
+all: lint test clean
+
+test: install.requirements.development
+	$(info Start [test] ...)
+	TEST_N_RANDOM_FEATURE_SETS=$(TEST_N_RANDOM_FEATURE_SETS) \
+	TEST_N_EXISTING_FEATURE_SETS=$(TEST_N_EXISTING_FEATURE_SETS) \
+		$(BASH) recipes/run.tests.sh
+
+test.sample: install.requirements.development
+	$(info Start [test.sample] ...)
+	TEST_N_RANDOM_FEATURE_SETS=3 \
+	TEST_N_EXISTING_FEATURE_SETS=3 \
+		$(BASH) recipes/run.tests.sh
+
+lint: install.requirements.development
+	$(info Start [lint] ...)
 	find ./sklearn_porter -name '*.py' -exec pylint {} \;
 
 clean:
-	echo "Start cleaning ..."
+	$(info Start [clean] ...)
 	rm -rf tmp
-	rm -rf build/*
-	rm -rf dist/*
+	rm -rf build
+	rm -rf dist

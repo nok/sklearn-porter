@@ -77,7 +77,7 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
 
     def test_java_command_execution(self):
         """Test whether the prediction of random features match or not."""
-        size = (self.N_RANDOM_FEATURE_SETS, self.n_features)
+        size = (self.TEST_N_RANDOM_FEATURE_SETS, self.n_features)
         X = np.random.uniform(0., 10., size)
         Y_py = self.estimator.predict(X).tolist()
         Y = [int(self.pred_in_custom(x)) for x in X]
