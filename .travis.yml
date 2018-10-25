@@ -26,7 +26,7 @@ install:
   - npm install xmlhttprequest
   - unset JAVA_TOOL_OPTIONS && unset _JAVA_OPTIONS
   - pip install -U pip
-  - make install install.requirements.development
+  - make install.requirements.development
 before_script:
   - gcc --version
   - java -version
