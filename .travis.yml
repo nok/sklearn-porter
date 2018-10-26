@@ -28,10 +28,5 @@ before_script:
   - php --version
   - ruby --version
   - python --version
-  - if [[ "${TRAVIS_PYTHON_VERSION:0:1}" == "2" ]]; then
-      python -m SimpleHTTPServer 8080 &>/dev/null &
-    else
-      python -m http.server 8080 &>/dev/null &
-    fi
 script:
-  - pytest tests -v -o python_files=*Test.py
+  - make test
