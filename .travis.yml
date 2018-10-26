@@ -15,15 +15,8 @@ compiler:
   - gcc
 before_install:
   - SKLEARN_PORTER_HOME=$(pwd)
-  - sudo apt-add-repository ppa:brightbox/ruby-ng -y
-  - sudo apt-add-repository ppa:ondrej/php -y
-  - sudo apt-get update -q
 install:
-  - sudo apt-get install ruby2.3 -y
-  - sudo ln -s /usr/local/ruby2.3 /usr/local/ruby
-  - sudo apt-get install php7.0 -y
   - wget -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar
-  - npm install xmlhttprequest
   - unset JAVA_TOOL_OPTIONS && unset _JAVA_OPTIONS
   - pip install -U pip
   - make install.requirements.development
