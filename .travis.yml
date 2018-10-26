@@ -15,9 +15,9 @@ compiler:
   - gcc
 before_install:
   - SKLEARN_PORTER_HOME=$(pwd)
-install:
-  - wget -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar
   - unset JAVA_TOOL_OPTIONS && unset _JAVA_OPTIONS
+install:
+  - npm install xmlhttprequest
   - pip install -U pip
   - make install.requirements.development
 before_script:
