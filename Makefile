@@ -64,6 +64,10 @@ lint: install.requirements.development
 	$(info Start [lint] ...)
 	find ./sklearn_porter -name '*.py' -exec pylint {} \;
 
+jupytext: install.requirements.development
+	$(info Start [jupytext] ...)
+	$(BASH) recipes/run.jupytext.sh
+
 clean:
 	$(info Start [clean] ...)
 	rm -rf tmp

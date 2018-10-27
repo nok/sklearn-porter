@@ -5,7 +5,7 @@
 *.iml
 
 examples/experimental
-examples/estimator/**/*.[json][java][class][jar][js][c]
+examples/estimator/**/*.json
 
 .temp/
 temp/
