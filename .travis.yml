@@ -12,6 +12,7 @@ matrix:
   - python: 3.7
     dist: xenial
     sudo: true
+cache: pip
 compiler:
   - gcc
 before_install:
