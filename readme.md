@@ -284,8 +284,8 @@ $ porter -i estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
 You have to install required modules for broader development:
 
 ```bash
-$ make install.environment
-$ make install.requirements.development
+$ make install.environment  # conda environment (optional)
+$ make install.requirements.development  # pip requirements
 ```
 
 Independently, the following compilers and intepreters are required to cover all tests:
