@@ -311,7 +311,7 @@ Independently, the following compilers and intepreters are required to cover all
         </tr>
         <tr>
             <td><a href="http://www.php.net">PHP</a></td>
-            <td><code>>=7</code></td>
+            <td><code>>=5.6</code></td>
             <td><code>php --version</code></td>
         </tr>
         <tr>
