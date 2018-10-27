@@ -32,7 +32,7 @@ install.function:
 	$(info Start [install.function (to .bash_profile)] ...)
 	$(BASH) recipes/install.function.sh
 
-start.examples: install.requirements.examples examples.pid
+open.examples: install.requirements.examples examples.pid
 
 examples.pid:
 	$(info Start [examples.pid] ...)
@@ -41,7 +41,7 @@ examples.pid:
 stop.examples: examples.pid
 	kill `cat $<` && rm $<
 
-.PHONY: start.examples stop.examples
+.PHONY: open.examples stop.examples
 
 #
 # Development

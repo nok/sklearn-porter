@@ -219,8 +219,8 @@ y_java = porter.predict([1., 2., 3., 4.])
 You can run and test all notebooks by starting a Jupyter notebook server locally:
 
 ```bash
-$ make start.examples
-$ make stop.examples
+$ make open.examples
+$ make stop.examples 
 ```
 
 ## Command-line interface
