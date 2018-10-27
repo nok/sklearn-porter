@@ -228,7 +228,7 @@ $ make stop.examples
 In general you can use the porter on the command line. Either you use `python -m sklearn_porter [-h]` or you install an executable to use `porter [-h]` directly:
 
 ```bash
-$ make install.alias
+$ make link
 ```
 
 ```

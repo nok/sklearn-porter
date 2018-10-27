@@ -27,9 +27,10 @@ install.requirements.development: install.requirements.examples
 # Examples
 #
 
-install.alias:
-	$(info Start [install.alias] ...)
-	$(BASH) recipes/install.alias.sh
+link: install.function
+install.function:
+	$(info Start [install.function (to .bash_profile)] ...)
+	$(BASH) recipes/install.function.sh
 
 start.examples: install.requirements.examples examples.pid
 
