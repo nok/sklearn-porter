@@ -3,9 +3,12 @@
 import os
 from setuptools import setup
 from setuptools import find_packages
+from typing import List
 
 
 def read_version():
+    # type: () -> str
+    """Read the module version from __version__.txt"""
     src_dir = os.path.abspath(os.path.dirname(__file__))
     ver_file = os.path.join(src_dir, 'sklearn_porter', '__version__.txt')
     version = open(ver_file, 'r').readlines().pop()
@@ -16,6 +19,8 @@ def read_version():
 
 
 def parse_requirements():
+    # type: () -> List[str]
+    """Parse the modules from requirements.txt"""
     src_dir = os.path.abspath(os.path.dirname(__file__))
     req_file = os.path.join(src_dir, 'requirements.txt')
     reqs = open(req_file, 'r').read().strip().split('\n')
