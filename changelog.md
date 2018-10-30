@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 
 
+## 0.7.0
+
+### Added
+
+- Add Python 3.7 with Xenial to CI for testing
+- Add [PyTest](https://docs.pytest.org) for extended testing (see [pytest.ini](pytest.ini))
+- Add useful Makefile tasks with dependency handling (see [Makefile](Makefile)):
+    - `install.environment` to install a `conda` environment
+    - `install.requirements` to install all `pip` requirements
+    - `make link` to install `porter` (cli) to the command line
+    - `make open.examples` to start a local jupyter server
+    - `make stop.examples` to stop the started jupyter server
+    - `make test` to run all unittests in [tests](tests)
+    - `make lint` to run pylint over [sklearn_porter](sklearn_porter)
+    - `make jupytext` to generate the notebooks from Python sources
+
+### Changed
+
+- Remove `conda` from CI
+- Clear and split `pip` requirements into three parts:
+    - [requirements.txt](requirements.txt) for library requirements
+    - [requirements.examples.txt](requirements.examples.txt) for examples requirements
+    - [requirements.development.txt](requirements.development.txt) for development requirements
+- Update extended requriements (e.g. GCC, PHP, ...)
+
+
 ## 0.6.2
 
 ### Fixed
