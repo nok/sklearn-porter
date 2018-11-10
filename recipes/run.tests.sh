@@ -5,7 +5,8 @@ SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
 cd $SCRIPTPATH/..
 
 if [[ ! -f ./gson.jar ]]; then
-  wget -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar
+  wget http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar
+  mv gson-2.8.5.jar gson.jar
 fi
 
 if [[ $(python -c "import sys; print(sys.version_info[:1][0]);") == "2" ]]; then
