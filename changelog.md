@@ -28,6 +28,7 @@ All notable changes to this project will be documented in this file.
     - [requirements.development.txt](requirements.development.txt) for development requirements
 - Update extended requriements (e.g. GCC, PHP, ...)
 - Refactor class [sklearn_porter.utils.Shell](sklearn_porter.utils.Shell) to remove redundancy
+- Change web server port for testing from `8080` to `8713` (because of collusion with the default port of Jenkins) 
 
 
 ## 0.6.2

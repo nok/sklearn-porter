@@ -10,9 +10,9 @@ if [[ ! -f ./gson.jar ]]; then
 fi
 
 if [[ $(python -c "import sys; print(sys.version_info[:1][0]);") == "2" ]]; then
-  python -m SimpleHTTPServer 8080 &>/dev/null & serve_pid=$!;
+  python -m SimpleHTTPServer 8713 &>/dev/null & serve_pid=$!;
 else
-  python -m http.server 8080 &>/dev/null & serve_pid=$!;
+  python -m http.server 8713 &>/dev/null & serve_pid=$!;
 fi
 
 if [[ -z "${TEST_N_RANDOM_FEATURE_SETS}" ]]; then
@@ -21,7 +21,9 @@ fi
 if [[ -z "${TEST_N_EXISTING_FEATURE_SETS}" ]]; then
   TEST_N_EXISTING_FEATURE_SETS=25
 fi
-TEST_N_RANDOM_FEATURE_SETS=${TEST_N_RANDOM_FEATURE_SETS} TEST_N_EXISTING_FEATURE_SETS=${TEST_N_EXISTING_FEATURE_SETS} pytest tests -v
+TEST_N_RANDOM_FEATURE_SETS=${TEST_N_RANDOM_FEATURE_SETS} \
+TEST_N_EXISTING_FEATURE_SETS=${TEST_N_EXISTING_FEATURE_SETS} \
+    pytest tests -v
 
 kill $serve_pid
 rm gson.jar
