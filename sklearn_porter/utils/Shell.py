@@ -1,22 +1,29 @@
 # -*- coding: utf-8 -*-
 
-import subprocess as subp
+import subprocess
 
 
 class Shell(object):
 
     @staticmethod
-    def call(command, cwd=None):
-        if isinstance(command, str):
-            command = command.split()
-        if isinstance(command, list):
-            return subp.call(command, cwd=cwd)
-        return None
+    def _str_to_list(text):
+        if isinstance(text, list):
+            return text
+        if not text:
+            error_msg = 'Passed empty text'
+            raise AttributeError(error_msg)
+        if isinstance(text, str):
+            text = text.strip().split()
+        if not isinstance(text, list):
+            text = list(text)
+        return text
 
     @staticmethod
-    def check_output(command, cwd=None, shell=True, stderr=subp.STDOUT):
-        if isinstance(command, str):
-            command = command.split()
-        if isinstance(command, list):
-            subp.check_output(command, shell=shell, cwd=cwd, stderr=stderr)
-        return None
+    def call(cmd, cwd=None):
+        cmd = Shell._str_to_list(cmd)
+        return subprocess.call(cmd, cwd=cwd)
+
+    @staticmethod
+    def check_output(cmd, cwd=None, shell=True, stderr=subprocess.STDOUT):
+        cmd = Shell._str_to_list(cmd)
+        return subprocess.check_output(cmd, cwd=cwd, stderr=stderr, shell=shell)

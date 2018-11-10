@@ -27,6 +27,7 @@ All notable changes to this project will be documented in this file.
     - [requirements.examples.txt](requirements.examples.txt) for examples requirements
     - [requirements.development.txt](requirements.development.txt) for development requirements
 - Update extended requriements (e.g. GCC, PHP, ...)
+- Refactor class [sklearn_porter.utils.Shell](sklearn_porter.utils.Shell) to remove redundancy
 
 
 ## 0.6.2
