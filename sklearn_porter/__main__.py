@@ -5,6 +5,8 @@ import os
 import os.path
 import argparse
 
+from sklearn.externals import joblib
+
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from sklearn_porter.Porter import Porter
 
@@ -86,14 +88,14 @@ def main():
     args = parse_args(sys.argv[1:])
 
     # Check input data:
-    input_path = str(args.get('input'))
-    if not input_path.endswith('.pkl') or not os.path.isfile(input_path):
-        error = 'No valid estimator in pickle format was found.'
-        sys.exit('Error: {}'.format(error))
+    pkl_file_path = str(args.get('input'))
+    if not os.path.isfile(pkl_file_path):
+        exit_msg = 'No valid estimator in pickle ' \
+                   'format was found at \'{}\'.'.format(pkl_file_path)
+        sys.exit('Error: {}'.format(exit_msg))
 
     # Load data:
-    from sklearn.externals import joblib
-    estimator = joblib.load(input_path)
+    estimator = joblib.load(pkl_file_path)
 
     # Determine the target programming language:
     language = str(args.get('language'))  # with default language
@@ -106,7 +108,7 @@ def main():
     # Define destination path:
     dest_dir = str(args.get('output'))
     if dest_dir == '' or not os.path.isdir(dest_dir):
-        dest_dir = input_path.split(os.sep)
+        dest_dir = pkl_file_path.split(os.sep)
         del dest_dir[-1]
         dest_dir = os.sep.join(dest_dir)
 
