@@ -11,62 +11,55 @@ from sklearn_porter.Porter import Porter
 
 def parse_args(args):
     parser = argparse.ArgumentParser(
-        description=(
-            'Transpile trained scikit-learn estimators '
-            'to C, Java, JavaScript and others. '),
-        epilog=(
-            'More details on: '
-            'https://github.com/nok/sklearn-porter'))
+        description=('Transpile trained scikit-learn estimators '
+                     'to C, Java, JavaScript and others.'),
+        epilog='More details on: https://github.com/nok/sklearn-porter')
+
+    # Remove the default arguments group:
     parser._action_groups.pop()
+
+    # Required arguments:
     required = parser.add_argument_group('Required arguments')
+    required.add_argument('--input', '-i',
+                          required=True,
+                          help=('Path to an exported estimator in pickle '
+                                '(.pkl) format.'))
+
+    # Optional arguments:
     optional = parser.add_argument_group('Optional arguments')
-    required.add_argument(
-        '--input', '-i',
-        required=True,
-        help=(
-            'Path to an exported estimator '
-            'in pickle (.pkl) format.'))
-    optional.add_argument(
-        '--output', '-o',
-        required=False,
-        help=(
-            'Path to the destination directory '
-            'where the transpiled estimator will be '
-            'stored.'))
-    optional.add_argument(
-        '--class_name',
-        default=None,
-        required=False,
-        help='Define the class name in the final output.')
-    optional.add_argument(
-        '--method_name',
-        default='predict',
-        required=False,
-        help='Define the method name in the final output.')
-    optional.add_argument(
-        '--export', '-e',
-        required=False,
-        default=False,
-        action='store_true',
-        help='Whether to export the model data or not.')
-    optional.add_argument(
-        '--checksum',
-        required=False,
-        default=False,
-        action='store_true',
-        help='Whether to append the checksum to the filename or not.')
-    optional.add_argument(
-        '--data',
-        required=False,
-        default=False,
-        action='store_true',
-        help='Whether to export just the model data or all.')
-    optional.add_argument(
-        '--pipe', '-p',
-        required=False,
-        default=False,
-        action='store_true',
-        help='Print the transpiled estimator to the console.')
+    optional.add_argument('--output', '-o',
+                          required=False,
+                          help=('Path to the destination directory where the '
+                                'transpiled estimator will be stored.'))
+    optional.add_argument('--class_name',
+                          default=None,
+                          required=False,
+                          help='Define the class name in the final output.')
+    optional.add_argument('--method_name',
+                          default='predict',
+                          required=False,
+                          help='Define the method name in the final output.')
+    optional.add_argument('--export', '-e',
+                          required=False,
+                          default=False,
+                          action='store_true',
+                          help='Whether to export the model data or not.')
+    optional.add_argument('--checksum',
+                          required=False,
+                          default=False,
+                          action='store_true',
+                          help='Whether to append the checksum to the '
+                               'filename or not.')
+    optional.add_argument('--data',
+                          required=False,
+                          default=False,
+                          action='store_true',
+                          help='Whether to export just the model data or all.')
+    optional.add_argument('--pipe', '-p',
+                          required=False,
+                          default=False,
+                          action='store_true',
+                          help='Print the transpiled estimator to the console.')
     languages = {
         'c': 'C',
         'java': 'Java',
@@ -75,17 +68,16 @@ def parse_args(args):
         'php': 'PHP',
         'ruby': 'Ruby'
     }
-    optional.add_argument(
-        '--language', '-l',
-        choices=languages.keys(),
-        default='java',
-        required=False,
-        help=argparse.SUPPRESS)
+    optional.add_argument('--language', '-l',
+                          choices=languages.keys(),
+                          default='java',
+                          required=False,
+                          help=argparse.SUPPRESS)
     for key, lang in list(languages.items()):
-        optional.add_argument(
-            '--{}'.format(key),
-            action='store_true',
-            help='Set {} as the target programming language.'.format(lang))
+        help = 'Set \'{}\' as the target programming language.'.format(lang)
+        optional.add_argument('--{}'.format(key), action='store_true', help=help)
+
+    # Return dictionary:
     args = vars(parser.parse_args(args))
     return args
 
