@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import six
+
 from subprocess import call
 from subprocess import check_output
 from subprocess import STDOUT
@@ -13,7 +15,7 @@ class Shell(object):
         if not cmd:
             error_msg = 'Passed empty text or list'
             raise AttributeError(error_msg)
-        if isinstance(cmd, unicode):
+        if isinstance(cmd, six.string_types):
             cmd = str(cmd)
         if shell:
             if isinstance(cmd, list):
