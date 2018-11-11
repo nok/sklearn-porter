@@ -14,8 +14,8 @@ from tests.estimator.classifier.SeparatedData import SeparatedData
 
 class Classifier(SeparatedData):
 
-    TEST_N_RANDOM_FEATURE_SETS = 2
-    TEST_N_EXISTING_FEATURE_SETS = 2
+    TEST_N_RANDOM_FEATURE_SETS = 20
+    TEST_N_EXISTING_FEATURE_SETS = 20
 
     def setUp(self):
         np.random.seed(5)

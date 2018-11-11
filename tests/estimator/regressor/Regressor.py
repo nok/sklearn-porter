@@ -10,8 +10,8 @@ from sklearn.utils import shuffle
 
 class Regressor(object):
 
-    TEST_N_RANDOM_FEATURE_SETS = 30
-    TEST_N_EXISTING_FEATURE_SETS = 30
+    TEST_N_RANDOM_FEATURE_SETS = 20
+    TEST_N_EXISTING_FEATURE_SETS = 20
 
     def setUp(self):
         np.random.seed(5)
