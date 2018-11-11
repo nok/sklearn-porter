@@ -23,6 +23,8 @@ from sklearn.naive_bayes import BernoulliNB
 from sklearn_porter.utils.Environment import Environment
 from sklearn_porter.utils.Shell import Shell
 
+# from sklearn_porter.language import *
+
 
 class Porter(object):
 
