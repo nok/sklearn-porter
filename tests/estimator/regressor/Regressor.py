@@ -7,10 +7,8 @@ import numpy as np
 from sklearn.datasets import load_diabetes
 from sklearn.utils import shuffle
 
-from tests.utils.Timer import Timer
 
-
-class Regressor(Timer):
+class Regressor(object):
 
     TEST_N_RANDOM_FEATURE_SETS = 30
     TEST_N_EXISTING_FEATURE_SETS = 30
@@ -18,12 +16,10 @@ class Regressor(Timer):
     def setUp(self):
         np.random.seed(5)
         self._init_env()
-        self._start_test()
         self.load_data()
 
     def tearDown(self):
         self._clear_estimator()
-        self._stop_test()
 
     def _init_env(self):
         for param in ['TEST_N_RANDOM_FEATURE_SETS', 'TEST_N_EXISTING_FEATURE_SETS']:
@@ -40,6 +36,7 @@ class Regressor(Timer):
         self.n_features = len(self.X[0])
 
     def test_random_features_new(self):
+        self.load_data()
         self._port_estimator()
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
@@ -53,6 +50,7 @@ class Regressor(Timer):
         self.assertEqual(match.count(True), len(match))
 
     def test_existing_features_new(self):
+        self.load_data()
         self._port_estimator()
         match = []
         n = min(self.TEST_N_EXISTING_FEATURE_SETS, len(self.X))

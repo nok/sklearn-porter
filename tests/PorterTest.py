@@ -11,20 +11,18 @@ from sklearn.externals import joblib
 from sklearn.svm import LinearSVC
 
 from sklearn_porter.Porter import Porter
+from sklearn_porter.utils.Environment import Environment
 from sklearn_porter.utils.Shell import Shell
 
-from tests.utils.Timer import Timer
-from tests.utils.DependencyChecker import DependencyChecker as Checker
 from tests.estimator.classifier.Classifier import Classifier
 from tests.language.Java import Java
 
 
-class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
-
-    DEPENDENCIES = ['mkdir', 'rm', 'java', 'javac']
+class PorterTest(Java, Classifier, unittest.TestCase):
 
     def setUp(self):
         super(PorterTest, self).setUp()
+        Environment.check_deps(['mkdir', 'rm', 'java', 'javac'])
         self.load_iris_data()
         self.estimator = LinearSVC(C=1., random_state=0)
         self._port_estimator()
@@ -53,13 +51,15 @@ class PorterTest(Java, Classifier, Timer, Checker, unittest.TestCase):
             out = porter.export(method_name='predict', class_name=self.tmp_fn)
             f.write(out)
         # $ javac tmp/Tmp.java
-        Shell.call(['javac', cp_src])
+        cmd = ' '.join(['javac', cp_src])
+        Shell.call(cmd)
 
         # Rename estimator for comparison:
         filename = '{}_2.java'.format(self.tmp_fn)
         cp_dest = os.path.join('tmp', filename)
         # $ mv tmp/Brain.java tmp/Brain_2.java
-        Shell.call(['mv', cp_src, cp_dest])
+        cmd = ' '.join(['mv', cp_src, cp_dest])
+        Shell.call(cmd)
 
         # Dump estimator:
         filename = '{}.pkl'.format(self.tmp_fn)

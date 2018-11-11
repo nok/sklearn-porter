@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import os
-import subprocess as subp
+
 from sklearn_porter import Porter
-from tests.utils.DependencyChecker import DependencyChecker as Checker
+from sklearn_porter.utils.Environment import Environment
+from sklearn_porter.utils.Shell import Shell
 
 
-class JavaScript(Checker):
+class JavaScript(object):
 
     LANGUAGE = 'js'
-    DEPENDENCIES = ['mkdir', 'rm', 'node']
 
     # noinspection PyPep8Naming
     def setUp(self):
-        super(JavaScript, self).setUp()
-        self._check_test_dependencies()
+        Environment.check_deps(['mkdir', 'rm', 'node'])
         self._init_test()
 
     def _init_test(self):
@@ -22,8 +21,8 @@ class JavaScript(Checker):
 
     def _port_estimator(self, export_data=False, embed_data=False):
         self.estimator.fit(self.X, self.y)
-        subp.call('rm -rf tmp'.split())
-        subp.call('mkdir tmp'.split())
+        Shell.call('rm -rf tmp')
+        Shell.call('mkdir tmp')
         with open(self.tmp_fn, 'w') as f:
             porter = Porter(self.estimator, language=self.LANGUAGE)
             if export_data:
@@ -47,5 +46,5 @@ class JavaScript(Checker):
             cmd += ['http://0.0.0.0:8713/tmp/data.json']
         args = [str(f).strip() for f in features]
         cmd += args
-        pred = subp.check_output(cmd, stderr=subp.STDOUT).rstrip()
+        pred = Shell.check_output(cmd)
         return int(pred) if cast else float(pred)

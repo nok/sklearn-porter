@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import os
-import subprocess as subp
+
 from sklearn_porter import Porter
-from tests.utils.DependencyChecker import DependencyChecker as Checker
+from sklearn_porter.utils.Environment import Environment
+from sklearn_porter.utils.Shell import Shell
 
 
-class PHP(Checker):
+class PHP(object):
 
     LANGUAGE = 'php'
-    DEPENDENCIES = ['mkdir', 'rm', 'php']
 
     # noinspection PyPep8Naming
     def setUp(self):
-        super(PHP, self).setUp()
-        self._check_test_dependencies()
+        Environment.check_deps(['mkdir', 'rm', 'php'])
         self._init_test()
 
     def _init_test(self):
@@ -22,8 +21,8 @@ class PHP(Checker):
 
     def _port_estimator(self):
         self.estimator.fit(self.X, self.y)
-        subp.call('rm -rf tmp'.split())
-        subp.call('mkdir tmp'.split())
+        Shell.call('rm -rf tmp')
+        Shell.call('mkdir tmp')
         filename = self.tmp_fn + '.php'
         path = os.path.join('tmp', filename)
         with open(path, 'w') as f:
@@ -42,5 +41,5 @@ class PHP(Checker):
         cmd = 'php -f {}'.format(path).split()
         args = [str(f).strip() for f in features]
         cmd += args
-        pred = subp.check_output(cmd, stderr=subp.STDOUT).rstrip()
+        pred = Shell.check_output(cmd)
         return int(pred) if cast else float(pred)

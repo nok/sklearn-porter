@@ -9,23 +9,20 @@ from sklearn.datasets import load_breast_cancer
 from sklearn.datasets import load_digits
 from sklearn.utils import shuffle
 
-from tests.utils.Timer import Timer
 from tests.estimator.classifier.SeparatedData import SeparatedData
 
 
-class Classifier(Timer, SeparatedData):
+class Classifier(SeparatedData):
 
-    TEST_N_RANDOM_FEATURE_SETS = 20
-    TEST_N_EXISTING_FEATURE_SETS = 20
+    TEST_N_RANDOM_FEATURE_SETS = 2
+    TEST_N_EXISTING_FEATURE_SETS = 2
 
     def setUp(self):
         np.random.seed(5)
         self._init_env()
-        self._start_test()
 
     def tearDown(self):
         self._clear_estimator()
-        self._stop_test()
 
     def _init_env(self):
         for param in ['TEST_N_RANDOM_FEATURE_SETS', 'TEST_N_EXISTING_FEATURE_SETS']:

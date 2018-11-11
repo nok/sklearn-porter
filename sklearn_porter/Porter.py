@@ -20,6 +20,7 @@ from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
+from sklearn_porter.utils.Environment import Environment
 from sklearn_porter.utils.Shell import Shell
 
 
@@ -447,12 +448,8 @@ class Porter(object):
         """
         lang = self.target_language
 
-        if sys.platform in ('cygwin', 'win32', 'win64'):
-            error = "The required dependencies aren't available on Windows."
-            raise EnvironmentError(error)
-
         # Dependencies:
-        depends = {
+        deps = {
             'c': ['gcc'],
             'java': ['java', 'javac'],
             'js': ['node'],
@@ -460,20 +457,8 @@ class Porter(object):
             'php': ['php'],
             'ruby': ['ruby']
         }
-        all_depends = depends.get(lang) + ['mkdir', 'rm']
-        all_depends = [str(e) for e in all_depends]
-
-        cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
-        for exe in all_depends:
-            cmd = cmd.format(exe)
-            status = Shell.check_output(cmd)
-            if sys.version_info >= (3, 3) and isinstance(status, bytes):
-                status = status.decode('utf-8')
-            status = str(status).strip()
-            if status != '1':
-                error = "The required application '{0}'" \
-                        " isn't available.".format(exe)
-                raise SystemError(error)
+        current_deps = deps.get(lang) + ['mkdir', 'rm']
+        Environment.check_deps(current_deps)
 
     @staticmethod
     def _get_filename(class_name, language):

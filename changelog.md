@@ -21,14 +21,19 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Remove `conda` from CI
-- Clear and split `pip` requirements into three parts:
-    - [requirements.txt](requirements.txt) for library requirements
-    - [requirements.examples.txt](requirements.examples.txt) for examples requirements
-    - [requirements.development.txt](requirements.development.txt) for development requirements
-- Update extended requriements (e.g. GCC, PHP, ...)
-- Refactor class [sklearn_porter.utils.Shell](sklearn_porter.utils.Shell) to remove redundancy
-- Change web server port for testing from `8080` to `8713` (because of collusion with the default port of Jenkins) 
+- CI and requirements:
+    - Remove `conda` from CI
+    - Clear and split `pip` requirements into three parts:
+        - [requirements.txt](requirements.txt) for library requirements
+        - [requirements.examples.txt](requirements.examples.txt) for examples requirements
+        - [requirements.development.txt](requirements.development.txt) for development requirements
+    - Update extended requriements (e.g. GCC, PHP, ...)
+- Utils:
+    - Refactor class [sklearn_porter.utils.Shell](sklearn_porter.utils.Shell) to remove redundancy
+- Testing:
+    - Change web server port for testing from `8080` to `8713` (because of collusion with the default port of Jenkins)
+    - Remove class [tests.utils.DependencyChecker](https://github.com/nok/sklearn-porter/blob/release/0.6.2/tests/utils/DependencyChecker.py), instead use [sklearn_porter.utils.Environment](https://github.com/nok/sklearn-porter/blob/release/0.7.0/sklearn_porter/utils/Environment.py) 
+    - Remove class [tests.utils.Timer](https://github.com/nok/sklearn-porter/blob/release/0.6.2/tests/utils/Timer.py), instead use `--durations=0` of PyTest
 
 
 ## 0.6.2

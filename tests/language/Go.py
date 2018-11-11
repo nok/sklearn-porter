@@ -1,20 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import os
-import subprocess as subp
+
 from sklearn_porter import Porter
-from tests.utils.DependencyChecker import DependencyChecker as Checker
+from sklearn_porter.utils.Environment import Environment
+from sklearn_porter.utils.Shell import Shell
 
 
-class Go(Checker):
+class Go(object):
 
     LANGUAGE = 'go'
-    DEPENDENCIES = ['mkdir', 'rm', 'go']
 
     # noinspection PyPep8Naming
     def setUp(self):
-        super(Go, self).setUp()
-        self._check_test_dependencies()
+        Environment.check_deps(['mkdir', 'rm', 'go'])
         self._init_test()
 
     def _init_test(self):
@@ -22,8 +21,8 @@ class Go(Checker):
 
     def _port_estimator(self):
         self.estimator.fit(self.X, self.y)
-        subp.call('rm -rf tmp'.split())
-        subp.call('mkdir tmp'.split())
+        Shell.call('rm -rf tmp')
+        Shell.call('mkdir tmp')
         path = os.path.join('.', 'tmp', self.tmp_fn + '.go')
         output = os.path.join('.', 'tmp', self.tmp_fn)
         with open(path, 'w') as f:
@@ -31,7 +30,7 @@ class Go(Checker):
             out = porter.export(class_name='Brain', method_name='foo')
             f.write(out)
         cmd = 'go build -o {} {}'.format(output, path)
-        subp.call(cmd.split())
+        Shell.call(cmd)
 
     def pred_in_py(self, features, cast=True):
         pred = self.estimator.predict([features])[0]
@@ -42,5 +41,5 @@ class Go(Checker):
         cmd = [os.path.join('.', 'tmp', self.tmp_fn)]
         args = [str(f).strip() for f in features]
         cmd += args
-        pred = subp.check_output(cmd, stderr=subp.STDOUT).rstrip()
+        pred = Shell.check_output(cmd)
         return int(pred) if cast else float(pred)

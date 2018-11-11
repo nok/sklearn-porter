@@ -23,7 +23,7 @@ if [[ -z "${TEST_N_EXISTING_FEATURE_SETS}" ]]; then
 fi
 TEST_N_RANDOM_FEATURE_SETS=${TEST_N_RANDOM_FEATURE_SETS} \
 TEST_N_EXISTING_FEATURE_SETS=${TEST_N_EXISTING_FEATURE_SETS} \
-    pytest tests -v
+    pytest tests -v --durations=0
 
 kill $serve_pid
 rm gson.jar
