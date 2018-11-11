@@ -4,7 +4,7 @@
 class PHP(object):
 
     KEY = 'php'
-    LABEL = 'KEY'
+    LABEL = 'PHP'
 
     DEPENDENCIES = ['php']
     TEMP_DIR = 'php'

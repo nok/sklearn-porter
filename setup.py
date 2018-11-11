@@ -3,11 +3,9 @@
 import os
 from setuptools import setup
 from setuptools import find_packages
-from typing import List
 
 
 def read_version():
-    # type: () -> str
     """Read the module version from __version__.txt"""
     src_dir = os.path.abspath(os.path.dirname(__file__))
     ver_file = os.path.join(src_dir, 'sklearn_porter', '__version__.txt')
@@ -19,7 +17,6 @@ def read_version():
 
 
 def parse_requirements():
-    # type: () -> List[str]
     """Parse the modules from requirements.txt"""
     src_dir = os.path.abspath(os.path.dirname(__file__))
     req_file = os.path.join(src_dir, 'requirements.txt')
@@ -27,16 +24,21 @@ def parse_requirements():
     reqs = [req.strip() for req in reqs if 'git+' not in req]
     return reqs
 
-
 setup(
     name='sklearn-porter',
     packages=find_packages(exclude=["tests.*", "tests"]),
     include_package_data=True,
     version=read_version(),
-    description='Transpile trained scikit-learn models to C, Java, JavaScript and others.',
+    description='Transpile trained scikit-learn models '
+                'to C, Java, JavaScript and others.',
     author='Darius Morawiec',
     author_email='ping@nok.onl',
     url='https://github.com/nok/sklearn-porter/tree/stable',
+    entry_points={
+        'console_scripts': [
+            'porter = sklearn_porter.cli.__main__:main'
+        ],
+    },
     classifiers=[
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',

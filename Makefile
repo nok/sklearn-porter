@@ -27,11 +27,6 @@ install.requirements.development: install.requirements.examples
 # Examples
 #
 
-link: install.function
-install.function:
-	$(info Start [install.function (to .bash_profile)] ...)
-	$(BASH) recipes/install.function.sh
-
 open.examples: install.requirements.examples examples.pid
 
 examples.pid:
@@ -47,7 +42,11 @@ stop.examples: examples.pid
 # Development
 #
 
-all: lint test clean
+all: lint test jupytext clean
+
+lint: install.requirements.development
+	$(info Start [lint] ...)
+	find ./sklearn_porter -name '*.py' -exec pylint {} \;
 
 test: install.requirements.development
 	$(info Start [test] ...)
@@ -60,10 +59,6 @@ test.sample: install.requirements.development
 	TEST_N_RANDOM_FEATURE_SETS=3 \
 	TEST_N_EXISTING_FEATURE_SETS=3 \
 		$(BASH) recipes/run.tests.sh
-
-lint: install.requirements.development
-	$(info Start [lint] ...)
-	find ./sklearn_porter -name '*.py' -exec pylint {} \;
 
 jupytext: install.requirements.development
 	$(info Start [jupytext] ...)

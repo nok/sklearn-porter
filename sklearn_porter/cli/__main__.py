@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import print_function
+
 import sys
 import os
 import os.path
@@ -7,15 +9,33 @@ import argparse
 
 from sklearn.externals import joblib
 
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from sklearn_porter.Porter import Porter
+from sklearn_porter.language import *
+
+
+header = '''
+             #          
+### ### ### ### ### ### 
+# # # # #    #  ##  #   
+### ### #    ## ### #   v{}
+#
+
+Transpile trained scikit-learn estimators
+to C, Java, JavaScript and others.
+
+Usage:
+  porter --input INPUT [--output OUTPUT]
+         [--class_name CLASS_NAME] [--method_name METHOD_NAME]
+         [--export] [--checksum] [--data] [--pipe]
+         [--c] [--java] [--js] [--go] [--php] [--ruby]
+         [--help] [--version]'''.format(Porter.__version__)
 
 
 def parse_args(args):
-    parser = argparse.ArgumentParser(
-        description=('Transpile trained scikit-learn estimators '
-                     'to C, Java, JavaScript and others.'),
-        epilog='More details on: https://github.com/nok/sklearn-porter')
+    epilog = 'More details on https://github.com/nok/sklearn-porter'
+    description = ''
+    parser = argparse.ArgumentParser(description=description,
+                                     epilog=epilog, usage=header)
 
     # Remove the default arguments group:
     parser._action_groups.pop()
@@ -27,7 +47,7 @@ def parse_args(args):
                           help=('Path to an exported estimator in pickle '
                                 '(.pkl) format.'))
 
-    # Optional arguments:
+# Optional arguments:
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--output', '-o',
                           required=False,
@@ -46,13 +66,13 @@ def parse_args(args):
                           default=False,
                           action='store_true',
                           help='Whether to export the model data or not.')
-    optional.add_argument('--checksum',
+    optional.add_argument('--checksum', '-s',
                           required=False,
                           default=False,
                           action='store_true',
                           help='Whether to append the checksum to the '
                                'filename or not.')
-    optional.add_argument('--data',
+    optional.add_argument('--data', '-d',
                           required=False,
                           default=False,
                           action='store_true',
@@ -62,22 +82,28 @@ def parse_args(args):
                           default=False,
                           action='store_true',
                           help='Print the transpiled estimator to the console.')
-    languages = {
-        'c': 'C',
-        'java': 'Java',
-        'js': 'JavaScript',
-        'go': 'Go',
-        'php': 'PHP',
-        'ruby': 'Ruby'
-    }
-    optional.add_argument('--language', '-l',
-                          choices=languages.keys(),
-                          default='java',
-                          required=False,
-                          help=argparse.SUPPRESS)
-    for key, lang in list(languages.items()):
-        help = 'Set \'{}\' as the target programming language.'.format(lang)
-        optional.add_argument('--{}'.format(key), action='store_true', help=help)
+
+    # Languages:
+    langs = parser.add_argument_group('Programming languages')
+    languages = {key: clazz.LABEL for key, clazz in list(LANGUAGES.items())}
+    langs.add_argument('--language', '-l',
+                       choices=languages.keys(),
+                       default='java',
+                       required=False,
+                       help=argparse.SUPPRESS)
+    for key, label in list(languages.items()):
+        help = 'Set \'{}\' as the target programming language.'.format(label)
+        langs.add_argument('--{}'.format(key), action='store_true', help=help)
+
+    # Extra arguments:
+    extras = parser.add_argument_group('Extra arguments')
+    extras.add_argument('--version', '-v', action='version',
+                        version='sklearn-porter v{}'.format(Porter.__version__))
+
+    # Show help by default:
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(1)
 
     # Return dictionary:
     args = vars(parser.parse_args(args))
@@ -119,10 +145,8 @@ def main():
         with_export = bool(args.get('export'))
         with_checksum = bool(args.get('checksum'))
         porter = Porter(estimator, language=language)
-        output = porter.export(class_name=class_name,
-                               method_name=method_name,
-                               export_dir=dest_dir,
-                               export_data=with_export,
+        output = porter.export(class_name=class_name, method_name=method_name,
+                               export_dir=dest_dir, export_data=with_export,
                                export_append_checksum=with_checksum,
                                details=True)
     except Exception as exception:

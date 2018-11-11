@@ -226,17 +226,14 @@ $ make stop.examples
 
 ## Command-line interface
 
-In general you can use the porter on the command line. Either you use `python -m sklearn_porter [-h]` or you install an executable to use `porter [-h]` directly:
-
-```bash
-$ make link
-```
+In general you can use the porter on the command line:
 
 ```
-$ porter [-h] --input <PICKLE_FILE> [--output <DEST_DIR>] \
-         [--class_name <CLASS_NAME>] [--method_name <METHOD_NAME>] \
-         [--c] [--java] [--js] [--go] [--php] [--ruby] \
+$ porter --input <PICKLE_FILE> [--output <DEST_DIR>]
+         [--class_name <CLASS_NAME>] [--method_name <METHOD_NAME>]
          [--export] [--checksum] [--data] [--pipe]
+         [--c] [--java] [--js] [--go] [--php] [--ruby]
+         [--help] [--version]
 ```
 
 The following example shows how you can save a trained estimator to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
