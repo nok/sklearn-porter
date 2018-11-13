@@ -12,6 +12,7 @@ class Shell(object):
     @staticmethod
     def _run(method, cmd, cwd=None, shell=True, universal_newlines=True,
              stderr=STDOUT):
+        """Internal wrapper for `call` amd `check_output`"""
         if not cmd:
             error_msg = 'Passed empty text or list'
             raise AttributeError(error_msg)
