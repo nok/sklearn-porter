@@ -28,14 +28,6 @@ from sklearn_porter.utils.Shell import Shell
 
 class Porter(object):
 
-    # Version:
-    local_dir = os.path.dirname(__file__)
-    version_file = os.path.join(local_dir, '__version__.txt')
-    version = open(version_file).readlines().pop()
-    if isinstance(version, bytes):
-        version = version.decode('utf-8')
-    __version__ = str(version).strip()
-
     def __init__(self, estimator, language='java', method='predict', **kwargs):
         # pylint: disable=unused-argument
         """

@@ -9,6 +9,7 @@ import argparse
 
 from sklearn.externals import joblib
 
+from sklearn_porter import __version__ as porter_version
 from sklearn_porter.Porter import Porter
 from sklearn_porter.language import *
 
@@ -28,7 +29,7 @@ Usage:
          [--class_name CLASS_NAME] [--method_name METHOD_NAME]
          [--export] [--checksum] [--data] [--pipe]
          [--c] [--java] [--js] [--go] [--php] [--ruby]
-         [--help] [--version]'''.format(Porter.__version__)
+         [--help] [--version]'''.format(porter_version)
 
 
 def parse_args(args):
@@ -98,7 +99,7 @@ def parse_args(args):
     # Extra arguments:
     extras = parser.add_argument_group('Extra arguments')
     extras.add_argument('--version', '-v', action='version',
-                        version='sklearn-porter v{}'.format(Porter.__version__))
+                        version='sklearn-porter v{}'.format(porter_version))
 
     # Show help by default:
     if len(sys.argv) == 1:

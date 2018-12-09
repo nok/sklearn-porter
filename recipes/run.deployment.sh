@@ -11,7 +11,7 @@ rm -rf ./build/*
 rm -rf ./dist/*
 
 # Read package version:
-VERSION=`python -c "from sklearn_porter.Porter import Porter; print(Porter.__version__);"`
+VERSION=`python -c "from sklearn_porter import __version__ as ver; print(ver);"`
 
 # Define the deployment platform:
 target=https://test.pypi.org/legacy/
