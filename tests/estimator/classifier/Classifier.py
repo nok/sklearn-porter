@@ -16,19 +16,22 @@ from tests.estimator.classifier.SeparatedData import SeparatedData
 
 class Classifier(SeparatedData):
 
+    SEED = 1
+
     TEST_N_RANDOM_FEATURE_SETS = 20
     TEST_N_EXISTING_FEATURE_SETS = 20
 
     def setUp(self):
-        np.random.seed(1)
-        rd.seed(1)
+        np.random.seed(self.SEED)
+        rd.seed(self.SEED)
         self._init_env()
 
     def tearDown(self):
         self._clear_estimator()
 
     def _init_env(self):
-        for param in ['TEST_N_RANDOM_FEATURE_SETS', 'TEST_N_EXISTING_FEATURE_SETS']:
+        for param in ['TEST_N_RANDOM_FEATURE_SETS',
+                      'TEST_N_EXISTING_FEATURE_SETS']:
             n = os.environ.get(param, None)
             if n is not None and str(n).strip().isdigit():
                 n = int(n)
@@ -37,20 +40,29 @@ class Classifier(SeparatedData):
 
     def load_binary_data(self, shuffled=True):
         samples = load_breast_cancer()
-        self.X = shuffle(samples.data) if shuffled else samples.data
-        self.y = shuffle(samples.target) if shuffled else samples.target
+        if shuffled:
+            self.X = shuffle(samples.data, random_state=self.SEED)
+            self.y = shuffle(samples.target, random_state=self.SEED)
+        else:
+            self.X, self.y = samples.data, samples.target
         self.n_features = len(self.X[0])
 
     def load_iris_data(self, shuffled=True):
         samples = load_iris()
-        self.X = shuffle(samples.data) if shuffled else samples.data
-        self.y = shuffle(samples.target) if shuffled else samples.target
+        if shuffled:
+            self.X = shuffle(samples.data, random_state=self.SEED)
+            self.y = shuffle(samples.target, random_state=self.SEED)
+        else:
+            self.X, self.y = samples.data, samples.target
         self.n_features = len(self.X[0])
 
     def load_digits_data(self, shuffled=True):
         samples = load_digits()
-        self.X = shuffle(samples.data) if shuffled else samples.data
-        self.y = shuffle(samples.target) if shuffled else samples.target
+        if shuffled:
+            self.X = shuffle(samples.data, random_state=self.SEED)
+            self.y = shuffle(samples.target, random_state=self.SEED)
+        else:
+            self.X, self.y = samples.data, samples.target
         self.n_features = len(self.X[0])
 
     def _clear_estimator(self):
