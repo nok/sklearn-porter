@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-from __future__ import absolute_import
-
 import os
 import os.path
 
@@ -14,6 +11,8 @@ def _read_version():
     source_dir = os.path.abspath(os.path.dirname(__file__))
     version_file = os.path.join(source_dir, '__version__.txt')
     version = open(version_file, 'r').readlines().pop()
+    if isinstance(version, bytes):
+        version = version.decode('utf-8')
     version = str(version).strip()
     return version
 
