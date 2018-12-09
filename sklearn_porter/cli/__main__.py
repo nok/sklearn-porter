@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
-
 import sys
-import os
-import os.path
 import argparse
+
+from os import sep
+from os.path import isdir
+from os.path import isfile
 
 from sklearn.externals import joblib
 
@@ -116,7 +116,7 @@ def main():
 
     # Check input data:
     pkl_file_path = str(args.get('input'))
-    if not os.path.isfile(pkl_file_path):
+    if not isfile(pkl_file_path):
         exit_msg = 'No valid estimator in pickle ' \
                    'format was found at \'{}\'.'.format(pkl_file_path)
         sys.exit('Error: {}'.format(exit_msg))
@@ -134,10 +134,10 @@ def main():
 
     # Define destination path:
     dest_dir = str(args.get('output'))
-    if dest_dir == '' or not os.path.isdir(dest_dir):
-        dest_dir = pkl_file_path.split(os.sep)
+    if dest_dir == '' or not isdir(dest_dir):
+        dest_dir = pkl_file_path.split(sep)
         del dest_dir[-1]
-        dest_dir = os.sep.join(dest_dir)
+        dest_dir = sep.join(dest_dir)
 
     # Port estimator:
     try:
@@ -162,7 +162,7 @@ def main():
         only_data = bool(args.get('data'))
         if not only_data:
             filename = output.get('filename')
-            dest_path = dest_dir + os.sep + filename
+            dest_path = dest_dir + sep + filename
             # Save transpiled estimator:
             with open(dest_path, 'w') as file_:
                 file_.write(output.get('estimator'))

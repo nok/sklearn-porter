@@ -4,6 +4,8 @@ import os
 import subprocess as subp
 
 import numpy as np
+import random as rd
+
 from sklearn.datasets import load_diabetes
 from sklearn.utils import shuffle
 
@@ -14,7 +16,8 @@ class Regressor(object):
     TEST_N_EXISTING_FEATURE_SETS = 20
 
     def setUp(self):
-        np.random.seed(5)
+        np.random.seed(1)
+        rd.seed(1)
         self._init_env()
         self.load_data()
 

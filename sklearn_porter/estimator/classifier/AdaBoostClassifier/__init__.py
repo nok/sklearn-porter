@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import os
-import json
+
 from json import encoder
-import sklearn
+from json import dumps
+
+from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
@@ -72,9 +74,7 @@ class AdaBoostClassifier(Classifier):
             raise ValueError(msg, estimator.algorithm)
 
         # Check type of base estimators:
-        if not isinstance(
-                estimator.base_estimator,
-                sklearn.tree.tree.DecisionTreeClassifier):
+        if not isinstance(estimator.base_estimator, DecisionTreeClassifier):
             msg = "The classifier doesn't support the given base estimator %s."
             raise ValueError(msg, estimator.base_estimator)
 
@@ -187,7 +187,7 @@ class AdaBoostClassifier(Classifier):
                 'indices': est.tree_.feature.tolist()
             })
         encoder.FLOAT_REPR = lambda o: self.repr(o)
-        json_data = json.dumps(model_data, sort_keys=True)
+        json_data = dumps(model_data, sort_keys=True)
         if with_md5_hash:
             import hashlib
             json_hash = hashlib.md5(json_data).hexdigest()

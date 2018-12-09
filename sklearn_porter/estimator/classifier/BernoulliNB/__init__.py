@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import os
-import json
-from json import encoder
 
-import numpy as np
+from json import encoder
+from json import dumps
+
+from numpy import log
+from numpy import exp
+
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
@@ -109,7 +112,7 @@ class BernoulliNB(Classifier):
                                        values=priors)
 
         # Create negative probabilities:
-        neg_prob = np.log(1 - np.exp(est.feature_log_prob_))
+        neg_prob = log(1 - exp(est.feature_log_prob_))
         probs = []
         for prob in neg_prob:
             tmp = [temp_type.format(self.repr(p)) for p in prob]
@@ -175,7 +178,7 @@ class BernoulliNB(Classifier):
         :param with_md5_hash : bool, default: False
             Whether to append the checksum to the filename or not.
         """
-        neg_prob = np.log(1 - np.exp(self.estimator.feature_log_prob_))
+        neg_prob = log(1 - exp(self.estimator.feature_log_prob_))
         delta_probs = (self.estimator.feature_log_prob_ - neg_prob).T
         model_data = {
             'priors': self.estimator.class_log_prior_.tolist(),
@@ -183,7 +186,7 @@ class BernoulliNB(Classifier):
             'delProbs': delta_probs.tolist()
         }
         encoder.FLOAT_REPR = lambda o: self.repr(o)
-        json_data = json.dumps(model_data, sort_keys=True)
+        json_data = dumps(model_data, sort_keys=True)
         if with_md5_hash:
             import hashlib
             json_hash = hashlib.md5(json_data).hexdigest()

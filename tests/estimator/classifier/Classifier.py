@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-import numpy as np
 import subprocess as subp
+
+import numpy as np
+import random as rd
 
 from sklearn.datasets import load_iris
 from sklearn.datasets import load_breast_cancer
@@ -18,7 +20,8 @@ class Classifier(SeparatedData):
     TEST_N_EXISTING_FEATURE_SETS = 20
 
     def setUp(self):
-        np.random.seed(5)
+        np.random.seed(1)
+        rd.seed(1)
         self._init_env()
 
     def tearDown(self):

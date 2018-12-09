@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-import json
+
 from json import encoder
+from json import dumps
+
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
@@ -196,7 +198,7 @@ class RandomForestClassifier(Classifier):
                 'indices': est.tree_.feature.tolist()
             })
         encoder.FLOAT_REPR = lambda o: self.repr(o)
-        json_data = json.dumps(model_data, sort_keys=True)
+        json_data = dumps(model_data, sort_keys=True)
         if with_md5_hash:
             import hashlib
             json_hash = hashlib.md5(json_data).hexdigest()
