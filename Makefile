@@ -9,19 +9,19 @@ TEST_N_EXISTING_FEATURE_SETS=25
 
 install.environment:
 	$(info Start [install.environment] ...)
-	$(BASH) recipes/install.environment.sh
+	$(BASH) .scripts/install.environment.sh
 
 install.requirements:
 	$(info Start [install.requirements] ...)
-	$(BASH) recipes/install.requirements.sh
+	$(BASH) .scripts/install.requirements.sh
 
 install.requirements.examples: install.requirements
 	$(info Start [install.requirements.examples] ...)
-	$(BASH) recipes/install.requirements.examples.sh
+	$(BASH) .scripts/install.requirements.examples.sh
 
 install.requirements.development: install.requirements.examples
 	$(info Start [install.requirements.development] ...)
-	$(BASH) recipes/install.requirements.development.sh
+	$(BASH) .scripts/install.requirements.development.sh
 
 #
 # Examples
@@ -52,17 +52,17 @@ test: install.requirements.development
 	$(info Start [test] ...)
 	TEST_N_RANDOM_FEATURE_SETS=$(TEST_N_RANDOM_FEATURE_SETS) \
 	TEST_N_EXISTING_FEATURE_SETS=$(TEST_N_EXISTING_FEATURE_SETS) \
-		$(BASH) recipes/run.tests.sh
+		$(BASH) .scripts/run.tests.sh
 
 test.sample: install.requirements.development
 	$(info Start [test.sample] ...)
 	TEST_N_RANDOM_FEATURE_SETS=3 \
 	TEST_N_EXISTING_FEATURE_SETS=3 \
-		$(BASH) recipes/run.tests.sh
+		$(BASH) .scripts/run.tests.sh
 
 jupytext: install.requirements.development
 	$(info Start [jupytext] ...)
-	$(BASH) recipes/run.jupytext.sh
+	$(BASH) .scripts/run.jupytext.sh
 
 clean:
 	$(info Start [clean] ...)
