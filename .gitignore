@@ -4,6 +4,8 @@
 *.egg-info
 *.iml
 
+pylint.txt
+
 examples/experimental
 examples/estimator/**/*.json
 

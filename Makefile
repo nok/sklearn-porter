@@ -1,5 +1,7 @@
 BASH := /bin/bash
 
+PYTHON_FILES := $(shell find -s ./sklearn_porter -name '*.py' | tr '\n' ' ')
+
 TEST_N_RANDOM_FEATURE_SETS=25
 TEST_N_EXISTING_FEATURE_SETS=25
 
@@ -46,7 +48,8 @@ all: lint test jupytext clean
 
 lint: install.requirements.development
 	$(info Start [lint] ...)
-	find ./sklearn_porter -name '*.py' -exec pylint {} \;
+#	$(info $(PYTHON_FILES))
+	pylint --rcfile=.pylintrc --output-format=text $(PYTHON_FILES) 2>&1 | tee pylint.txt | sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p'
 
 test: install.requirements.development
 	$(info Start [test] ...)
