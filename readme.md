@@ -172,13 +172,13 @@ from sklearn.datasets import load_iris
 from sklearn.tree import tree
 from sklearn_porter import Porter
 
-# load data and train the classifier:
+# Load data and train the classifier:
 samples = load_iris()
 X, y = samples.data, samples.target
 clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-# export:
+# Export:
 porter = Porter(clf, language='java')
 output = porter.export(embed_data=True)
 print(output)
@@ -195,7 +195,7 @@ You should always check and compute the integrity between the original and the t
 # ...
 porter = Porter(clf, language='java')
 
-# accuracy:
+# Compute integrity score:
 integrity = porter.integrity_score(X)
 print(integrity)  # 1.0
 ```
@@ -209,7 +209,7 @@ You can compute the prediction(s) in the target programming language:
 # ...
 porter = Porter(clf, language='java')
 
-# prediction(s):
+# Prediction(s):
 Y_java = porter.predict(X)
 y_java = porter.predict(X[0])
 y_java = porter.predict([1., 2., 3., 4.])
@@ -229,7 +229,7 @@ $ make stop.examples
 In general you can use the porter on the command line:
 
 ```
-$ porter <PICKLE_FILE> [--to <directory>]
+$ porter <pickle_file> [--to <directory>]
          [--class_name <class_name>] [--method_name <method_name>]
          [--export] [--checksum] [--data] [--pipe]
          [--c] [--java] [--js] [--go] [--php] [--ruby]
@@ -241,7 +241,7 @@ The following example shows how you can save a trained estimator to the [pickle 
 ```python
 # ...
 
-# extract estimator:
+# Extract estimator:
 joblib.dump(clf, 'estimator.pkl', compress=0)
 ```
 
