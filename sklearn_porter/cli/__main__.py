@@ -9,34 +9,27 @@ from os.path import isfile
 
 from sklearn.externals import joblib
 
-from sklearn_porter import __version__ as porter_version
-from sklearn_porter.Porter import Porter
+from sklearn_porter import Porter
+from sklearn_porter import meta
 from sklearn_porter.language import *
 
 
-header = '''
-             #          
-### ### ### ### ### ### 
-# # # # #    #  ##  #   
-### ### #    ## ### #   v{}
-#
-
-Transpile trained scikit-learn estimators
-to C, Java, JavaScript and others.
-
-Usage:
-  porter --input INPUT [--output OUTPUT]
-         [--class_name CLASS_NAME] [--method_name METHOD_NAME]
-         [--export] [--checksum] [--data] [--pipe]
-         [--c] [--java] [--js] [--go] [--php] [--ruby]
-         [--help] [--version]'''.format(porter_version)
-
-
 def parse_args(args):
-    epilog = 'More details on https://github.com/nok/sklearn-porter'
-    description = ''
-    parser = argparse.ArgumentParser(description=description,
-                                     epilog=epilog, usage=header)
+    version = meta.get('version')
+    header = '''
+             #
+### ### ### ### ### ### 
+# # # # #    #  ##  #
+### ### #    ## ### #   v{}
+#'''.format(version)
+
+    summary = dict(
+        usage=header,
+        description=meta.get('description'),
+        epilog='More details on ' + meta.get('url')
+    )
+
+    parser = argparse.ArgumentParser(**summary)
 
     # Remove the default arguments group:
     parser._action_groups.pop()
@@ -48,7 +41,7 @@ def parse_args(args):
                           help=('Path to an exported estimator in pickle '
                                 '(.pkl) format.'))
 
-# Optional arguments:
+    # Optional arguments:
     optional = parser.add_argument_group('Optional arguments')
     optional.add_argument('--output', '-o',
                           required=False,
@@ -99,7 +92,7 @@ def parse_args(args):
     # Extra arguments:
     extras = parser.add_argument_group('Extra arguments')
     extras.add_argument('--version', '-v', action='version',
-                        version='sklearn-porter v{}'.format(porter_version))
+                        version='sklearn-porter v{}'.format(version))
 
     # Show help by default:
     if len(sys.argv) == 1:

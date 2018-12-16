@@ -1,39 +1,22 @@
 # -*- coding: utf-8 -*-
 
-import os
 from setuptools import setup
 from setuptools import find_packages
 
+from sklearn_porter import meta  # see sklearn_porter/package.json
 
-def read_version():
-    """Read the module version from __version__.txt"""
-    src_dir = os.path.abspath(os.path.dirname(__file__))
-    ver_file = os.path.join(src_dir, 'sklearn_porter', '__version__.txt')
-    version = open(ver_file, 'r').readlines().pop()
-    if isinstance(version, bytes):
-        version = version.decode('utf-8')
-    version = str(version).strip()
-    return version
-
-
-def parse_requirements():
-    """Parse the modules from requirements.txt"""
-    src_dir = os.path.abspath(os.path.dirname(__file__))
-    req_file = os.path.join(src_dir, 'requirements.txt')
-    reqs = open(req_file, 'r').read().strip().split('\n')
-    reqs = [req.strip() for req in reqs if 'git+' not in req]
-    return reqs
 
 setup(
-    name='sklearn-porter',
+    name=meta.get('name'),
+    description=meta.get('description'),
+    long_description=meta.get('long_description'),
+    keywords=meta.get('keywords'),
+    url=meta.get('url'),
+    author=meta.get('author'),
+    author_email=meta.get('author_email'),
+    install_requires=meta.get('requirements'),
     packages=find_packages(exclude=["tests.*", "tests"]),
     include_package_data=True,
-    version=read_version(),
-    description='Transpile trained scikit-learn models '
-                'to C, Java, JavaScript and others.',
-    author='Darius Morawiec',
-    author_email='ping@nok.onl',
-    url='https://github.com/nok/sklearn-porter/tree/stable',
     entry_points={
         'console_scripts': [
             'porter = sklearn_porter.cli.__main__:main'
@@ -47,7 +30,6 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
     ],
-    install_requires=parse_requirements(),
-    keywords=['sklearn', 'scikit-learn'],
-    license='MIT',
+    version=meta.get('version'),
+    license=meta.get('license'),
 )
