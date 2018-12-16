@@ -33,6 +33,7 @@ def _load_meta(path):
             readme_path = join(src_dir, readme_path)
             readme = open(readme_path, 'r').read().strip()
             meta['long_description'] = readme
+
     return meta
 
 

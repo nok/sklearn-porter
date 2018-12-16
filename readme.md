@@ -221,7 +221,7 @@ You can run and test all notebooks by starting a Jupyter notebook server locally
 
 ```bash
 $ make open.examples
-$ make stop.examples 
+$ make stop.examples
 ```
 
 ## Command-line interface
@@ -229,11 +229,11 @@ $ make stop.examples
 In general you can use the porter on the command line:
 
 ```
-$ porter --input <PICKLE_FILE> [--output <DEST_DIR>]
-         [--class_name <CLASS_NAME>] [--method_name <METHOD_NAME>]
+$ porter <PICKLE_FILE> [--to <directory>]
+         [--class_name <class_name>] [--method_name <method_name>]
          [--export] [--checksum] [--data] [--pipe]
          [--c] [--java] [--js] [--go] [--php] [--ruby]
-         [--help] [--version]
+         [--version] [--help]
 ```
 
 The following example shows how you can save a trained estimator to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
@@ -248,29 +248,29 @@ joblib.dump(clf, 'estimator.pkl', compress=0)
 After that the estimator can be transpiled to JavaScript by using the following command:
 
 ```bash
-$ porter -i estimator.pkl --js
+$ porter estimator.pkl --js
 ```
 
 The target programming language is changeable on the fly:
 
 ```bash
-$ porter -i estimator.pkl --c
-$ porter -i estimator.pkl --java
-$ porter -i estimator.pkl --php
-$ porter -i estimator.pkl --java
-$ porter -i estimator.pkl --ruby
+$ porter estimator.pkl --c
+$ porter estimator.pkl --java
+$ porter estimator.pkl --php
+$ porter estimator.pkl --java
+$ porter estimator.pkl --ruby
 ```
 
 For further processing the argument `--pipe` can be used to pass the result:
 
 ```bash
-$ porter -i estimator.pkl --js --pipe > estimator.js
+$ porter estimator.pkl --js --pipe > estimator.js
 ```
 
 For instance the result can be minified by using [UglifyJS](https://github.com/mishoo/UglifyJS2):
 
 ```bash
-$ porter -i estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
+$ porter estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
 ```
 
 
@@ -336,7 +336,7 @@ Independently, the following compilers and intepreters are required to cover all
 The tests cover module functions as well as matching predictions of transpiled estimators. Start all tests with:
 
 ```bash
-$ make test 
+$ make test
 ```
 
 The test files have a specific pattern: `'[Algorithm][Language]Test.py'`:

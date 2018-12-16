@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import argparse
+
+from argparse import ArgumentParser
+from argparse import RawTextHelpFormatter
+from argparse import SUPPRESS
+from argparse import _HelpAction
 
 from os import sep
 from os.path import isdir
@@ -26,81 +30,70 @@ def parse_args(args):
     summary = dict(
         usage=header,
         description=meta.get('description'),
-        epilog='More details on ' + meta.get('url')
+        epilog='More details on ' + meta.get('url'),
+        formatter_class=RawTextHelpFormatter,
+        add_help=False
     )
-
-    parser = argparse.ArgumentParser(**summary)
+    p = ArgumentParser(**summary)
 
     # Remove the default arguments group:
-    parser._action_groups.pop()
+    p._action_groups.pop()
 
-    # Required arguments:
-    required = parser.add_argument_group('Required arguments')
-    required.add_argument('--input', '-i',
-                          required=True,
-                          help=('Path to an exported estimator in pickle '
-                                '(.pkl) format.'))
+    # File arguments:
+    files = p.add_argument_group('File arguments')
+    help = 'Path to an exported estimator in pickle (.pkl) format.'
+    files.add_argument('input', help=help)
+    help = 'Path to the output directory where ' \
+           'the transpiled estimator will be stored.'
+    files.add_argument('--to', required=False, help=help)
+
+    # Template arguments:
+    templates = p.add_argument_group('Template arguments')
+    templates.add_argument('--class_name', default=None, required=False,
+                           help='Define a custom class name.')
+    templates.add_argument('--method_name', default='predict', required=False,
+                           help='Define a custom method name.')
 
     # Optional arguments:
-    optional = parser.add_argument_group('Optional arguments')
-    optional.add_argument('--output', '-o',
-                          required=False,
-                          help=('Path to the destination directory where the '
-                                'transpiled estimator will be stored.'))
-    optional.add_argument('--class_name',
-                          default=None,
-                          required=False,
-                          help='Define the class name in the final output.')
-    optional.add_argument('--method_name',
-                          default='predict',
-                          required=False,
-                          help='Define the method name in the final output.')
-    optional.add_argument('--export', '-e',
-                          required=False,
-                          default=False,
-                          action='store_true',
-                          help='Whether to export the model data or not.')
-    optional.add_argument('--checksum', '-s',
-                          required=False,
-                          default=False,
-                          action='store_true',
-                          help='Whether to append the checksum to the '
-                               'filename or not.')
-    optional.add_argument('--data', '-d',
-                          required=False,
-                          default=False,
-                          action='store_true',
-                          help='Whether to export just the model data or all.')
-    optional.add_argument('--pipe', '-p',
-                          required=False,
-                          default=False,
-                          action='store_true',
-                          help='Print the transpiled estimator to the console.')
+    optional = p.add_argument_group('Optional arguments')
+    optional.add_argument('--export', '-e', required=False, default=False,
+                          action='store_true', help='Whether to export '
+                                                    'the model data or not.')
+    optional.add_argument('--checksum', '-s', required=False, default=False,
+                          action='store_true', help='Whether to append the '
+                                                    'checksum to the filename '
+                                                    'or not.')
+    optional.add_argument('--data', '-d', required=False, default=False,
+                          action='store_true', help='Whether to export just '
+                                                    'the model data or all.')
+    optional.add_argument('--pipe', '-p', required=False, default=False,
+                          action='store_true', help='Print the transpiled '
+                                                    'estimator to the console.')
 
-    # Languages:
-    langs = parser.add_argument_group('Programming languages')
+    # Programming languages:
+    langs = p.add_argument_group('Programming languages')
     languages = {key: clazz.LABEL for key, clazz in list(LANGUAGES.items())}
-    langs.add_argument('--language', '-l',
-                       choices=languages.keys(),
-                       default='java',
-                       required=False,
-                       help=argparse.SUPPRESS)
+    langs.add_argument('--language', '-l', choices=languages.keys(),
+                       default='java', required=False, help=SUPPRESS)
     for key, label in list(languages.items()):
         help = 'Set \'{}\' as the target programming language.'.format(label)
         langs.add_argument('--{}'.format(key), action='store_true', help=help)
 
     # Extra arguments:
-    extras = parser.add_argument_group('Extra arguments')
+    extras = p.add_argument_group('Extra arguments')
     extras.add_argument('--version', '-v', action='version',
-                        version='sklearn-porter v{}'.format(version))
+                        version='sklearn-porter v{}'.format(version),
+                        help='Show the version number and exit.')
+    extras.add_argument('--help', '-h', action=_HelpAction,
+                        help="Show this help message and exit.")
 
     # Show help by default:
     if len(sys.argv) == 1:
-        parser.print_help(sys.stderr)
+        p.print_help(sys.stderr)
         sys.exit(1)
 
     # Return dictionary:
-    args = vars(parser.parse_args(args))
+    args = vars(p.parse_args(args))
     return args
 
 
@@ -126,7 +119,7 @@ def main():
             break
 
     # Define destination path:
-    dest_dir = str(args.get('output'))
+    dest_dir = str(args.get('to'))
     if dest_dir == '' or not isdir(dest_dir):
         dest_dir = pkl_file_path.split(sep)
         del dest_dir[-1]
