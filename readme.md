@@ -148,9 +148,13 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
 
 ## Installation
 
+### Stable [![Build Status](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter) [![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
+
 ```bash
 $ pip install sklearn-porter
 ```
+
+### Development [![Build Status](https://img.shields.io/travis/nok/sklearn-porter/master.svg)](https://travis-ci.org/nok/sklearn-porter)
 
 If you want the [latest changes](https://github.com/nok/sklearn-porter/blob/master/changelog.md#unreleased), you can install the module from the [master](https://github.com/nok/sklearn-porter/tree/master) branch:
 
