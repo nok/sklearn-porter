@@ -48,7 +48,6 @@ all: lint test jupytext clean
 
 lint: install.requirements.development
 	$(info Start [lint] ...)
-#	$(info $(PYTHON_FILES))
 	pylint --rcfile=.pylintrc --output-format=text $(PYTHON_FILES) 2>&1 | tee pylint.txt | sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p'
 
 test: install.requirements.development
