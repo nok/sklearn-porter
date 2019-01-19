@@ -1,9 +1,6 @@
 
 # sklearn-porter
 
-[![Build Status stable branch](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter)
-[![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
-
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
 
@@ -371,8 +368,6 @@ $ make lint
 
 ## Citation
 
-[![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
-
 If you use this implementation in you work, please add a reference/citation to the paper. You can use the following BibTeX entry:
 
 ```
@@ -386,6 +381,8 @@ If you use this implementation in you work, please add a reference/citation to t
 
 
 ## License
+
+[![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
 
 The module is Open Source Software released under the [MIT](license.txt) license.
 
