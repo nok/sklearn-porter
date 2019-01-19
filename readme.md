@@ -4,12 +4,12 @@
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
 
-## Machine learning algorithms
+## Estimators
 
 <table>
     <tbody>
         <tr>
-            <td align="center" width="32%"><strong>Algorithm</strong></td>
+            <td align="center" width="32%"><strong>Estimator</strong></td>
             <td align="center" colspan="6" width="68%"><strong>Programming language</strong></td>
         </tr>
         <tr>
@@ -122,7 +122,12 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
         </tr>
         <tr>
             <td align="left" width="32%">Regressor</td>
-            <td colspan="6" width="68%"></td>
+            <td align="center" width="13%">Java *</td>
+            <td align="center" width="11%">JS</td>
+            <td align="center" width="11%">C</td>
+            <td align="center" width="11%">Go</td>
+            <td align="center" width="11%">PHP</td>
+            <td align="center" width="11%">Ruby</td>
         </tr>
         <tr>
             <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">neural_network.MLPRegressor</a></td>
@@ -218,7 +223,8 @@ y_java = porter.predict(X[0])
 y_java = porter.predict([1., 2., 3., 4.])
 ```
 
-### Notebooks
+
+## Notebooks
 
 You can run and test all notebooks by starting a Jupyter notebook server locally:
 
@@ -227,7 +233,8 @@ $ make open.examples
 $ make stop.examples
 ```
 
-## Command-line interface
+
+## CLI
 
 In general you can use the porter on the command line:
 
