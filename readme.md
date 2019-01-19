@@ -389,7 +389,7 @@ The module is Open Source Software released under the [MIT](license.txt) license
 
 ## Questions?
 
-[![Stack Overflow](https://img.shields.io/badge/Stack%20Overflow-Ask%20questions-blue.svg)](https://stackoverflow.com/questions/tagged/sklearn-porter)
+[![Stack Overflow](https://img.shields.io/badge/stack%20overflow-ask%20questions-blue.svg)](https://stackoverflow.com/questions/tagged/sklearn-porter)
 [![Join the chat at https://gitter.im/nok/sklearn-porter](https://badges.gitter.im/nok/sklearn-porter.svg)](https://gitter.im/nok/sklearn-porter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Twitter](https://img.shields.io/twitter/follow/darius_morawiec.svg?label=follow&style=popout)](https://twitter.com/darius_morawiec)
 
