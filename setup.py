@@ -10,6 +10,7 @@ setup(
     name=meta.get('name'),
     description=meta.get('description'),
     long_description=meta.get('long_description'),
+    long_description_content_type='text/markdown',
     keywords=meta.get('keywords'),
     url=meta.get('url'),
     author=meta.get('author'),
