@@ -7,6 +7,6 @@
   "url": "https://github.com/nok/sklearn-porter",
   "keywords": ["sklearn", "scikit-learn"],
   "requirements": "file://../requirements.txt",
-  "version": "0.7.1",
+  "version": "0.7.2",
   "license": "MIT"
 }

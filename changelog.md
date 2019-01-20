@@ -11,7 +11,7 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-
+## 0.7.2
 ## 0.7.1
 
 ### Fixed
