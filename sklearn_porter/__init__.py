@@ -6,6 +6,8 @@ from os.path import exists
 from os.path import join
 from json import load
 
+from sklearn_porter.Porter import Porter
+
 
 def _load_meta(path):
     """
