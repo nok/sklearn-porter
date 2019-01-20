@@ -8,7 +8,7 @@ from json import load
 from sklearn_porter.Porter import Porter
 
 
-def load_package_data(path):
+def _load_package_data(path):
     """Load meta data about this package from `package.json`.
 
     Parameters
@@ -30,7 +30,7 @@ def load_package_data(path):
 
 file_path = abspath(dirname(__file__))
 package_path = join(file_path, 'package.json')
-package = load_package_data(package_path)
+package = _load_package_data(package_path)
 
 __author__ = package.get('author')
 __email__ = package.get('author_email')

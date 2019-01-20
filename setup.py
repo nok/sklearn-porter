@@ -10,7 +10,7 @@ from os.path import join
 from json import load
 
 
-def load_package_data(path):
+def _load_package_data(path):
     """Load meta data about this package from `package.json`.
 
     Parameters
@@ -56,7 +56,7 @@ def load_package_data(path):
 def main():
     file_path = abspath(dirname(__file__))
     package_path = join(file_path, 'sklearn_porter', 'package.json')
-    package = load_package_data(package_path)
+    package = _load_package_data(package_path)
 
     setup(
         name=package.get('name'),
