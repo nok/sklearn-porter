@@ -66,6 +66,10 @@ jupytext: install.requirements.development
 	$(info Start [jupytext] ...)
 	$(BASH) .scripts/run.jupytext.sh
 
+deploy: clean
+	$(info Start [deploy.test] ...)
+	$(BASH) .scripts/run.deployment.sh
+
 clean:
 	$(info Start [clean] ...)
 	rm -rf tmp
