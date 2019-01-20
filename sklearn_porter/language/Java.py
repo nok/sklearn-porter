@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from os.path import sep
+
 
 class Java(object):
 
@@ -12,8 +14,8 @@ class Java(object):
 
     # javac {class_path} tmp/Estimator.java
     # class_path = '-cp ./gson.jar'
-    CMD_COMPILE = 'javac {class_path} {src_dir}/{src_file}'
+    CMD_COMPILE = 'javac {class_path} {src_dir}' + sep + '{src_file}'
 
     # java {class_path} Estimator <args>
     # class_path = '-cp ./gson.jar:./tmp'
-    CMD_EXECUTE = 'java {class_path} {dest_dir}/{dest_file}'
+    CMD_EXECUTE = 'java {class_path} {dest_dir}' + sep + '{dest_file}'

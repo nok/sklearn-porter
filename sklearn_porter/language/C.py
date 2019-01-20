@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from os.path import sep
+
 
 class C(object):
 
@@ -11,7 +13,7 @@ class C(object):
     SUFFIX = '.c'
 
     # gcc tmp/estimator.c -std=c99 -lm -o tmp/estimator
-    CMD_COMPILE = 'gcc {src_dir}/{src_file} -std=c99 -lm -o {dest_dir}/{dest_file}'
+    CMD_COMPILE = 'gcc {src_dir}' + sep + '{src_file} -std=c99 -lm -o {dest_dir}' + sep + '{dest_file}'
 
     # tmp/estimator <args>
-    CMD_EXECUTE = '{dest_dir}/{dest_file}'
+    CMD_EXECUTE = '{dest_dir}' + sep + '{dest_file}'

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from os.path import sep
+
 
 class Ruby(object):
 
@@ -13,4 +15,4 @@ class Ruby(object):
     CMD_COMPILE = None
 
     # ruby estimator.rb <args>
-    CMD_EXECUTE = 'ruby {dest_dir}/{dest_file}'
+    CMD_EXECUTE = 'ruby {dest_dir}' + sep + '{dest_file}'

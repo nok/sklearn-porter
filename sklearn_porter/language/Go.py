@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from os.path import sep
+
 
 class Go(object):
 
@@ -11,7 +13,7 @@ class Go(object):
     SUFFIX = '.go'
 
     # go build -o tmp/estimator tmp/estimator.go
-    CMD_COMPILE = 'go build -o {dest_dir}/{dest_file} {src_dir}/{src_file}'
+    CMD_COMPILE = 'go build -o {dest_dir}' + sep + '{dest_file} {src_dir}' + sep + '{src_file}'
 
     # tmp/estimator <args>
-    CMD_EXECUTE = '{dest_dir}/{dest_file}'
+    CMD_EXECUTE = '{dest_dir}' + sep + '{dest_file}'
