@@ -7,17 +7,16 @@ from sklearn_porter.utils.Shell import Shell
 
 class ShellTest(TestCase):
 
-    def test_check_output_echo_num_0(self):
-        self.assertEqual(Shell.check_output('echo 0'), '0')
+    def test_outputs(self):
+        out = Shell.check_output('echo 0')
+        self.assertEqual(out, '0')
 
-    def test_check_output_echo_num_1(self):
-        self.assertEqual(Shell.check_output('echo 1'), '1')
+        out = Shell.check_output('echo 1')
+        self.assertEqual(out, '1')
 
-    def test_check_output_echo_list_xyz(self):
-        self.assertEqual(Shell.check_output(['echo', 'xyz'], shell=False), 'xyz')
+        out = Shell.check_output(['echo', 'xyz'], shell=False)
+        self.assertEqual(out, 'xyz')
 
-    def test_check_output_empty_list(self):
+    def test_exceptions(self):
         self.assertRaises(AttributeError, lambda: Shell.check_output([]))
-
-    def test_check_output_empty_text(self):
         self.assertRaises(AttributeError, lambda: Shell.check_output(''))

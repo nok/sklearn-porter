@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 
-import six
-
 from subprocess import call
 from subprocess import check_output
 from subprocess import STDOUT
+
+try:
+    basestring
+except NameError:
+    basestring = (str, bytes)
 
 
 class Shell(object):
@@ -16,7 +19,7 @@ class Shell(object):
         if not cmd:
             error_msg = 'Passed empty text or list'
             raise AttributeError(error_msg)
-        if isinstance(cmd, six.string_types):
+        if isinstance(cmd, basestring):
             cmd = str(cmd)
         if shell:
             if isinstance(cmd, list):
@@ -32,7 +35,7 @@ class Shell(object):
 
     @staticmethod
     def call(cmd, shell=True, cwd=None, universal_newlines=True, stderr=STDOUT):
-        """Just execute a specific command."""
+        """Execute a specific command."""
         return Shell._run(call, cmd, shell=shell, cwd=cwd, stderr=stderr,
                           universal_newlines=universal_newlines)
 
