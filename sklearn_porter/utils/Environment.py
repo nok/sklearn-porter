@@ -55,10 +55,11 @@ except ImportError:
 
 
 class Environment(object):
+    """Get information from the system and local environment."""
 
     @staticmethod
     def read_sklearn_version():
-        """Determine the installed version of sklearn"""
+        """Determine the installed version of scikit-learn."""
         from sklearn import __version__ as sklearn_ver
         sklearn_ver = str(sklearn_ver).split('.')
         sklearn_ver = [int(v) for v in sklearn_ver]
@@ -67,38 +68,47 @@ class Environment(object):
         return major, minor, patch
 
     @staticmethod
-    def _platform_is_windows(platform=sys.platform):
-        """Is the current OS a Windows?"""
-        matched = platform in ('cygwin', 'win32', 'win64')
-        if matched:
-            error_msg = "Windows isn't supported yet"
-            raise OSError(error_msg)
-        return matched
+    def read_platform():
+        """Return the current system platform."""
+        return sys.platform
 
     @staticmethod
-    def has_app(name, check_platform=True):
+    def check_windows(system=None, raise_exception=True):
+        """Is Windows the current using operating system?"""
+        if not system:
+            system = Environment.read_platform()
+        is_win = system in ('cygwin', 'win32', 'win64')
+        if is_win and raise_exception:
+            error_msg = "Windows isn't supported yet."
+            raise OSError(error_msg)
+        return is_win
+
+    @staticmethod
+    def has_app(name, check_win=True):
         """Check whether the application <name> is installed."""
-        if check_platform:
-            Environment._platform_is_windows()
+        if check_win:
+            Environment.check_windows()
         return which(str(name)) is not None
 
     @staticmethod
-    def has_apps(names, check_platform=True):
+    def has_apps(names, check_win=True):
         """Check whether the applications [<name>, ...] are installed."""
-        if check_platform:
-            Environment._platform_is_windows()
+        if check_win:
+            Environment.check_windows()
         for name in names:
-            yield Environment.has_app(str(name), check_platform=False)
+            yield Environment.has_app(str(name), check_win=False)
 
     @staticmethod
-    def check_deps(deps):
-        """check whether specific requirements are available."""
+    def check_deps(deps, check_win=True):
+        """Check whether specific requirements are installed."""
+        if check_win:
+            Environment.check_windows()
         if not isinstance(deps, list):
             deps = [deps]
-        checks = list(Environment.has_apps(deps))
+        checks = list(Environment.has_apps(deps, check_win=False))
         if not all(checks):
             for name, available in list(dict(zip(deps, checks)).items()):
                 if not available:
                     error_msg = "The required application/dependency '{0}'" \
-                                " isn't available.".format(name)
-                    raise SystemError(error_msg)
+                                " isn't installed.".format(name)
+                    raise EnvironmentError(error_msg)
