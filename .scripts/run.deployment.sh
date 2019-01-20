@@ -11,7 +11,8 @@ COMMIT=`git rev-parse --short HEAD`
 
 # Environment:
 TARGET="https://upload.pypi.org/legacy/"
-if [[ $VERSION == *"rc"* ]]; then
+read -r -p "Do you want to use the staging environment (test.pypi.org)? [y/N] " response
+if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
     TARGET="https://test.pypi.org/legacy/"
 fi
 
