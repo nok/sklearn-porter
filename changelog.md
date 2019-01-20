@@ -7,6 +7,15 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+### Added
+
+### Changed
+
+
+## 0.7.0
+
+### Fixed
+
 - Fix indices format in RandomForestClassifier ([#41](https://github.com/nok/sklearn-porter/pull/41), thanks [@apasanen](https://github.com/apasanen))
 
 ### Added
