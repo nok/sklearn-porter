@@ -5,8 +5,6 @@ from os.path import dirname
 from os.path import join
 from json import load
 
-from sklearn_porter.Porter import Porter
-
 
 def _load_meta(path):
     """
@@ -18,6 +16,8 @@ def _load_meta(path):
         meta = load(f, encoding='utf-8')
         meta = {k: v.decode('utf-8') if isinstance(v, bytes) else v
                 for k, v in meta.items()}
+
+        src_dir = abspath(dirname(path))
 
         if 'requirements' in meta and \
                 str(meta['requirements']).startswith('file://'):
@@ -37,8 +37,7 @@ def _load_meta(path):
     return meta
 
 
-src_dir = abspath(dirname(__file__))
-package = join(src_dir, 'package.json')
+package = join(abspath(dirname(__file__)), 'package.json')
 meta = _load_meta(package)
 
 __author__ = meta.get('author')
