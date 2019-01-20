@@ -12,6 +12,14 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 
+## 0.7.1
+
+### Fixed
+
+- Fix installation issues with the centralised meta information and the build process
+- Fix missed package and add `six` to the `requirements.txt` file
+
+
 ## 0.7.0
 
 ### Fixed
