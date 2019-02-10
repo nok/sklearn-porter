@@ -1,7 +1,7 @@
 {
   "name": "sklearn-porter",
   "description": "Transpile trained scikit-learn models to C, Java, JavaScript and others.",
-  "long_description": "file://../readme.md",
+  "long_description": "file://../README.md",
   "author": "Darius Morawiec",
   "author_email": "nok@users.noreply.github.com",
   "url": "https://github.com/nok/sklearn-porter",
