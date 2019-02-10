@@ -4,9 +4,9 @@ import os
 import sys
 
 try:
-    from shutil import which
+    from shutil import which as _which
 except ImportError:
-    def which(cmd, mode=os.F_OK | os.X_OK, path=None):
+    def _which(cmd, mode=os.F_OK | os.X_OK, path=None):
         """Given a command, mode, and a PATH string, return the path which
         conforms to the given mode on the PATH, or None if there is no such
         file.
@@ -93,7 +93,7 @@ class Environment(object):
         """Check whether the application <name> is installed."""
         if check_win:
             Environment.check_windows()
-        return which(str(name)) is not None
+        return _which(str(name)) is not None
 
     @staticmethod
     def has_apps(names, check_win=True):
