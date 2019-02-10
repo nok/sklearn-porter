@@ -58,8 +58,13 @@ class Environment(object):
     """Get information from the system and local environment."""
 
     @staticmethod
+    def read_python_version():
+        """Return the local Python version."""
+        return sys.version_info[:3]
+
+    @staticmethod
     def read_sklearn_version():
-        """Determine the installed version of scikit-learn."""
+        """Return the local scikit-learn version."""
         from sklearn import __version__ as sklearn_ver
         sklearn_ver = str(sklearn_ver).split('.')
         sklearn_ver = [int(v) for v in sklearn_ver]
