@@ -28,7 +28,7 @@ def _load_meta(path):
             req_path = str(meta['requirements'])[7:]
             req_path = join(src_dir, req_path)
             if exists(req_path):
-                reqs = open(req_path, 'r').read().strip().split('\n')
+                reqs = open(req_path, 'r', encoding='utf-8').read().strip().split('\n')
                 reqs = [req.strip() for req in reqs if 'git+' not in req]
                 meta['requirements'] = reqs
             else:
@@ -39,7 +39,7 @@ def _load_meta(path):
             readme_path = str(meta['long_description'])[7:]
             readme_path = join(src_dir, readme_path)
             if exists(readme_path):
-                readme = open(readme_path, 'r').read().strip()
+                readme = open(readme_path, 'r', encoding='utf-8').read().strip()
                 meta['long_description'] = readme
             else:
                 meta['long_description'] = ''
