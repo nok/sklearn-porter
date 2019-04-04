@@ -7,9 +7,12 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Fix argument name in generated method name ([#49](https://github.com/nok/sklearn-porter/commit/c8e7dbbf1d0ab660f4c3587d50111adf6a18b4e9))
+
 ### Added
 
 ### Changed
+
 
 ## 0.7.2
 ## 0.7.1
