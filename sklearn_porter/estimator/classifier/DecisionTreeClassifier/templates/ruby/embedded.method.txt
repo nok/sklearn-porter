@@ -1,4 +1,4 @@
-def self.{method_name} (atts)
+def self.{method_name} (features)
 	classes = Array.new({n_classes}, 0)
 	{branches}
 
