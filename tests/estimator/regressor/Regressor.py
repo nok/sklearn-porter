@@ -4,29 +4,31 @@ import os
 import subprocess as subp
 
 import numpy as np
+import random as rd
+
 from sklearn.datasets import load_diabetes
 from sklearn.utils import shuffle
 
-from tests.utils.Timer import Timer
 
+class Regressor(object):
 
-class Regressor(Timer):
+    SEED = 1
 
-    N_RANDOM_FEATURE_SETS = 30
-    N_EXISTING_FEATURE_SETS = 30
+    TEST_N_RANDOM_FEATURE_SETS = 20
+    TEST_N_EXISTING_FEATURE_SETS = 20
 
     def setUp(self):
-        np.random.seed(5)
+        np.random.seed(self.SEED)
+        rd.seed(self.SEED)
         self._init_env()
-        self._start_test()
         self.load_data()
 
     def tearDown(self):
         self._clear_estimator()
-        self._stop_test()
 
     def _init_env(self):
-        for param in ['N_RANDOM_FEATURE_SETS', 'N_EXISTING_FEATURE_SETS']:
+        for param in ['TEST_N_RANDOM_FEATURE_SETS',
+                      'TEST_N_EXISTING_FEATURE_SETS']:
             n = os.environ.get(param, None)
             if n is not None and str(n).strip().isdigit():
                 n = int(n)
@@ -35,16 +37,20 @@ class Regressor(Timer):
 
     def load_data(self, shuffled=True):
         samples = load_diabetes()
-        self.X = shuffle(samples.data) if shuffled else samples.data
-        self.y = shuffle(samples.target) if shuffled else samples.target
+        if shuffled:
+            self.X = shuffle(samples.data, random_state=self.SEED)
+            self.y = shuffle(samples.target, random_state=self.SEED)
+        else:
+            self.X, self.y = samples.data, samples.target
         self.n_features = len(self.X[0])
 
     def test_random_features_new(self):
+        self.load_data()
         self._port_estimator()
         amin = np.amin(self.X, axis=0)
         amax = np.amax(self.X, axis=0)
         match = []
-        for _ in range(self.N_RANDOM_FEATURE_SETS):
+        for _ in range(self.TEST_N_RANDOM_FEATURE_SETS):
             x = np.random.uniform(amin, amax, self.n_features)
             match.append(self.pred_in_custom(x, cast=False) -
                          self.pred_in_py(x, cast=False) < 0.0001)
@@ -53,9 +59,10 @@ class Regressor(Timer):
         self.assertEqual(match.count(True), len(match))
 
     def test_existing_features_new(self):
+        self.load_data()
         self._port_estimator()
         match = []
-        n = min(self.N_EXISTING_FEATURE_SETS, len(self.X))
+        n = min(self.TEST_N_EXISTING_FEATURE_SETS, len(self.X))
         for x in self.X[:n]:
             match.append(self.pred_in_custom(x, cast=False) -
                          self.pred_in_py(x, cast=False) < 0.0001)

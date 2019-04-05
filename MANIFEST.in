@@ -1,2 +1,2 @@
 include readme.md requirements.txt changelog.md license.txt
-recursive-include sklearn_porter *.txt *.py
+recursive-include sklearn_porter *.py *.txt *.json

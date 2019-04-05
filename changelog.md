@@ -3,6 +3,66 @@
 All notable changes to this project will be documented in this file.
 
 
+## Unreleased
+
+### Fixed
+
+- Fix argument name in generated method name ([#49](https://github.com/nok/sklearn-porter/commit/c8e7dbbf1d0ab660f4c3587d50111adf6a18b4e9))
+
+### Added
+
+### Changed
+
+
+## 0.7.2
+## 0.7.1
+
+### Fixed
+
+- Fix installation issues with the centralised meta information and the build process
+- Fix missed package and add `six` to the `requirements.txt` file
+
+
+## 0.7.0
+
+### Fixed
+
+- Fix indices format in RandomForestClassifier ([#41](https://github.com/nok/sklearn-porter/pull/41), thanks [@apasanen](https://github.com/apasanen))
+
+### Added
+
+- Add Python 3.7 with Xenial to CI for testing
+- Add [PyTest](https://docs.pytest.org) for extended testing (see [pytest.ini](pytest.ini))
+- Add useful Makefile tasks with dependency handling (see [Makefile](Makefile)):
+    - `install.environment` to install a `conda` environment
+    - `install.requirements` to install all `pip` requirements
+    - `make link` to install `porter` (cli) to the command line
+    - `make open.examples` to start a local jupyter server
+    - `make stop.examples` to stop the started jupyter server
+    - `make test` to run all unittests in [tests](tests)
+    - `make lint` to run pylint over [sklearn_porter](sklearn_porter)
+    - `make jupytext` to generate the notebooks from Python sources
+
+### Changed
+
+- Core:
+    - Merge all meta information to `sklearn_porter/package.json`
+- CI and requirements:
+    - Remove `conda` from CI
+    - Clear and split `pip` requirements into three parts:
+        - [requirements.txt](requirements.txt) for library requirements
+        - [requirements.examples.txt](requirements.examples.txt) for examples requirements
+        - [requirements.development.txt](requirements.development.txt) for development requirements
+    - Update extended requriements (e.g. GCC, PHP, ...)
+- Utils:
+    - Refactor class [sklearn_porter.utils.Shell](sklearn_porter.utils.Shell) to remove redundancy
+    - Refactor CLI with a bunch of improvements (grouped arguments, use of console scripts)
+- Testing:
+    - Change web server port for testing from `8080` to `8713` (because of collusion with the default port of Jenkins)
+    - Remove class [tests.utils.DependencyChecker](https://github.com/nok/sklearn-porter/blob/release/0.6.2/tests/utils/DependencyChecker.py), instead use [sklearn_porter.utils.Environment](https://github.com/nok/sklearn-porter/blob/release/0.7.0/sklearn_porter/utils/Environment.py)
+    - Remove class [tests.utils.Timer](https://github.com/nok/sklearn-porter/blob/release/0.6.2/tests/utils/Timer.py), instead use `--durations=0` of PyTest
+
+
 ## 0.6.2
 
 ### Fixed
@@ -32,17 +92,17 @@ All notable changes to this project will be documented in this file.
 - Add [changelog.md](changelog.md) for the next releases ([#ee44ac9](https://github.com/nok/sklearn-porter/commit/ee44ac92618bf48e3aff6fbb65591b6f87c88826)).
 - Add [changelog.md](changelog.md) and [readme.md](readme.md) to each build of a release ([#ee44ac9](https://github.com/nok/sklearn-porter/commit/ee44ac92618bf48e3aff6fbb65591b6f87c88826)).
 - Add for each target programming language a new new command-line argument (e.g. `--java`, `--c` or `--go`) ([#41b93a0](https://github.com/nok/sklearn-porter/commit/41b93a0bff44dd045e711a08a53fe8c75d8d460a)).
-- Add argument `--class_name` and `--method_name` to define the class and method name in the final output directly ([#6f2a1d9](https://github.com/nok/sklearn-porter/commit/6f2a1d97b5cddb6232a4fcf0d469cf167a019fdf)). 
+- Add argument `--class_name` and `--method_name` to define the class and method name in the final output directly ([#6f2a1d9](https://github.com/nok/sklearn-porter/commit/6f2a1d97b5cddb6232a4fcf0d469cf167a019fdf)).
 - Add pipe functionality and the related command-line argument (`--pipe` or `-p`) ([#8a57746](https://github.com/nok/sklearn-porter/commit/8a57746e4e97b137032fa7401e37792d496c0aa2)).
 - Add `--export` argument to dump the model data and use the specific templates ([#0669645](https://github.com/nok/sklearn-porter/commit/0669645acdfa8cbe39a8446f95f671c580cc2026)).
 - Add `--checksum` argument to append the computed md5 checksum at the end of the dumped model data file ([#cd12827](https://github.com/nok/sklearn-porter/commit/cd12827cb136d0711c555fe321f72d6aa8326143)).
 - Add `--data` argument to kust export the model data ([#fad499a](https://github.com/nok/sklearn-porter/commit/fad499a4448f55d8c344f1088cca54a5c267c3e9)).
 - Add test class `Go` in `tests/language/Go.py` to test all implementations for the target programming language Go ([#1d0b5d6](https://github.com/nok/sklearn-porter/commit/1d0b5d6a2bf1a5604ae283cc728e3a83fb17a6ea)).
 - Add Go compiling (`go build -o brain brain.go`) and execution (`./brain`) command ([#5d24f57](https://github.com/nok/sklearn-porter/commit/5d24f57ec50e9935dac8389e243deda7b09659d7)).
-- Add initial Web Workers features in JavaScript templates ([#87d3236](https://github.com/nok/sklearn-porter/commit/87d32365d06ba01cce7667b03f9a4265a1312dad)) and a create seperate example ([#187efac](https://github.com/nok/sklearn-porter/commit/187efac3fa045e177a1980244bef302a462fcf4e)). 
+- Add initial Web Workers features in JavaScript templates ([#87d3236](https://github.com/nok/sklearn-porter/commit/87d32365d06ba01cce7667b03f9a4265a1312dad)) and a create seperate example ([#187efac](https://github.com/nok/sklearn-porter/commit/187efac3fa045e177a1980244bef302a462fcf4e)).
 - Add the feature to read the estimator from a used [Pipeline](http://scikit-learn.org/stable/modules/generated/pipeline.Pipeline.html) ([#b92edff](https://github.com/nok/sklearn-porter/commit/b92edfff278a997d03f6bca65ea99d0bd02f8ba3), issue: [#18](https://github.com/nok/sklearn-porter/issues/18)).
 - Add a new class argument (`num_format=lambda x: str(x)`) to change the default representation of floating-point values ([#7f9fac8](https://github.com/nok/sklearn-porter/commit/7f9fac8eb35371e9374b4cf73519f83dbcb66632)).
-- Use estimator name as default class name (e.g. `MLPClasifier`, `KNeighborsClassifier`, `SVC`, ...) ([#710a854](https://github.com/nok/sklearn-porter/commit/710a854072bf19054cc2c46eff661241ffa92d65)). 
+- Use estimator name as default class name (e.g. `MLPClasifier`, `KNeighborsClassifier`, `SVC`, ...) ([#710a854](https://github.com/nok/sklearn-porter/commit/710a854072bf19054cc2c46eff661241ffa92d65)).
 - Add new estimator:
     - Go:
         - `tree.DecisionTreeClassifier` ([#fe59710](https://github.com/nok/sklearn-porter/commit/fe59710a72c6a4bf5fb1d0acc0a35eba3dda950e))
@@ -79,11 +139,11 @@ All notable changes to this project will be documented in this file.
         - [MLPClassifier Web Workers](examples/recipes/use_javascript_web_workers) ([#187efac](https://github.com/nok/sklearn-porter/commit/187efac3fa045e177a1980244bef302a462fcf4e))
 
 ### Changed
- 
+
 - Use human-readable placeholders (e.g. `'{class_name}.{method_name}'`) instead of index-based placeholders (e.g. `'{0}.{1}'`) in all main templates of all estimators ([#de02795](https://github.com/nok/sklearn-porter/commit/de02795f3628ccad9d5e85940d37b866e2e7443e)).
 - Change the order of optional and required arguments in the `--help` text ([#54d9973](https://github.com/nok/sklearn-porter/commit/54d99736f5fe144350e990621ba4d145776eecdd)).
 - Change the default representation of floating-point values from `repr(x)` to `str(x)` ([#7f9fac8](https://github.com/nok/sklearn-porter/commit/7f9fac8eb35371e9374b4cf73519f83dbcb66632)).
-- Use the method name `integrity_score(X)` instead of `predict_test(X)` to avoid misconceptions for the integrity test ([#715ec7d](https://github.com/nok/sklearn-porter/commit/715ec7dee0e2d98cb2917d48a2522683240d084a)). 
+- Use the method name `integrity_score(X)` instead of `predict_test(X)` to avoid misconceptions for the integrity test ([#715ec7d](https://github.com/nok/sklearn-porter/commit/715ec7dee0e2d98cb2917d48a2522683240d084a)).
 - Separate the model data from the algorithm:
     - `tree.DecisionTreeClassifier` ([#f669aab](https://github.com/nok/sklearn-porter/commit/f669aab7e15971ea2071c5f9df096b924ae0dbcf), [#bba6296](https://github.com/nok/sklearn-porter/commit/bba629602d46780467efbc0e8f74d7880131593b), [#b727186](https://github.com/nok/sklearn-porter/commit/b7271867c755f3372886b07b76d763f2f2911eff), [#e2740fd](https://github.com/nok/sklearn-porter/commit/e2740fd07f43c02f3514b3834a765d43c640efaa), [#5c9da8a](https://github.com/nok/sklearn-porter/commit/5c9da8a58ec2143398444bd3afcc16806dfdc86b))
     - `neighbors.KNeighborsClassifier` ([#59a0e91](https://github.com/nok/sklearn-porter/commit/59a0e9114daeeb7d81a975c3adfa0ad27be3a426), [#1ac5d8a](https://github.com/nok/sklearn-porter/commit/29412ab55d8ebcdb7914974121c03d64660e5f94))
@@ -93,10 +153,10 @@ All notable changes to this project will be documented in this file.
     - `naive_bayes.BernoulliNB` ([#ff82bb8](https://github.com/nok/sklearn-porter/commit/ff82bb880ce4ae95af0f95e90bc3e681e4f261b8), [#3c57a06](https://github.com/nok/sklearn-porter/commit/3c57a06a733cdd8e9a74cb41c4087064161ad0d5))
     - `svm.SVC` and `svm.NuSVC` ([#4745d8b](https://github.com/nok/sklearn-porter/commit/4745d8b0dd09addf7b6e6affba8954b4d7da6ecb), [#5f77e4d](https://github.com/nok/sklearn-porter/commit/5f77e4dba1ce4f84478ada2652227922471a4d9f), [#59831da](https://github.com/nok/sklearn-porter/commit/59831dab24d4f6f43daec61ae277139ed1bf921c), [#cd8f52e](https://github.com/nok/sklearn-porter/commit/cd8f52e33cad7c1e909b858333a9132e4b03a4a7), [#c483d25](https://github.com/nok/sklearn-porter/commit/c483d259dc4fb1b8beada4ef9c7c11f4b1d5aff6))
     - `svm.LinearSVC` ([#bb617c7](https://github.com/nok/sklearn-porter/commit/bb617c741ea80dde8da97121ec253fd3ee8f4810))
- 
+
 ### Removed
 
-- Hide the command-line argument `--language` and `-l` for the choice of the target programming language ([#fc14a3b](https://github.com/nok/sklearn-porter/commit/fc14a3b55d6319d3940c9c11d168b015b972f96d)). 
+- Hide the command-line argument `--language` and `-l` for the choice of the target programming language ([#fc14a3b](https://github.com/nok/sklearn-porter/commit/fc14a3b55d6319d3940c9c11d168b015b972f96d)).
 
 ### Fixed
 

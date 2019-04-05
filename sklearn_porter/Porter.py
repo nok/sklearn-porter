@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import unicode_literals
-
 import os
 import sys
 import types
-import subprocess as subp
 
 import numpy as np
 
@@ -21,16 +18,13 @@ from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
+from sklearn_porter.utils.Environment import Environment
+from sklearn_porter.utils.Shell import Shell
+
+# from sklearn_porter.language import *
+
 
 class Porter(object):
-
-    # Version:
-    local_dir = os.path.dirname(__file__)
-    version_file = os.path.join(local_dir, '__version__.txt')
-    version = open(version_file).readlines().pop()
-    if isinstance(version, bytes):
-        version = version.decode('utf-8')
-    __version__ = str(version).strip()
 
     def __init__(self, estimator, language='java', method='predict', **kwargs):
         # pylint: disable=unused-argument
@@ -131,17 +125,16 @@ class Porter(object):
                                     self.target_language)
         has_template = os.path.isdir(template_dir)
         if not has_template:
-            error = "Currently there is no support of the combination " \
-                    "of the estimator '{}' and the target programming " \
-                    "language '{}'.".format(self.estimator_name,
-                                            self.target_language)
+            error = "Currently the chosen target programming language '{}' " \
+                    "isn't supported for the estimator '{}'." \
+                    "".format(self.estimator_name, self.target_language)
             raise AttributeError(error)
 
         # Set target prediction method:
         has_method = self.target_method in \
                      set(getattr(clazz, 'SUPPORTED_METHODS'))
         if not has_method:
-            error = "Currently the given model method" \
+            error = "Currently the chosen model method" \
                     " '{}' isn't supported.".format(self.target_method)
             raise AttributeError(error)
 
@@ -194,8 +187,7 @@ class Porter(object):
 
         language = self.target_language
         filename = Porter._get_filename(class_name, language)
-        comp_cmd, exec_cmd = Porter._get_commands(filename,
-                                                  class_name,
+        comp_cmd, exec_cmd = Porter._get_commands(filename, class_name,
                                                   language)
         output = {
             'estimator': str(output),
@@ -300,8 +292,8 @@ class Porter(object):
 
         return regressors
 
-    def predict(self, X, class_name=None, method_name=None,
-                tnp_dir='tmp', keep_tmp_dir=False, num_format=lambda x: str(x)):
+    def predict(self, X, class_name=None, method_name=None, tnp_dir='tmp',
+                keep_tmp_dir=False, num_format=lambda x: str(x)):
         """
         Predict using the transpiled model.
 
@@ -351,8 +343,8 @@ class Porter(object):
             raise AttributeError(error)
 
         # Cleanup:
-        subp.call(['rm', '-rf', tnp_dir])
-        subp.call(['mkdir', tnp_dir])
+        Shell.call('rm -rf {}'.format(tnp_dir))
+        Shell.call('mkdir {}'.format(tnp_dir))
 
         # Transpiled model:
         details = self.export(class_name=class_name,
@@ -367,8 +359,7 @@ class Porter(object):
         # Compilation command:
         comp_cmd = details.get('cmd').get('compilation')
         if comp_cmd is not None:
-            comp_cmd = str(comp_cmd).split()
-            subp.call(comp_cmd, cwd=tnp_dir)
+            Shell.call(comp_cmd, cwd=tnp_dir)
 
         # Execution command:
         exec_cmd = details.get('cmd').get('execution')
@@ -379,8 +370,7 @@ class Porter(object):
         # Single feature set:
         if exec_cmd is not None and len(X.shape) == 1:
             full_exec_cmd = exec_cmd + [str(sample).strip() for sample in X]
-            pred_y = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
-                                       cwd=tnp_dir)
+            pred_y = Shell.check_output(full_exec_cmd, cwd=tnp_dir)
             pred_y = int(pred_y)
 
         # Multiple feature sets:
@@ -388,13 +378,12 @@ class Porter(object):
             pred_y = np.empty(X.shape[0], dtype=int)
             for idx, features in enumerate(X):
                 full_exec_cmd = exec_cmd + [str(f).strip() for f in features]
-                pred = subp.check_output(full_exec_cmd, stderr=subp.STDOUT,
-                                         cwd=tnp_dir)
+                pred = Shell.check_output(full_exec_cmd, cwd=tnp_dir)
                 pred_y[idx] = int(pred)
 
         # Cleanup:
         if not keep_tmp_dir:
-            subp.call(['rm', '-rf', tnp_dir])
+            Shell.call('rm -rf {}'.format(tnp_dir))
 
         return pred_y
 
@@ -451,12 +440,8 @@ class Porter(object):
         """
         lang = self.target_language
 
-        if sys.platform in ('cygwin', 'win32', 'win64'):
-            error = "The required dependencies aren't available on Windows."
-            raise EnvironmentError(error)
-
         # Dependencies:
-        depends = {
+        deps = {
             'c': ['gcc'],
             'java': ['java', 'javac'],
             'js': ['node'],
@@ -464,20 +449,8 @@ class Porter(object):
             'php': ['php'],
             'ruby': ['ruby']
         }
-        all_depends = depends.get(lang) + ['mkdir', 'rm']
-        all_depends = [str(e) for e in all_depends]
-
-        cmd = 'if hash {} 2/dev/null; then echo 1; else echo 0; fi'
-        for exe in all_depends:
-            cmd = cmd.format(exe)
-            status = subp.check_output(cmd, shell=True, stderr=subp.STDOUT)
-            if sys.version_info >= (3, 3) and isinstance(status, bytes):
-                status = status.decode('utf-8')
-            status = str(status).strip()
-            if status != '1':
-                error = "The required application '{0}'" \
-                        " isn't available.".format(exe)
-                raise SystemError(error)
+        current_deps = deps.get(lang) + ['mkdir', 'rm']
+        Environment.check_deps(current_deps)
 
     @staticmethod
     def _get_filename(class_name, language):
@@ -536,7 +509,7 @@ class Porter(object):
             comp_cmd, exec_cmd : (str, str)
             The compilation and execution command.
         """
-        cname = str(class_name).lower()
+        cname = str(class_name)
         fname = str(filename)
         lang = str(language)
 
@@ -560,7 +533,7 @@ class Porter(object):
             # node brain.js
             'js': 'node {}'.format(fname),
             # php -f Brain.php
-            'php': 'php -f {}'.format(cname),
+            'php': 'php -f {}'.format(fname),
             # ruby brain.rb
             'ruby': 'ruby {}'.format(fname),
             # ./brain
