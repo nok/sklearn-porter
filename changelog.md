@@ -46,7 +46,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Core:
-    - Merge all meta information to `sklearn_porter/package.json`
+    - Merge all meta information to `sklearn_porter/pypi.json`
 - CI and requirements:
     - Remove `conda` from CI
     - Clear and split `pip` requirements into three parts:
