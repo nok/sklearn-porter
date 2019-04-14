@@ -88,10 +88,10 @@ var {class_name} = function(jsonFile) {{
                 this.mdl.network[0] = neurons;
                 for (var i = 0; i < this.mdl.network.length - 1; i++) {{
                     for (var j = 0; j < this.mdl.network[i + 1].length; j++) {{
+                        this.mdl.network[i + 1][j] = this.mdl.bias[i][j];
                         for (var l = 0; l < this.mdl.network[i].length; l++) {{
                             this.mdl.network[i + 1][j] += this.mdl.network[i][l] * this.mdl.weights[i][l][j];
                         }}
-                        this.mdl.network[i + 1][j] += this.mdl.bias[i][j];
                     }}
                     if ((i + 1) < (this.mdl.network.length - 1)) {{
                         this.mdl.network[i + 1] = compute(this.mdl.hidden_activation, this.mdl.network[i + 1]);
