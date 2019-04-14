@@ -1,2 +1,1 @@
-- Darius Morawiec
-  Project coordination and main contributor
+https://github.com/nok/sklearn-porter/graphs/contributors?type=c
