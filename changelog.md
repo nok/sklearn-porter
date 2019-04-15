@@ -11,6 +11,15 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+
+## 0.7.3
+
+### Fixed
+
+- Fix argument name in generated method name ([#49](https://github.com/nok/sklearn-porter/commit/c8e7dbbf1d0ab660f4c3587d50111adf6a18b4e9))
+- Fix parameter initialization of MLPClassifier/MLPRegressor ([#33](https://github.com/nok/sklearn-porter/commit/672e0188b47e3b7624c6b9cba2e66ef3dc9145a1))
+
+
 ## 0.7.2
 ## 0.7.1
 
@@ -43,7 +52,7 @@ All notable changes to this project will be documented in this file.
 ### Changed
 
 - Core:
-    - Merge all meta information to `sklearn_porter/package.json`
+    - Merge all meta information to `sklearn_porter/pypi.json`
 - CI and requirements:
     - Remove `conda` from CI
     - Clear and split `pip` requirements into three parts:

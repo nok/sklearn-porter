@@ -12,8 +12,8 @@ from json import load
 
 def _load_meta(path):
     """
-    Load meta data about this package from file package.json.
-    :param path: The path to package.json
+    Load meta data about this package from file pypi.json.
+    :param path: The path to pypi.json
     :return: Dictionary of key value pairs.
     """
     with open(path) as f:
@@ -47,7 +47,7 @@ def _load_meta(path):
     return meta
 
 
-package = join(abspath(dirname(__file__)), 'sklearn_porter', 'package.json')
+package = join(abspath(dirname(__file__)), 'sklearn_porter', 'pypi.json')
 meta = _load_meta(package)
 
 

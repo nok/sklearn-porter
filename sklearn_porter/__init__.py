@@ -11,8 +11,8 @@ from sklearn_porter.Porter import Porter
 
 def _load_meta(path):
     """
-    Load meta data about this package from file package.json.
-    :param path: The path to package.json
+    Load meta data about this package from file pypi.json.
+    :param path: The path to pypi.json
     :return: Dictionary of key value pairs.
     """
     with open(path) as f:
@@ -46,7 +46,7 @@ def _load_meta(path):
     return meta
 
 
-package = join(abspath(dirname(__file__)), 'package.json')
+package = join(abspath(dirname(__file__)), 'pypi.json')
 meta = _load_meta(package)
 
 __author__ = meta.get('author')
