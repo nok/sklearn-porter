@@ -2,7 +2,7 @@
 
 ## v1.0.0
 
-- [ ] Drop support for Python 2
+- [ ] Drop support for Python 3.4 and below (just as scikit-learn 0.21.0)
 - [ ] Refactor core and provide functional and object oriented API
 - [ ] Remove dynamic imports, use explicit data types and add type hints
 - [ ] Run unit tests in parallel with [pytest-xdist](https://docs.pytest.org/en/3.0.0/xdist.html)
