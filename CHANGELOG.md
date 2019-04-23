@@ -11,6 +11,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- Support for Python 3.4 and below has been dropped
+
 
 ## 0.7.3
 

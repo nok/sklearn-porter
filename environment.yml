@@ -3,20 +3,21 @@ channels:
   - defaults
 dependencies:
   - ca-certificates=2019.1.23=0
-  - certifi=2019.3.9=py27_0
+  - certifi=2018.8.24=py35_1
   - libcxx=4.0.1=hcfea43d_1
   - libcxxabi=4.0.1=hcfea43d_1
   - libedit=3.1.20181209=hb402a30_0
   - libffi=3.2.1=h475c297_4
   - ncurses=6.1=h0a44026_1
-  - openssl=1.1.1b=h1de35cc_1
-  - pip=19.0.3=py27_0
-  - python=2.7.16=h97142e2_0
+  - openssl=1.0.2r=h1de35cc_0
+  - pip=10.0.1=py35_0
+  - python=3.5.6=hc167b69_0
   - readline=7.0=h1de35cc_5
-  - setuptools=40.8.0=py27_0
-  - sqlite=3.27.2=ha441bb4_0
+  - setuptools=40.2.0=py35_0
+  - sqlite=3.28.0=ha441bb4_0
   - tk=8.6.8=ha441bb4_0
-  - wheel=0.33.1=py27_0
+  - wheel=0.31.1=py35_0
+  - xz=5.2.4=h1de35cc_4
   - zlib=1.2.11=h1de35cc_3
 prefix: /usr/local/miniconda3/envs/sklearn-porter
 

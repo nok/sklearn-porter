@@ -75,3 +75,4 @@ clean:
 	rm -rf tmp
 	rm -rf build
 	rm -rf dist
+	rm -rf sklearn_porter.egg-info
