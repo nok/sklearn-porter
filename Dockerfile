@@ -1,5 +1,6 @@
 FROM continuumio/miniconda3:latest
 
+ARG PYTHON_VERSION
 ARG CONDA_ENV=sklearn-porter
 
 COPY . $HOME/app

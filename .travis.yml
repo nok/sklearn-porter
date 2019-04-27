@@ -19,10 +19,14 @@ env:
     - PYTHON_VERSION=3.6
     - PYTHON_VERSION=3.7
 
-before_install: docker build -t sklearn-porter .
+before_install: >
+  docker build
+    -t sklearn-porter
+    --build-arg PYTHON_VERSION=${PYTHON_VERSION}
+    --no-cache .
 
 before_script:
-  - docker run -d -t -n base sklearn-porter
+  - docker run -d -t --name base sklearn-porter
   - docker exec -it base gcc --version
   - docker exec -it base java -version
   - docker exec -it base node --version
@@ -39,4 +43,4 @@ script: >
         -o python_files="*Test.py"
         -o python_functions="test_*"
 
-after_script: docker rm -f $(docker ps -f name=base -q)
+after_script: docker rm -f $(docker ps --filter name=base -q)
