@@ -351,21 +351,13 @@ Independently, the following compilers and intepreters are required to cover all
 The tests cover module functions as well as matching predictions of transpiled estimators. Start all tests with:
 
 ```bash
-$ make test
+$ make tests
 ```
 
 The test files have a specific pattern: `'[Algorithm][Language]Test.py'`:
 
 ```bash
-$ pytest tests -v -o python_files='RandomForest*Test.py'
-$ pytest tests -v -o python_files='*JavaTest.py'
-```
-
-While you are developing new features or fixes, you can reduce the test duration by changing the number of tests:
-
-```bash
-$ N_RANDOM_FEATURE_SETS=5 N_EXISTING_FEATURE_SETS=10 \
-  pytest tests -v -o python_files='*JavaTest.py'
+$ make tests python_files="*JavaTest.py"
 ```
 
 
