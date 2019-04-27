@@ -1,7 +1,5 @@
 BASH := /bin/bash
 
-PYTHON_FILES := $(shell find ./sklearn_porter -name '*.py' -type 'f' | tr '\n' ' ')
-
 #
 # Requirements
 #
@@ -49,21 +47,22 @@ all: clean lint serve tests jupytext clean
 
 lint: install.requirements.development
 	$(info Start [lint] ...)
-	pylint --rcfile=.pylintrc --output-format=text $(PYTHON_FILES) 2>&1 | tee pylint.txt | sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p'
+	$(eval FILES=$(shell find ./sklearn_porter -name '*.py' -type 'f' | tr '\n' ' '))
+	pylint --rcfile=.pylintrc --output-format=text $(FILES) 2>&1 | tee pylint.txt | sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p'
 
 serve: source.environment
 	$(info Start [serve] ...)
 	$(BASH) scripts/run.server.sh
 
-tests: install.requirements.development serve clean
+tests: install.requirements.development clean serve
 	$(info Start [test] ...)
-	$(BASH) scripts/run.tests.sh
+	$(BASH) scripts/run.tests.sh $(python_files)
 
 jupytext: install.requirements.development
 	$(info Start [jupytext] ...)
 	$(BASH) scripts/run.jupytext.sh
 
-deploy: clean
+deploy: install.requirements.development clean
 	$(info Start [deploy.test] ...)
 	$(BASH) scripts/run.deployment.sh
 
@@ -75,12 +74,8 @@ clean: clean.build clean.pycache
 
 clean.pycache:
 	$(info Start [clean.pycache] ...)
-	find . -name '__pycache__' -type 'd' -delete
-	find . -name '*.pyc' -type 'f' -delete
+	$(BASH) scripts/clean.pycache.sh
 
 clean.build:
 	$(info Start [clean.build] ...)
-	find . -name 'tmp' -type 'd' -delete
-	rm -rf build
-	rm -rf dist
-	rm -rf sklearn_porter.egg-info
+	$(BASH) scripts/clean.build.sh
