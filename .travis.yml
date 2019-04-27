@@ -19,7 +19,7 @@ env:
     - PYTHON_VERSION=3.6
     - PYTHON_VERSION=3.7
 
-before_install: >
+before_install:
   docker build
     -t sklearn-porter
     --build-arg PYTHON_VERSION=${PYTHON_VERSION}
@@ -36,7 +36,7 @@ before_script:
   - docker exec -it base python --version
   - docker exec -it base conda run -n sklearn-porter python --version
 
-script: >
+script:
   docker exec -it base
     conda run -n sklearn-porter
       pytest tests -v -x -p no:doctest
