@@ -67,8 +67,11 @@ deploy: clean
 	$(info Start [deploy.test] ...)
 	$(BASH) scripts/run.deployment.sh
 
+#
+# Cleanup
+#
+
 clean: clean.build clean.pycache
-	$(info Start [clean] ...)
 
 clean.pycache:
 	$(info Start [clean.pycache] ...)
