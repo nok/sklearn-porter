@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-SCRIPTPATH="$( cd "$(dirname "$0")" ; pwd -P )"
+SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
-cd $SCRIPTPATH/../examples/estimator
+cd ${SCRIPT_PATH}/../examples/estimator
 
 for py_file in $(find . -type f -name '*.pct.py')
 do

@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-# Set local variables:
-NAME=sklearn-porter
-CONDA_ENV=sklearn-porter
+SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
+cd ${SCRIPT_PATH}/..
 
-. activate $CONDA_ENV
+NAME=sklearn-porter
 
 VERSION=`python -c "from sklearn_porter import __version__ as ver; print(ver);"`
 COMMIT=`git rev-parse --short HEAD`
@@ -22,5 +21,5 @@ python ./setup.py sdist bdist_wheel
 # Upload the package:
 read -r -p "Upload $NAME@$VERSION (#$COMMIT) to '$TARGET'? [y/N] " response
 if [[ "$response" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
-    twine upload --repository $TARGET dist/*
+    twine upload --repository ${TARGET} dist/*
 fi
