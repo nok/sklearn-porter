@@ -16,14 +16,13 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     && curl -sL https://deb.nodesource.com/setup_10.x | bash \
     && apt-get install -y nodejs=10.15.3-1nodesource1               `# node v10.15.3`   \
     && npm install --global xmlhttprequest \
-    && wget https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz \
-    && tar -xvf go1.12.4.linux-amd64.tar.gz                         `# go v1.12.4`      \
+    && wget --quiet https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz \
+    && tar -xf go1.12.4.linux-amd64.tar.gz                          `# go v1.12.4`      \
     && mv go /usr/bin \
-    && wget http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar \
+    && wget --quiet http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar \
     && mv gson-2.8.5.jar gson.jar \
+    && make clean \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-RUN make clean
 
 ENV PATH="/usr/bin/go/bin:${PATH}"
 
