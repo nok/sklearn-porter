@@ -9,8 +9,13 @@ do
     ipynp_file="${py_file%.py}.ipynb"
     echo "$py_file"
     echo "$ipynp_file"
-    jupytext --from "py:percent" --to "notebook" "$py_file"
-    jupyter nbconvert --to notebook --execute "$ipynp_file" --output $(basename -- "$ipynp_file")
+    jupytext \
+        --from "py:percent" \
+        --to "notebook" "$py_file"
+    jupyter nbconvert \
+        --to notebook \
+        --execute "$ipynp_file" \
+        --output $(basename -- "$ipynp_file")
 done
 
 for json_file in $(find . -type f -name 'data.json')

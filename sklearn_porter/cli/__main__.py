@@ -14,12 +14,12 @@ from os.path import isfile
 from sklearn.externals import joblib
 
 from sklearn_porter import Porter
-from sklearn_porter import package
+from sklearn_porter import meta
 from sklearn_porter.language import *
 
 
 def parse_args(args):
-    version = package.get('version')
+    version = meta.get('version')
     header = '''
              #
 ### ### ### ### ### ### 
@@ -29,8 +29,8 @@ def parse_args(args):
 
     summary = dict(
         usage=header,
-        description=package.get('description'),
-        epilog='More details on ' + package.get('url'),
+        description=meta.get('description'),
+        epilog='More details on ' + meta.get('url'),
         formatter_class=RawTextHelpFormatter,
         add_help=False
     )

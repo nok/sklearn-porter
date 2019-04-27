@@ -1,32 +1,36 @@
-language: python
+language: minimal
+
+sudo: required
+
+services:
+  - docker
+
 dist: trusty
+
 notifications:
   email: false
-python:
-  - 3.5
-  - 3.6
-matrix:
-  include:
-  - python: 3.7
-    dist: xenial
-    sudo: true
-cache: pip
-compiler:
-  - gcc
-before_install:
-  - SKLEARN_PORTER_HOME=$(pwd)
-  - unset JAVA_TOOL_OPTIONS && unset _JAVA_OPTIONS
-install:
-  - npm install xmlhttprequest
-  - pip install -U pip
-  - make install.requirements.development
-before_script:
-  - gcc --version
-  - java -version
-  - node --version
-  - go version
-  - php --version
-  - ruby --version
-  - python --version
-script:
-  - make test
+
+env:
+  matrix:
+    - PYTHON_VERSION=3.5
+    - PYTHON_VERSION=3.6
+    - PYTHON_VERSION=3.7
+
+before_install: docker build -t sklearn-porter .
+
+before_script: >
+  docker run -t sklearn-porter &&
+    gcc --version &&
+    java -version &&
+    node --version &&
+    go version &&
+    php --version &&
+    ruby --version &&
+    python --version
+
+script: >
+  docker run -t sklearn-porter
+    conda run -n sklearn-porter
+      pytest tests -v -x -p no:doctest
+        -o python_files="*Test.py"
+        -o python_functions="test_*"

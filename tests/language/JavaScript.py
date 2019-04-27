@@ -43,7 +43,7 @@ class JavaScript(object):
     def pred_in_custom(self, features, cast=True, export_data=False):
         cmd = ['node', self.tmp_fn]
         if export_data:
-            cmd += ['http://0.0.0.0:8713/tmp/data.json']
+            cmd += ['http://0.0.0.0:8888/tmp/data.json']
         args = [str(f).strip() for f in features]
         cmd += args
         pred = Shell.check_output(cmd)

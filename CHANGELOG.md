@@ -11,7 +11,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Support for Python 3.4 and below has been dropped
+- Drop support for Python 3.4 and below
+- Run all tests in a [Docker](https://www.docker.com/) container
 
 
 ## 0.7.3

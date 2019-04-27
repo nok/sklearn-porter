@@ -2,9 +2,9 @@
 
 # Set local variables:
 NAME=sklearn-porter
-ANACONDA_ENV=sklearn-porter
+CONDA_ENV=sklearn-porter
 
-source activate $ANACONDA_ENV
+. activate $CONDA_ENV
 
 VERSION=`python -c "from sklearn_porter import __version__ as ver; print(ver);"`
 COMMIT=`git rev-parse --short HEAD`

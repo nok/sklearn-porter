@@ -1,9 +1,6 @@
 BASH := /bin/bash
 
-PYTHON_FILES := $(shell find -s ./sklearn_porter -name '*.py' | tr '\n' ' ')
-
-TEST_N_RANDOM_FEATURE_SETS=25
-TEST_N_EXISTING_FEATURE_SETS=25
+PYTHON_FILES := $(shell find ./sklearn_porter -name '*.py' -type 'f' | tr '\n' ' ')
 
 #
 # Requirements
@@ -13,7 +10,11 @@ install.environment:
 	$(info Start [install.environment] ...)
 	$(BASH) scripts/install.environment.sh
 
-install.requirements:
+source.environment: install.environment
+	$(info Start [source.environment] ...)
+	$(BASH) scripts/source.environment.sh
+
+install.requirements: source.environment
 	$(info Start [install.requirements] ...)
 	$(BASH) scripts/install.requirements.sh
 
@@ -44,23 +45,19 @@ stop.examples: examples.pid
 # Development
 #
 
-all: lint test jupytext clean
+all: clean lint serve tests jupytext clean
 
 lint: install.requirements.development
 	$(info Start [lint] ...)
 	pylint --rcfile=.pylintrc --output-format=text $(PYTHON_FILES) 2>&1 | tee pylint.txt | sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p'
 
-test: install.requirements.development
-	$(info Start [test] ...)
-	TEST_N_RANDOM_FEATURE_SETS=$(TEST_N_RANDOM_FEATURE_SETS) \
-	TEST_N_EXISTING_FEATURE_SETS=$(TEST_N_EXISTING_FEATURE_SETS) \
-		$(BASH) scripts/run.tests.sh
+serve: source.environment
+	$(info Start [serve] ...)
+	$(BASH) scripts/run.server.sh
 
-test.sample: install.requirements.development
-	$(info Start [test.sample] ...)
-	TEST_N_RANDOM_FEATURE_SETS=3 \
-	TEST_N_EXISTING_FEATURE_SETS=3 \
-		$(BASH) scripts/run.tests.sh
+tests: install.requirements.development serve clean
+	$(info Start [test] ...)
+	$(BASH) scripts/run.tests.sh
 
 jupytext: install.requirements.development
 	$(info Start [jupytext] ...)
@@ -70,9 +67,17 @@ deploy: clean
 	$(info Start [deploy.test] ...)
 	$(BASH) scripts/run.deployment.sh
 
-clean:
+clean: clean.build clean.pycache
 	$(info Start [clean] ...)
-	rm -rf tmp
+
+clean.pycache:
+	$(info Start [clean.pycache] ...)
+	find . -name '__pycache__' -type 'd' -delete
+	find . -name '*.pyc' -type 'f' -delete
+
+clean.build:
+	$(info Start [clean.build] ...)
+	find . -name 'tmp' -type 'd' -delete
 	rm -rf build
 	rm -rf dist
 	rm -rf sklearn_porter.egg-info
