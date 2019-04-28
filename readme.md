@@ -165,7 +165,7 @@ $ pip install sklearn-porter
 
 [![Build Status master branch](https://img.shields.io/travis/nok/sklearn-porter/master.svg)](https://travis-ci.org/nok/sklearn-porter)
 
-If you want the [latest changes](https://github.com/nok/sklearn-porter/blob/master/CHANGELOG.md#unreleased), you can install this package from the [master](https://github.com/nok/sklearn-porter/tree/master) branch:
+If you want the [latest changes](https://github.com/nok/sklearn-porter/blob/master/changelog.md#unreleased), you can install this package from the [master](https://github.com/nok/sklearn-porter/tree/master) branch:
 
 ```bash
 $ pip uninstall -y sklearn-porter
@@ -386,7 +386,7 @@ If you use this implementation in you work, please add a reference/citation to t
 
 ## License
 
-The module is Open Source Software released under the [MIT](LICENSE.txt) license.
+The module is Open Source Software released under the [MIT](license.txt) license.
 
 
 ## Questions?
