@@ -54,9 +54,15 @@ serve: source.environment
 	$(info Start [serve] ...)
 	$(BASH) scripts/run.server.sh
 
-tests: install.requirements.development clean serve
+tests: local.tests
+
+local.tests: install.requirements.development clean serve
 	$(info Start [test] ...)
-	$(BASH) scripts/run.tests.sh $(python_files)
+	$(BASH) scripts/run.tests.system.sh $(python_files)
+
+docker.tests: clean
+	$(info Start [docker.tests] ...)
+	$(BASH) scripts/run.tests.docker.sh
 
 jupytext: install.requirements.development
 	$(info Start [jupytext] ...)
