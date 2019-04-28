@@ -26,21 +26,21 @@ before_install:
     --no-cache .
 
 before_script:
-  - docker run -d -t --name base sklearn-porter
-  - docker exec -it base gcc --version
-  - docker exec -it base java -version
-  - docker exec -it base node --version
-  - docker exec -it base go version
-  - docker exec -it base php --version
-  - docker exec -it base ruby --version
-  - docker exec -it base python --version
-  - docker exec -it base conda run -n sklearn-porter python --version
+  - docker run -d -t --name test sklearn-porter
+  - docker exec -it test gcc --version
+  - docker exec -it test java -version
+  - docker exec -it test node --version
+  - docker exec -it test go version
+  - docker exec -it test php --version
+  - docker exec -it test ruby --version
+  - docker exec -it test python --version
+  - docker exec -it test conda run -n sklearn-porter python --version
 
 script:
-  docker exec -it base
+  docker exec -it test
     conda run -n sklearn-porter
       pytest tests -v -x -p no:doctest
         -o python_files="*Test.py"
         -o python_functions="test_*"
 
-after_script: docker rm -f $(docker ps --filter name=base -q)
+after_script: docker rm -f $(docker ps --filter name=test -q)
