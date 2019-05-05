@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from sys import version_info
+from sys import version_info, platform as system_platform
 from typing import Union, Tuple, Optional, Callable
 from textwrap import dedent
 from logging import Logger, ERROR
@@ -41,14 +41,12 @@ class Estimator(EstimatorInterApiABC):
         self.logger = get_logger(__name__, logger)
 
         # Log basic environment information:
-        env_versions = 'Environment: python v{}, scikit-' \
-                       'learn v{}, sklearn-porter v{}'
+        env_info = 'Environment: platform: {}; python: v{}; ' \
+                   'scikit-learn: v{}; sklearn-porter: v{}'
         python_version = '.'.join(map(str, version_info[:3]))
-        self.logger.debug(env_versions.format(
-            python_version,
-            sklearn_version,
-            sklearn_porter_version
-        ))
+        env_info = env_info.format(system_platform, python_version,
+                                   sklearn_version, sklearn_porter_version)
+        self.logger.debug(env_info)
 
         # Set and load estimator:
         self._estimator = None
@@ -407,16 +405,14 @@ class Estimator(EstimatorInterApiABC):
         report = '''\
             environment
             -----------
-            python v{}
-            scikit-learn v{}
+            platform       {}
+            python         v{}
+            scikit-learn   v{}
             sklearn-porter v{}
             
             estimator
             ---------
             name: {}
-        '''.format(
-            python_version,
-            sklearn_version,
-            sklearn_porter_version,
-            self._estimator.default_class_name)
+        '''.format(system_platform, python_version, sklearn_version,
+                   sklearn_porter_version, self._estimator.default_class_name)
         return dedent(report)
