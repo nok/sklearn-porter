@@ -412,7 +412,7 @@ class Estimator(EstimatorInterApiABC):
             
             estimator
             ---------
-            name: {}
+            name: {}\
         '''.format(system_platform, python_version, sklearn_version,
                    sklearn_porter_version, self._estimator.default_class_name)
         return dedent(report)
