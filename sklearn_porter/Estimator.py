@@ -14,7 +14,7 @@ from sklearn.base import RegressorMixin
 # sklearn-porter
 from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter.EstimatorInterApiABC import EstimatorInterApiABC
-from sklearn_porter.utils import get_logger
+from sklearn_porter.utils import get_logger, get_qualname
 
 
 class Estimator(EstimatorInterApiABC):
@@ -22,8 +22,6 @@ class Estimator(EstimatorInterApiABC):
     Main class which validates the passed estimator and
     coordinates the kind of estimator to a correct subclass.
     """
-
-    estimator = None
 
     def __init__(
             self,
@@ -41,7 +39,6 @@ class Estimator(EstimatorInterApiABC):
             Set a logger or logging level for logging.
         """
         self.logger = get_logger(__name__, logger)
-        est = estimator  # shorter <3
 
         # Log basic environment information:
         env_versions = 'Environment: python v{}, scikit-' \
@@ -53,8 +50,165 @@ class Estimator(EstimatorInterApiABC):
             sklearn_porter_version
         ))
 
-        # Validation and estimator extraction:
-        est = self.validate(est, logger=self.logger)
+        # Set and load estimator:
+        self._estimator = None
+        self.estimator = estimator
+
+    @property
+    def estimator(self):
+        return self._estimator
+
+    @estimator.setter
+    def estimator(self, estimator: BaseEstimator):
+        estimator = self._validate(estimator, logger=self.logger)
+        if estimator:
+            self._estimator = self._load(estimator, logger=self.logger)
+
+    @staticmethod
+    def _validate(estimator: BaseEstimator, logger: Union[Logger, int] = ERROR):
+        """
+        Validate the estimator.
+
+        Check if the estimator is a valid base estimator of scikit-learn.
+        Check if the estimator is embedded in an optimizer or pipeline.
+        Check if the estimator is a classifier or regressor.
+
+        Parameters
+        ----------
+        estimator : BaseEstimator
+            Set a fitted base estimator of scikit-learn.
+        logger : logging.Logger or logging level (default: logging.ERROR)
+            Set a logger or logging level for logging.
+
+        Returns
+        -------
+        A valid base estimator or None.
+        """
+        logger = get_logger(__name__, logger)
+
+        est = estimator  # shorter <3
+        qualname = get_qualname(est)
+
+        logger.debug('Start validation of the passed'
+                     ' estimator: `%s`.', qualname)
+
+        # Check BaseEstimator:
+        if not isinstance(est, BaseEstimator):
+            msg = 'The passed estimator `{}` is not a ' \
+                  'valid base estimator of scikit-learn v{} .'
+            msg = msg.format(qualname, sklearn_version)
+            logger.error(msg)
+            raise ValueError(msg)
+
+        # Check GridSearchCV and RandomizedSearchCV:
+        logger.debug('Check whether the estimator is embedded in an optimizer.')
+        try:
+            from sklearn.model_selection._search \
+                import BaseSearchCV  # pylint: disable=protected-access
+        except ImportError:
+            logger.warn('Your installed version of scikit-learn '
+                        'v% does not support optimizers in general.',
+                        sklearn_version)
+        else:
+            if isinstance(est, BaseSearchCV):
+                logger.info('Yes, the estimator is embedded in an optimizer.')
+                try:
+                    from sklearn.model_selection import GridSearchCV
+                    from sklearn.model_selection import RandomizedSearchCV
+                except ImportError:
+                    logger.warn('Your installed version of scikit-learn '
+                                'v% does not support `GridSearchCV` or'
+                                '`RandomizedSearchCV`.', sklearn_version)
+                else:
+                    optimizers = (GridSearchCV, RandomizedSearchCV)
+                    if isinstance(est, optimizers):
+                        # pylint: disable=protected-access
+                        is_fitted = hasattr(est, 'best_estimator_') and \
+                                    hasattr(est.best_estimator_,
+                                            '_final_estimator') and \
+                                    est.best_estimator_._final_estimator
+                        if is_fitted:
+                            est = est.best_estimator_._final_estimator
+                            est_qualname = get_qualname(est)
+                            logger.info('Extract the embedded estimator of '
+                                        'type `%s` from optimizer `%s`.',
+                                        est_qualname, qualname)
+                        # pylint: enable=protected-access
+                        else:
+                            msg = 'The embedded estimator is not fitted.'
+                            logger.error(msg)
+                            raise ValueError(msg)
+                    else:
+                        msg = 'The used optimizer `{}` is not supported ' \
+                              'by sklearn-porter v{}. Try to extract the ' \
+                              'internal estimator manually and pass it.' \
+                              ''.format(qualname, sklearn_porter_version)
+                        logger.error(msg)
+                        raise ValueError(msg)
+            else:
+                logger.info('No, the estimator is not '
+                            'embedded in an optimizer.')
+
+        # Check Pipeline:
+        logger.debug('Check whether the estimator is embedded in a pipeline.')
+        try:
+            from sklearn.pipeline import Pipeline
+        except ImportError:
+            logger.warn('Your installed version of scikit-learn '
+                        'v% does not support pipelines.', sklearn_version)
+        else:
+            if isinstance(est, Pipeline):
+                logger.info('Yes, the estimator is embedded in a pipeline.')
+                # pylint: disable=protected-access
+                is_fitted = hasattr(est, '_final_estimator') and \
+                            est._final_estimator
+                if is_fitted:
+                    est = est._final_estimator
+                    est_qualname = get_qualname(est)
+                    logger.info('Extract the embedded estimator of type '
+                                '`%s` from the pipeline.', est_qualname)
+                # pylint: enable=protected-access
+                else:
+                    msg = 'The embedded estimator is not fitted.'
+                    logger.error(msg)
+                    raise ValueError(msg)
+            else:
+                logger.info('No, the estimator is not embedded in a pipeline.')
+
+        # Check ClassifierMixin:
+        logger.debug('Check whether the estimator is a `ClassifierMixin`.')
+        is_classifier = isinstance(est, ClassifierMixin)
+        if is_classifier:
+            logger.debug('Yes, the estimator is type of `ClassifierMixin`.')
+            return est
+        else:
+            logger.debug('No, the estimator is not type of `ClassifierMixin`.')
+
+        # Check RegressorMixin:
+        logger.debug('Check whether the estimator is a `RegressorMixin`.')
+        is_regressor = isinstance(est, RegressorMixin)
+        if is_regressor:
+            logger.debug('Yes, the estimator is type of `RegressorMixin`.')
+            return est
+        else:
+            logger.debug('No, the estimator is not type of `RegressorMixin`.')
+
+        if not (is_classifier or is_regressor):
+            msg = 'The passed estimator is neither ' \
+                  'a classifier nor a regressor.'
+            logger.error(msg)
+            raise ValueError(msg)
+
+        return None
+
+    @staticmethod
+    def _load(estimator, logger: Union[Logger, int] = ERROR):
+        logger = get_logger(__name__, logger)
+
+        est = estimator  # shorter <3
+        qualname = get_qualname(est)
+        logger.debug('Start loading the passed estimator: `%s`.', qualname)
+
         name = est.__class__.__qualname__
 
         # Classifiers:
@@ -64,7 +218,7 @@ class Estimator(EstimatorInterApiABC):
             if isinstance(est, DecisionTreeClassifierClass):
                 from sklearn_porter.estimator.DecisionTreeClassifier \
                     import DecisionTreeClassifier
-                self.estimator = DecisionTreeClassifier(est, logger=self.logger)
+                return DecisionTreeClassifier(est, logger=logger)
         elif name is 'AdaBoostClassifier':
             from sklearn.ensemble.weight_boosting import AdaBoostClassifier
             if isinstance(estimator, AdaBoostClassifier):
@@ -122,155 +276,15 @@ class Estimator(EstimatorInterApiABC):
                       'not support the `MLPRegressor` estimator. Please ' \
                       'update your local installation with `pip install ' \
                       '-U scikit-learn`.'.format(sklearn_version)
-                self.logger.error(msg)
+                logger.error(msg)
                 raise ValueError(msg)
             else:
                 if isinstance(estimator, MLPRegressor):
                     from sklearn_porter.estimator.MLPRegressor import \
                         MLPRegressor
-                    self.estimator = MLPRegressor(est, logger=self.logger)
+                    return MLPRegressor(est, logger=logger)
 
-    @staticmethod
-    def validate(
-            estimator: BaseEstimator,
-            logger: Union[Logger, int] = ERROR
-    ):
-        """
-        Validate the estimator.
-
-        Check if the estimator is a valid base estimator of scikit-learn.
-        Check if the estimator is embedded in an optimizer or pipeline.
-        Check if the estimator is a classifier or regressor.
-
-        Parameters
-        ----------
-        estimator : BaseEstimator
-            Set a fitted base estimator of scikit-learn.
-        logger : logging.Logger or logging level (default: logging.ERROR)
-            Set a logger or logging level for logging.
-
-        Returns
-        -------
-        The validate base estimator.
-        """
-        logger = get_logger(__name__, logger)
-
-        est = estimator  # shorter <3
-        qualname = est.__class__.__module__ + '.' + est.__class__.__qualname__
-
-        logger.debug('Start validation of the passed'
-                     ' estimator: `%s`.', qualname)
-
-        # Check BaseEstimator:
-        if not isinstance(est, BaseEstimator):
-            msg = 'The passed estimator `{}` is not a ' \
-                  'valid base estimator of scikit-learn v{} .'
-            msg = msg.format(qualname, sklearn_version)
-            logger.error(msg)
-            raise ValueError(msg)
-
-        # Check GridSearchCV and RandomizedSearchCV:
-        logger.debug('Check whether the estimator is embedded in an optimizer.')
-        try:
-            from sklearn.model_selection._search \
-                import BaseSearchCV  # pylint: disable=protected-access
-        except ImportError:
-            logger.warn('Your installed version of scikit-learn '
-                        'v% does not support optimizers in general.',
-                        sklearn_version)
-        else:
-            if isinstance(est, BaseSearchCV):
-                logger.info('Yes, the estimator is embedded in an optimizer.')
-                try:
-                    from sklearn.model_selection import GridSearchCV
-                    from sklearn.model_selection import RandomizedSearchCV
-                except ImportError:
-                    logger.warn('Your installed version of scikit-learn '
-                                'v% does not support `GridSearchCV` or'
-                                '`RandomizedSearchCV`.', sklearn_version)
-                else:
-                    optimizers = (GridSearchCV, RandomizedSearchCV)
-                    if isinstance(est, optimizers):
-                        # pylint: disable=protected-access
-                        is_fitted = hasattr(est, 'best_estimator_') and \
-                                    hasattr(est.best_estimator_,
-                                            '_final_estimator') and \
-                                    est.best_estimator_._final_estimator
-                        if is_fitted:
-                            est = est.best_estimator_._final_estimator
-                            est_qualname = est.__class__.__module__ + '.' + \
-                                           est.__class__.__qualname__
-                            logger.info('Extract the embedded estimator of '
-                                        'type `%s` from optimizer `%s`.',
-                                        est_qualname, qualname)
-                        # pylint: enable=protected-access
-                        else:
-                            msg = 'The embedded estimator is not fitted.'
-                            logger.error(msg)
-                            raise ValueError(msg)
-                    else:
-                        msg = 'The used optimizer `{}` is not supported ' \
-                              'by sklearn-porter v{}. Try to extract the ' \
-                              'internal estimator manually and pass it.' \
-                              ''.format(qualname, sklearn_porter_version)
-                        logger.error(msg)
-                        raise ValueError(msg)
-            else:
-                logger.info('No, the estimator is not '
-                            'embedded in an optimizer.')
-
-        # Check Pipeline:
-        logger.debug('Check whether the estimator is embedded in a pipeline.')
-        try:
-            from sklearn.pipeline import Pipeline
-        except ImportError:
-            logger.warn('Your installed version of scikit-learn '
-                        'v% does not support pipelines.', sklearn_version)
-        else:
-            if isinstance(est, Pipeline):
-                logger.info('Yes, the estimator is embedded in a pipeline.')
-                # pylint: disable=protected-access
-                is_fitted = hasattr(est, '_final_estimator') and \
-                            est._final_estimator
-                if is_fitted:
-                    est = est._final_estimator
-                    est_qualname = est.__class__.__module__ + '.' + \
-                                   est.__class__.__qualname__
-                    logger.info('Extract the embedded estimator of type '
-                                '`%s` from the pipeline.', est_qualname)
-                # pylint: enable=protected-access
-                else:
-                    msg = 'The embedded estimator is not fitted.'
-                    logger.error(msg)
-                    raise ValueError(msg)
-            else:
-                logger.info('No, the estimator is not embedded in a pipeline.')
-
-        # Check ClassifierMixin:
-        logger.debug('Check whether the estimator is a `ClassifierMixin`.')
-        is_classifier = isinstance(est, ClassifierMixin)
-        if is_classifier:
-            logger.debug('Yes, the estimator is type of `ClassifierMixin`.')
-            return est
-        else:
-            logger.debug('No, the estimator is not type of `ClassifierMixin`.')
-
-        # Check RegressorMixin:
-        logger.debug('Check whether the estimator is a `RegressorMixin`.')
-        is_regressor = isinstance(est, RegressorMixin)
-        if is_regressor:
-            logger.debug('Yes, the estimator is type of `RegressorMixin`.')
-            return est
-        else:
-            logger.debug('No, the estimator is not type of `RegressorMixin`.')
-
-        if not (is_classifier or is_regressor):
-            msg = 'The passed estimator is neither ' \
-                  'a classifier nor a regressor.'
-            logger.error(msg)
-            raise ValueError(msg)
-
-        return est
+        return None
 
     def port(
             self,
@@ -302,7 +316,7 @@ class Estimator(EstimatorInterApiABC):
         """
         locs = locals()
         locs.pop('self')
-        return self.estimator.port(**locs)
+        return self._estimator.port(**locs)
 
     def export(
             self,
@@ -404,5 +418,5 @@ class Estimator(EstimatorInterApiABC):
             python_version,
             sklearn_version,
             sklearn_porter_version,
-            self.estimator.default_class_name)
+            self._estimator.default_class_name)
         return dedent(report)
