@@ -8,7 +8,7 @@ class EstimatorInterApiABC(ABC):
     """
     An abstract interface to ensure equal methods between the
     main class `sklearn_porter.Estimator` and all subclasses
-    like `sklearn-porter.estimator.DecisionTreeClassifier`.
+    in `sklearn-porter.estimator.*`.
     """
 
     @abstractmethod
