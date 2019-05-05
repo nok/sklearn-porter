@@ -201,6 +201,21 @@ class Estimator(EstimatorInterApiABC):
 
     @staticmethod
     def _load(estimator, logger: Union[Logger, int] = ERROR):
+        """
+        Load the right subclass to read the passed estimator.
+
+        Parameters
+        ----------
+        estimator : Union[ClassifierMixin, RegressorMixin]
+            Set a fitted base estimator of scikit-learn.
+        logger : logging.Logger or logging level (default: logging.ERROR)
+            Set a logger or logging level for logging.
+
+        Returns
+        -------
+        A subclass from `sklearn_porter.estimator.*` which
+        represents and includes the original base estimator.
+        """
         logger = get_logger(__name__, logger)
 
         est = estimator  # shorter <3
