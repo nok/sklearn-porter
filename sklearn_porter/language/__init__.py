@@ -1,19 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from sklearn_porter.language.C import C
-from sklearn_porter.language.Go import Go
-from sklearn_porter.language.Java import Java
-from sklearn_porter.language.JavaScript import JavaScript
-from sklearn_porter.language.PHP import PHP
-from sklearn_porter.language.Ruby import Ruby
+import sklearn_porter.language.c
+
+
+import sklearn_porter.language.go
+import sklearn_porter.language.java
+import sklearn_porter.language.js
+import sklearn_porter.language.php
+import sklearn_porter.language.ruby
 
 LANGUAGES = {
-    C.KEY: C,
-    Go.KEY: Go,
-    Java.KEY: Java,
-    JavaScript.KEY: JavaScript,
-    PHP.KEY: PHP,
-    Ruby.KEY: Ruby
+    c.KEY: c,
+    go.KEY: go,
+    java.KEY: java,
+    js.KEY: js,
+    php.KEY: php,
+    ruby.KEY: ruby
 }
 
-__all__ = ['C', 'Go', 'Java', 'JavaScript', 'PHP', 'Ruby', 'LANGUAGES']
+__all__ = ['c', 'go', 'java', 'js', 'php', 'ruby', 'LANGUAGES']

@@ -1,0 +1,49 @@
+class {class_name}
+
+	def initialize (lChilds, rChilds, thresholds, indices, classes)
+		@lChilds = lChilds
+		@rChilds = rChilds
+		@thresholds = thresholds
+		@indices = indices
+		@classes = classes
+	end
+
+	def findMax (nums)
+		index = 0
+		for i in 0 ... nums.length
+			index = nums[i] > nums[index] ? i : index
+		end
+		return index
+	end
+
+	def {method_name} (features, node=0)
+		if @thresholds[node] != -2
+			if features[@indices[node]] <= @thresholds[node]
+				return {method_name} features, @lChilds[node]
+			else
+				return {method_name} features, @rChilds[node]
+			end
+		end
+		return findMax @classes[node]
+	end
+
+end
+
+if ARGV.length == {n_features}
+
+	# Features:
+	features = ARGV.collect {{ |i| i.to_f }}
+
+	# Parameters:
+	{left_childs}
+	{right_childs}
+	{thresholds}
+	{indices}
+	{classes}
+
+	# Prediction:
+	clf = {class_name}.new lChilds, rChilds, thresholds, indices, classes
+	estimation = clf.{method_name} features
+	puts estimation
+
+end

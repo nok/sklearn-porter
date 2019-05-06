@@ -2,6 +2,7 @@
 
 from typing import Union, Optional, Callable
 from logging import Logger, ERROR
+from pathlib import Path
 
 from sklearn.tree.tree import DecisionTreeClassifier \
     as DecisionTreeClassifierClass
@@ -27,7 +28,7 @@ class DecisionTreeClassifier(EstimatorInterApiABC):
     ):
         self.logger = get_logger(__name__, logger=logger)
 
-        self.estimator = est = estimator
+        self.estimator = est = estimator  # alias
         self.default_class_name = estimator.__class__.__name__
         self.logger.info('Start extracting model data from `%s`.',
                          self.default_class_name)
@@ -40,4 +41,20 @@ class DecisionTreeClassifier(EstimatorInterApiABC):
             with_class_name: Optional[str] = None,
             with_method_name: Optional[str] = None
     ) -> str:
+        lang = to  # alias
+
+        # Load special templates from files:
+        temps_dir = Path(__file__).parent / 'templates' / lang
+        temps_paths = set(temps_dir.glob('*.txt'))
+        file_temps = {path.stem: path.read_text() for path in temps_paths}
+
+        # Load standard templates from package:
+        # from sklearn_porter.language.java import TEMPLATES as temps
+        package = 'sklearn_porter.language.' + lang
+        name = 'TEMPLATES'
+        lang_temps = getattr(__import__(package, fromlist=[name]), name)
+
+        temps = {**file_temps, **lang_temps}
+        print(temps.keys())
+
         return str(self.estimator)

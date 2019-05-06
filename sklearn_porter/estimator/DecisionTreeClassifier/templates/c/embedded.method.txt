@@ -1,0 +1,11 @@
+int {method_name}(float features[{n_features}]) {{
+
+    int classes[{n_classes}];
+    {branches}
+
+    int index = 0;
+    for (int i = 0; i < {n_classes}; i++) {{
+        index = classes[i] > classes[index] ? i : index;
+    }}
+    return index;
+}}
