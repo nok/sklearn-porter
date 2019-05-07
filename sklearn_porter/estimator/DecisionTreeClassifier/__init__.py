@@ -49,7 +49,7 @@ class DecisionTreeClassifier(EstimatorInterApiABC):
         file_temps = {path.stem: path.read_text() for path in temps_paths}
 
         # Load standard templates from package:
-        # from sklearn_porter.language.java import TEMPLATES as temps
+        # from sklearn_porter.language.java import TEMPLATES as lang_temps
         package = 'sklearn_porter.language.' + lang
         name = 'TEMPLATES'
         lang_temps = getattr(__import__(package, fromlist=[name]), name)
