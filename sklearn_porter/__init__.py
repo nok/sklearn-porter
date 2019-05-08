@@ -6,8 +6,6 @@ from os.path import exists
 from os.path import join
 from json import load
 
-from sklearn_porter.Porter import Porter
-
 
 def load_meta(path):
     """
@@ -44,9 +42,12 @@ def load_meta(path):
     return meta
 
 
-meta = load_meta(join(abspath(dirname(__file__)), 'pypi.json'))
+meta_ = load_meta(join(abspath(dirname(__file__)), 'pypi.json'))
 
-__author__ = meta.get('author')
-__email__ = meta.get('author_email')
-__license__ = meta.get('license')
-__version__ = meta.get('version')
+__author__ = meta_.get('author')
+__email__ = meta_.get('author_email')
+__license__ = meta_.get('license')
+__version__ = meta_.get('version', '1.0.0')
+
+from sklearn_porter.Porter import Porter
+from sklearn_porter.Estimator import Estimator

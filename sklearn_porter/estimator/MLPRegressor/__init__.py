@@ -7,10 +7,11 @@ from sklearn.neural_network.multilayer_perceptron \
     import MLPRegressor as MLPRegressorClass
 
 from sklearn_porter.EstimatorInterApiABC import EstimatorInterApiABC
+from sklearn_porter.estimator.Templater import Templater
 from sklearn_porter.utils import get_logger
 
 
-class MLPRegressor(EstimatorInterApiABC):
+class MLPRegressor(EstimatorInterApiABC, Templater):
     """
     Class to extract model data and port a MLPRegressor.
 
@@ -27,17 +28,22 @@ class MLPRegressor(EstimatorInterApiABC):
     ):
         self.logger = get_logger(__name__, logger=logger)
 
-        self.estimator = est = estimator
-        self.default_class_name = estimator.__class__.__name__
-        self.logger.info('Start extracting model data from `%s`.',
-                         self.default_class_name)
+        self.estimator = est = estimator  # alias
+        self.estimator_name = self.__class__.__qualname__
+        self.logger.info('Create specific estimator `%s`.', self.estimator_name)
+
+        # TODO: Export and prepare model data from estimator.
 
     def port(
             self,
             method: str = 'predict',
-            to: Union[str] = 'java',
+            to: Union[str] = 'java',  # language
             with_num_format: Callable[[object], str] = lambda x: str(x),
             with_class_name: Optional[str] = None,
             with_method_name: Optional[str] = None
     ) -> str:
+        temps = self.load_templates(self.estimator_name, language=to)
+
+        print(temps.keys())
+
         return str(self.estimator)

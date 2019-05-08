@@ -1,0 +1,81 @@
+var {class_name} = function(hidden, layers, weights, bias) {{
+
+    this.hidden = hidden.toUpperCase();
+    this.network = new Array(layers.length + 1);
+    for (var i = 0, l = layers.length; i < l; i++) {{
+        this.network[i + 1] = new Array(layers[i]).fill(0.);
+    }}
+    this.weights = weights;
+    this.bias = bias;
+
+    var compute = function(activation, v, nLayers) {{
+        switch (activation) {{
+            case 'LOGISTIC':
+                if (nLayers > 1) {{
+                    for (var i = 0, l = v.length; i < l; i++) {{
+                        v[i] = 1. / (1. + Math.exp(-v[i]));
+                    }}
+                }} else {{
+                    for (var i = 0, l = v.length; i < l; i++) {{
+                        if (v[i] > 0) {{
+                            v[i] = -Math.log(1. + Math.exp(-v[i]));
+                        }} else {{
+                            v[i] = v[i] - Math.log(1. + Math.exp(-v[i]));
+                        }}
+                    }}
+                }}
+                break;
+            case 'RELU':
+                for (var i = 0, l = v.length; i < l; i++) {{
+                    v[i] = Math.max(0, v[i]);
+                }}
+                break;
+            case 'TANH':
+                for (var i = 0, l = v.length; i < l; i++) {{
+                    v[i] = Math.tanh(v[i]);
+                }}
+                break;
+            case 'SOFTMAX':
+                var max = Number.NEGATIVE_INFINITY;
+                for (var i = 0, l = v.length; i < l; i++) {{
+                    if (v[i] > max) {{
+                        max = v[i];
+                    }}
+                }}
+                for (var i = 0, l = v.length; i < l; i++) {{
+                    v[i] = Math.exp(v[i] - max);
+                }}
+                var sum = 0.0;
+                for (var i = 0, l = v.length; i < l; i++) {{
+                    sum += v[i];
+                }}
+                for (var i = 0, l = v.length; i < l; i++) {{
+                    v[i] /= sum;
+                }}
+                break;
+        }}
+        return v;
+    }};
+
+    {method}
+
+}};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
+    if (process.argv.length - 2 === {n_features}) {{
+
+        // Features:
+        var features = process.argv.slice(2);
+
+        // Parameters:
+        const {layers}
+        const {weights}
+        const {bias}
+
+        // Prediction:
+        var reg = new {class_name}('{hidden_activation}', layers, weights, bias);
+        var prediction = reg.{method_name}(features);
+        console.log(prediction);
+
+    }}
+}}

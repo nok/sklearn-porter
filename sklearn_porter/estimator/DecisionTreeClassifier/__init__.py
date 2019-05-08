@@ -2,16 +2,16 @@
 
 from typing import Union, Optional, Callable
 from logging import Logger, ERROR
-from pathlib import Path
 
 from sklearn.tree.tree import DecisionTreeClassifier \
     as DecisionTreeClassifierClass
 
 from sklearn_porter.EstimatorInterApiABC import EstimatorInterApiABC
+from sklearn_porter.estimator.Templater import Templater
 from sklearn_porter.utils import get_logger
 
 
-class DecisionTreeClassifier(EstimatorInterApiABC):
+class DecisionTreeClassifier(EstimatorInterApiABC, Templater):
     """
     Port a DecisionTreeClassifier.
 
@@ -29,32 +29,21 @@ class DecisionTreeClassifier(EstimatorInterApiABC):
         self.logger = get_logger(__name__, logger=logger)
 
         self.estimator = est = estimator  # alias
-        self.default_class_name = estimator.__class__.__name__
-        self.logger.info('Start extracting model data from `%s`.',
-                         self.default_class_name)
+        self.estimator_name = self.__class__.__qualname__
+        self.logger.info('Create specific estimator `%s`.', self.estimator_name)
+
+        # TODO: Export and prepare model data from estimator.
 
     def port(
             self,
             method: str = 'predict',
-            to: Union[str] = 'java',
+            to: Union[str] = 'java',  # language
             with_num_format: Callable[[object], str] = lambda x: str(x),
             with_class_name: Optional[str] = None,
             with_method_name: Optional[str] = None
     ) -> str:
-        lang = to  # alias
+        temps = self.load_templates(self.estimator_name, language=to)
 
-        # Load special templates from files:
-        temps_dir = Path(__file__).parent / 'templates' / lang
-        temps_paths = set(temps_dir.glob('*.txt'))
-        file_temps = {path.stem: path.read_text() for path in temps_paths}
-
-        # Load standard templates from package:
-        # from sklearn_porter.language.java import TEMPLATES as lang_temps
-        package = 'sklearn_porter.language.' + lang
-        name = 'TEMPLATES'
-        lang_temps = getattr(__import__(package, fromlist=[name]), name)
-
-        temps = {**file_temps, **lang_temps}
         print(temps.keys())
 
         return str(self.estimator)
