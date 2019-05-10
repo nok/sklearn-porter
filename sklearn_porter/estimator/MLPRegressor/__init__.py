@@ -6,12 +6,12 @@ from logging import Logger, ERROR
 from sklearn.neural_network.multilayer_perceptron \
     import MLPRegressor as MLPRegressorClass
 
-from sklearn_porter.EstimatorInterApiABC import EstimatorInterApiABC
-from sklearn_porter.estimator.Templater import Templater
+from sklearn_porter.EstimatorApiABC import EstimatorApiABC
+from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_logger
 
 
-class MLPRegressor(EstimatorInterApiABC, Templater):
+class MLPRegressor(EstimatorBase, EstimatorApiABC):
     """
     Class to extract model data and port a MLPRegressor.
 
@@ -26,11 +26,11 @@ class MLPRegressor(EstimatorInterApiABC, Templater):
             estimator: MLPRegressorClass,
             logger: Union[Logger, int] = ERROR
     ):
+        super().__init__(self.__class__.__qualname__)
         self.logger = get_logger(__name__, logger=logger)
+        self.logger.info('Create specific estimator `%s`.', self.estimator_name)
 
         self.estimator = est = estimator  # alias
-        self.estimator_name = self.__class__.__qualname__
-        self.logger.info('Create specific estimator `%s`.', self.estimator_name)
 
         # TODO: Export and prepare model data from estimator.
 
@@ -42,7 +42,7 @@ class MLPRegressor(EstimatorInterApiABC, Templater):
             with_class_name: Optional[str] = None,
             with_method_name: Optional[str] = None
     ) -> str:
-        temps = self.load_templates(self.estimator_name, language=to)
+        temps = self.load_templates(language=to)
 
         print(temps.keys())
 

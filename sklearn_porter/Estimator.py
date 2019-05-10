@@ -13,11 +13,11 @@ from sklearn.base import RegressorMixin
 
 # sklearn-porter
 from sklearn_porter import __version__ as sklearn_porter_version
-from sklearn_porter.EstimatorInterApiABC import EstimatorInterApiABC
+from sklearn_porter.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.utils import get_logger, get_qualname
 
 
-class Estimator(EstimatorInterApiABC):
+class Estimator(EstimatorApiABC):
     """
     Main class which validates the passed estimator and
     coordinates the kind of estimator to a correct subclass.

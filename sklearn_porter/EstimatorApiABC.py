@@ -4,7 +4,7 @@ from typing import Union, Optional, Callable
 from abc import ABC, abstractmethod
 
 
-class EstimatorInterApiABC(ABC):
+class EstimatorApiABC(ABC):
     """
     An abstract interface to ensure equal methods between the
     main class `sklearn_porter.Estimator` and all subclasses

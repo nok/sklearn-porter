@@ -3,14 +3,17 @@
 from pathlib import Path
 
 
-class Templater:
+class EstimatorBase:
 
-    @staticmethod
-    def load_templates(estimator_name: str, language: str) -> dict:
+    def __init__(self, name: str):
+        self.estimator_name = name
+
+    def load_templates(self, language: str) -> dict:
         temps = {}
 
         # 1. Load special templates from files:
-        temps_dir = Path(__file__).parent / estimator_name / 'templates' / language
+        file_dir = Path(__file__).parent
+        temps_dir = file_dir / self.estimator_name / 'templates' / language
         if temps_dir.exists():
             temps_paths = set(temps_dir.glob('*.txt'))
             temps.update({path.stem: path.read_text() for path in temps_paths})
