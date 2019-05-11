@@ -82,7 +82,7 @@ def test_valid_base_estimator(Class):
 ])
 def test_valid_base_estimator_neural_nets(Class):
     """Test initialization with valid base estimator."""
-    clf = Class().fit(X=[[1, 1], [2, 2]], y=[1, 2])
+    clf = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
     est = Estimator(clf)
     assert isinstance(est.estimator, Class)
 
