@@ -35,7 +35,7 @@ from sklearn_porter.Estimator import Estimator
 np.random.seed(0)
 rd.seed(0)
 
-# Force deterministic number generation:
+# Parse and prepare scikit-learn version:
 SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
 
 
