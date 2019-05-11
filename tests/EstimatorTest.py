@@ -88,6 +88,44 @@ def test_valid_base_estimator(Class):
     SKLEARN_VERSION[:2] < (0, 18),
     reason='requires scikit-learn >= v0.18'
 )
+def test_list_of_regressors():
+    """Test and compare list of regressors."""
+    regressors = [
+        MLPRegressor
+    ]
+    regressors = sorted([r.__class__.__name__ for r in regressors])
+    candidates = sorted([r.__class__.__name__ for r in Estimator.regressors()])
+    assert regressors == candidates
+
+
+@pytest.mark.skipif(
+    SKLEARN_VERSION[:2] < (0, 18),
+    reason='requires scikit-learn >= v0.18'
+)
+def test_list_of_classifiers():
+    """Test and compare list of classifiers."""
+    classifiers = [
+        AdaBoostClassifier,
+        BernoulliNB,
+        DecisionTreeClassifier,
+        ExtraTreesClassifier,
+        GaussianNB,
+        KNeighborsClassifier,
+        LinearSVC,
+        NuSVC,
+        RandomForestClassifier,
+        SVC,
+        MLPClassifier,
+    ]
+    classifiers = sorted([c.__class__.__name__ for c in classifiers])
+    candidates = sorted([c.__class__.__name__ for c in Estimator.classifiers()])
+    assert classifiers == candidates
+
+
+@pytest.mark.skipif(
+    SKLEARN_VERSION[:2] < (0, 18),
+    reason='requires scikit-learn >= v0.18'
+)
 @pytest.mark.parametrize('Class', [
     MLPClassifier,
     MLPRegressor
