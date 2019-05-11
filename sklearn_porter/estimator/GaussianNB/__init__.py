@@ -3,27 +3,26 @@
 from typing import Union, Optional, Callable
 from logging import Logger, ERROR
 
-from sklearn.neural_network.multilayer_perceptron \
-    import MLPRegressor as MLPRegressorClass
+from sklearn.naive_bayes import GaussianNB as GaussianNBClass
 
 from sklearn_porter.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_logger
 
 
-class MLPRegressor(EstimatorBase, EstimatorApiABC):
+class GaussianNB(EstimatorBase, EstimatorApiABC):
     """
-    Extract model data and port a MLPRegressor regressor.
+    Extract model data and port a GaussianNB classifier.
 
     See also
     --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
     """
-    estimator = None  # type: MLPRegressorClass
+    estimator = None  # type: GaussianNBClass
 
     def __init__(
             self,
-            estimator: MLPRegressorClass,
+            estimator: GaussianNBClass,
             logger: Union[Logger, int] = ERROR
     ):
         super().__init__(self.__class__.__qualname__)

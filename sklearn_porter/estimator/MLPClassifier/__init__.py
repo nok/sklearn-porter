@@ -3,27 +3,27 @@
 from typing import Union, Optional, Callable
 from logging import Logger, ERROR
 
-from sklearn.neural_network.multilayer_perceptron \
-    import MLPRegressor as MLPRegressorClass
+from sklearn.neural_network.multilayer_perceptron import MLPClassifier \
+    as MLPClassifierClass
 
 from sklearn_porter.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_logger
 
 
-class MLPRegressor(EstimatorBase, EstimatorApiABC):
+class MLPClassifier(EstimatorBase, EstimatorApiABC):
     """
-    Extract model data and port a MLPRegressor regressor.
+    Extract model data and port a MLPClassifier classifier.
 
     See also
     --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html
     """
-    estimator = None  # type: MLPRegressorClass
+    estimator = None  # type: MLPClassifierClass
 
     def __init__(
             self,
-            estimator: MLPRegressorClass,
+            estimator: MLPClassifierClass,
             logger: Union[Logger, int] = ERROR
     ):
         super().__init__(self.__class__.__qualname__)

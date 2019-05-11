@@ -3,27 +3,26 @@
 from typing import Union, Optional, Callable
 from logging import Logger, ERROR
 
-from sklearn.neural_network.multilayer_perceptron \
-    import MLPRegressor as MLPRegressorClass
+from sklearn.svm.classes import SVC as SVCClass
 
 from sklearn_porter.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_logger
 
 
-class MLPRegressor(EstimatorBase, EstimatorApiABC):
+class SVC(EstimatorBase, EstimatorApiABC):
     """
-    Extract model data and port a MLPRegressor regressor.
+    Extract model data and port a SVC classifier.
 
     See also
     --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html
+    http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
     """
-    estimator = None  # type: MLPRegressorClass
+    estimator = None  # type: SVCClass
 
     def __init__(
             self,
-            estimator: MLPRegressorClass,
+            estimator: SVCClass,
             logger: Union[Logger, int] = ERROR
     ):
         super().__init__(self.__class__.__qualname__)

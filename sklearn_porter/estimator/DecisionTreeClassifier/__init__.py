@@ -13,7 +13,7 @@ from sklearn_porter.utils import get_logger
 
 class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     """
-    Port a DecisionTreeClassifier.
+    Extract model data and port a DecisionTreeClassifier classifier.
 
     See also
     --------
