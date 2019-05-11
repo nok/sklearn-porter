@@ -28,6 +28,16 @@ try:
 except ImportError:
     MLPRegressor = None
 
+try:
+    from sklearn.model_selection import GridSearchCV
+except ImportError:
+    GridSearchCV = None
+
+try:
+    from sklearn.model_selection import RandomizedSearchCV
+except ImportError:
+    RandomizedSearchCV = None
+
 from sklearn_porter.Estimator import Estimator
 
 
@@ -101,9 +111,34 @@ def test_invalid_base_estimator(obj):
 def test_extraction_from_pipeline():
     """Test the extraction of an estimator from a pipeline."""
     from sklearn.pipeline import Pipeline
-
-    clf = SVC()
-    pipeline = Pipeline([('SVM', clf)])
+    pipeline = Pipeline([('SVM', SVC())])
     est = Estimator(pipeline)
+    assert isinstance(est.estimator, SVC)
 
+
+@pytest.mark.skipif(
+    SKLEARN_VERSION[:2] < (0, 19),
+    reason='requires scikit-learn >= v0.19'
+)
+@pytest.mark.parametrize('Class', [
+    GridSearchCV,
+    RandomizedSearchCV
+], ids=[
+    'GridSearchCV',
+    'RandomizedSearchCV',
+])
+def test_extraction_from_optimizer(Class):
+    """Test the extraction from an optimizer."""
+    params = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
+    search = Class(SVC(gamma='scale'), params, cv=2)
+
+    # Test unfitted optimizer:
+    with pytest.raises(ValueError):
+        est = Estimator(search, logger=50)
+        assert isinstance(est.estimator, SVC)
+
+    # Test fitted optimizer:
+    search.fit(X=[[1, 1], [2, 2], [3, 3], [1, 1], [2, 2], [3, 3]],
+               y=[1, 2, 3, 1, 2, 3])
+    est = Estimator(search, logger=50)
     assert isinstance(est.estimator, SVC)

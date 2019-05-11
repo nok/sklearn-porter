@@ -121,11 +121,9 @@ class Estimator(EstimatorApiABC):
                     if isinstance(est, optimizers):
                         # pylint: disable=protected-access
                         is_fitted = hasattr(est, 'best_estimator_') and \
-                                    hasattr(est.best_estimator_,
-                                            '_final_estimator') and \
-                                    est.best_estimator_._final_estimator
+                                    est.best_estimator_
                         if is_fitted:
-                            est = est.best_estimator_._final_estimator
+                            est = est.best_estimator_
                             est_qualname = get_qualname(est)
                             L.info('Extract the embedded estimator of '
                                    'type `%s` from optimizer `%s`.',
