@@ -295,7 +295,7 @@ class Estimator(EstimatorApiABC):
                     import MLPClassifier as MLPClassifierClass
             except ImportError:
                 msg = msg.format(sklearn_version, name)
-                logger.error()
+                logger.error(msg)
                 raise ValueError(msg)
             else:
                 if isinstance(estimator, MLPClassifierClass):
