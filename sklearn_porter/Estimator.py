@@ -158,16 +158,16 @@ class Estimator(EstimatorApiABC):
             if isinstance(est, Pipeline):
                 logger.info('Yes, the estimator is embedded in a pipeline.')
                 # pylint: disable=protected-access
-                is_fitted = hasattr(est, '_final_estimator') and \
-                            est._final_estimator
-                if is_fitted:
+                has_est = hasattr(est, '_final_estimator') and \
+                          est._final_estimator
+                if has_est:
                     est = est._final_estimator
                     est_qualname = get_qualname(est)
                     logger.info('Extract the embedded estimator of type '
                                 '`%s` from the pipeline.', est_qualname)
                 # pylint: enable=protected-access
                 else:
-                    msg = 'The embedded estimator is not fitted.'
+                    msg = 'There is no final estimator is the pipeline.'
                     logger.error(msg)
                     raise ValueError(msg)
             else:
@@ -224,6 +224,10 @@ class Estimator(EstimatorApiABC):
 
         name = est.__class__.__qualname__
 
+        msg = 'Your installed version of scikit-learn v{} does not support ' \
+              'the `{}` estimator. Please update your local installation ' \
+              'of scikit-learn with `pip install -U scikit-learn`.'
+
         # Classifiers:
         if name is 'DecisionTreeClassifier':
             from sklearn.tree.tree import DecisionTreeClassifier \
@@ -233,66 +237,83 @@ class Estimator(EstimatorApiABC):
                     import DecisionTreeClassifier
                 return DecisionTreeClassifier(est, logger=logger)
         elif name is 'AdaBoostClassifier':
-            from sklearn.ensemble.weight_boosting import AdaBoostClassifier
-            if isinstance(estimator, AdaBoostClassifier):
-                pass
+            from sklearn.ensemble.weight_boosting import AdaBoostClassifier \
+                as AdaBoostClassifierClass
+            if isinstance(estimator, AdaBoostClassifierClass):
+                from sklearn_porter.estimator.AdaBoostClassifier \
+                    import AdaBoostClassifier
+                return AdaBoostClassifier(est, logger=logger)
         elif name is 'RandomForestClassifier':
-            from sklearn.ensemble.forest import RandomForestClassifier
-            if isinstance(estimator, RandomForestClassifier):
-                pass
+            from sklearn.ensemble.forest import RandomForestClassifier \
+                as RandomForestClassifierClass
+            if isinstance(estimator, RandomForestClassifierClass):
+                from sklearn_porter.estimator.RandomForestClassifier \
+                    import RandomForestClassifier
+                return RandomForestClassifier(est, logger=logger)
         elif name is 'ExtraTreesClassifier':
-            from sklearn.ensemble.forest import ExtraTreesClassifier
-            if isinstance(estimator, ExtraTreesClassifier):
-                pass
+            from sklearn.ensemble.forest import ExtraTreesClassifier \
+                as ExtraTreesClassifierClass
+            if isinstance(estimator, ExtraTreesClassifierClass):
+                from sklearn_porter.estimator.ExtraTreesClassifier \
+                    import ExtraTreesClassifier
+                return ExtraTreesClassifier(est, logger=logger)
         elif name is 'LinearSVC':
-            from sklearn.svm.classes import LinearSVC
-            if isinstance(estimator, LinearSVC):
-                pass
+            from sklearn.svm.classes import LinearSVC as LinearSVCClass
+            if isinstance(estimator, LinearSVCClass):
+                from sklearn_porter.estimator.LinearSVC import LinearSVC
+                return LinearSVC(est, logger=logger)
         elif name is 'SVC':
-            from sklearn.svm.classes import SVC
-            if isinstance(estimator, SVC):
-                pass
+            from sklearn.svm.classes import SVC as SVCClass
+            if isinstance(estimator, SVCClass):
+                from sklearn_porter.estimator.SVC import SVC
+                return SVC(est, logger=logger)
         elif name is 'NuSVC':
-            from sklearn.svm.classes import NuSVC
-            if isinstance(estimator, NuSVC):
-                pass
+            from sklearn.svm.classes import NuSVC as NuSVCClass
+            if isinstance(estimator, NuSVCClass):
+                from sklearn_porter.estimator.NuSVC import NuSVC
+                return NuSVC(est, logger=logger)
         elif name is 'KNeighborsClassifier':
-            from sklearn.neighbors.classification import \
-                KNeighborsClassifier
-            if isinstance(estimator, KNeighborsClassifier):
-                pass
+            from sklearn.neighbors.classification import KNeighborsClassifier \
+                as KNeighborsClassifierClass
+            if isinstance(estimator, KNeighborsClassifierClass):
+                from sklearn_porter.estimator.KNeighborsClassifier \
+                    import KNeighborsClassifier
+                return KNeighborsClassifier(est, logger=logger)
         elif name is 'GaussianNB':
-            from sklearn.naive_bayes import GaussianNB
-            if isinstance(estimator, GaussianNB):
-                pass
+            from sklearn.naive_bayes import GaussianNB as GaussianNBClass
+            if isinstance(estimator, GaussianNBClass):
+                from sklearn_porter.estimator.GaussianNB import GaussianNB
+                return GaussianNB(est, logger=logger)
         elif name is 'BernoulliNB':
-            from sklearn.naive_bayes import BernoulliNB
-            if isinstance(estimator, BernoulliNB):
-                pass
+            from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
+            if isinstance(estimator, BernoulliNBClass):
+                from sklearn_porter.estimator.BernoulliNB import BernoulliNB
+                return BernoulliNB(est, logger=logger)
         elif name is 'MLPClassifier':
             try:
                 from sklearn.neural_network.multilayer_perceptron \
-                    import MLPClassifier
+                    import MLPClassifier as MLPClassifierClass
             except ImportError:
-                pass
+                msg = msg.format(sklearn_version, name)
+                logger.error()
+                raise ValueError(msg)
             else:
-                if isinstance(estimator, MLPClassifier):
-                    pass
+                if isinstance(estimator, MLPClassifierClass):
+                    from sklearn_porter.estimator.MLPClassifier \
+                        import MLPClassifier
+                    return MLPClassifier(est, logger=logger)
 
         # Regressors:
         elif name is 'MLPRegressor':
             try:
                 from sklearn.neural_network.multilayer_perceptron \
-                    import MLPRegressor
+                    import MLPRegressor as MLPRegressorClass
             except ImportError:
-                msg = 'Your installed version of scikit-learn v{} does ' \
-                      'not support the `MLPRegressor` estimator. Please ' \
-                      'update your local installation with `pip install ' \
-                      '-U scikit-learn`.'.format(sklearn_version)
+                msg = msg.format(sklearn_version, name)
                 logger.error(msg)
                 raise ValueError(msg)
             else:
-                if isinstance(estimator, MLPRegressor):
+                if isinstance(estimator, MLPRegressorClass):
                     from sklearn_porter.estimator.MLPRegressor import \
                         MLPRegressor
                     return MLPRegressor(est, logger=logger)
