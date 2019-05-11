@@ -2,11 +2,16 @@
 
 from pathlib import Path
 
+from sklearn.base import BaseEstimator
+
 
 class EstimatorBase:
 
-    def __init__(self, name: str):
-        self.estimator_name = name
+    estimator = None  # type: BaseEstimator
+
+    def __init__(self, estimator: BaseEstimator):
+        self.estimator = estimator
+        self.estimator_name = estimator.__class__.__qualname__
 
     def load_templates(self, language: str) -> dict:
         temps = {}

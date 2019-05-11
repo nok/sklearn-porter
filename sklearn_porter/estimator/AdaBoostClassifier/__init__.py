@@ -26,11 +26,10 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             estimator: AdaBoostClassifierClass,
             logger: Union[Logger, int] = ERROR
     ):
-        super().__init__(self.__class__.__qualname__)
+        super().__init__(estimator)
         self.logger = get_logger(__name__, logger=logger)
         self.logger.info('Create specific estimator `%s`.', self.estimator_name)
-
-        self.estimator = est = estimator  # alias
+        est = self.estimator  # alias
 
         # TODO: Export and prepare model data from estimator.
 

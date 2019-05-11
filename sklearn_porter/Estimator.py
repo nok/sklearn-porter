@@ -54,7 +54,7 @@ class Estimator(EstimatorApiABC):
 
     @property
     def estimator(self):
-        return self._estimator
+        return self._estimator.estimator
 
     @estimator.setter
     def estimator(self, estimator: BaseEstimator):
