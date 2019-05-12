@@ -4,6 +4,6 @@ SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 
 pip freeze | grep --quiet jupyterlab
 if [[ $? -eq 1 ]]; then
-    pip install --no-cache-dir \
-        -r ${SCRIPT_PATH}/../requirements.examples.txt
+    cd ${SCRIPT_PATH}/..
+    pip install --no-cache-dir -e .[examples]
 fi

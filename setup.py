@@ -57,18 +57,40 @@ def main():
         url=meta.get('url'),
         author=meta.get('author'),
         author_email=meta.get('author_email'),
-        install_requires=meta.get('requirements'),
-        packages=find_packages(exclude=["tests.*", "tests"]),
+        install_requires=[
+            'scikit-learn>=0.14.1'
+        ],
+        extras_require={
+            'development': [
+                'twine>=1.12.1',
+                'pylint>=1.9.3',
+                'pytest>=3.9.2',
+                'jupytext>=0.8.3',
+            ],
+            'examples': [
+                'jupyterlab>=0.33.12'
+            ]
+        },
+        packages=find_packages(exclude=[
+            'tests.*',
+            'tests'
+        ]),
         include_package_data=True,
+        test_suite='pytest',
         entry_points={
             'console_scripts': [
                 'porter = sklearn_porter.cli.__main__:main'
             ],
         },
         classifiers=[
+            'Intended Audience :: Science/Research',
+            'Intended Audience :: Developers',
+            'Programming Language :: Python',
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
+            'Topic :: Software Development',
+            'Topic :: Scientific/Engineering',
         ],
         version=meta.get('version'),
         license=meta.get('license'),

@@ -12,7 +12,7 @@ source.environment: install.environment
 	$(info Start [source.environment] ...)
 	$(BASH) scripts/source.environment.sh
 
-install.requirements: source.environment
+install.requirements:
 	$(info Start [install.requirements] ...)
 	$(BASH) scripts/install.requirements.sh
 
@@ -47,10 +47,10 @@ all: clean lint serve tests jupytext clean
 
 lint: install.requirements.development
 	$(info Start [lint] ...)
-	$(eval FILES=$(shell find ./sklearn_porter -name '*.py' -type 'f' | tr '\n' ' '))
+	$(eval FILES=$(shell find ./sklearn_porter -name '*.py' -type f | tr '\n' ' '))
 	pylint --rcfile=.pylintrc --output-format=text $(FILES) 2>&1 | tee pylint.txt | sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p'
 
-serve: source.environment
+serve:
 	$(info Start [serve] ...)
 	$(BASH) scripts/run.server.sh
 
@@ -58,7 +58,7 @@ tests: local.tests
 
 local.tests: install.requirements.development clean serve
 	$(info Start [test] ...)
-	$(BASH) scripts/run.tests.system.sh $(python_files)
+	$(BASH) scripts/run.tests.system.sh $(python_files)  # `python_files` is a regex for pytest, e.g. "*JavaTest.py"
 
 docker.tests: clean
 	$(info Start [docker.tests] ...)
