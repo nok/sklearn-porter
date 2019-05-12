@@ -47,8 +47,8 @@ np.random.seed(0)
 rd.seed(0)
 
 # Check python version:
-if PYTHON_VERSION[:2] < (3, 4):
-    pytest.skip('tests requires python >= 3.4', allow_module_level=True)
+if PYTHON_VERSION[:2] < (3, 5):
+    pytest.skip('tests requires python >= 3.5', allow_module_level=True)
 
 # Parse and prepare scikit-learn version:
 SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
