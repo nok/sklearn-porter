@@ -104,8 +104,8 @@ class Estimator(EstimatorApiABC):
                 import BaseSearchCV  # pylint: disable=protected-access
         except ImportError:
             L.warn('Your installed version of scikit-learn '
-                        'v% does not support optimizers in general.',
-                        sklearn_version)
+                   'v% does not support optimizers in general.',
+                   sklearn_version)
         else:
             if isinstance(est, BaseSearchCV):
                 L.info('Yes, the estimator is embedded in an optimizer.')
