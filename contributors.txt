@@ -1,4 +1,0 @@
-Maintainer: Darius Morawiec
-
-Contributors:
-https://github.com/nok/sklearn-porter/graphs/contributors?type=c
