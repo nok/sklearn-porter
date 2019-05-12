@@ -6,7 +6,6 @@
   "author_email": "nok@users.noreply.github.com",
   "url": "https://github.com/nok/sklearn-porter",
   "keywords": ["sklearn", "scikit-learn"],
-  "requirements": "file://../requirements.txt",
   "version": "0.7.3",
   "license": "MIT"
 }
