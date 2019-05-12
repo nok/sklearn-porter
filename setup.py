@@ -61,22 +61,22 @@ def main():
             'scikit-learn>=0.14.1'
         ],
         extras_require={
+            'examples': [
+                'jupyterlab>=0.33.12'
+            ],
             'development': [
                 'twine>=1.12.1',
                 'pylint>=1.9.3',
                 'pytest>=3.9.2',
                 'jupytext>=0.8.3',
             ],
-            'examples': [
-                'jupyterlab>=0.33.12'
-            ]
         },
         packages=find_packages(exclude=[
             'tests.*',
             'tests'
         ]),
-        include_package_data=True,
         test_suite='pytest',
+        include_package_data=True,
         entry_points={
             'console_scripts': [
                 'porter = sklearn_porter.cli.__main__:main'
