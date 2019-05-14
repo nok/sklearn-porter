@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import sklearn_porter.language.c
-
-
 import sklearn_porter.language.go
 import sklearn_porter.language.java
 import sklearn_porter.language.js
