@@ -384,7 +384,7 @@ class Porter(object):
             max_threads = 8
             # using threading will increase speed 8-fold
             preds = Parallel(n_jobs=max_threads, backend='threading') \
-                (delayed(Shell.check_output)(cmd, cwd=tnp_dir) for cmd in cmds)
+                (delayed(subprocess.check_output)(cmd, cwd=tnp_dir) for cmd in cmds)
             pred_y = np.array([int(pred) for pred in preds], dtype=int)
 
         # Cleanup:
