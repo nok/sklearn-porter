@@ -3,6 +3,7 @@
 import os
 import sys
 import types
+import subprocess
 
 import numpy as np
 
@@ -377,6 +378,8 @@ class Porter(object):
 
         # Multiple feature sets:
         if exec_cmd is not None and len(X.shape) > 1:
+            tnp_dir = './' + tnp_dir
+            exec_cmd = [os.path.join(os.path.abspath(tnp_dir), exec_cmd[0])]
             cmds = [exec_cmd + [str(f).strip() for f in feat] for feat in X]
             max_threads = 8
             # using threading will increase speed 8-fold
