@@ -6,6 +6,8 @@ import types
 
 import numpy as np
 
+from joblib import Parallel, delayed
+
 from sklearn.metrics import accuracy_score
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
@@ -375,11 +377,12 @@ class Porter(object):
 
         # Multiple feature sets:
         if exec_cmd is not None and len(X.shape) > 1:
-            pred_y = np.empty(X.shape[0], dtype=int)
-            for idx, features in enumerate(X):
-                full_exec_cmd = exec_cmd + [str(f).strip() for f in features]
-                pred = Shell.check_output(full_exec_cmd, cwd=tnp_dir)
-                pred_y[idx] = int(pred)
+            cmds = [exec_cmd + [str(f).strip() for f in feat] for feat in X]
+            max_threads = 8
+            # using threading will increase speed 8-fold
+            preds = Parallel(n_jobs=max_threads, backend='threading') \
+                (delayed(Shell.check_output)(cmd, cwd=tnp_dir) for cmd in cmds)
+            pred_y = np.array([int(pred) for pred in preds], dtype=int)
 
         # Cleanup:
         if not keep_tmp_dir:
