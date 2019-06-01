@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from sys import version_info, platform as system_platform
-from typing import Union, Tuple, Optional, Callable
+from typing import Callable, Optional, Tuple
 from textwrap import dedent
-from logging import Logger, ERROR
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -16,17 +15,21 @@ from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.utils import get_logger, get_qualname
 
+L = get_logger(__name__)
+
 
 class Estimator(EstimatorApiABC):
     """
     Main class which validates the passed estimator and
-    coordinates the kind of estimator to a correct subclass.
+    coordinates the kind of estimator to a concrete subclass.
     """
 
     def __init__(
             self,
             estimator: BaseEstimator,
-            logger: Union[Logger, int] = ERROR
+            class_name: Optional[str] = None,
+            method_name: Optional[str] = None,
+            converter: Optional[Callable[[object], str]] = lambda x: str(x)
     ):
         """
         Validate and coordinate the passed estimator for transpiling.
@@ -35,22 +38,44 @@ class Estimator(EstimatorApiABC):
         ----------
         estimator : BaseEstimator
             Set a fitted base estimator of scikit-learn.
-        logger : logging.Logger or logging level (default: logging.ERROR)
-            Set a logger or logging level for logging.
+        class_name : str
+            Change the default class name which will be used in the generated
+            output. By default the class name of the passed estimator will be
+            used, e.g. `DecisionTreeClassifier`.
+        method_name : str
+            Change the default method name which will be used in the generated
+            output. By default the name of the method/approach will be used,
+            e.g. `predict`.
+        converter : Callable
+            Change the default converter of all floating numbers from the model
+            data. By default a simple string cast `str(value)` will be used.
         """
-        self.L = get_logger(__name__, logger)
-
         # Log basic environment information:
         env_info = 'Environment: platform: {}; python: v{}; ' \
                    'scikit-learn: v{}; sklearn-porter: v{}'
         python_version = '.'.join(map(str, version_info[:3]))
         env_info = env_info.format(system_platform, python_version,
                                    sklearn_version, sklearn_porter_version)
-        self.L.debug(env_info)
+        L.debug(env_info)
 
         # Set and load estimator:
         self._estimator = None
-        self.estimator = estimator
+        self.estimator = estimator  # see @estimator.setter
+
+        # Set default class name:
+        if class_name:
+            self.class_name = class_name
+        else:
+            self.class_name = self._estimator.estimator_name
+
+        # Set default method name:
+        if method_name:
+            self.method_name = method_name
+        else:
+            self.method_name = None
+
+        # Set the default converter:
+        self.converter = converter
 
     @property
     def estimator(self):
@@ -58,12 +83,12 @@ class Estimator(EstimatorApiABC):
 
     @estimator.setter
     def estimator(self, estimator: BaseEstimator):
-        estimator = self._validate(estimator, logger=self.L)
-        if estimator:
-            self._estimator = self._load(estimator, logger=self.L)
+        estimator = self._validate(estimator)
+        if estimator:  # if valid
+            self._estimator = self._load(estimator)
 
     @staticmethod
-    def _validate(estimator: BaseEstimator, logger: Union[Logger, int] = ERROR):
+    def _validate(estimator: BaseEstimator):
         """
         Validate the estimator.
 
@@ -75,15 +100,11 @@ class Estimator(EstimatorApiABC):
         ----------
         estimator : BaseEstimator
             Set a fitted base estimator of scikit-learn.
-        logger : logging.Logger or logging level (default: logging.ERROR)
-            Set a logger or logging level for logging.
 
         Returns
         -------
         A valid base estimator or None.
         """
-        L = get_logger(__name__, logger)
-
         est = estimator  # shorter <3
         qualname = get_qualname(est)
 
@@ -196,7 +217,7 @@ class Estimator(EstimatorApiABC):
         return None
 
     @staticmethod
-    def _load(estimator, logger: Union[Logger, int] = ERROR):
+    def _load(estimator):
         """
         Load the right subclass to read the passed estimator.
 
@@ -204,16 +225,12 @@ class Estimator(EstimatorApiABC):
         ----------
         estimator : Union[ClassifierMixin, RegressorMixin]
             Set a fitted base estimator of scikit-learn.
-        logger : logging.Logger or logging level (default: logging.ERROR)
-            Set a logger or logging level for logging.
 
         Returns
         -------
         A subclass from `sklearn_porter.estimator.*` which
         represents and includes the original base estimator.
         """
-        L = get_logger(__name__, logger)
-
         est = estimator  # shorter <3
         qualname = get_qualname(est)
         L.debug('Start loading the passed estimator: `%s`.', qualname)
@@ -231,60 +248,60 @@ class Estimator(EstimatorApiABC):
             if isinstance(est, DecisionTreeClassifierClass):
                 from sklearn_porter.estimator.DecisionTreeClassifier \
                     import DecisionTreeClassifier
-                return DecisionTreeClassifier(est, logger=L)
+                return DecisionTreeClassifier(est)
         elif name is 'AdaBoostClassifier':
             from sklearn.ensemble.weight_boosting import AdaBoostClassifier \
                 as AdaBoostClassifierClass
             if isinstance(estimator, AdaBoostClassifierClass):
                 from sklearn_porter.estimator.AdaBoostClassifier \
                     import AdaBoostClassifier
-                return AdaBoostClassifier(est, logger=L)
+                return AdaBoostClassifier(est)
         elif name is 'RandomForestClassifier':
             from sklearn.ensemble.forest import RandomForestClassifier \
                 as RandomForestClassifierClass
             if isinstance(estimator, RandomForestClassifierClass):
                 from sklearn_porter.estimator.RandomForestClassifier \
                     import RandomForestClassifier
-                return RandomForestClassifier(est, logger=L)
+                return RandomForestClassifier(est)
         elif name is 'ExtraTreesClassifier':
             from sklearn.ensemble.forest import ExtraTreesClassifier \
                 as ExtraTreesClassifierClass
             if isinstance(estimator, ExtraTreesClassifierClass):
                 from sklearn_porter.estimator.ExtraTreesClassifier \
                     import ExtraTreesClassifier
-                return ExtraTreesClassifier(est, logger=L)
+                return ExtraTreesClassifier(est)
         elif name is 'LinearSVC':
             from sklearn.svm.classes import LinearSVC as LinearSVCClass
             if isinstance(estimator, LinearSVCClass):
                 from sklearn_porter.estimator.LinearSVC import LinearSVC
-                return LinearSVC(est, logger=L)
+                return LinearSVC(est)
         elif name is 'SVC':
             from sklearn.svm.classes import SVC as SVCClass
             if isinstance(estimator, SVCClass):
                 from sklearn_porter.estimator.SVC import SVC
-                return SVC(est, logger=L)
+                return SVC(est)
         elif name is 'NuSVC':
             from sklearn.svm.classes import NuSVC as NuSVCClass
             if isinstance(estimator, NuSVCClass):
                 from sklearn_porter.estimator.NuSVC import NuSVC
-                return NuSVC(est, logger=L)
+                return NuSVC(est)
         elif name is 'KNeighborsClassifier':
             from sklearn.neighbors.classification import KNeighborsClassifier \
                 as KNeighborsClassifierClass
             if isinstance(estimator, KNeighborsClassifierClass):
                 from sklearn_porter.estimator.KNeighborsClassifier \
                     import KNeighborsClassifier
-                return KNeighborsClassifier(est, logger=L)
+                return KNeighborsClassifier(est)
         elif name is 'GaussianNB':
             from sklearn.naive_bayes import GaussianNB as GaussianNBClass
             if isinstance(estimator, GaussianNBClass):
                 from sklearn_porter.estimator.GaussianNB import GaussianNB
-                return GaussianNB(est, logger=L)
+                return GaussianNB(est)
         elif name is 'BernoulliNB':
             from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
             if isinstance(estimator, BernoulliNBClass):
                 from sklearn_porter.estimator.BernoulliNB import BernoulliNB
-                return BernoulliNB(est, logger=L)
+                return BernoulliNB(est)
         elif name is 'MLPClassifier':
             try:
                 from sklearn.neural_network.multilayer_perceptron \
@@ -297,7 +314,7 @@ class Estimator(EstimatorApiABC):
                 if isinstance(estimator, MLPClassifierClass):
                     from sklearn_porter.estimator.MLPClassifier \
                         import MLPClassifier
-                    return MLPClassifier(est, logger=L)
+                    return MLPClassifier(est)
 
         # Regressors:
         elif name is 'MLPRegressor':
@@ -312,17 +329,16 @@ class Estimator(EstimatorApiABC):
                 if isinstance(estimator, MLPRegressorClass):
                     from sklearn_porter.estimator.MLPRegressor import \
                         MLPRegressor
-                    return MLPRegressor(est, logger=L)
+                    return MLPRegressor(est)
 
         return None
 
     def port(
             self,
             method: str = 'predict',
-            to: Union[str] = 'java',
-            with_num_format: Callable[[object], str] = lambda x: str(x),
-            with_class_name: Optional[str] = None,
-            with_method_name: Optional[str] = None
+            language: str = 'java',
+            template: str = 'combined',
+            **kwargs
     ) -> str:
         """
         Port or transpile a passed estimator to a target programming language.
@@ -331,14 +347,14 @@ class Estimator(EstimatorApiABC):
         ----------
         method : str (default: 'predict')
             Set the target method.
-        to : str (default: 'java')
+        language : str (default: 'java')
             Set the target programming language.
-        with_num_format : Callable[[object], str] (default: `lambda x: str(x)`)
-            Set a function for custom numeric conversions.
-        with_class_name : str
-            Set a custom class name in the result.
-        with_method_name : str
-            Set a custom method name in the result.
+        template : str (default: 'embedding')
+            Set the kind of desired template.
+        # with_class_name : str
+        #     Set a custom class name in the result.
+        # with_method_name : str
+        #     Set a custom method name in the result.
 
         Returns
         -------
@@ -346,19 +362,28 @@ class Estimator(EstimatorApiABC):
         """
         locs = locals()
         locs.pop('self')
-        return self._estimator.port(**locs)
+        locs.pop('kwargs')
 
-    def export(
-            self,
-            method: str = 'predict',
-            to: Union[str] = 'java',
-            with_num_format: Callable[[object], str] = lambda x: str(x),
-            with_class_name: Optional[str] = None,
-            with_method_name: Optional[str] = None
-    ) -> str:
-        locs = locals()
-        locs.pop('self')
-        return self.port(**locs)
+        # Set default values:
+        method_name = self.method_name
+        kwargs.setdefault('method_name', method_name if method_name else method)
+        kwargs.setdefault('class_name', self.class_name)
+        kwargs.setdefault('converter', self.converter)
+
+        return self._estimator.port(**locs, **kwargs)
+
+    # def export(
+    #         self,
+    #         method: str = 'predict',
+    #         language: str = 'java',
+    #         template: str = 'combined',
+    #         converter: Callable[[object], str] = lambda x: str(x),
+    #         with_class_name: Optional[str] = None,
+    #         with_method_name: Optional[str] = None
+    # ) -> str:
+    #     locs = locals()
+    #     locs.pop('self')
+    #     return self.port(**locs)
 
     @staticmethod
     def classifiers() -> Tuple:

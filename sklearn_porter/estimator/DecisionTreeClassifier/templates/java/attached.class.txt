@@ -1,14 +1,14 @@
 class {class_name} {{
 
-    private int[] lChilds;
-    private int[] rChilds;
+    private int[] lefts;
+    private int[] rights;
     private double[] thresholds;
     private int[] indices;
     private int[][] classes;
 
-    public {class_name}(int[] lChilds, int[] rChilds, double[] thresholds, int[] indices, int[][] classes) {{
-        this.lChilds = lChilds;
-        this.rChilds = rChilds;
+    public {class_name}(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[][] classes) {{
+        this.lefts = lefts;
+        this.rights = rights;
         this.thresholds = thresholds;
         this.indices = indices;
         this.classes = classes;
@@ -21,9 +21,9 @@ class {class_name} {{
     public int {method_name}(double[] features, int node) {{
         if (this.thresholds[node] != -2) {{
             if (features[this.indices[node]] <= this.thresholds[node]) {{
-                return {method_name}(features, this.lChilds[node]);
+                return {method_name}(features, this.lefts[node]);
             }} else {{
-                return {method_name}(features, this.rChilds[node]);
+                return {method_name}(features, this.rights[node]);
             }}
         }}
         return findMax(this.classes[node]);
@@ -47,14 +47,14 @@ class {class_name} {{
             }}
 
             // Parameters:
-            {left_childs}
-            {right_childs}
+            {lefts}
+            {rights}
             {thresholds}
             {indices}
             {classes}
 
             // Prediction:
-            {class_name} clf = new {class_name}(lChilds, rChilds, thresholds, indices, classes);
+            {class_name} clf = new {class_name}(lefts, rights, thresholds, indices, classes);
             int estimation = clf.{method_name}(features);
             System.out.println(estimation);
 

@@ -54,7 +54,7 @@ except ImportError:
         return None
 
 
-class Environment(object):
+class Environment:
     """Get information from the system and local environment."""
 
     @staticmethod

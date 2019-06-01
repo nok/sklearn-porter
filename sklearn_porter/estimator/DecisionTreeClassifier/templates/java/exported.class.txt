@@ -7,8 +7,8 @@ import java.util.Scanner;
 class {class_name} {{
 
     private class Classifier {{
-        private int[] leftChilds;
-        private int[] rightChilds;
+        private int[] lefts;
+        private int[] rights;
         private double[] thresholds;
         private int[] indices;
         private int[][] classes;
@@ -23,9 +23,9 @@ class {class_name} {{
     public int {method_name}(double[] features, int node) {{
         if (this.clf.thresholds[node] != -2) {{
             if (features[this.clf.indices[node]] <= this.clf.thresholds[node]) {{
-                return {method_name}(features, this.clf.leftChilds[node]);
+                return {method_name}(features, this.clf.lefts[node]);
             }} else {{
-                return {method_name}(features, this.clf.rightChilds[node]);
+                return {method_name}(features, this.clf.rights[node]);
             }}
         }}
         return findMax(this.clf.classes[node]);

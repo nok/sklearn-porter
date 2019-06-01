@@ -1,6 +1,6 @@
 public static int {method_name}(double[] features) {{
     int[] classes = new int[{n_classes}];
-    {branches}
+    {tree}
 
     return findMax(classes);
 }}
