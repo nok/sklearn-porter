@@ -1,4 +1,15 @@
-import com.google.gson.Gson;
+/**
+ * This file generated with https://github.com/nok/sklearn-porter/
+ *
+ * Further usage:
+ *     1. Download dependencies:
+ *         $ wget --quiet -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar
+ *     2. Compile the generated source code:
+ *         $ javac -cp gson.jar {class_name}.java
+ *     3. Execute a prediction:
+ *         $ java -cp .:gson.jar {class_name} {class_name}.json <feature_1> <feature_n>
+ */
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
