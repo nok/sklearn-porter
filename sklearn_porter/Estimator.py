@@ -369,6 +369,35 @@ class Estimator(EstimatorApiABC):
             method: str = 'predict',
             language: str = 'java',
             template: str = 'combined',
+            **kwargs
+    ) -> str:
+        """
+        Port or transpile a passed estimator to a target programming language.
+
+        Parameters
+        ----------
+        method : str (default: 'predict')
+            Set the target method.
+        language : str (default: 'java')
+            Set the target programming language.
+        template : str (default: 'embedding')
+            Set the kind of desired template.
+
+        Returns
+        -------
+        The transpiled estimator in the target programming language.
+        """
+        locs = locals()
+        locs.pop('self')
+        locs.pop('kwargs')
+
+        return self.port(**locs, **kwargs)
+
+    def dump(
+            self,
+            method: str = 'predict',
+            language: str = 'java',
+            template: str = 'combined',
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, List[str]]:
@@ -396,7 +425,7 @@ class Estimator(EstimatorApiABC):
 
         # Set defaults:
         kwargs = self._set_kwargs_defaults(kwargs, method_name=method)
-        return self._estimator.export(**locs, **kwargs)
+        return self._estimator.dump(**locs, **kwargs)
 
     def _set_kwargs_defaults(self, kwargs: Dict, method_name: str) -> Dict:
         """

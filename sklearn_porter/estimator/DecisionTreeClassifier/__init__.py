@@ -158,7 +158,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
             return made_class
 
-    def export(
+    def dump(
             self,
             method: str = 'predict',
             language: str = 'java',

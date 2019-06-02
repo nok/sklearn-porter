@@ -24,7 +24,7 @@ class EstimatorApiABC(ABC):
         pass
 
     @abstractmethod
-    def export(
+    def dump(
             self,
             method: str = 'predict',
             language: str = 'java',
