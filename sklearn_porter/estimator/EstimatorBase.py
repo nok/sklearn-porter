@@ -36,28 +36,6 @@ class EstimatorBase:
         self._check_language(language)
         self._check_template(template)
 
-    def _load_templates(self, language: str) -> Dict:
-        temps = {}
-
-        # 1. Load special templates from files:
-        file_dir = Path(__file__).parent
-        temps_dir = file_dir / self.estimator_name / 'templates' / language
-        if temps_dir.exists():
-            temps_paths = set(temps_dir.glob('*.txt'))
-            temps.update({path.stem: path.read_text() for path in temps_paths})
-        L.debug('Load template files: {}'.format(', '.join(temps.keys())))
-
-        # 2. Load basic templates from package:
-        # from sklearn_porter.language.java import TEMPLATES as lang_temps
-        package = 'sklearn_porter.language.' + language
-        name = 'TEMPLATES'
-        lang_temps = getattr(__import__(package, fromlist=[name]), name)
-        if isinstance(lang_temps, dict):
-            temps.update(lang_temps)
-        L.debug('Load template variables: {}'.format(', '.join(lang_temps.keys())))
-
-        return temps
-
     def _check_method(self, method: str):
         if not self.supported_methods or \
                 not method in self.supported_methods:
@@ -78,6 +56,46 @@ class EstimatorBase:
             msg = 'currently the template `{}` ' \
                   'is not implemented yet.'.format(template)
             raise NotImplementedError(msg)
+
+    def _load_templates(self, language: str) -> Dict:
+        """
+        Load templates from static files and the global language files.
+
+        Template files: `sklearn_porter/estimator/SVC/templates/<language>/*txt`
+        Language files: `sklearn_porter/language/<language>.py`
+
+        Parameters
+        ----------
+        language : str
+            The passed programming language.
+
+        Returns
+        -------
+        temps : dict
+            A dictionary with all loaded templates.
+        """
+        temps = {}
+
+        # 1. Load from template files:
+        file_dir = Path(__file__).parent
+        temps_dir = file_dir / self.estimator_name / 'templates' / language
+        if temps_dir.exists():
+            temps_paths = set(temps_dir.glob('*.txt'))
+            temps.update({path.stem: path.read_text() for path in temps_paths})
+        L.debug('Load template files: {}'.format(', '.join(temps.keys())))
+
+        # 2. Load from language files:
+        #    The next three lines are similar to this import statement:
+        #    `from sklearn_porter.language.java import TEMPLATES as lang_temps`
+        package = 'sklearn_porter.language.' + language
+        name = 'TEMPLATES'
+        lang_temps = getattr(__import__(package, fromlist=[name]), name)
+
+        if isinstance(lang_temps, dict):
+            temps.update(lang_temps)
+        L.debug('Load template variables: {}'.format(', '.join(lang_temps.keys())))
+
+        return temps
 
     @staticmethod
     def _dump_dict(
