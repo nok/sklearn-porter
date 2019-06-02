@@ -26,6 +26,16 @@ class EstimatorBase:
         self.estimator = estimator
         self.estimator_name = estimator.__class__.__qualname__
 
+    def port(
+            self,
+            method: str,
+            language: str,
+            template: str
+    ):
+        self._check_method(method)
+        self._check_language(language)
+        self._check_template(template)
+
     def _load_templates(self, language: str) -> Dict:
         temps = {}
 

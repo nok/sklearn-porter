@@ -63,9 +63,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             template: str = 'combined',
             **kwargs
     ) -> str:
-        self._check_method(method)
-        self._check_language(language)
-        self._check_template(template)
+        super().port(method, language, template)
 
         converter = kwargs.get('converter')
 
