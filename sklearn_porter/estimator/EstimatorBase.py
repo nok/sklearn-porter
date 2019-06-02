@@ -15,8 +15,8 @@ class EstimatorBase:
 
     estimator = None  # type: BaseEstimator
 
-    supported_languages = None  # type: Set
     supported_methods = None  # type: Set
+    supported_languages = None  # type: Set
     supported_templates = None  # type: Set
 
     model_data = {}  # stores parameters, e.g. weights or coefficients
@@ -32,6 +32,26 @@ class EstimatorBase:
             language: str,
             template: str
     ):
+        """
+        Check whether the passed arguments are supported by the current
+        implementation of estimator or not. For that each estimator
+        has to overwrite the internal variables `self.supported_methods`,
+        `self.supported_languages` and `self.supported_templates` by
+        setting the current implementations.
+
+        Parameters
+        ----------
+        method : str
+            The passed method name.
+        language : str
+            The passed language name.
+        template : str
+            The passed template name.
+
+        Returns
+        -------
+        If a check fails an exception will be raised.
+        """
         self._check_method(method)
         self._check_language(language)
         self._check_template(template)
@@ -47,7 +67,7 @@ class EstimatorBase:
 
         Returns
         -------
-            If the check fails an exception will be raised.
+        If the check fails an exception will be raised.
         """
         if not self.supported_methods or \
                 not method in self.supported_methods:
@@ -66,7 +86,7 @@ class EstimatorBase:
 
         Returns
         -------
-            If the check fails an exception will be raised.
+        If the check fails an exception will be raised.
         """
         if not self.supported_languages or \
                 not language in self.supported_languages:
@@ -85,7 +105,7 @@ class EstimatorBase:
 
         Returns
         -------
-            If the check fails an exception will be raised.
+        If the check fails an exception will be raised.
         """
         if not self.supported_templates or \
                 not template in self.supported_templates:
