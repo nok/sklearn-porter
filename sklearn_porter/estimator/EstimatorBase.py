@@ -37,6 +37,18 @@ class EstimatorBase:
         self._check_template(template)
 
     def _check_method(self, method: str):
+        """
+        Check whether `method` is in `self.supported_methods` or not.
+
+        Parameters
+        ----------
+        method : str
+            The kind of method.
+
+        Returns
+        -------
+            If the check fails an exception will be raised.
+        """
         if not self.supported_methods or \
                 not method in self.supported_methods:
             msg = 'Currently only `predict` ' \
@@ -44,6 +56,18 @@ class EstimatorBase:
             raise NotImplementedError(msg)
 
     def _check_language(self, language: str):
+        """
+        Check whether `language` is in `self.supported_languages` or not.
+
+        Parameters
+        ----------
+        language : str
+            The kind of method.
+
+        Returns
+        -------
+            If the check fails an exception will be raised.
+        """
         if not self.supported_languages or \
                 not language in self.supported_languages:
             msg = 'Currently the language `{}` ' \
@@ -51,6 +75,18 @@ class EstimatorBase:
             raise NotImplementedError(msg)
 
     def _check_template(self, template: str):
+        """
+        Check whether `template` is in `self.supported_templates` or not.
+
+        Parameters
+        ----------
+        template : str
+            The kind of method.
+
+        Returns
+        -------
+            If the check fails an exception will be raised.
+        """
         if not self.supported_templates or \
                 not template in self.supported_templates:
             msg = 'currently the template `{}` ' \
