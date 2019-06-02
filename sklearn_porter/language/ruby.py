@@ -8,7 +8,7 @@ LABEL = 'Ruby'
 
 DEPENDENCIES = ['ruby']
 TEMP_DIR = 'ruby'
-SUFFIX = '.rb'
+SUFFIX = 'rb'
 
 CMD_COMPILE = None
 

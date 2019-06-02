@@ -8,7 +8,7 @@ LABEL = 'PHP'
 
 DEPENDENCIES = ['php']
 TEMP_DIR = 'php'
-SUFFIX = '.php'
+SUFFIX = 'php'
 
 CMD_COMPILE = None
 

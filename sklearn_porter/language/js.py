@@ -8,7 +8,7 @@ LABEL = 'JavaScript'
 
 DEPENDENCIES = ['node']
 TEMP_DIR = 'js'
-SUFFIX = '.js'
+SUFFIX = 'js'
 
 CMD_COMPILE = None
 
