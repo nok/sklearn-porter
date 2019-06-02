@@ -10,6 +10,7 @@ from sklearn_porter.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_logger
 
+from logging import DEBUG
 L = get_logger(__name__)
 
 
@@ -40,8 +41,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         )
         L.info('Extracted meta information (keys only): {}'.format(
             self.meta_info.keys()))
-        L.debug('Extracted meta information:\n{}'.format(
-            EstimatorBase._dump_dict(self.meta_info)))
+        if L.isEnabledFor(DEBUG):
+            dump = EstimatorBase._dump_dict(self.meta_info)
+            L.debug('Extracted meta information:\n{}'.format(dump))
 
         # Extract and save model data:
         self.model_data = dict(
@@ -53,8 +55,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         )
         L.info('Extracted model data (keys only): {}'.format(
             self.model_data.keys()))
-        L.debug('Extracted model data:\n{}'.format(
-            EstimatorBase._dump_dict(self.model_data)))
+        if L.isEnabledFor(DEBUG):
+            dump = EstimatorBase._dump_dict(self.model_data)
+            L.debug('Extracted model data:\n{}'.format(dump))
 
     def port(
             self,
