@@ -20,8 +20,7 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     && wget --quiet https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz \
     && tar -xf go1.12.4.linux-amd64.tar.gz                          `# go v1.12.4`      \
     && mv go /usr/bin \
-    && wget --quiet http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar \
-    && mv gson-2.8.5.jar gson.jar \
+    && wget --quiet -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar \
     && make clean \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
