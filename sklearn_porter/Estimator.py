@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from pathlib import Path
 from sys import version_info, platform as system_platform
-from typing import Callable, Optional, Tuple, Union, List
+from typing import Callable, Optional, Tuple, Union, List, Dict
 from textwrap import dedent
 
 # scikit-learn
@@ -351,10 +351,6 @@ class Estimator(EstimatorApiABC):
             Set the target programming language.
         template : str (default: 'embedding')
             Set the kind of desired template.
-        # with_class_name : str
-        #     Set a custom class name in the result.
-        # with_method_name : str
-        #     Set a custom method name in the result.
 
         Returns
         -------
@@ -364,12 +360,8 @@ class Estimator(EstimatorApiABC):
         locs.pop('self')
         locs.pop('kwargs')
 
-        # Set default values:
-        method_name = self.method_name
-        kwargs.setdefault('method_name', method_name if method_name else method)
-        kwargs.setdefault('class_name', self.class_name)
-        kwargs.setdefault('converter', self.converter)
-
+        # Set defaults:
+        kwargs = self._set_kwargs_defaults(kwargs, method_name=method)
         return self._estimator.port(**locs, **kwargs)
 
     def export(
@@ -402,13 +394,31 @@ class Estimator(EstimatorApiABC):
         locs.pop('self')
         locs.pop('kwargs')
 
-        # Set default values:
-        method_name = self.method_name
-        kwargs.setdefault('method_name', method_name if method_name else method)
+        # Set defaults:
+        kwargs = self._set_kwargs_defaults(kwargs, method_name=method)
+        return self._estimator.export(**locs, **kwargs)
+
+    def _set_kwargs_defaults(self, kwargs: Dict, method_name: str) -> Dict:
+        """
+        Set default value for the methods `port` and `exports`.
+
+        Parameters
+        ----------
+        kwargs : Dict
+            The passed optional arguments.
+        method_name : str
+            The desired kind of method.
+
+        Returns
+        -------
+        A dictionary with default values.
+        """
+        if self.method_name:
+            method_name = self.method_name
+        kwargs.setdefault('method_name', method_name)
         kwargs.setdefault('class_name', self.class_name)
         kwargs.setdefault('converter', self.converter)
-
-        return self._estimator.export(**locs, **kwargs)
+        return kwargs
 
     @staticmethod
     def classifiers() -> Tuple:
