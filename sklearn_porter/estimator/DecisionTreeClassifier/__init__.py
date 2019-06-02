@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable
+import os
+from typing import Callable, Optional, Union, List
 from textwrap import indent
+from pathlib import Path
+from json import dumps, encoder
 
 from sklearn.tree.tree import DecisionTreeClassifier \
     as DecisionTreeClassifierClass
@@ -84,7 +87,6 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         temps = self._load_templates(language)
 
         if template == 'exported':
-            # TODO: Dump/Save model data
             return temps.get('exported.class').format(**placeholders)
 
         # Pick templates:
@@ -155,6 +157,47 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             made_class = temp_class.format(**placeholders)
 
             return made_class
+
+    def export(
+            self,
+            method: str = 'predict',
+            language: str = 'java',
+            template: str = 'combined',
+            directory: Optional[Union[str, Path]] = None,
+            **kwargs
+    ) -> Union[str, List[str]]:
+
+        if not directory:
+            directory = Path(os.getcwd()).resolve()
+        if isinstance(directory, str):
+            directory = Path(directory)
+        if not directory.is_dir():
+            directory = directory.parent
+
+        ported = self.port(method, language, template, **kwargs)
+
+        class_name = kwargs.get('class_name')
+
+        package = 'sklearn_porter.language.' + language
+        name = 'SUFFIX'
+        suffix = getattr(__import__(package, fromlist=[name]), name)
+
+        filename = class_name + '.' + suffix
+
+        filepath = directory / filename
+        filepath.write_text(ported, encoding='utf-8')
+
+        paths = str(filepath)
+
+        if template == 'exported':
+            converter = kwargs.get('converter')
+            encoder.FLOAT_REPR = lambda o: converter(o)
+            json_data = dumps(self.model_data, sort_keys=True)
+            json_path = directory / (class_name + '.json')
+            json_path.write_text(json_data, encoding='utf-8')
+            paths = [paths, str(json_path)]
+
+        return paths
 
     def _create_tree(
             self,

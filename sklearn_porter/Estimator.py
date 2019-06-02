@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-
+from pathlib import Path
 from sys import version_info, platform as system_platform
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Union, List
 from textwrap import dedent
 
 # scikit-learn
@@ -372,18 +372,43 @@ class Estimator(EstimatorApiABC):
 
         return self._estimator.port(**locs, **kwargs)
 
-    # def export(
-    #         self,
-    #         method: str = 'predict',
-    #         language: str = 'java',
-    #         template: str = 'combined',
-    #         converter: Callable[[object], str] = lambda x: str(x),
-    #         with_class_name: Optional[str] = None,
-    #         with_method_name: Optional[str] = None
-    # ) -> str:
-    #     locs = locals()
-    #     locs.pop('self')
-    #     return self.port(**locs)
+    def export(
+            self,
+            method: str = 'predict',
+            language: str = 'java',
+            template: str = 'combined',
+            directory: Optional[Union[str, Path]] = None,
+            **kwargs
+    ) -> Union[str, List[str]]:
+        """
+        Port a passed estimator to a target programming language and save them.
+
+        Parameters
+        ----------
+        method : str (default: 'predict')
+            Set the target method.
+        language : str (default: 'java')
+            Set the target programming language.
+        template : str (default: 'embedding')
+            Set the kind of desired template.
+        directory : Optional[Union[str, Path]] (default: current working dir)
+            Set the directory where all generated files should be saved.
+
+        Returns
+        -------
+        The path(s) to the generated file(s).
+        """
+        locs = locals()
+        locs.pop('self')
+        locs.pop('kwargs')
+
+        # Set default values:
+        method_name = self.method_name
+        kwargs.setdefault('method_name', method_name if method_name else method)
+        kwargs.setdefault('class_name', self.class_name)
+        kwargs.setdefault('converter', self.converter)
+
+        return self._estimator.export(**locs, **kwargs)
 
     @staticmethod
     def classifiers() -> Tuple:

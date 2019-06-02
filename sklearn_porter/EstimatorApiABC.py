@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
+from typing import Union, Optional, List
+
+from pathlib import Path
 
 
 class EstimatorApiABC(ABC):
@@ -18,4 +21,15 @@ class EstimatorApiABC(ABC):
             template: str = 'combined',
             **kwargs
     ) -> str:
+        pass
+
+    @abstractmethod
+    def export(
+            self,
+            method: str = 'predict',
+            language: str = 'java',
+            template: str = 'combined',
+            directory: Optional[Union[str, Path]] = None,
+            **kwargs
+    ) -> Union[str, List[str]]:
         pass
