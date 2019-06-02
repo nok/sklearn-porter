@@ -26,7 +26,7 @@ class EstimatorBase:
         self.estimator = estimator
         self.estimator_name = estimator.__class__.__qualname__
 
-    def port(
+    def check_arguments(
             self,
             method: str,
             language: str,
