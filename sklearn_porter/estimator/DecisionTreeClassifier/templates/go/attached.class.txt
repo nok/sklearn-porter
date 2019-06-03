@@ -7,8 +7,8 @@ import (
 )
 
 type {class_name} struct {{
-	lChilds []int
-	rChilds []int
+	lefts []int
+	rights []int
 	thresholds []float64
 	indices []int
 	classes [][]int
@@ -17,9 +17,9 @@ type {class_name} struct {{
 func (dtc {class_name}) {method_name}_(features []float64, node int) int {{
     if dtc.thresholds[node] != -2 {{
         if features[dtc.indices[node]] <= dtc.thresholds[node] {{
-            return dtc.{method_name}_(features, dtc.lChilds[node])
+            return dtc.{method_name}_(features, dtc.lefts[node])
         }} else {{
-            return dtc.{method_name}_(features, dtc.rChilds[node])
+            return dtc.{method_name}_(features, dtc.rights[node])
         }}
     }}
     var index int = 0
@@ -46,14 +46,14 @@ func main() {{
 	}}
 
     // Parameters:
-    {left_childs}
-    {right_childs}
+    {lefts}
+    {rights}
     {thresholds}
     {indices}
     {classes}
 
 	// Prediction:
-	clf := {class_name}{{lChilds, rChilds, thresholds, indices, classes}}
+	clf := {class_name}{{lefts, rights, thresholds, indices, classes}}
 	estimation := clf.{method_name}(features)
 	fmt.Printf("%d\n", estimation)
 

@@ -27,7 +27,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
 
-    supported_languages = {'java'}
+    supported_languages = {'go', 'java'}
     supported_methods = {'predict'}
     supported_templates = {'combined', 'attached', 'exported'}
 

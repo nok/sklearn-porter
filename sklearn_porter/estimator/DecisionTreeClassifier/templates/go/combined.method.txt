@@ -1,6 +1,6 @@
 func {method_name}(features []float64) int {{
 	var classes [{n_classes}]float64
-	{branches}
+	{tree}
 
     var index int = 0
 	for i := 0; i < len(classes); i++ {{
