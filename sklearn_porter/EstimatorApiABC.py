@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from typing import Union, Optional, List
+from typing import Union, Optional, Tuple
 
 from pathlib import Path
 
@@ -20,7 +20,7 @@ class EstimatorApiABC(ABC):
             language: str = 'java',
             template: str = 'combined',
             **kwargs
-    ) -> str:
+    ) -> Union[str, Tuple[str, str]]:
         pass
 
     @abstractmethod
@@ -31,5 +31,5 @@ class EstimatorApiABC(ABC):
             template: str = 'combined',
             directory: Optional[Union[str, Path]] = None,
             **kwargs
-    ) -> Union[str, List[str]]:
+    ) -> Union[str, Tuple[str, str]]:
         pass

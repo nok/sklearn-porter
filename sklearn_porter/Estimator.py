@@ -339,7 +339,7 @@ class Estimator(EstimatorApiABC):
             language: str = 'java',
             template: str = 'combined',
             **kwargs
-    ) -> str:
+    ) -> Union[str, Tuple[str]]:
         """
         Port or transpile a passed estimator to a target programming language.
 
@@ -370,7 +370,7 @@ class Estimator(EstimatorApiABC):
             language: str = 'java',
             template: str = 'combined',
             **kwargs
-    ) -> str:
+    ) -> Union[str, Tuple[str, str]]:
         """
         Port or transpile a passed estimator to a target programming language.
 
@@ -400,7 +400,7 @@ class Estimator(EstimatorApiABC):
             template: str = 'combined',
             directory: Optional[Union[str, Path]] = None,
             **kwargs
-    ) -> Union[str, List[str]]:
+    ) -> Union[str, Tuple[str, str]]:
         """
         Port a passed estimator to a target programming language and save them.
 

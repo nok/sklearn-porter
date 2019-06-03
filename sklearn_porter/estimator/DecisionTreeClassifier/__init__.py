@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import os
-from typing import Callable, Optional, Union, List
+from os import getcwd
+from typing import Callable, Optional, Union, Tuple
 from textwrap import indent
 from pathlib import Path
 from json import dumps, encoder
+from logging import DEBUG
 
 from sklearn.tree.tree import DecisionTreeClassifier \
     as DecisionTreeClassifierClass
@@ -13,7 +14,7 @@ from sklearn_porter.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_logger
 
-from logging import DEBUG
+
 L = get_logger(__name__)
 
 
@@ -68,7 +69,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             language: str = 'java',
             template: str = 'combined',
             **kwargs
-    ) -> str:
+    ) -> Union[str, Tuple[str, str]]:
         super().check_arguments(method, language, template)
 
         converter = kwargs.get('converter')
@@ -87,7 +88,11 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         temps = self._load_templates(language)
 
         if template == 'exported':
-            return temps.get('exported.class').format(**placeholders)
+            ported = str(temps.get('exported.class').format(**placeholders))
+            converter = kwargs.get('converter')
+            encoder.FLOAT_REPR = lambda o: converter(o)
+            model_data = dumps(self.model_data, sort_keys=True)
+            return ported, model_data
 
         # Pick templates:
         temp_int = temps.get('int')
@@ -165,37 +170,39 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             template: str = 'combined',
             directory: Optional[Union[str, Path]] = None,
             **kwargs
-    ) -> Union[str, List[str]]:
+    ) -> Union[str, Tuple[str, str]]:
 
         if not directory:
-            directory = Path(os.getcwd()).resolve()
+            directory = Path(getcwd()).resolve()
         if isinstance(directory, str):
             directory = Path(directory)
         if not directory.is_dir():
             directory = directory.parent
 
-        ported = self.port(method, language, template, **kwargs)
-
         class_name = kwargs.get('class_name')
 
+        # Port/Transpile estimator:
+        ported = self.port(method, language, template, **kwargs)
+        if not isinstance(ported, tuple):
+            ported = (ported, )
+
+        # Dump ported estimator:
+        #    The next three lines are similar to this import statement:
+        #    `from sklearn_porter.language.java import SUFFIX as suffix`
         package = 'sklearn_porter.language.' + language
         name = 'SUFFIX'
         suffix = getattr(__import__(package, fromlist=[name]), name)
 
         filename = class_name + '.' + suffix
-
         filepath = directory / filename
-        filepath.write_text(ported, encoding='utf-8')
-
+        filepath.write_text(ported[0], encoding='utf-8')
         paths = str(filepath)
 
-        if template == 'exported':
-            converter = kwargs.get('converter')
-            encoder.FLOAT_REPR = lambda o: converter(o)
-            json_data = dumps(self.model_data, sort_keys=True)
+        # Dump model data:
+        if template == 'exported' and len(ported) == 2:
             json_path = directory / (class_name + '.json')
-            json_path.write_text(json_data, encoding='utf-8')
-            paths = [paths, str(json_path)]
+            json_path.write_text(ported[1], encoding='utf-8')
+            paths = (paths, str(json_path))
 
         return paths
 
