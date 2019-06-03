@@ -18,7 +18,7 @@ CMD_EXECUTE = '{dest_dir}' + sep + '{dest_file}'
 
 TEMPLATES = {
     # if/else condition:
-    'if':           'if ({0} {1} {2}) {{',
+    'if':           'if {0} {1} {2} {{',
     'else':         '} else {',
     'endif':        '}',
 
