@@ -11,8 +11,8 @@ Further usage:
 package main
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"strconv"
 )
 
