@@ -1,6 +1,12 @@
 /**
  * This file generated with https://github.com/nok/sklearn-porter/
  *
+ * Estimator:
+ *     DecisionTreeClassifier
+ *
+ * Documentation:
+ *     https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
+ *
  * Further usage:
  *     1. Download dependencies:
  *         $ wget --quiet -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar

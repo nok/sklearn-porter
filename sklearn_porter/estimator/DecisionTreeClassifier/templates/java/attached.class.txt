@@ -1,3 +1,19 @@
+/**
+ * This file generated with https://github.com/nok/sklearn-porter/
+ *
+ * Estimator:
+ *     DecisionTreeClassifier
+ *
+ * Documentation:
+ *     https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
+ *
+ * Further usage:
+ *     1. Compile the generated source code:
+ *         $ javac {class_name}.java
+ *     2. Execute a prediction:
+ *         $ java {class_name} <feature_1> <feature_n>
+ */
+
 class {class_name} {{
 
     private int[] lefts;
