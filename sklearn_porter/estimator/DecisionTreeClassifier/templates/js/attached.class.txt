@@ -16,7 +16,7 @@ var {class_name} = function(lChilds, rChilds, thresholds, indices, classes) {{
 
     this.{method_name} = function(features, node) {{
         node = (typeof node !== 'undefined') ? node : 0;
-        if (this.thresholds[node] != -2) {{
+        if (this.thresholds[node] !== -2) {{
             if (features[this.indices[node]] <= this.thresholds[node]) {{
                 return this.{method_name}(features, this.lChilds[node]);
             }} else {{
