@@ -9,7 +9,7 @@ Documentation:
 
 Further usage:
     1. Execute a prediction:
-        $ node {class_name}.js <args> <feature_1> <feature_n>
+        $ node {class_name}.js <feature_1> <feature_n>
 */
 
 var {class_name} = function() {{
