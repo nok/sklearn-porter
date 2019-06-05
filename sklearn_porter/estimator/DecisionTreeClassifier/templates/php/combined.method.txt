@@ -1,8 +1,8 @@
-public static function {method_name}($atts) {{
-    if (sizeof($atts) != {n_features}) {{ return -1; }}
+public static function {method_name}($features) {{
+    if (sizeof($features) != {n_features}) {{ return -1; }}
 
     $classes = array_fill(0, {n_classes}, 0);
-    {branches}
+    {tree}
 
     $class_idx = 0;
     $class_val = $classes[0];
