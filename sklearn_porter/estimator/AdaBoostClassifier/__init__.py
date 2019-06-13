@@ -6,7 +6,7 @@ from logging import Logger, ERROR
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier \
     as AdaBoostClassifierClass
 
-from sklearn_porter.EstimatorApiABC import EstimatorApiABC
+from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_logger
 

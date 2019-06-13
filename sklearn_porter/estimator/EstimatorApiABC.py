@@ -5,6 +5,8 @@ from typing import Union, Optional, Tuple
 
 from pathlib import Path
 
+from sklearn_porter.enums import Method, Language, Template
+
 
 class EstimatorApiABC(ABC):
     """
@@ -16,9 +18,9 @@ class EstimatorApiABC(ABC):
     @abstractmethod
     def port(
             self,
-            method: str = 'predict',
-            language: str = 'java',
-            template: str = 'combined',
+            method: Method,
+            language: Language,
+            template: Template,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         pass
@@ -26,9 +28,9 @@ class EstimatorApiABC(ABC):
     @abstractmethod
     def dump(
             self,
-            method: str = 'predict',
-            language: str = 'java',
-            template: str = 'combined',
+            method: Method,
+            language: Language,
+            template: Template,
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:

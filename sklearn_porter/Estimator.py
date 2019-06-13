@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+
 from pathlib import Path
 from sys import version_info, platform as system_platform
-from typing import Callable, Optional, Tuple, Union, List, Dict
+from typing import Callable, Optional, Tuple, Union, Dict
 from textwrap import dedent
 
 # scikit-learn
@@ -12,13 +13,13 @@ from sklearn.base import RegressorMixin
 
 # sklearn-porter
 from sklearn_porter import __version__ as sklearn_porter_version
-from sklearn_porter.EstimatorApiABC import EstimatorApiABC
+from sklearn_porter.enums import Method, Language, Template
 from sklearn_porter.utils import get_logger, get_qualname
 
 L = get_logger(__name__)
 
 
-class Estimator(EstimatorApiABC):
+class Estimator:
     """
     Main class which validates the passed estimator and
     coordinates the kind of estimator to a concrete subclass.
@@ -335,9 +336,9 @@ class Estimator(EstimatorApiABC):
 
     def port(
             self,
-            method: str = 'predict',
-            language: str = 'java',
-            template: str = 'combined',
+            method: str = Method.PREDICT.value,
+            language: str = Language.JAVA.value.KEY,
+            template: str = Template.COMBINED.value,
             **kwargs
     ) -> Union[str, Tuple[str]]:
         """
@@ -356,6 +357,10 @@ class Estimator(EstimatorApiABC):
         -------
         The transpiled estimator in the target programming language.
         """
+        method = Method[method.upper()]
+        language = Language[language.upper()]
+        template = Template[template.upper()]
+
         locs = locals()
         locs.pop('self')
         locs.pop('kwargs')
@@ -366,9 +371,9 @@ class Estimator(EstimatorApiABC):
 
     def export(
             self,
-            method: str = 'predict',
-            language: str = 'java',
-            template: str = 'combined',
+            method: str = Method.PREDICT.value,
+            language: str = Language.JAVA.value.KEY,
+            template: str = Template.COMBINED.value,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -395,9 +400,9 @@ class Estimator(EstimatorApiABC):
 
     def dump(
             self,
-            method: str = 'predict',
-            language: str = 'java',
-            template: str = 'combined',
+            method: str = Method.PREDICT.value,
+            language: str = Language.JAVA.value.KEY,
+            template: str = Template.COMBINED.value,
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -419,6 +424,10 @@ class Estimator(EstimatorApiABC):
         -------
         The path(s) to the generated file(s).
         """
+        method = Method[method.upper()]
+        language = Language[language.upper()]
+        template = Template[template.upper()]
+
         locs = locals()
         locs.pop('self')
         locs.pop('kwargs')

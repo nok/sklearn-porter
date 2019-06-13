@@ -10,8 +10,9 @@ from logging import DEBUG
 from sklearn.tree.tree import DecisionTreeClassifier \
     as DecisionTreeClassifierClass
 
-from sklearn_porter.EstimatorApiABC import EstimatorApiABC
+from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.enums import Method, Language, Template
 from sklearn_porter.utils import get_logger
 
 
@@ -26,10 +27,21 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     --------
     http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
-
-    supported_languages = {'c', 'go', 'java', 'js', 'php', 'ruby'}
-    supported_methods = {'predict'}
-    supported_templates = {'combined', 'attached', 'exported'}
+    FULL_SUPPORT = {  # shorthandler for the support matrix
+        Method.PREDICT: {
+            Template.COMBINED,
+            Template.ATTACHED,
+            Template.EXPORTED
+        }
+    }
+    support = {
+        Language.C: FULL_SUPPORT,
+        Language.GO: FULL_SUPPORT,
+        Language.JAVA: FULL_SUPPORT,
+        Language.JS: FULL_SUPPORT,
+        Language.PHP: FULL_SUPPORT,
+        Language.RUBY: FULL_SUPPORT
+    }
 
     estimator = None  # type: DecisionTreeClassifierClass
 
@@ -65,9 +77,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
             self,
-            method: str = 'predict',
-            language: str = 'java',
-            template: str = 'combined',
+            method: Method,
+            language: Language,
+            template: Template,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         super().check_arguments(method, language, template)
@@ -85,9 +97,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         })
 
         # Load templates:
-        temps = self._load_templates(language)
+        temps = self._load_templates(language.value.KEY)
 
-        if template == 'exported':
+        if template == Template.EXPORTED:
             ported = str(temps.get('exported.class').format(**placeholders))
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
@@ -136,10 +148,10 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             classes=classes,
         ))
 
-        if template == 'attached':
+        if template == Template.ATTACHED:
             return temps.get('attached.class').format(**placeholders)
 
-        if template == 'combined':
+        if template == Template.COMBINED:
 
             # Pick templates:
             temp_indent = temps.get('indent')
@@ -147,11 +159,12 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             temp_class = temps.get('combined.class')
 
             # Make tree:
-            made_tree = self._create_tree(temps, language, converter)
+            made_tree = self._create_tree(temps, language.value.KEY, converter)
             made_tree = indent(made_tree, 1 * temp_indent)
 
             # Make method:
-            n_indents = 1 if language in {'java', 'js', 'php', 'ruby'} else 0
+            n_indents = 1 if language.value.KEY \
+                             in {'java', 'js', 'php', 'ruby'} else 0
             temp_method = indent(temp_method, n_indents * temp_indent)
             temp_method = temp_method[(n_indents * len(temp_indent)):]
             placeholders.update(dict(tree=made_tree))
@@ -165,9 +178,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     def dump(
             self,
-            method: str = 'predict',
-            language: str = 'java',
-            template: str = 'combined',
+            method: Method,
+            language: Language,
+            template: Template,
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -187,12 +200,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             ported = (ported, )
 
         # Dump ported estimator:
-        #    The next three lines are similar to this import statement:
-        #    `from sklearn_porter.language.java import SUFFIX as suffix`
-        package = 'sklearn_porter.language.' + language
-        name = 'SUFFIX'
-        suffix = getattr(__import__(package, fromlist=[name]), name)
-
+        suffix = language.value.SUFFIX
         filename = class_name + '.' + suffix
         filepath = directory / filename
         filepath.write_text(ported[0], encoding='utf-8')

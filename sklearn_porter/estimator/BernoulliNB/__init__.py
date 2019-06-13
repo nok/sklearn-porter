@@ -5,7 +5,7 @@ from logging import Logger, ERROR
 
 from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
 
-from sklearn_porter.EstimatorApiABC import EstimatorApiABC
+from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_logger
 

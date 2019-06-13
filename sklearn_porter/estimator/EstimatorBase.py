@@ -7,6 +7,8 @@ from json import dumps
 from sklearn.base import BaseEstimator
 
 from sklearn_porter.utils import get_logger
+from sklearn_porter.exceptions import NotSupportedError
+from sklearn_porter.enums import Method, Language, Template
 
 L = get_logger(__name__)
 
@@ -15,12 +17,10 @@ class EstimatorBase:
 
     estimator = None  # type: BaseEstimator
 
-    supported_methods = None  # type: Set
-    supported_languages = None  # type: Set
-    supported_templates = None  # type: Set
-
     model_data = {}  # stores parameters, e.g. weights or coefficients
     meta_info = {}  # stores meta information, e.g. num of classes or features
+
+    support = None  # type: Dict[Language, Dict[Method, Set[Template]]]
 
     def __init__(self, estimator: BaseEstimator):
         self.estimator = estimator
@@ -28,9 +28,9 @@ class EstimatorBase:
 
     def check_arguments(
             self,
-            method: str,
-            language: str,
-            template: str
+            method: Method,
+            language: Language,
+            template: Template
     ):
         """
         Check whether the passed arguments are supported by the current
@@ -52,68 +52,26 @@ class EstimatorBase:
         -------
         If a check fails an exception will be raised.
         """
-        self._check_method(method)
-        self._check_language(language)
-        self._check_template(template)
 
-    def _check_method(self, method: str):
-        """
-        Check whether `method` is in `self.supported_methods` or not.
+        # Language
+        if language not in self.support.keys():
+            msg = 'Currently the language `{}` ' \
+                  'is not supported yet.'.format(language)
+            raise NotSupportedError(msg)
 
-        Parameters
-        ----------
-        method : str
-            The kind of method.
-
-        Returns
-        -------
-        If the check fails an exception will be raised.
-        """
-        if not self.supported_methods or \
-                not method in self.supported_methods:
+        # Method:
+        if method not in self.support[language].keys():
             msg = 'Currently only `predict` ' \
                   'is a valid method type.'
-            raise NotImplementedError(msg)
+            raise NotSupportedError(msg)
 
-    def _check_language(self, language: str):
-        """
-        Check whether `language` is in `self.supported_languages` or not.
-
-        Parameters
-        ----------
-        language : str
-            The kind of method.
-
-        Returns
-        -------
-        If the check fails an exception will be raised.
-        """
-        if not self.supported_languages or \
-                not language in self.supported_languages:
-            msg = 'Currently the language `{}` ' \
-                  'is not implemented yet.'.format(language)
-            raise NotImplementedError(msg)
-
-    def _check_template(self, template: str):
-        """
-        Check whether `template` is in `self.supported_templates` or not.
-
-        Parameters
-        ----------
-        template : str
-            The kind of method.
-
-        Returns
-        -------
-        If the check fails an exception will be raised.
-        """
-        if not self.supported_templates or \
-                not template in self.supported_templates:
+        # Template:
+        if template not in self.support[language][method]:
             msg = 'currently the template `{}` ' \
                   'is not implemented yet.'.format(template)
-            raise NotImplementedError(msg)
+            raise NotSupportedError(msg)
 
-    def _load_templates(self, language: str) -> Dict:
+    def _load_templates(self, language: Union[str, Language]) -> Dict:
         """
         Load templates from static files and the global language files.
 
@@ -130,24 +88,23 @@ class EstimatorBase:
         temps : dict
             A dictionary with all loaded templates.
         """
+        language = Language[language.upper()] if \
+            isinstance(language, str) else language
+        language = language.value
+
         temps = {}
 
         # 1. Load from template files:
         file_dir = Path(__file__).parent
-        temps_dir = file_dir / self.estimator_name / 'templates' / language
+        temps_dir = file_dir / self.estimator_name / 'templates' / language.KEY
         if temps_dir.exists():
             temps_paths = set(temps_dir.glob('*.txt'))
             temps.update({path.stem: path.read_text() for path in temps_paths})
         L.debug('Load template files: {}'.format(', '.join(temps.keys())))
 
         # 2. Load from language files:
-        #    The next three lines are similar to this import statement:
-        #    `from sklearn_porter.language.java import TEMPLATES as lang_temps`
-        package = 'sklearn_porter.language.' + language
-        name = 'TEMPLATES'
-        lang_temps = getattr(__import__(package, fromlist=[name]), name)
-
-        if isinstance(lang_temps, dict):
+        lang_temps = language.TEMPLATES
+        if isinstance(language.TEMPLATES, dict):
             temps.update(lang_temps)
         L.debug('Load template variables: {}'.format(', '.join(lang_temps.keys())))
 

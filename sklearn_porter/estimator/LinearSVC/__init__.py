@@ -5,7 +5,7 @@ from logging import Logger, ERROR
 
 from sklearn.svm.classes import LinearSVC as LinearSVCClass
 
-from sklearn_porter.EstimatorApiABC import EstimatorApiABC
+from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_logger
 
