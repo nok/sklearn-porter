@@ -94,19 +94,20 @@ class EstimatorBase:
 
         temps = {}
 
-        # 1. Load from template files:
+        # 1. Load default templates from language files:
+        lang_temps = language.TEMPLATES
+        if isinstance(language.TEMPLATES, dict):
+            temps.update(lang_temps)
+        L.debug('Load template variables: {}'.format(
+            ', '.join(lang_temps.keys())))
+
+        # 2. Load specific templates from template files:
         file_dir = Path(__file__).parent
         temps_dir = file_dir / self.estimator_name / 'templates' / language.KEY
         if temps_dir.exists():
             temps_paths = set(temps_dir.glob('*.txt'))
             temps.update({path.stem: path.read_text() for path in temps_paths})
         L.debug('Load template files: {}'.format(', '.join(temps.keys())))
-
-        # 2. Load from language files:
-        lang_temps = language.TEMPLATES
-        if isinstance(language.TEMPLATES, dict):
-            temps.update(lang_temps)
-        L.debug('Load template variables: {}'.format(', '.join(lang_temps.keys())))
 
         return temps
 
