@@ -357,8 +357,14 @@ class Estimator:
         -------
         The transpiled estimator in the target programming language.
         """
+
+        # TODO: Raise `InvalidMethodError`
         method = Method[method.upper()]
+
+        # TODO: Raise `InvalidLanguageError`
         language = Language[language.upper()]
+
+        # TODO: Raise `InvalidTemplateError`
         template = Template[template.upper()]
 
         locs = locals()
@@ -366,7 +372,7 @@ class Estimator:
         locs.pop('kwargs')
 
         # Set defaults:
-        kwargs = self._set_kwargs_defaults(kwargs, method_name=method)
+        kwargs = self._set_kwargs_defaults(kwargs, method_name=method.value)
         return self._estimator.port(**locs, **kwargs)
 
     def export(
@@ -424,8 +430,13 @@ class Estimator:
         -------
         The path(s) to the generated file(s).
         """
+        # TODO: Raise `InvalidMethodError`
         method = Method[method.upper()]
+
+        # TODO: Raise `InvalidLanguageError`
         language = Language[language.upper()]
+
+        # TODO: Raise `InvalidTemplateError`
         template = Template[template.upper()]
 
         locs = locals()
@@ -433,7 +444,7 @@ class Estimator:
         locs.pop('kwargs')
 
         # Set defaults:
-        kwargs = self._set_kwargs_defaults(kwargs, method_name=method)
+        kwargs = self._set_kwargs_defaults(kwargs, method_name=method.value)
         return self._estimator.dump(**locs, **kwargs)
 
     def _set_kwargs_defaults(self, kwargs: Dict, method_name: str) -> Dict:

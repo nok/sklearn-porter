@@ -107,94 +107,97 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             class_name=kwargs.get('class_name'),
             method_name=kwargs.get('method_name'),
         )
-        placeholders.update({  # merge all placeholders
-            **self.model_data,
-            **self.meta_info
-        })
+        placeholders.update(self.meta_info)
 
         # Load templates:
-        temps = self._load_templates(language.value.KEY)
+        tpls = self._load_templates(language.value.KEY)
 
         if template == Template.EXPORTED:
-            ported = str(temps.get('exported.class').format(**placeholders))
+            output = str(tpls.get('exported.class').format(**placeholders))
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, sort_keys=True)
-            return ported, model_data
+            return output, model_data
 
         # Pick templates:
-        temp_int = temps.get('int')
-        temp_double = temps.get('double')
-        temp_arr_1 = temps.get('arr[]')
-        temp_arr_2 = temps.get('arr[][]')
-        temp_in_brackets = temps.get('in_brackets')
+        tpl_int = tpls.get('int')
+        tpl_double = tpls.get('double')
+        tpl_arr_1 = tpls.get('arr[]')
+        tpl_arr_2 = tpls.get('arr[][]')
+        tpl_in_brackets = tpls.get('in_brackets')
 
         # Make contents:
-        lefts = list(map(str, self.model_data['lefts']))
-        lefts = temp_arr_1.format(type=temp_int, name='lefts',
-                                  values=', '.join(lefts),
-                                  n=len(lefts))
+        lefts_val = list(map(str, self.model_data['lefts']))
+        lefts_str = tpl_arr_1.format(type=tpl_int, name='lefts',
+                                     values=', '.join(lefts_val),
+                                     n=len(lefts_val))
 
-        rights = list(map(str, self.model_data['rights']))
-        rights = temp_arr_1.format(type=temp_int, name='rights',
-                                   values=', '.join(rights),
-                                   n=len(rights))
+        rights_val = list(map(str, self.model_data['rights']))
+        rights_str = tpl_arr_1.format(type=tpl_int, name='rights',
+                                      values=', '.join(rights_val),
+                                      n=len(rights_val))
 
-        thresholds = list(map(converter, self.model_data['thresholds']))
-        thresholds = temp_arr_1.format(type=temp_double, name='thresholds',
-                                       values=', '.join(thresholds),
-                                       n=len(thresholds))
+        thresholds_val = list(map(converter, self.model_data['thresholds']))
+        thresholds_str = tpl_arr_1.format(type=tpl_double, name='thresholds',
+                                          values=', '.join(thresholds_val),
+                                          n=len(thresholds_val))
 
-        indices = list(map(str, self.model_data['indices']))
-        indices = temp_arr_1.format(type=temp_int, name='indices',
-                                    values=', '.join(indices), n=len(indices))
+        indices_val = list(map(str, self.model_data['indices']))
+        indices_str = tpl_arr_1.format(type=tpl_int, name='indices',
+                                       values=', '.join(indices_val),
+                                       n=len(indices_val))
 
-        classes = [list(map(str, e)) for e in self.model_data['classes']]
-        n, m = len(classes), self.meta_info.get('n_classes')
-        classes = [', '.join(e) for e in classes]
-        classes = ', '.join([temp_in_brackets.format(e) for e in classes])
-        classes = temp_arr_2.format(type=temp_int, name='classes',
-                                    values=classes, n=n, m=m)
+        classes_val = [list(map(str, e)) for e in self.model_data['classes']]
+        n, m = len(classes_val), self.meta_info.get('n_classes')
+        classes_str = [', '.join(e) for e in classes_val]
+        classes_str = ', '.join([tpl_in_brackets.format(e)
+                                 for e in classes_str])
+        classes_str = tpl_arr_2.format(type=tpl_int, name='classes',
+                                       values=classes_str, n=n, m=m)
 
         placeholders.update(dict(
-            lefts=lefts,
-            rights=rights,
-            thresholds=thresholds,
-            indices=indices,
-            classes=classes,
+            lefts=lefts_str,
+            rights=rights_str,
+            thresholds=thresholds_str,
+            indices=indices_str,
+            classes=classes_str,
         ))
 
         if template == Template.ATTACHED:
-            return temps.get('attached.class').format(**placeholders)
+            return tpls.get('attached.class').format(**placeholders)
 
         if template == Template.COMBINED:
 
             # Pick templates:
-            temp_indent = temps.get('indent')
-            temp_method = temps.get('combined.method')
-            temp_class = temps.get('combined.class')
+            tpl_indent = tpls.get('indent')
+            tpl_method = tpls.get('combined.method')
+            tpl_class = tpls.get('combined.class')
 
             # Make tree:
-            made_tree = self._create_tree(temps, language.value.KEY, converter)
-            made_tree = indent(made_tree, 1 * temp_indent)
+            out_tree = self._create_tree(tpls, language.value.KEY, converter)
+            out_tree = indent(out_tree, 1 * tpl_indent)
 
             # Make method:
-            n_indents = 1 if language.value.KEY \
-                             in {'java', 'js', 'php', 'ruby'} else 0
-            temp_method = indent(temp_method, n_indents * temp_indent)
-            temp_method = temp_method[(n_indents * len(temp_indent)):]
-            placeholders.update(dict(tree=made_tree))
-            made_method = temp_method.format(**placeholders)
+            placeholders.update(dict(tree=out_tree))
+            n_indents = 1 if language in [
+                Language.JAVA,
+                Language.JS,
+                Language.PHP,
+                Language.RUBY
+            ] else 0
+            tpl_method = indent(tpl_method, n_indents * tpl_indent)
+            tpl_method = tpl_method[(n_indents * len(tpl_indent)):]
+            out_method = tpl_method.format(**placeholders)
 
             # Make class:
-            placeholders.update(dict(method=made_method))
-            made_class = temp_class.format(**placeholders)
+            placeholders.update(dict(method=out_method))
+            out_class = tpl_class.format(**placeholders)
 
-            return made_class
+            return out_class
 
     def _create_tree(
             self,
-            templates: Dict[str, str],
+            tpls: Dict[str, str],
             language: str,
             converter: Callable[[object], str]
     ):
@@ -203,7 +206,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         Parameters
         ----------
-        templates : Dict[str, str]
+        tpls : Dict[str, str]
             All relevant templates.
         language : str
             The required language.
@@ -222,7 +225,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         n_indents = 1 if language in {'java', 'js', 'php', 'ruby'} else 0
         return self._create_branch(
-            templates, language, converter,
+            tpls, language, converter,
             self.model_data['lefts'],
             self.model_data['rights'],
             self.model_data['thresholds'],
@@ -231,7 +234,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     def _create_branch(
             self,
-            templates: dict,
+            tpls: dict,
             language: str,
             converter: Callable[[object], str],
             left_nodes: list,
@@ -247,7 +250,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         Parameters
         ----------
-        templates : Dict[str, str]
+        tpls : Dict[str, str]
             All relevant templates.
         language
             The required language.
@@ -273,49 +276,49 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         A single branch of a DecisionTreeClassifier.
         """
         out = ''
-        temp_indent = templates.get('indent')
+        temp_indent = tpls.get('indent')
         if threshold[node] != -2.:
 
             out += '\n'
-            temp = templates.get('if')
-            temp = indent(temp, depth * temp_indent)
+            tpl = tpls.get('if')
+            tpl = indent(tpl, depth * temp_indent)
             val_1 = 'features[{}]'.format(features[node])
             if language == 'php':
                 val_1 = '$' + val_1
             val_2 = converter(threshold[node])
-            out += temp.format(val_1, '<=', val_2)
+            out += tpl.format(val_1, '<=', val_2)
 
             if left_nodes[node] != -1.:
                 out += self._create_branch(
-                    templates, language, converter, left_nodes, right_nodes,
+                    tpls, language, converter, left_nodes, right_nodes,
                     threshold, value, features, left_nodes[node], depth + 1)
 
             out += '\n'
-            temp = templates.get('else')
-            temp = indent(temp, depth * temp_indent)
-            out += temp
+            tpl = tpls.get('else')
+            tpl = indent(tpl, depth * temp_indent)
+            out += tpl
 
             if right_nodes[node] != -1.:
                 out += self._create_branch(
-                    templates, language, converter, left_nodes, right_nodes,
+                    tpls, language, converter, left_nodes, right_nodes,
                     threshold, value, features, right_nodes[node], depth + 1)
 
             out += '\n'
-            temp = templates.get('endif')
-            temp = indent(temp, depth * temp_indent)
-            out += temp
+            tpl = tpls.get('endif')
+            tpl = indent(tpl, depth * temp_indent)
+            out += tpl
         else:
             clazzes = []
-            temp = 'classes[{0}] = {1}'
+            tpl = 'classes[{0}] = {1}'
             if language == 'php':
-                temp = '$' + temp
-            temp = indent(temp, depth * temp_indent)
+                tpl = '$' + tpl
+            tpl = indent(tpl, depth * temp_indent)
 
             for i, rate in enumerate(value[node]):
-                clazz = temp.format(i, rate)
+                clazz = tpl.format(i, rate)
                 clazz = '\n' + clazz
                 clazzes.append(clazz)
 
-            temp = templates.get('join')
-            out += temp.join(clazzes) + temp
+            tpl = tpls.get('join')
+            out += tpl.join(clazzes) + tpl
         return out

@@ -53,6 +53,12 @@ class EstimatorBase(EstimatorApiABC):
         If a check fails an exception will be raised.
         """
 
+        # Is there a support matrix?
+        if not self.support:
+            msg = 'You have to update and set the support ' \
+                  'matrix in the class of the estimator.'
+            raise NotImplementedError(msg)
+
         # Language
         if language not in self.support.keys():
             msg = 'Currently the language `{}` ' \
@@ -148,7 +154,7 @@ class EstimatorBase(EstimatorApiABC):
         paths = str(filepath)
 
         # Dump model data:
-        if template == 'exported' and len(ported) == 2:
+        if template == Template.EXPORTED and len(ported) == 2:
             json_path = directory / (class_name + '.json')
             json_path.write_text(ported[1], encoding='utf-8')
             paths = (paths, str(json_path))
