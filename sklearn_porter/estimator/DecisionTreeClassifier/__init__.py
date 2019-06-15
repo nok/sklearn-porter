@@ -116,7 +116,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             output = str(tpls.get('exported.class').format(**placeholders))
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
-            model_data = dumps(self.model_data, sort_keys=True)
+            model_data = dumps(self.model_data, separators=(',', ':'))
             return output, model_data
 
         # Pick templates:
