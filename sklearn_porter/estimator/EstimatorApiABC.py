@@ -23,6 +23,23 @@ class EstimatorApiABC(ABC):
             template: Template,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
+        """
+        Port an estimator.
+
+        Parameters
+        ----------
+        method : Method
+            The required method.
+        language : Language
+            The required language.
+        template : Template
+            The required template.
+        kwargs
+
+        Returns
+        -------
+        The ported estimator.
+        """
         pass
 
     @abstractmethod
@@ -34,4 +51,23 @@ class EstimatorApiABC(ABC):
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
+        """
+        Dump an estimator to the filesystem.
+
+        Parameters
+        ----------
+        method : Method
+            The required method.
+        language : Language
+            The required language.
+        template : Template
+            The required template
+        directory : str or Path
+            The destination directory.
+        kwargs
+
+        Returns
+        -------
+        The paths to the dumped files.
+        """
         pass

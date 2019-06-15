@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from os import getcwd
-from typing import Callable, Optional, Union, Tuple
+from typing import Callable, Optional, Union, Tuple, Dict
 from textwrap import indent
 from pathlib import Path
 from json import dumps, encoder
@@ -82,6 +82,24 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             template: Template,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
+        """
+        Port an estimator.
+
+        Parameters
+        ----------
+        method : Method
+            The required method.
+        language : Language
+            The required language.
+        template : Template
+            The required template.
+        kwargs
+
+        Returns
+        -------
+        The ported estimator.
+        """
+
         super().check_arguments(method, language, template)
 
         converter = kwargs.get('converter')
@@ -184,6 +202,25 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
+        """
+        Dump an estimator to the filesystem.
+
+        Parameters
+        ----------
+        method : Method
+            The required method.
+        language : Language
+            The required language.
+        template : Template
+            The required template
+        directory : str or Path
+            The destination directory.
+        kwargs
+
+        Returns
+        -------
+        The paths to the dumped files.
+        """
 
         if not directory:
             directory = Path(getcwd()).resolve()
@@ -216,17 +253,25 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     def _create_tree(
             self,
-            templates: dict,
+            templates: Dict[str, str],
             language: str,
             converter: Callable[[object], str]
     ):
         """
-        Parse and build the tree branches.
+        Build a decision tree.
+
+        Parameters
+        ----------
+        templates : Dict[str, str]
+            All relevant templates.
+        language : str
+            The required language.
+        converter : Callable[[object], str]
+            The number converter.
 
         Returns
         -------
-        :return : string
-            The tree branches as string.
+        A tree of a DecisionTreeClassifier.
         """
         feature_indices = []
         for i in self.model_data['indices']:
@@ -257,29 +302,34 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             depth: int
     ):
         """
-        Parse and port a single tree estimator.
+        The ported single tree as function or method.
 
         Parameters
         ----------
-        :param left_nodes : object
+        templates : Dict[str, str]
+            All relevant templates.
+        language
+            The required language.
+        converter
+            The number converter.
+        left_nodes : list
             The left children node.
-        :param right_nodes : object
+        right_nodes : list
             The left children node.
-        :param threshold : object
-            The decision threshold.
-        :param value : object
+        threshold : list
+            The decision thresholds.
+        value : list
             The label or class.
-        :param features : object
+        features : list
             The feature values.
-        :param node : int
+        node : list
             The current node.
-        :param depth : int
+        depth : list
             The tree depth.
 
         Returns
         -------
-        :return out : string
-            The ported single tree as function or method.
+        A single branch of a DecisionTreeClassifier.
         """
         out = ''
         temp_indent = templates.get('indent')

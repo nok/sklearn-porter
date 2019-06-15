@@ -34,19 +34,17 @@ class EstimatorBase:
     ):
         """
         Check whether the passed arguments are supported by the current
-        implementation of estimator or not. For that each estimator
-        has to overwrite the internal variables `self.supported_methods`,
-        `self.supported_languages` and `self.supported_templates` by
-        setting the current implementations.
+        implementation of the estimator or not. For that each estimator
+        has to overwrite the internal variable `self.support`.
 
         Parameters
         ----------
-        method : str
-            The passed method name.
-        language : str
-            The passed language name.
-        template : str
-            The passed template name.
+        method : Method
+            The required method.
+        language : Language
+            The required language.
+        template : Template
+            The required template.
 
         Returns
         -------
@@ -80,17 +78,16 @@ class EstimatorBase:
 
         Parameters
         ----------
-        language : str
-            The passed programming language.
+        language : str or Language
+            The required language.
 
         Returns
         -------
         temps : dict
             A dictionary with all loaded templates.
         """
-        language = Language[language.upper()] if \
+        language = Language[language.upper()].value if \
             isinstance(language, str) else language
-        language = language.value
 
         temps = {}
 
