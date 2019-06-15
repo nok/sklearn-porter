@@ -177,11 +177,11 @@ def test_extraction_from_optimizer(Class):
 
     # Test unfitted optimizer:
     with pytest.raises(ValueError):
-        est = Estimator(search, logger=50)
+        est = Estimator(search)
         assert isinstance(est.estimator, SVC)
 
     # Test fitted optimizer:
     search.fit(X=[[1, 1], [2, 2], [3, 3], [1, 1], [2, 2], [3, 3]],
                y=[1, 2, 3, 1, 2, 3])
-    est = Estimator(search, logger=50)
+    est = Estimator(search)
     assert isinstance(est.estimator, SVC)

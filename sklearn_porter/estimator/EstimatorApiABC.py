@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from abc import ABC, abstractmethod
 from typing import Union, Optional, Tuple
-
 from pathlib import Path
+from abc import ABC, abstractmethod
 
 from sklearn_porter.enums import Method, Language, Template
 

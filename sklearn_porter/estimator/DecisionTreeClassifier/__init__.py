@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 
-from os import getcwd
-from typing import Callable, Optional, Union, Tuple, Dict
+from typing import Callable, Union, Tuple, Dict
 from textwrap import indent
-from pathlib import Path
 from json import dumps, encoder
 from logging import DEBUG
 
@@ -193,63 +191,6 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             made_class = temp_class.format(**placeholders)
 
             return made_class
-
-    def dump(
-            self,
-            method: Method,
-            language: Language,
-            template: Template,
-            directory: Optional[Union[str, Path]] = None,
-            **kwargs
-    ) -> Union[str, Tuple[str, str]]:
-        """
-        Dump an estimator to the filesystem.
-
-        Parameters
-        ----------
-        method : Method
-            The required method.
-        language : Language
-            The required language.
-        template : Template
-            The required template
-        directory : str or Path
-            The destination directory.
-        kwargs
-
-        Returns
-        -------
-        The paths to the dumped files.
-        """
-
-        if not directory:
-            directory = Path(getcwd()).resolve()
-        if isinstance(directory, str):
-            directory = Path(directory)
-        if not directory.is_dir():
-            directory = directory.parent
-
-        class_name = kwargs.get('class_name')
-
-        # Port/Transpile estimator:
-        ported = self.port(method, language, template, **kwargs)
-        if not isinstance(ported, tuple):
-            ported = (ported, )
-
-        # Dump ported estimator:
-        suffix = language.value.SUFFIX
-        filename = class_name + '.' + suffix
-        filepath = directory / filename
-        filepath.write_text(ported[0], encoding='utf-8')
-        paths = str(filepath)
-
-        # Dump model data:
-        if template == 'exported' and len(ported) == 2:
-            json_path = directory / (class_name + '.json')
-            json_path.write_text(ported[1], encoding='utf-8')
-            paths = (paths, str(json_path))
-
-        return paths
 
     def _create_tree(
             self,

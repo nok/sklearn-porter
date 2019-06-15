@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Set, Dict
+from typing import Union, Set, Dict, Optional, Tuple
 from pathlib import Path
+from os import getcwd
 from json import dumps
 
 from sklearn.base import BaseEstimator
 
+from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.utils import get_logger
 from sklearn_porter.exceptions import NotSupportedError
 from sklearn_porter.enums import Method, Language, Template
@@ -13,7 +15,7 @@ from sklearn_porter.enums import Method, Language, Template
 L = get_logger(__name__)
 
 
-class EstimatorBase:
+class EstimatorBase(EstimatorApiABC):
 
     estimator = None  # type: BaseEstimator
 
@@ -68,6 +70,90 @@ class EstimatorBase:
             msg = 'currently the template `{}` ' \
                   'is not implemented yet.'.format(template)
             raise NotSupportedError(msg)
+
+    def port(
+            self,
+            method: Method,
+            language: Language,
+            template: Template,
+            **kwargs
+    ):
+        """
+        Port an estimator.
+
+        Parameters
+        ----------
+        method : Method
+            The required method.
+        language : Language
+            The required language.
+        template : Template
+            The required template.
+        kwargs
+
+        Returns
+        -------
+        The ported estimator.
+        """
+        msg = 'You have to overwrite method `port` in the estimator class'
+        raise NotImplementedError(msg)
+
+    def dump(
+            self,
+            method: Method,
+            language: Language,
+            template: Template,
+            directory: Optional[Union[str, Path]] = None,
+            **kwargs
+    ) -> Union[str, Tuple[str, str]]:
+        """
+        Dump an estimator to the filesystem.
+
+        Parameters
+        ----------
+        method : Method
+            The required method.
+        language : Language
+            The required language.
+        template : Template
+            The required template
+        directory : str or Path
+            The destination directory.
+        kwargs
+
+        Returns
+        -------
+        The paths to the dumped files.
+        """
+
+        if not directory:
+            directory = Path(getcwd()).resolve()
+        if isinstance(directory, str):
+            directory = Path(directory)
+        if not directory.is_dir():
+            directory = directory.parent
+
+        class_name = kwargs.get('class_name')
+
+        # Port/Transpile estimator:
+        ported = self.port(method, language, template, **kwargs)
+        if not isinstance(ported, tuple):
+            ported = (ported, )
+
+        # Dump ported estimator:
+        suffix = language.value.SUFFIX
+        filename = class_name + '.' + suffix
+        filepath = directory / filename
+        filepath.write_text(ported[0], encoding='utf-8')
+        paths = str(filepath)
+
+        # Dump model data:
+        if template == 'exported' and len(ported) == 2:
+            json_path = directory / (class_name + '.json')
+            json_path.write_text(ported[1], encoding='utf-8')
+            paths = (paths, str(json_path))
+
+        return paths
 
     def _load_templates(self, language: Union[str, Language]) -> Dict:
         """
