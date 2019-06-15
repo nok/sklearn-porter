@@ -34,7 +34,8 @@ class Java(LanguageABC):
 
         # Arrays:
         'in_brackets':  '{{{0}}}',
-        'arr[]':        '{type}[] {name} = {{{values}}};',  # int[] ages = {1, 2};
+        # int[] ages = {1, 2};
+        'arr[]':        '{type}[] {name} = {{{values}}};',
         'arr[][]':      '{type}[][] {name} = {{{values}}};',
 
         # Primitive data types:

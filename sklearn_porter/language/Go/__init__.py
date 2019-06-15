@@ -14,7 +14,9 @@ class Go(LanguageABC):
     SUFFIX = 'go'
 
     # go build -o tmp/estimator tmp/estimator.go
-    CMD_COMPILE = 'go build -o {dest_dir}' + sep + '{dest_file} {src_dir}' + sep + '{src_file}'
+    CMD_COMPILE = 'go build -o {dest_dir}' \
+                  + sep + '{dest_file} {src_dir}' \
+                  + sep + '{src_file}'
 
     # tmp/estimator <args>
     CMD_EXECUTE = '{dest_dir}' + sep + '{dest_file}'
@@ -32,7 +34,8 @@ class Go(LanguageABC):
 
         # Arrays:
         'in_brackets':  '{{{0}}}',
-        'arr[]':        '{name} := []{type} {{{values}}}',  # ages := []int {1, 2}
+        # ages := []int {1, 2}
+        'arr[]':        '{name} := []{type} {{{values}}}',
         'arr[][]':      '{name} := [][]{type} {{{values}}}',
 
         # Primitive data types:
