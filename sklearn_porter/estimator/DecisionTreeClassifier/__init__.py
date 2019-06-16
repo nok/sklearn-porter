@@ -25,7 +25,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     --------
     http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
-    FULL_SUPPORT = {  # shorthandler for the support matrix
+    _full_support = {
         Method.PREDICT: {
             Template.COMBINED,
             Template.ATTACHED,
@@ -33,12 +33,12 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         }
     }
     support = {
-        Language.C: FULL_SUPPORT,
-        Language.GO: FULL_SUPPORT,
-        Language.JAVA: FULL_SUPPORT,
-        Language.JS: FULL_SUPPORT,
-        Language.PHP: FULL_SUPPORT,
-        Language.RUBY: FULL_SUPPORT
+        Language.C: _full_support,
+        Language.GO: _full_support,
+        Language.JAVA: _full_support,
+        Language.JS: _full_support,
+        Language.PHP: _full_support,
+        Language.RUBY: _full_support
     }
 
     estimator = None  # type: DecisionTreeClassifierClass
