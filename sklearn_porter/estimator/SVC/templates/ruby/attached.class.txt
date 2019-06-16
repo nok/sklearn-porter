@@ -1,9 +1,9 @@
 class {class_name}
 
-	def initialize (nClasses, vectors, coeffs, inters, weights, kernel, gamma, coef0, degree)
-		@nClasses = nClasses
-		@classes = Array.new(nClasses)
-		for i in 0 ... nClasses
+	def initialize (n_classes, vectors, coeffs, inters, weights, kernel, gamma, coef0, degree)
+		@n_classes = n_classes
+		@classes = Array.new(n_classes)
+		for i in 0 ... n_classes
 			@classes[i] = i
 		end
 

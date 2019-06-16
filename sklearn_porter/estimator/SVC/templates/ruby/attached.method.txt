@@ -54,7 +54,7 @@ def {method_name} (features)
 		ends[i] = @weights[i] + starts[i]
 	end
 
-	if @nClasses == 2
+	if @n_classes == 2
 
 		for i in 0 ... kernels.length
 			kernels[i] = -kernels[i]
@@ -101,19 +101,19 @@ def {method_name} (features)
 		end
 	end
 
-	amounts = Array.new(@nClasses, 0)
+	amounts = Array.new(@n_classes, 0)
 	for i in 0 ... votes.length
 		amounts[votes[i]] += 1
 	end
 
-	classVal = -1
-	classIdx = -1
+	class_val = -1
+	class_idx = -1
 	for i in 0 ... amounts.length
-		if amounts[i] > classVal
-			classVal = amounts[i]
-			classIdx = i
+		if amounts[i] > class_val
+				class_val = amounts[i]
+				class_idx = i
 		end
 	end
-	return @classes[classIdx]
+	@classes[class_idx]
 
 end
