@@ -120,7 +120,9 @@ class SVC(EstimatorBase, EstimatorApiABC):
         tpl_indent = tpls.get('indent')
 
         # Convert weights:
-        weights_val = list(map(lambda x: str(int(x)), self.model_data['weights']))
+        weights_val = list(map(lambda x: str(int(x)),
+                               self.model_data['weights']))
+        n_weights = len(weights_val)
         weights_str = tpl_arr_1.format(
             type=tpl_int,
             name='weights',
@@ -130,32 +132,36 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Convert vectors:
         vectors_val = self.model_data['vectors']
+        n_vectors = len(vectors_val)
         vectors_str = tpl_arr_2.format(
             type=tpl_double,
             name='vectors',  # convert 2D lists to a string `{{1, 2, 3}, {...}}`
-            values=tpl_in_brackets.format(', '.join(list(tpl_in_brackets.format(', '.join(list(map(converter, v)))) for v in vectors_val))),
+            values=', '.join(list(tpl_in_brackets.format(', '.join(list(map(converter, v)))) for v in vectors_val)),
             n=len(vectors_val),
             m=len(vectors_val[0])
         )
 
         # Convert coefficients:
         coeffs_val = self.model_data['coeffs']
+        n_coeffs = len(coeffs_val)
         coeffs_str = tpl_arr_2.format(
             type=tpl_double,
             name='coefficients',
-            values=tpl_in_brackets.format(', '.join(list(tpl_in_brackets.format(', '.join(list(map(converter, v)))) for v in coeffs_val))),
+            values=', '.join(list(tpl_in_brackets.format(', '.join(list(map(converter, v)))) for v in coeffs_val)),
             n=len(coeffs_val),
             m=len(coeffs_val[0])
         )
 
         # Convert interceptions:
         inters_val = self.model_data['inters']
+        n_inters = len(inters_val)
         inters_str = tpl_arr_1.format(
             type=tpl_double,
             name='intercepts',
-            values=tpl_in_brackets.format(', '.join(list(map(converter, inters_val)))),
+            values=', '.join(list(map(converter, inters_val))),
             n=len(self.model_data['inters'])
         )
+        print(inters_str)
 
         # Convert kernel:
         kernel_val = self.model_data['kernel']
@@ -176,9 +182,13 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         placeholders.update(dict(
             weights=weights_str,
+            n_weights=n_weights,
             vectors=vectors_str,
+            n_vectors=n_vectors,
             coefficients=coeffs_str,
+            n_coefficients=n_coeffs,
             intercepts=inters_str,
+            n_intercepts=n_inters,
             kernel=kernel_str,
             gamma=gamma_str,
             coef0=coef0_str,

@@ -62,7 +62,7 @@ class EstimatorBase(EstimatorApiABC):
         # Language
         if language not in self.support.keys():
             msg = 'Currently the language `{}` ' \
-                  'is not supported yet.'.format(language)
+                  'is not supported yet.'.format(language.value)
             raise NotSupportedError(msg)
 
         # Method:
@@ -73,8 +73,8 @@ class EstimatorBase(EstimatorApiABC):
 
         # Template:
         if template not in self.support[language][method]:
-            msg = 'currently the template `{}` ' \
-                  'is not implemented yet.'.format(template)
+            msg = 'Currently the template `{}` ' \
+                  'is not implemented yet.'.format(template.value)
             raise NotSupportedError(msg)
 
     def port(
