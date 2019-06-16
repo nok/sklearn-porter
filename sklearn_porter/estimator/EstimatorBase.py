@@ -209,11 +209,24 @@ class EstimatorBase(EstimatorApiABC):
 
         # 2. Load specific templates from template files:
         file_dir = Path(__file__).parent
-        temps_dir = file_dir / self.estimator_name / 'templates' / language.KEY
-        if temps_dir.exists():
-            temps_paths = set(temps_dir.glob('*.txt'))
-            temps.update({path.stem: path.read_text() for path in temps_paths})
-        L.debug('Load template files: {}'.format(', '.join(temps.keys())))
+
+        # Add extended base estimators:
+        bases = list(set([base.__name__ for base in self.__class__.__bases__]))
+        if 'EstimatorBase' in bases:
+            bases.remove('EstimatorBase')
+        if 'EstimatorApiABC' in bases:
+            bases.remove('EstimatorApiABC')
+
+        # Add desired estimator at the end:
+        bases.append(self.__class__.__name__)
+
+        for base_dir in set(bases):
+            temps_dir = file_dir / base_dir / 'templates' / language.KEY
+            if temps_dir.exists():
+                temps_paths = set(temps_dir.glob('*.txt'))
+                temps.update({path.stem: path.read_text()
+                              for path in temps_paths})
+            L.debug('Load template files: {}'.format(', '.join(temps.keys())))
 
         return temps
 
