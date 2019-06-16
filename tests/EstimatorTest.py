@@ -25,6 +25,7 @@ from sklearn_porter.exceptions import (
     InvalidTemplateError,
     InvalidMethodError,
     InvalidLanguageError,
+    NotFittedEstimatorError
 )
 
 try:
@@ -163,8 +164,21 @@ def test_extraction_from_pipeline():
     """Test the extraction of an estimator from a pipeline."""
     from sklearn.pipeline import Pipeline
     pipeline = Pipeline([('SVM', SVC())])
+    pipeline.fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
     est = Estimator(pipeline)
     assert isinstance(est.estimator, SVC)
+
+
+@pytest.mark.skipif(
+    SKLEARN_VERSION[:2] < (0, 15),
+    reason='requires scikit-learn >= v0.15'
+)
+def test_unfitted_est_in_pipeline():
+    """Test the extraction of an estimator from a pipeline."""
+    from sklearn.pipeline import Pipeline
+    pipeline = Pipeline([('SVM', SVC())])
+    with pytest.raises(NotFittedEstimatorError):
+        Estimator(pipeline)
 
 
 @pytest.mark.parametrize('params', [

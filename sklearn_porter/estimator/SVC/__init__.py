@@ -9,6 +9,7 @@ from sklearn.svm.classes import SVC as SVCClass
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.exceptions import NotFittedEstimatorError
 from sklearn_porter.utils import get_logger
 
 
@@ -42,6 +43,12 @@ class SVC(EstimatorBase, EstimatorApiABC):
         L.info('Create specific estimator `%s`.', self.estimator_name)
         est = self.estimator  # alias
         params = est.get_params()
+
+        # Is the estimator fitted?
+        try:
+            est.support_vectors_
+        except AttributeError:
+            raise NotFittedEstimatorError(self.estimator_name)
 
         # Check kernel type:
         supported_kernels = ['linear', 'rbf', 'poly', 'sigmoid']
