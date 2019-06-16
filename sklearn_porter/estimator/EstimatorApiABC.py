@@ -17,9 +17,9 @@ class EstimatorApiABC(ABC):
     @abstractmethod
     def port(
             self,
-            method: Method,
-            language: Language,
-            template: Template,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -44,9 +44,9 @@ class EstimatorApiABC(ABC):
     @abstractmethod
     def dump(
             self,
-            method: Method,
-            language: Language,
-            template: Template,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None,
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 from textwrap import indent
 from json import dumps, encoder
 
@@ -23,7 +23,11 @@ class SVC(EstimatorBase, EstimatorApiABC):
     --------
     http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
     """
-    support = {
+    DEFAULT_LANGUAGE = Language.JAVA
+    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_TEMPLATE = Template.ATTACHED
+
+    SUPPORT = {
         Language.C: {Method.PREDICT: {Template.ATTACHED}},
         Language.JAVA: {Method.PREDICT: {Template.ATTACHED, Template.EXPORTED}},
         Language.JS: {Method.PREDICT: {Template.ATTACHED}},
@@ -72,9 +76,9 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
     def port(
             self,
-            method: Method,
-            language: Language,
-            template: Template,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -94,7 +98,11 @@ class SVC(EstimatorBase, EstimatorApiABC):
         -------
         The ported estimator.
         """
-        super().check_arguments(method, language, template)
+        method, language, template = self.check(
+            method=method, language=language, template=template)
+
+        kwargs.setdefault('method_name', method.value)
+
         converter = kwargs.get('converter')
 
         # Placeholders:
@@ -160,7 +168,6 @@ class SVC(EstimatorBase, EstimatorApiABC):
             values=', '.join(list(map(converter, inters_val))),
             n=len(self.model_data['inters'])
         )
-        print(inters_str)
 
         # Convert kernel:
         kernel_val = self.model_data['kernel']

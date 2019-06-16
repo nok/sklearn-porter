@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 
 from sklearn.ensemble.forest import RandomForestClassifier \
     as RandomForestClassifierClass
@@ -34,9 +34,9 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
             self,
-            method: Method,
-            language: Language,
-            template: Template,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -56,8 +56,9 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         -------
         The ported estimator.
         """
-
-        super().check_arguments(method, language, template)
+        method, language, template = self.check(
+            method=method, language=language, template=template)
+        kwargs.setdefault('method_name', method.value)
 
         converter = kwargs.get('converter')
 

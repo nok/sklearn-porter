@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Tuple
+from typing import Union, Tuple, Optional
 
 from sklearn.ensemble.forest import ExtraTreesClassifier \
     as ExtraTreesClassifierClass
@@ -34,9 +34,9 @@ class ExtraTreesClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
             self,
-            method: Method,
-            language: Language,
-            template: Template,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -56,8 +56,10 @@ class ExtraTreesClassifier(EstimatorBase, EstimatorApiABC):
         -------
         The ported estimator.
         """
+        method, language, template = self.check(
+            method=method, language=language, template=template)
 
-        super().check_arguments(method, language, template)
+        kwargs.setdefault('method_name', method.value)
 
         converter = kwargs.get('converter')
 

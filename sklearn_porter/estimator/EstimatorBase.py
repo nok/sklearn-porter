@@ -17,72 +17,37 @@ L = get_logger(__name__)
 
 class EstimatorBase(EstimatorApiABC):
 
+    DEFAULT_LANGUAGE = None  # type: Language
+    DEFAULT_METHOD = None  # type: Method
+    DEFAULT_TEMPLATE = None  # type: Template
+
+    SUPPORT = None  # type: Dict[Language, Dict[Method, Set[Template]]]
+
     estimator = None  # type: BaseEstimator
 
     model_data = {}  # stores parameters, e.g. weights or coefficients
     meta_info = {}  # stores meta information, e.g. num of classes or features
 
-    support = None  # type: Dict[Language, Dict[Method, Set[Template]]]
-
     def __init__(self, estimator: BaseEstimator):
         self.estimator = estimator
         self.estimator_name = estimator.__class__.__qualname__
 
-    def check_arguments(
-            self,
-            method: Method,
-            language: Language,
-            template: Template
-    ):
-        """
-        Check whether the passed arguments are supported by the current
-        implementation of the estimator or not. For that each estimator
-        has to overwrite the internal variable `self.support`.
-
-        Parameters
-        ----------
-        method : Method
-            The required method.
-        language : Language
-            The required language.
-        template : Template
-            The required template.
-
-        Returns
-        -------
-        If a check fails an exception will be raised.
-        """
-
-        # Is there a support matrix?
-        if not self.support:
-            msg = 'You have to update and set the support ' \
-                  'matrix in the class of the estimator.'
-            raise NotImplementedError(msg)
-
-        # Language
-        if language not in self.support.keys():
-            msg = 'Currently the language `{}` ' \
-                  'is not supported yet.'.format(language.value)
-            raise NotSupportedError(msg)
-
-        # Method:
-        if method not in self.support[language].keys():
-            msg = 'Currently only `predict` ' \
-                  'is a valid method type.'
-            raise NotSupportedError(msg)
-
-        # Template:
-        if template not in self.support[language][method]:
-            msg = 'Currently the template `{}` ' \
-                  'is not implemented yet.'.format(template.value)
-            raise NotSupportedError(msg)
-
     def port(
             self,
-            method: Method,
-            language: Language,
-            template: Template,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None,
             **kwargs
+    ):
+        msg = 'You have to overwrite this method ' \
+              '`port` in the class of the estimator.'
+        raise NotImplementedError(msg)
+
+    def check(
+            self,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None
     ):
         """
         Port an estimator.
@@ -95,20 +60,60 @@ class EstimatorBase(EstimatorApiABC):
             The required language.
         template : Template
             The required template.
-        kwargs
 
         Returns
         -------
         The ported estimator.
         """
-        msg = 'You have to overwrite method `port` in the estimator class'
-        raise NotImplementedError(msg)
+
+        # Check estimator defaults:
+        if not self.SUPPORT:
+            msg = 'You have to update the support ' \
+                  'matrix in the class of the estimator.'
+            raise NotImplementedError(msg)
+        if not self.DEFAULT_METHOD:
+            msg = 'You have to set a default method ' \
+                  'in the class of the estimator.'
+            raise NotImplementedError(msg)
+        if not self.DEFAULT_LANGUAGE:
+            msg = 'You have to set a default language ' \
+                  'in the class of the estimator.'
+            raise NotImplementedError(msg)
+        if not self.DEFAULT_TEMPLATE:
+            msg = 'You have to set a default template ' \
+                  'in the class of the estimator.'
+            raise NotImplementedError(msg)
+
+        # Set default:
+        method = method or self.DEFAULT_METHOD
+        language = language or self.DEFAULT_LANGUAGE
+        template = template or self.DEFAULT_TEMPLATE
+
+        # Check method support:
+        if method not in self.SUPPORT[language].keys():
+            msg = 'Currently only `predict` ' \
+                  'is a valid method type.'
+            raise NotSupportedError(msg)
+
+        # Check language support:
+        if language not in self.SUPPORT.keys():
+            msg = 'Currently the language `{}` ' \
+                  'is not supported yet.'.format(language.value)
+            raise NotSupportedError(msg)
+
+        # Check the template support:
+        if template not in self.SUPPORT[language][method]:
+            msg = 'Currently the template `{}` ' \
+                  'is not implemented yet.'.format(template.value)
+            raise NotSupportedError(msg)
+
+        return method, language, template
 
     def dump(
             self,
-            method: Method,
-            language: Language,
-            template: Template,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None,
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -139,10 +144,18 @@ class EstimatorBase(EstimatorApiABC):
         if not directory.is_dir():
             directory = directory.parent
 
+        method, language, template = self.check(
+            method=method, language=language, template=template)
+
         class_name = kwargs.get('class_name')
 
         # Port/Transpile estimator:
-        ported = self.port(method, language, template, **kwargs)
+        ported = self.port(
+            method=method,
+            language=language,
+            template=template,
+            **kwargs
+        )
         if not isinstance(ported, tuple):
             ported = (ported, )
 

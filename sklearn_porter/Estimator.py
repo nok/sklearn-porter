@@ -336,9 +336,9 @@ class Estimator:
 
     def port(
             self,
-            method: str = Method.PREDICT.value,
-            language: str = Language.JAVA.value.KEY,
-            template: str = Template.COMBINED.value,
+            method: Optional[str] = None,
+            language: Optional[str] = None,
+            template: Optional[str] = None,
             **kwargs
     ) -> Union[str, Tuple[str]]:
         """
@@ -350,36 +350,36 @@ class Estimator:
             Set the target method.
         language : str (default: 'java')
             Set the target programming language.
-        template : str (default: 'embedding')
+        template : str (default: it depends on the used estimator)
             Set the kind of desired template.
 
         Returns
         -------
         The transpiled estimator in the target programming language.
         """
-
         # TODO: Raise `InvalidMethodError`
-        method = Method[method.upper()]
-
+        if method:
+            method = Method[method.upper()]
         # TODO: Raise `InvalidLanguageError`
-        language = Language[language.upper()]
-
+        if language:
+            language = Language[language.upper()]
         # TODO: Raise `InvalidTemplateError`
-        template = Template[template.upper()]
+        if template:
+            template = Template[template.upper()]
 
         locs = locals()
         locs.pop('self')
         locs.pop('kwargs')
 
         # Set defaults:
-        kwargs = self._set_kwargs_defaults(kwargs, method_name=method.value)
+        kwargs = self._set_kwargs_defaults(kwargs)
         return self._estimator.port(**locs, **kwargs)
 
     def export(
             self,
             method: str = Method.PREDICT.value,
             language: str = Language.JAVA.value.KEY,
-            template: str = Template.COMBINED.value,
+            template: Optional[str] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -391,7 +391,7 @@ class Estimator:
             Set the target method.
         language : str (default: 'java')
             Set the target programming language.
-        template : str (default: 'embedding')
+        template : str (default: it depends on the used estimator)
             Set the kind of desired template.
 
         Returns
@@ -406,9 +406,9 @@ class Estimator:
 
     def dump(
             self,
-            method: str = Method.PREDICT.value,
-            language: str = Language.JAVA.value.KEY,
-            template: str = Template.COMBINED.value,
+            method: Optional[str] = None,
+            language: Optional[str] = None,
+            template: Optional[str] = None,
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -431,23 +431,24 @@ class Estimator:
         The path(s) to the generated file(s).
         """
         # TODO: Raise `InvalidMethodError`
-        method = Method[method.upper()]
-
+        if method:
+            method = Method[method.upper()]
         # TODO: Raise `InvalidLanguageError`
-        language = Language[language.upper()]
-
+        if language:
+            language = Language[language.upper()]
         # TODO: Raise `InvalidTemplateError`
-        template = Template[template.upper()]
+        if template:
+            template = Template[template.upper()]
 
         locs = locals()
         locs.pop('self')
         locs.pop('kwargs')
 
         # Set defaults:
-        kwargs = self._set_kwargs_defaults(kwargs, method_name=method.value)
+        kwargs = self._set_kwargs_defaults(kwargs)
         return self._estimator.dump(**locs, **kwargs)
 
-    def _set_kwargs_defaults(self, kwargs: Dict, method_name: str) -> Dict:
+    def _set_kwargs_defaults(self, kwargs: Dict) -> Dict:
         """
         Set default value for the methods `port` and `exports`.
 
@@ -455,16 +456,11 @@ class Estimator:
         ----------
         kwargs : Dict
             The passed optional arguments.
-        method_name : str
-            The desired kind of method.
 
         Returns
         -------
         A dictionary with default values.
         """
-        if self.method_name:
-            method_name = self.method_name
-        kwargs.setdefault('method_name', method_name)
         kwargs.setdefault('class_name', self.class_name)
         kwargs.setdefault('converter', self.converter)
         return kwargs

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Union, Tuple, Dict
+from typing import Callable, Union, Tuple, Dict, Optional
 from textwrap import indent
 from json import dumps, encoder
 from logging import DEBUG
@@ -25,6 +25,11 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     --------
     http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
+
+    DEFAULT_LANGUAGE = Language.JAVA
+    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_TEMPLATE = Template.ATTACHED
+
     _full_support = {
         Method.PREDICT: {
             Template.COMBINED,
@@ -32,7 +37,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             Template.EXPORTED
         }
     }
-    support = {
+    SUPPORT = {
         Language.C: _full_support,
         Language.GO: _full_support,
         Language.JAVA: _full_support,
@@ -75,9 +80,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
             self,
-            method: Method,
-            language: Language,
-            template: Template,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -97,8 +102,10 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         -------
         The ported estimator.
         """
+        method, language, template = self.check(
+            method=method, language=language, template=template)
 
-        super().check_arguments(method, language, template)
+        kwargs.setdefault('method_name', method.value)
 
         converter = kwargs.get('converter')
 
