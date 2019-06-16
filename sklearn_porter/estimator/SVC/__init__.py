@@ -50,12 +50,6 @@ class SVC(EstimatorBase, EstimatorApiABC):
         if str(gamma).startswith('auto') or str(gamma).startswith('scale'):
             gamma = 1. / len(est.support_vectors_[0])
 
-        self.meta_info = dict(
-            n_classes=len(est.classes_),
-            n_features=len(est.support_vectors_[0]),
-            n_svs_rows=len(est.n_support_)  # TODO: Remove `n_svs_rows`
-        )
-
         self.model_data = dict(
             weights=est.n_support_.tolist(),
             vectors=est.support_vectors_.tolist(),
@@ -65,6 +59,15 @@ class SVC(EstimatorBase, EstimatorApiABC):
             gamma=gamma,
             coef0=params['coef0'],
             degree=params['degree'],
+        )
+
+        self.meta_info = dict(
+            n_classes=len(est.classes_),
+            n_features=len(est.support_vectors_[0]),
+            n_weights=len(self.model_data['weights']),
+            n_vectors=len(self.model_data['vectors']),
+            n_coeffs=len(self.model_data['coeffs']),
+            n_inters=len(self.model_data['inters']),
         )
 
     def port(
@@ -122,7 +125,6 @@ class SVC(EstimatorBase, EstimatorApiABC):
         # Convert weights:
         weights_val = list(map(lambda x: str(int(x)),
                                self.model_data['weights']))
-        n_weights = len(weights_val)
         weights_str = tpl_arr_1.format(
             type=tpl_int,
             name='weights',
@@ -132,7 +134,6 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Convert vectors:
         vectors_val = self.model_data['vectors']
-        n_vectors = len(vectors_val)
         vectors_str = tpl_arr_2.format(
             type=tpl_double,
             name='vectors',  # convert 2D lists to a string `{{1, 2, 3}, {...}}`
@@ -143,10 +144,9 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Convert coefficients:
         coeffs_val = self.model_data['coeffs']
-        n_coeffs = len(coeffs_val)
         coeffs_str = tpl_arr_2.format(
             type=tpl_double,
-            name='coefficients',
+            name='coeffs',
             values=', '.join(list(tpl_in_brackets.format(', '.join(list(map(converter, v)))) for v in coeffs_val)),
             n=len(coeffs_val),
             m=len(coeffs_val[0])
@@ -154,10 +154,9 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Convert interceptions:
         inters_val = self.model_data['inters']
-        n_inters = len(inters_val)
         inters_str = tpl_arr_1.format(
             type=tpl_double,
-            name='intercepts',
+            name='inters',
             values=', '.join(list(map(converter, inters_val))),
             n=len(self.model_data['inters'])
         )
@@ -182,13 +181,9 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         placeholders.update(dict(
             weights=weights_str,
-            n_weights=n_weights,
             vectors=vectors_str,
-            n_vectors=n_vectors,
-            coefficients=coeffs_str,
-            n_coefficients=n_coeffs,
-            intercepts=inters_str,
-            n_intercepts=n_inters,
+            coeffs=coeffs_str,
+            inters=inters_str,
             kernel=kernel_str,
             gamma=gamma_str,
             coef0=coef0_str,

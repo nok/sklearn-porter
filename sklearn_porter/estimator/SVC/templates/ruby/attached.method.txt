@@ -36,8 +36,8 @@ def {method_name} (features)
 		end
 	end
 
-	starts = Array.new(@nRows, 0)
-	for i in 0 ... @nRows
+	starts = Array.new(@weights.length, 0)
+	for i in 0 ... @weights.length
 		if i != 0
 			start = 0
 			for j in 0 ... i
@@ -49,8 +49,8 @@ def {method_name} (features)
 		end
 	end
 
-	ends = Array.new(@nRows, 0)
-	for i in 0 ... @nRows
+	ends = Array.new(@weights.length, 0)
+	for i in 0 ... @weights.length
 		ends[i] = @weights[i] + starts[i]
 	end
 
@@ -62,12 +62,12 @@ def {method_name} (features)
 
 		decision = 0
 		for k in starts[1] ... ends[1]
-			decision += kernels[k] * @coefficients[0][k]
+			decision += kernels[k] * @coeffs[0][k]
 		end
 		for k in starts[0] ... ends[0]
-			decision += kernels[k] * @coefficients[0][k]
+			decision += kernels[k] * @coeffs[0][k]
 		end
-		decision += @intercepts[0];
+		decision += @inters[0];
 
 		if decision > 0
 			return 0
@@ -76,26 +76,26 @@ def {method_name} (features)
 
 	end
 
-	decisions = Array.new(@intercepts.length, 0)
+	decisions = Array.new(@inters.length, 0)
 	d = 0
-	for i in 0 ... @nRows
-		for j in i + 1 ... @nRows
+	for i in 0 ... @weights.length
+		for j in i + 1 ... @weights.length
 			tmp = 0
 			for k in starts[j] ... ends[j]
-				tmp += @coefficients[i][k] * kernels[k]
+				tmp += @coeffs[i][k] * kernels[k]
 			end
 			for k in starts[i] ... ends[i]
-				tmp += @coefficients[j - 1][k] * kernels[k]
+				tmp += @coeffs[j - 1][k] * kernels[k]
 			end
-			decisions[d] = tmp + @intercepts[d]
+			decisions[d] = tmp + @inters[d]
 			d = d + 1
 		end
 	end
 
-	votes = Array.new(@intercepts.length, 0)
+	votes = Array.new(@inters.length, 0)
 	d = 0
-	for i in 0 ... @nRows
-		for j in i + 1 ... @nRows
+	for i in 0 ... @weights.length
+		for j in i + 1 ... @weights.length
 			votes[d] = decisions[d] > 0 ? i : j
 			d = d + 1
 		end

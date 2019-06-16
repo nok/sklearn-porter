@@ -10,11 +10,10 @@ class {class_name} {{
     private enum Kernel {{ LINEAR, POLY, RBF, SIGMOID }}
     private class Classifier {{
         private int nClasses;
-        private int nRows;
         private int[] classes;
         private double[][] vectors;
-        private double[][] coefficients;
-        private double[] intercepts;
+        private double[][] coeffs;
+        private double[] inters;
         private int[] weights;
         private String kernel;
         private Kernel kkernel;
@@ -81,8 +80,8 @@ class {class_name} {{
                 break;
         }}
 
-        int[] starts = new int[this.clf.nRows];
-        for (int i = 0; i < this.clf.nRows; i++) {{
+        int[] starts = new int[this.clf.weights.length];
+        for (int i = 0; i < this.clf.weights.length; i++) {{
             if (i != 0) {{
                 int start = 0;
                 for (int j = 0; j < i; j++) {{
@@ -94,8 +93,8 @@ class {class_name} {{
             }}
         }}
 
-        int[] ends = new int[this.clf.nRows];
-        for (int i = 0; i < this.clf.nRows; i++) {{
+        int[] ends = new int[this.clf.weights.length];
+        for (int i = 0; i < this.clf.weights.length; i++) {{
             ends[i] = this.clf.weights[i] + starts[i];
         }}
 
@@ -105,35 +104,35 @@ class {class_name} {{
             }}
             double decision = 0.;
             for (int k = starts[1]; k < ends[1]; k++) {{
-                decision += kernels[k] * this.clf.coefficients[0][k];
+                decision += kernels[k] * this.clf.coeffs[0][k];
             }}
             for (int k = starts[0]; k < ends[0]; k++) {{
-                decision += kernels[k] * this.clf.coefficients[0][k];
+                decision += kernels[k] * this.clf.coeffs[0][k];
             }}
-            decision += this.clf.intercepts[0];
+            decision += this.clf.inters[0];
             if (decision > 0) {{
                 return 0;
             }}
             return 1;
         }}
 
-        double[] decisions = new double[this.clf.intercepts.length];
-        for (int i = 0, d = 0, l = this.clf.nRows; i < l; i++) {{
+        double[] decisions = new double[this.clf.inters.length];
+        for (int i = 0, d = 0, l = this.clf.weights.length; i < l; i++) {{
             for (int j = i + 1; j < l; j++) {{
                 double tmp = 0.;
                 for (int k = starts[j]; k < ends[j]; k++) {{
-                    tmp += this.clf.coefficients[i][k] * kernels[k];
+                    tmp += this.clf.coeffs[i][k] * kernels[k];
                 }}
                 for (int k = starts[i]; k < ends[i]; k++) {{
-                    tmp += this.clf.coefficients[j - 1][k] * kernels[k];
+                    tmp += this.clf.coeffs[j - 1][k] * kernels[k];
                 }}
-                decisions[d] = tmp + this.clf.intercepts[d];
+                decisions[d] = tmp + this.clf.inters[d];
                 d++;
             }}
         }}
 
-        int[] votes = new int[this.clf.intercepts.length];
-        for (int i = 0, d = 0, l = this.clf.nRows; i < l; i++) {{
+        int[] votes = new int[this.clf.inters.length];
+        for (int i = 0, d = 0, l = this.clf.weights.length; i < l; i++) {{
             for (int j = i + 1; j < l; j++) {{
                 votes[d] = decisions[d] > 0 ? i : j;
                 d++;
