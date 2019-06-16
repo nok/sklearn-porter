@@ -14,6 +14,11 @@ from sklearn.base import RegressorMixin
 # sklearn-porter
 from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.exceptions import (
+    InvalidMethodError,
+    InvalidLanguageError,
+    InvalidTemplateError
+)
 from sklearn_porter.utils import get_logger, get_qualname
 
 L = get_logger(__name__)
@@ -357,15 +362,23 @@ class Estimator:
         -------
         The transpiled estimator in the target programming language.
         """
-        # TODO: Raise `InvalidMethodError`
         if method:
-            method = Method[method.upper()]
-        # TODO: Raise `InvalidLanguageError`
+            try:
+                method = Method[method.upper()]
+            except KeyError:
+                raise InvalidMethodError(method)
+
         if language:
-            language = Language[language.upper()]
-        # TODO: Raise `InvalidTemplateError`
+            try:
+                language = Language[language.upper()]
+            except KeyError:
+                raise InvalidLanguageError(language)
+
         if template:
-            template = Template[template.upper()]
+            try:
+                template = Template[template.upper()]
+            except KeyError:
+                raise InvalidTemplateError(template)
 
         locs = locals()
         locs.pop('self')
@@ -430,15 +443,23 @@ class Estimator:
         -------
         The path(s) to the generated file(s).
         """
-        # TODO: Raise `InvalidMethodError`
         if method:
-            method = Method[method.upper()]
-        # TODO: Raise `InvalidLanguageError`
+            try:
+                method = Method[method.upper()]
+            except KeyError:
+                raise InvalidMethodError(method)
+
         if language:
-            language = Language[language.upper()]
-        # TODO: Raise `InvalidTemplateError`
+            try:
+                language = Language[language.upper()]
+            except KeyError:
+                raise InvalidLanguageError(language)
+
         if template:
-            template = Template[template.upper()]
+            try:
+                template = Template[template.upper()]
+            except KeyError:
+                raise InvalidTemplateError(template)
 
         locs = locals()
         locs.pop('self')

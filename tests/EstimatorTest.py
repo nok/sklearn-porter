@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from sys import version_info as PYTHON_VERSION
+from typing import Tuple
+
 import pytest
 
 import random as rd
@@ -18,6 +20,12 @@ from sklearn.svm.classes import NuSVC
 from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
+
+from sklearn_porter.exceptions import (
+    InvalidTemplateError,
+    InvalidMethodError,
+    InvalidLanguageError,
+)
 
 try:
     from sklearn.neural_network.multilayer_perceptron import MLPClassifier
@@ -157,6 +165,40 @@ def test_extraction_from_pipeline():
     pipeline = Pipeline([('SVM', SVC())])
     est = Estimator(pipeline)
     assert isinstance(est.estimator, SVC)
+
+
+@pytest.mark.parametrize('params', [
+    (InvalidMethodError, dict(method='i_n_v_a_l_i_d')),
+    (InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
+    (InvalidTemplateError, dict(template='i_n_v_a_l_i_d')),
+], ids=[
+    'InvalidMethodError',
+    'InvalidLanguageError',
+    'InvalidTemplateError',
+])
+def test_invalid_params_on_port_method(params: Tuple):
+    """Test initialization with valid base estimator."""
+    clf = SVC().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
+    est = Estimator(clf)
+    with pytest.raises(params[0]):
+        est.port(**params[1])
+
+
+@pytest.mark.parametrize('params', [
+    (InvalidMethodError, dict(method='i_n_v_a_l_i_d')),
+    (InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
+    (InvalidTemplateError, dict(template='i_n_v_a_l_i_d')),
+], ids=[
+    'InvalidMethodError',
+    'InvalidLanguageError',
+    'InvalidTemplateError',
+])
+def test_invalid_params_on_dump_method(params: Tuple):
+    """Test initialization with valid base estimator."""
+    clf = SVC().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
+    est = Estimator(clf)
+    with pytest.raises(params[0]):
+        est.dump(**params[1])
 
 
 @pytest.mark.skipif(
