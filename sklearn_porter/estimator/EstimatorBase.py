@@ -39,16 +39,6 @@ class EstimatorBase(EstimatorApiABC):
             template: Optional[Template] = None,
             **kwargs
     ):
-        msg = 'You have to overwrite this method ' \
-              '`port` in the class of the estimator.'
-        raise NotImplementedError(msg)
-
-    def check(
-            self,
-            method: Optional[Method] = None,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None
-    ):
         """
         Port an estimator.
 
@@ -64,6 +54,20 @@ class EstimatorBase(EstimatorApiABC):
         Returns
         -------
         The ported estimator.
+        """
+        msg = 'You have to overwrite this method ' \
+              '`port` in the class of the estimator.'
+        raise NotImplementedError(msg)
+
+    def check(
+            self,
+            method: Optional[Method] = None,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None
+    ) -> Tuple[Method, Language, Template]:
+        """
+        Check whether the passed values (kind of method, language
+        and template) are supported by the estimator or not.
         """
 
         # Check estimator defaults:
