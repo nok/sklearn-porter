@@ -23,7 +23,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     See also
     --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
+    https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
     """
     DEFAULT_LANGUAGE = Language.JAVA
     DEFAULT_METHOD = Method.PREDICT

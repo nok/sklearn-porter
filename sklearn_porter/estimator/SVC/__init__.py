@@ -22,7 +22,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
     See also
     --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
+    https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
     """
     DEFAULT_LANGUAGE = Language.JAVA
     DEFAULT_METHOD = Method.PREDICT
@@ -114,6 +114,8 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Placeholders:
         placeholders = dict(
+            estimator_name=self.estimator_name,
+            estimator_url=self.estimator_url,
             class_name=kwargs.get('class_name'),
             method_name=kwargs.get('method_name'),
         )

@@ -16,9 +16,11 @@ class NuSVC(SVC, EstimatorBase):
 
     See also
     --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html
+    https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html
     """
     estimator = None  # type: NuSVCClass
 
     def __init__(self, estimator: NuSVCClass):
         super().__init__(estimator)
+        self.estimator_url = 'https://scikit-learn.org/stable/modules/' \
+                             'generated/sklearn.svm.NuSVC.html'

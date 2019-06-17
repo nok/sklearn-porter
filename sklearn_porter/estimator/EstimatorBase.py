@@ -24,6 +24,8 @@ class EstimatorBase(EstimatorApiABC):
     SUPPORT = None  # type: Dict[Language, Dict[Method, Set[Template]]]
 
     estimator = None  # type: BaseEstimator
+    estimator_name = None  # type: str
+    estimator_url = None  # type: str
 
     model_data = {}  # stores parameters, e.g. weights or coefficients
     meta_info = {}  # stores meta information, e.g. num of classes or features
@@ -31,6 +33,27 @@ class EstimatorBase(EstimatorApiABC):
     def __init__(self, estimator: BaseEstimator):
         self.estimator = estimator
         self.estimator_name = estimator.__class__.__qualname__
+
+        default_url = 'https://scikit-learn.org/stable/documentation.html'
+        self.estimator_url = default_url
+        urls = {
+            'AdaBoostClassifier': 'ensemble.AdaBoostClassifier',
+            'BernoulliNB': 'naive_bayes.BernoulliNB',
+            'DecisionTreeClassifier': 'tree.DecisionTreeClassifier',
+            'ExtraTreesClassifier': 'ensemble.ExtraTreesClassifier',
+            'GaussianNB': 'naive_bayes.GaussianNB',
+            'KNeighborsClassifier': 'neighbors.KNeighborsClassifier',
+            'LinearSVC': 'svm.LinearSVC',
+            'MLPClassifier': 'neural_network.MLPClassifier',
+            'MLPRegressor': 'neural_network.MLPRegressor',
+            'NuSVC': 'svm.NuSVC',
+            'RandomForestClassifier': 'ensemble.RandomForestClassifier',
+            'SVC': 'svm.SVC',
+        }
+        if self.estimator_name in urls:
+            base_url = 'https://scikit-learn.org/stable/' \
+                       'modules/generated/sklearn.{}.html'
+            self.estimator_url = base_url.format(urls.get(self.estimator_name))
 
     def port(
             self,
