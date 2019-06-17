@@ -22,5 +22,3 @@ class NuSVC(SVC, EstimatorBase):
 
     def __init__(self, estimator: NuSVCClass):
         super().__init__(estimator)
-        self.estimator_url = 'https://scikit-learn.org/stable/modules/' \
-                             'generated/sklearn.svm.NuSVC.html'
