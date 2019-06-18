@@ -19,6 +19,8 @@ class JavaScript(LanguageABC):
     CMD_EXECUTE = 'node {dest_dir}' + sep + '{dest_file}'
 
     TEMPLATES = {
+        'init':         'var {name} = {value};',
+
         # if/else condition:
         'if':           'if ({0} {1} {2}) {{',
         'else':         '} else {',

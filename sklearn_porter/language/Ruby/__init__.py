@@ -19,6 +19,8 @@ class Ruby(LanguageABC):
     CMD_EXECUTE = 'ruby {dest_dir}' + sep + '{dest_file}'
 
     TEMPLATES = {
+        'init':         '{name} = {value}',
+
         # if/else condition:
         'if':           'if {0} {1} {2}',
         'else':         'else',

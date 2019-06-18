@@ -19,6 +19,7 @@ class PHP(LanguageABC):
     CMD_EXECUTE = 'php -f {dest_dir}' + sep + '{dest_file}'
 
     TEMPLATES = {
+        'init':         '${name} = {value};',
         # if/else condition:
         'if':           'if ({0} {1} {2}) {{',
         'else':         '} else {',

@@ -22,6 +22,8 @@ class Java(LanguageABC):
     CMD_EXECUTE = 'java {class_path} {dest_dir}' + sep + '{dest_file}'
 
     TEMPLATES = {
+        'init':         '{type} {name} = {value};',
+
         # if/else condition:
         'if':           'if ({0} {1} {2}) {{',
         'else':         '} else {',
