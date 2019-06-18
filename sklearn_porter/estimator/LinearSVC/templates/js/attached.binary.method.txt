@@ -1,0 +1,10 @@
+this.{method_name} = function(features) {{
+    var prob = 0.;
+    for (var i = 0, il = this.coeffs.length; i < il; i++) {{
+        prob += this.coeffs[i] * features[i];
+    }}
+    if (prob + this.inters > 0) {{
+        return 1;
+    }}
+    return 0;
+}};

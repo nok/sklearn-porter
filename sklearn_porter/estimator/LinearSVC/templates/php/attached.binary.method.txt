@@ -1,0 +1,10 @@
+public function {method_name}($features) {{
+    $prob = 0.;
+    for ($i = 0, $il = count($this->coeffs); $i < $il; $i++) {{
+        $prob += $this->coeffs[$i] * $features[$i];
+    }}
+    if ($prob + $this->inters > 0) {{
+        return 1;
+    }}
+    return 0;
+}}

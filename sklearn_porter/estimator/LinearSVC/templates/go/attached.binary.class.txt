@@ -1,0 +1,10 @@
+import (
+	"os"
+	"fmt"
+	"strconv"
+)
+
+type {class_name} struct {{
+	coeffs []float64
+	inters float64
+}}

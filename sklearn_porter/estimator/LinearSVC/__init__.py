@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-
+from json import encoder, dumps
+from textwrap import indent
 from typing import Union, Tuple, Optional
 
 from sklearn.svm.classes import LinearSVC as LinearSVCClass
@@ -19,8 +20,21 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
 
     See also
     --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html
+    https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html
     """
+    DEFAULT_LANGUAGE = Language.JAVA
+    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_TEMPLATE = Template.ATTACHED
+
+    SUPPORT = {
+        Language.C: {Method.PREDICT: {Template.ATTACHED}},
+        Language.GO: {Method.PREDICT: {Template.ATTACHED}},
+        Language.JAVA: {Method.PREDICT: {Template.ATTACHED, Template.EXPORTED}},
+        Language.JS: {Method.PREDICT: {Template.ATTACHED}},
+        Language.PHP: {Method.PREDICT: {Template.ATTACHED}},
+        Language.RUBY: {Method.PREDICT: {Template.ATTACHED}}
+    }
+
     estimator = None  # type: LinearSVCClass
 
     def __init__(self, estimator: LinearSVCClass):
@@ -28,8 +42,24 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         L.info('Create specific estimator `%s`.', self.estimator_name)
         est = self.estimator  # alias
 
-        self.meta_info = dict()
-        self.model_data = dict()
+        self.meta_info = dict(
+            n_features=len(est.coef_[0]),
+            n_classes=len(est.classes_)
+        )
+
+        is_binary = self.meta_info['n_classes'] == 2
+
+        if is_binary:
+            self.model_data = dict(
+                coeffs=est.coef_[0].tolist(),
+                inters=est.intercept_[0]
+            )
+
+        else:
+            self.model_data = dict(
+                coeffs=est.coef_.tolist(),
+                inters=est.intercept_.tolist()
+            )
 
     def port(
             self,
@@ -62,8 +92,13 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
 
         converter = kwargs.get('converter')
 
+        is_binary = self.meta_info['n_classes'] == 2
+        variant = 'binary' if is_binary else 'multi'
+
         # Placeholders:
         placeholders = dict(
+            estimator_name=self.estimator_name,
+            estimator_url=self.estimator_url,
             class_name=kwargs.get('class_name'),
             method_name=kwargs.get('method_name'),
         )
@@ -73,6 +108,82 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         })
 
         # Load templates:
-        temps = self._load_templates(language.value.KEY)
+        tpls = self._load_templates(language.value.KEY)
 
-        return str(self.estimator)
+        if language is Language.JAVA and template == Template.EXPORTED:
+            tpl_name = 'exported.' + variant + '.class'
+            output = str(tpls.get(tpl_name).format(**placeholders))
+            converter = kwargs.get('converter')
+            encoder.FLOAT_REPR = lambda o: converter(o)
+            model_data = dumps(self.model_data, sort_keys=True)
+            return output, model_data
+
+        # Pick templates:
+        tpl_init = tpls.get('init')
+        tpl_double = tpls.get('double')
+        tpl_arr_1 = tpls.get('arr[]')
+        tpl_arr_2 = tpls.get('arr[][]')
+        tpl_in_brackets = tpls.get('in_brackets')
+        tpl_indent = tpls.get('indent')
+
+        if is_binary:
+
+            inters_val = converter(self.model_data['inters'])
+            inters_str = tpl_init.format(
+                type=tpl_double,
+                name='inters',
+                value=inters_val
+            )
+
+            coeffs_val = list(map(converter, self.model_data['coeffs']))
+            coeffs_str = tpl_arr_1.format(
+                type=tpl_double,
+                name='coeffs',
+                value=', '.join(coeffs_val),
+                n=len(coeffs_val)
+            )
+
+        else:  # is multi
+
+            inters_val = list(map(converter, self.model_data['inters']))
+            inters_str = tpl_arr_1.format(
+                type=tpl_double,
+                name='inters',
+                values=', '.join(inters_val),
+                n=len(inters_val)
+            )
+
+            coeffs_val = self.model_data['coeffs']
+            coeffs_str = tpl_arr_2.format(
+                type=tpl_double,
+                name='coeffs',
+                values=', '.join(list(tpl_in_brackets.format(', '.join(
+                    list(map(converter, v)))) for v in coeffs_val)),
+                n=len(coeffs_val),
+                m=len(coeffs_val[0])
+            )
+
+        placeholders.update(dict(
+            coeffs=coeffs_str,
+            inters=inters_str,
+        ))
+
+        # Make method:
+        n_indents = 1 if language is Language.JAVA else 0
+        tpl_method = tpls.get('attached.' + variant + '.method')
+        tpl_method = indent(tpl_method, n_indents * tpl_indent)
+        tpl_method = tpl_method[(n_indents * len(tpl_indent)):]
+        out_method = tpl_method.format(**placeholders)
+        placeholders.update(dict(method=out_method))
+
+        # Make class:
+        if language in (Language.JAVA, Language.GO):
+            tpl_class_head = tpls.get('attached.' + variant + '.class')
+            tpl_class_head = indent(tpl_class_head, n_indents * tpl_indent)
+            tpl_class_head = tpl_class_head[(n_indents * len(tpl_indent)):]
+            out_class_head = tpl_class_head.format(**placeholders)
+            placeholders.update(dict(class_head=out_class_head))
+        tpl_class = tpls.get('attached.class')
+        out_class = tpl_class.format(**placeholders)
+
+        return out_class

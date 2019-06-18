@@ -1,0 +1,26 @@
+class {class_name}
+
+	def initialize (coeffs, inters)
+		@coeffs = coeffs
+		@inters = inters
+	end
+
+	{method}
+
+end
+
+if ARGV.length == {n_features}
+
+	# Features:
+	features = ARGV.collect {{ |i| i.to_f }}
+
+	# Parameters:
+	{coeffs}
+	{inters}
+
+	# Prediction:
+	clf = {class_name}.new coeffs, inters
+	estimation = clf.{method_name} features
+	puts estimation
+
+end

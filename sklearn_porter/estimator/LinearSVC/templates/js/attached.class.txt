@@ -1,0 +1,26 @@
+var {class_name} = function(coeffs, inters) {{
+
+    this.coeffs = coeffs;
+    this.inters = inters;
+
+    {method}
+
+}};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
+    if (process.argv.length - 2 === {n_features}) {{
+
+        // Features
+        var features = process.argv.slice(2);
+
+        // Parameters:
+        {coeffs}
+        {inters}
+
+        // Prediction:
+        var clf = new {class_name}(coeffs, inters);
+        var prediction = clf.{method_name}(features);
+        console.log(prediction);
+
+    }}
+}}

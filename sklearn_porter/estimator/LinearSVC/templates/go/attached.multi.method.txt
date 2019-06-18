@@ -1,0 +1,16 @@
+func (svc {class_name}) {method_name}(features []float64) int {{
+	classIdx := 0
+	classVal := math.Inf(-1)
+	outerCount, innerCount := len(svc.coeffs), len(svc.coeffs[0])
+	for i := 0; i < outerCount; i++ {{
+		var prob float64
+		for j := 0; j < innerCount; j++ {{
+			prob = prob + svc.coeffs[i][j] * features[j]
+		}}
+		if prob + svc.inters[i] > classVal {{
+			classVal = prob + svc.inters[i]
+			classIdx = i
+		}}
+	}}
+	return classIdx
+}}
