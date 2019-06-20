@@ -9,7 +9,7 @@ from sklearn.base import BaseEstimator
 
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.utils import get_logger
-from sklearn_porter.exceptions import NotSupportedError
+from sklearn_porter.exceptions import NotSupportedYetError
 from sklearn_porter.enums import Method, Language, Template
 
 L = get_logger(__name__)
@@ -127,19 +127,19 @@ class EstimatorBase(EstimatorApiABC):
         if method not in self.SUPPORT[language].keys():
             msg = 'Currently only `predict` ' \
                   'is a valid method type.'
-            raise NotSupportedError(msg)
+            raise NotSupportedYetError(msg)
 
         # Check language support:
         if language not in self.SUPPORT.keys():
             msg = 'Currently the language `{}` ' \
                   'is not supported yet.'.format(language.value)
-            raise NotSupportedError(msg)
+            raise NotSupportedYetError(msg)
 
         # Check the template support:
         if template not in self.SUPPORT[language][method]:
             msg = 'Currently the template `{}` ' \
                   'is not implemented yet.'.format(template.value)
-            raise NotSupportedError(msg)
+            raise NotSupportedYetError(msg)
 
         return method, language, template
 
