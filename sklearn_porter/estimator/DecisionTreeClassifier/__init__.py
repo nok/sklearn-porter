@@ -4,6 +4,7 @@ from typing import Callable, Union, Tuple, Dict, Optional
 from textwrap import indent
 from json import dumps, encoder
 from logging import DEBUG
+from copy import deepcopy
 
 from sklearn.tree.tree import DecisionTreeClassifier \
     as DecisionTreeClassifierClass
@@ -109,17 +110,18 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         converter = kwargs.get('converter')
 
         # Placeholders:
-        placeholders = dict(
+        plas = deepcopy(self.placeholders)  # alias
+        plas.update(dict(
             class_name=kwargs.get('class_name'),
             method_name=kwargs.get('method_name'),
-        )
-        placeholders.update(self.meta_info)
+        ))
+        plas.update(self.meta_info)
 
         # Load templates:
         tpls = self._load_templates(language.value.KEY)
 
         if template == Template.EXPORTED:
-            output = str(tpls.get('exported.class').format(**placeholders))
+            output = str(tpls.get('exported.class').format(**plas))
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
@@ -161,7 +163,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         classes_str = tpl_arr_2.format(type=tpl_int, name='classes',
                                        values=classes_str, n=n, m=m)
 
-        placeholders.update(dict(
+        plas.update(dict(
             lefts=lefts_str,
             rights=rights_str,
             thresholds=thresholds_str,
@@ -170,7 +172,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         ))
 
         if template == Template.ATTACHED:
-            return tpls.get('attached.class').format(**placeholders)
+            return tpls.get('attached.class').format(**plas)
 
         if template == Template.COMBINED:
 
@@ -184,7 +186,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             out_tree = indent(out_tree, 1 * tpl_indent)
 
             # Make method:
-            placeholders.update(dict(tree=out_tree))
+            plas.update(dict(tree=out_tree))
             n_indents = 1 if language in [
                 Language.JAVA,
                 Language.JS,
@@ -193,11 +195,11 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             ] else 0
             tpl_method = indent(tpl_method, n_indents * tpl_indent)
             tpl_method = tpl_method[(n_indents * len(tpl_indent)):]
-            out_method = tpl_method.format(**placeholders)
+            out_method = tpl_method.format(**plas)
 
             # Make class:
-            placeholders.update(dict(method=out_method))
-            out_class = tpl_class.format(**placeholders)
+            plas.update(dict(method=out_method))
+            out_class = tpl_class.format(**plas)
 
             return out_class
 

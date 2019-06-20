@@ -3,6 +3,7 @@
 from typing import Union, Tuple, Optional
 from textwrap import indent
 from json import dumps, encoder
+from copy import deepcopy
 
 from sklearn.svm.classes import SVC as SVCClass
 
@@ -113,19 +114,18 @@ class SVC(EstimatorBase, EstimatorApiABC):
         converter = kwargs.get('converter')
 
         # Placeholders:
-        placeholders = dict(
-            estimator_name=self.estimator_name,
-            estimator_url=self.estimator_url,
+        plas = deepcopy(self.placeholders)  # alias
+        plas.update(dict(
             class_name=kwargs.get('class_name'),
             method_name=kwargs.get('method_name'),
-        )
-        placeholders.update(self.meta_info)
+        ))
+        plas.update(self.meta_info)
 
         # Load templates:
         tpls = self._load_templates(language.value.KEY)
 
         if template == Template.EXPORTED:
-            output = str(tpls.get('exported.class').format(**placeholders))
+            output = str(tpls.get('exported.class').format(**plas))
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, sort_keys=True)
@@ -154,7 +154,8 @@ class SVC(EstimatorBase, EstimatorApiABC):
         vectors_str = tpl_arr_2.format(
             type=tpl_double,
             name='vectors',  # convert 2D lists to a string `{{1, 2, 3}, {...}}`
-            values=', '.join(list(tpl_in_brackets.format(', '.join(list(map(converter, v)))) for v in vectors_val)),
+            values=', '.join(list(tpl_in_brackets.format(
+                ', '.join(list(map(converter, v)))) for v in vectors_val)),
             n=len(vectors_val),
             m=len(vectors_val[0])
         )
@@ -164,7 +165,8 @@ class SVC(EstimatorBase, EstimatorApiABC):
         coeffs_str = tpl_arr_2.format(
             type=tpl_double,
             name='coeffs',
-            values=', '.join(list(tpl_in_brackets.format(', '.join(list(map(converter, v)))) for v in coeffs_val)),
+            values=', '.join(list(tpl_in_brackets.format(
+                ', '.join(list(map(converter, v)))) for v in coeffs_val)),
             n=len(coeffs_val),
             m=len(coeffs_val[0])
         )
@@ -195,7 +197,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         degree_val = self.model_data['degree']
         degree_str = converter(degree_val)
 
-        placeholders.update(dict(
+        plas.update(dict(
             weights=weights_str,
             vectors=vectors_str,
             coeffs=coeffs_str,
@@ -216,11 +218,11 @@ class SVC(EstimatorBase, EstimatorApiABC):
         ] else 0
         tpl_method = indent(tpl_method, n_indents * tpl_indent)
         tpl_method = tpl_method[(n_indents * len(tpl_indent)):]
-        out_method = tpl_method.format(**placeholders)
-        placeholders.update(dict(method=out_method))
+        out_method = tpl_method.format(**plas)
+        plas.update(dict(method=out_method))
 
         # Make class:
         tpl_class = tpls.get('attached.class')
-        out_class = tpl_class.format(**placeholders)
+        out_class = tpl_class.format(**plas)
 
         return out_class

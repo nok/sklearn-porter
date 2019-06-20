@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+
 from json import encoder, dumps
 from textwrap import indent
 from typing import Union, Tuple, Optional
+from copy import deepcopy
 
 from sklearn.svm.classes import LinearSVC as LinearSVCClass
 
@@ -96,23 +98,19 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         variant = 'binary' if is_binary else 'multi'
 
         # Placeholders:
-        placeholders = dict(
-            estimator_name=self.estimator_name,
-            estimator_url=self.estimator_url,
+        plas = deepcopy(self.placeholders)  # alias
+        plas.update(dict(
             class_name=kwargs.get('class_name'),
             method_name=kwargs.get('method_name'),
-        )
-        placeholders.update({  # merge all placeholders
-            **self.model_data,
-            **self.meta_info
-        })
+        ))
+        plas.update(self.meta_info)
 
         # Load templates:
         tpls = self._load_templates(language.value.KEY)
 
         if language is Language.JAVA and template == Template.EXPORTED:
             tpl_name = 'exported.' + variant + '.class'
-            output = str(tpls.get(tpl_name).format(**placeholders))
+            output = str(tpls.get(tpl_name).format(**plas))
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, sort_keys=True)
@@ -163,7 +161,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
                 m=len(coeffs_val[0])
             )
 
-        placeholders.update(dict(
+        plas.update(dict(
             coeffs=coeffs_str,
             inters=inters_str,
         ))
@@ -173,17 +171,17 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         tpl_method = tpls.get('attached.' + variant + '.method')
         tpl_method = indent(tpl_method, n_indents * tpl_indent)
         tpl_method = tpl_method[(n_indents * len(tpl_indent)):]
-        out_method = tpl_method.format(**placeholders)
-        placeholders.update(dict(method=out_method))
+        out_method = tpl_method.format(**plas)
+        plas.update(dict(method=out_method))
 
         # Make class:
         if language in (Language.JAVA, Language.GO):
             tpl_class_head = tpls.get('attached.' + variant + '.class')
             tpl_class_head = indent(tpl_class_head, n_indents * tpl_indent)
             tpl_class_head = tpl_class_head[(n_indents * len(tpl_indent)):]
-            out_class_head = tpl_class_head.format(**placeholders)
-            placeholders.update(dict(class_head=out_class_head))
+            out_class_head = tpl_class_head.format(**plas)
+            plas.update(dict(class_head=out_class_head))
         tpl_class = tpls.get('attached.class')
-        out_class = tpl_class.format(**placeholders)
+        out_class = tpl_class.format(**plas)
 
         return out_class

@@ -30,6 +30,8 @@ class EstimatorBase(EstimatorApiABC):
     model_data = {}  # stores parameters, e.g. weights or coefficients
     meta_info = {}  # stores meta information, e.g. num of classes or features
 
+    placeholders = {}  # stores rendered templates and single information
+
     def __init__(self, estimator: BaseEstimator):
         self.estimator = estimator
         self.estimator_name = estimator.__class__.__qualname__
@@ -54,6 +56,11 @@ class EstimatorBase(EstimatorApiABC):
             base_url = 'https://scikit-learn.org/stable/' \
                        'modules/generated/sklearn.{}.html'
             self.estimator_url = base_url.format(urls.get(self.estimator_name))
+
+        self.placeholders.update(dict(
+            estimator_name=self.estimator_name,
+            estimator_url=self.estimator_url,
+        ))
 
     def port(
             self,
