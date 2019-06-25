@@ -13,13 +13,20 @@ from sklearn.base import RegressorMixin
 
 # sklearn-porter
 from sklearn_porter import __version__ as sklearn_porter_version
-from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.enums import (
+    Method,
+    Language,
+    Template
+)
 from sklearn_porter.exceptions import (
     InvalidMethodError,
     InvalidLanguageError,
     InvalidTemplateError
 )
-from sklearn_porter.utils import get_logger, get_qualname
+from sklearn_porter.utils import (
+    get_logger,
+    get_qualname
+)
 
 L = get_logger(__name__)
 
@@ -341,9 +348,9 @@ class Estimator:
 
     def port(
             self,
-            method: Optional[str] = None,
-            language: Optional[str] = None,
-            template: Optional[str] = None,
+            method: Optional[Union[str, Method]] = None,
+            language: Optional[Union[str, Language]] = None,
+            template: Optional[Union[str, Template]] = None,
             **kwargs
     ) -> Union[str, Tuple[str]]:
         """
@@ -362,19 +369,19 @@ class Estimator:
         -------
         The transpiled estimator in the target programming language.
         """
-        if method:
+        if method and isinstance(method, str):
             try:
                 method = Method[method.upper()]
             except KeyError:
                 raise InvalidMethodError(method)
 
-        if language:
+        if language and isinstance(language, str):
             try:
                 language = Language[language.upper()]
             except KeyError:
                 raise InvalidLanguageError(language)
 
-        if template:
+        if template and isinstance(template, str):
             try:
                 template = Template[template.upper()]
             except KeyError:
@@ -390,9 +397,9 @@ class Estimator:
 
     def export(
             self,
-            method: str = Method.PREDICT.value,
-            language: str = Language.JAVA.value.KEY,
-            template: Optional[str] = None,
+            method: Optional[Union[str, Method]] = None,
+            language: Optional[Union[str, Language]] = None,
+            template: Optional[Union[str, Template]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -419,9 +426,9 @@ class Estimator:
 
     def dump(
             self,
-            method: Optional[str] = None,
-            language: Optional[str] = None,
-            template: Optional[str] = None,
+            method: Optional[Union[str, Method]] = None,
+            language: Optional[Union[str, Language]] = None,
+            template: Optional[Union[str, Template]] = None,
             directory: Optional[Union[str, Path]] = None,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -443,19 +450,19 @@ class Estimator:
         -------
         The path(s) to the generated file(s).
         """
-        if method:
+        if method and isinstance(method, str):
             try:
                 method = Method[method.upper()]
             except KeyError:
                 raise InvalidMethodError(method)
 
-        if language:
+        if language and isinstance(language, str):
             try:
                 language = Language[language.upper()]
             except KeyError:
                 raise InvalidLanguageError(language)
 
-        if template:
+        if template and isinstance(template, str):
             try:
                 template = Template[template.upper()]
             except KeyError:
