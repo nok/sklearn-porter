@@ -2,6 +2,8 @@
 
 from typing import Union, Tuple, Optional
 from copy import deepcopy
+from json import encoder, dumps
+from numpy import exp, log
 
 from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
 
@@ -20,8 +22,17 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
 
     See also
     --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html
+    https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html
     """
+    DEFAULT_LANGUAGE = Language.JAVA
+    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_TEMPLATE = Template.ATTACHED
+
+    SUPPORT = {
+        Language.JAVA: {Method.PREDICT: {Template.ATTACHED, Template.EXPORTED}},
+        Language.JS: {Method.PREDICT: {Template.ATTACHED, }},
+    }
+
     estimator = None  # type: BernoulliNBClass
 
     def __init__(self, estimator: BernoulliNBClass):
@@ -29,8 +40,19 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         L.info('Create specific estimator `%s`.', self.estimator_name)
         est = self.estimator  # alias
 
-        self.meta_info = dict()
-        self.model_data = dict()
+        self.meta_info = dict(
+            n_features=len(est.feature_log_prob_[0]),
+            n_classes=len(est.classes_),
+        )
+
+        negatives = log(1 - exp(est.feature_log_prob_))
+        deltas = (est.feature_log_prob_ - negatives).T
+
+        self.model_data = dict(
+            priors=est.class_log_prior_.tolist(),
+            negatives=negatives.tolist(),
+            deltas=deltas.tolist()
+        )
 
     def port(
             self,
@@ -71,6 +93,62 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         plas.update(self.meta_info)
 
         # Load templates:
-        temps = self._load_templates(language.value.KEY)
+        tpls = self._load_templates(language.value.KEY)
 
-        return str(self.estimator)
+        # Export template:
+        if language == Language.JAVA and method == Template.EXPORTED:
+            output = str(tpls.get('exported.class').format(**plas))
+            converter = kwargs.get('converter')
+            encoder.FLOAT_REPR = lambda o: converter(o)
+            model_data = dumps(self.model_data, separators=(',', ':'))
+            return output, model_data
+
+        # Pick templates:
+        tpl_double = tpls.get('double')
+        tpl_arr_1 = tpls.get('arr[]')
+        tpl_arr_2 = tpls.get('arr[][]')
+        tpl_in_brackets = tpls.get('in_brackets')
+
+        priors_val = self.model_data.get('priors')
+        priors_val_converted = list(map(converter, priors_val))
+        priors_str = tpl_arr_1.format(
+            type=tpl_double,
+            name='priors',
+            values=', '.join(priors_val_converted)
+        )
+
+        deltas_val = self.model_data.get('deltas')
+        deltas_str = tpl_arr_2.format(
+            type=tpl_double,
+            name='deltas',
+            values=', '.join(list(tpl_in_brackets.format(', '.join(
+                list(map(converter, v)))) for v in deltas_val)),
+            n=len(deltas_val),
+            m=len(deltas_val[0])
+        )
+
+        negatives_val = self.model_data.get('negatives')
+        negatives_str = tpl_arr_2.format(
+            type=tpl_double,
+            name='negatives',
+            values=', '.join(list(tpl_in_brackets.format(', '.join(
+                list(map(converter, v)))) for v in negatives_val)),
+            n=len(negatives_val),
+            m=len(negatives_val[0])
+        )
+
+        plas.update(dict(
+            priors=priors_str,
+            deltas=deltas_str,
+            negatives=negatives_str,
+        ))
+
+        tpl_method = tpls.get('attached.method.predict')
+        out_method = tpl_method.format(**plas)
+
+        plas.update(dict(method=out_method))
+
+        tpl_class = tpls.get('attached.class')
+        out_class = tpl_class.format(**plas)
+
+        return out_class
