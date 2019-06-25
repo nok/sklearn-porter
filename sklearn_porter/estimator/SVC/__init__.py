@@ -18,13 +18,8 @@ L = get_logger(__name__)
 
 
 class SVC(EstimatorBase, EstimatorApiABC):
-    """
-    Extract model data and port a SVC classifier.
+    """Extract model data and port a SVC classifier."""
 
-    See also
-    --------
-    https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html
-    """
     DEFAULT_LANGUAGE = Language.JAVA
     DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.ATTACHED

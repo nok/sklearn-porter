@@ -16,13 +16,8 @@ L = get_logger(__name__)
 
 
 class MLPClassifier(EstimatorBase, EstimatorApiABC):
-    """
-    Extract model data and port a MLPClassifier classifier.
+    """Extract model data and port a MLPClassifier classifier."""
 
-    See also
-    --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html
-    """
     estimator = None  # type: MLPClassifierClass
 
     def __init__(self, estimator: MLPClassifierClass):

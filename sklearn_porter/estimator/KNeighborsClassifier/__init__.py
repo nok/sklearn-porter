@@ -16,13 +16,8 @@ L = get_logger(__name__)
 
 
 class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
-    """
-    Extract model data and port a KNeighborsClassifier classifier.
+    """Extract model data and port a KNeighborsClassifier classifier."""
 
-    See also
-    --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html
-    """
     estimator = None  # type: KNeighborsClassifierClass
 
     def __init__(self, estimator: KNeighborsClassifierClass):

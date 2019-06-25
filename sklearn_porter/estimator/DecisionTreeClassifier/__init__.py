@@ -19,13 +19,8 @@ L = get_logger(__name__)
 
 
 class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
-    """
-    Extract model data and port a DecisionTreeClassifier classifier.
+    """Extract model data and port a DecisionTreeClassifier classifier."""
 
-    See also
-    --------
-    https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html
-    """
     DEFAULT_LANGUAGE = Language.JAVA
     DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.ATTACHED

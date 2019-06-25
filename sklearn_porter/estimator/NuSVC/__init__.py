@@ -11,13 +11,8 @@ L = get_logger(__name__)
 
 
 class NuSVC(SVC, EstimatorBase):
-    """
-    Extract model data and port a NuSVC classifier.
+    """Extract model data and port a NuSVC classifier."""
 
-    See also
-    --------
-    https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html
-    """
     estimator = None  # type: NuSVCClass
 
     def __init__(self, estimator: NuSVCClass):

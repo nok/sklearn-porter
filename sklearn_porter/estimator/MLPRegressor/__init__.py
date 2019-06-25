@@ -16,13 +16,8 @@ L = get_logger(__name__)
 
 
 class MLPRegressor(EstimatorBase, EstimatorApiABC):
-    """
-    Extract model data and port a MLPRegressor regressor.
+    """Extract model data and port a MLPRegressor regressor."""
 
-    See also
-    --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html
-    """
     estimator = None  # type: MLPRegressorClass
 
     def __init__(self, estimator: MLPRegressorClass):

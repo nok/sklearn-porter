@@ -16,13 +16,8 @@ L = get_logger(__name__)
 
 
 class GaussianNB(EstimatorBase, EstimatorApiABC):
-    """
-    Extract model data and port a GaussianNB classifier.
+    """Extract model data and port a GaussianNB classifier."""
 
-    See also
-    --------
-    https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html
-    """
     DEFAULT_LANGUAGE = Language.JAVA
     DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.ATTACHED

@@ -16,13 +16,8 @@ L = get_logger(__name__)
 
 
 class ExtraTreesClassifier(EstimatorBase, EstimatorApiABC):
-    """
-    Extract model data and port an ExtraTreesClassifier classifier.
+    """Extract model data and port an ExtraTreesClassifier classifier."""
 
-    See also
-    --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html
-    """
     estimator = None  # type: ExtraTreesClassifierClass
 
     def __init__(self, estimator: ExtraTreesClassifierClass):

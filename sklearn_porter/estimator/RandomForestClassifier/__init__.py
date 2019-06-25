@@ -16,13 +16,8 @@ L = get_logger(__name__)
 
 
 class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
-    """
-    Extract model data and port a RandomForestClassifier classifier.
+    """Extract model data and port a RandomForestClassifier classifier."""
 
-    See also
-    --------
-    http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html
-    """
     estimator = None  # type: RandomForestClassifierClass
 
     def __init__(self, estimator: RandomForestClassifierClass):
