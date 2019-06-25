@@ -7,7 +7,7 @@
  * Documentation:
  *     {estimator_url}
  *
- * Further usage:
+ * Usage:
  *     1. Compile the generated source code:
  *         $ javac {class_name}.java
  *     2. Execute a prediction:

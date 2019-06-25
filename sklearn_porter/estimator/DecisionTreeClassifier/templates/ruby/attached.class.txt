@@ -6,7 +6,7 @@
 # Documentation:
 #     {estimator_url}
 #
-# Further usage:
+# Usage:
 #     1. Execute a prediction:
 #         $ ruby {class_name}.rb <feature_1>  ... <feature_{n_features}>
 

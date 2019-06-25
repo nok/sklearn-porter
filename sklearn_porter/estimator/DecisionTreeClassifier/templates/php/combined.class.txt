@@ -9,7 +9,7 @@ Estimator:
 Documentation:
     {estimator_url}
 
-Further usage:
+Usage:
     1. Execute a prediction:
         $ php -f {class_name}.php <feature_1>  ... <feature_{n_features}>
 */

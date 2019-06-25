@@ -7,7 +7,7 @@ Estimator:
 Documentation:
     {estimator_url}
 
-Further usage:
+Usage:
     1. Compile the generated source code:
         $ gcc {class_name}.c -std=c99 -lm -o {class_name}
     2. Execute a prediction:

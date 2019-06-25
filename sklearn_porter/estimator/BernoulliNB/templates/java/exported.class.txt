@@ -7,7 +7,7 @@
  * Documentation:
  *     {estimator_url}
  *
- * Further usage:
+ * Usage:
  *     1. Download dependencies:
  *         $ wget --quiet -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar
  *     2. Compile the generated source code:
