@@ -7,7 +7,7 @@ import subprocess
 
 import numpy as np
 
-from joblib import Parallel, delayed
+from joblib import Parallel, delayed, cpu_count
 
 from sklearn.metrics import accuracy_score
 from sklearn.tree.tree import DecisionTreeClassifier
@@ -381,7 +381,7 @@ class Porter(object):
             tnp_dir = './' + tnp_dir
             exec_cmd = [os.path.join(os.path.abspath(tnp_dir), exec_cmd[0])]
             cmds = [exec_cmd + [str(f).strip() for f in feat] for feat in X]
-            max_threads = joblib.cpu_count()
+            max_threads = cpu_count()
             # using threading will increase speed n-fold, depending on CPUs
             preds = Parallel(n_jobs=max_threads, backend='threading') \
                 (delayed(subprocess.check_output)(cmd, cwd=tnp_dir) for cmd in cmds)
