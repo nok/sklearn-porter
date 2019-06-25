@@ -95,13 +95,14 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         Returns
         -------
-        The ported estimator.
+        out_class : str
+            The ported estimator.
         """
         method, language, template = self.check(
             method=method, language=language, template=template)
 
+        # Default arguments:
         kwargs.setdefault('method_name', method.value)
-
         converter = kwargs.get('converter')
 
         # Placeholders:
@@ -112,15 +113,16 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         ))
         plas.update(self.meta_info)
 
-        # Load templates:
+        # Templates:
         tpls = self._load_templates(language.value.KEY)
 
         if template == Template.EXPORTED:
-            output = str(tpls.get('exported.class').format(**plas))
+            tpl_class = tpls.get('exported.class')
+            out_class = tpl_class.format(**plas)
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
-            return output, model_data
+            return out_class, model_data
 
         # Pick templates:
         tpl_int = tpls.get('int')
@@ -183,7 +185,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         ))
 
         if template == Template.ATTACHED:
-            return tpls.get('attached.class').format(**plas)
+            tpl_class = tpls.get('attached.class')
+            out_class = tpl_class.format(**plas)
+            return out_class
 
         if template == Template.COMBINED:
 
@@ -236,12 +240,6 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         -------
         A tree of a DecisionTreeClassifier.
         """
-        feature_indices = []
-        for i in self.model_data['indices']:
-            n_features = self.meta_info['n_features']
-            if n_features > 1 or (n_features == 1 and i >= 0):
-                feature_indices.append([str(j) for j in range(n_features)][i])
-
         n_indents = 1 if language in {'java', 'js', 'php', 'ruby'} else 0
         return self._create_branch(
             tpls, language, converter,
@@ -249,7 +247,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             self.model_data['rights'],
             self.model_data['thresholds'],
             self.model_data['classes'],
-            feature_indices, 0, n_indents)
+            self.model_data['indices'],
+            0, n_indents
+        )
 
     def _create_branch(
             self,
