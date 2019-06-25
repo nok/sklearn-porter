@@ -13,7 +13,7 @@
  *     2. Compile the generated source code:
  *         $ javac -cp gson.jar {class_name}.java
  *     3. Execute a prediction:
- *         $ java -cp .:gson.jar {class_name} {class_name}.json <feature_1> <feature_n>
+ *         $ java -cp .:gson.jar {class_name} {class_name}.json <feature_1>  ... <feature_{n_features}>
  */
 
 import java.io.File;

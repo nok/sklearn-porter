@@ -11,7 +11,7 @@
  *     1. Compile the generated source code:
  *         $ javac {class_name}.java
  *     2. Execute a prediction:
- *         $ java {class_name} <feature_1> <feature_n>
+ *         $ java {class_name} <feature_1>  ... <feature_{n_features}>
  */
 
 import java.io.File;

@@ -8,7 +8,7 @@
 #
 # Further usage:
 #     1. Execute a prediction:
-#         $ ruby {class_name}.rb <feature_1> <feature_n>
+#         $ ruby {class_name}.rb <feature_1>  ... <feature_{n_features}>
 
 class {class_name}
 
