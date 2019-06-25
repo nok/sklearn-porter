@@ -114,7 +114,8 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         priors_str = tpl_arr_1.format(
             type=tpl_double,
             name='priors',
-            values=', '.join(priors_val_converted)
+            values=', '.join(priors_val_converted),
+            n=len(priors_val)
         )
 
         deltas_val = self.model_data.get('deltas')
