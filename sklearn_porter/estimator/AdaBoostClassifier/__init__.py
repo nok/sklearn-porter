@@ -9,8 +9,6 @@ from sklearn.ensemble.weight_boosting import AdaBoostClassifier \
     as AdaBoostClassifierClass
 from sklearn.tree import DecisionTreeClassifier
 
-from sklearn_porter.estimator.DecisionTreeClassifier
-
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.enums import (
