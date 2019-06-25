@@ -101,7 +101,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         method, language, template = self.check(
             method=method, language=language, template=template)
 
-        # Default arguments:
+        # Arguments:
         kwargs.setdefault('method_name', method.value)
         converter = kwargs.get('converter')
 

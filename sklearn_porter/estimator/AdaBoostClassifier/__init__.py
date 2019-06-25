@@ -114,11 +114,11 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         method, language, template = self.check(
             method=method, language=language, template=template)
 
-        # Handle optional arguments:
+        # Default arguments:
         kwargs.setdefault('method_name', method.value)
         converter = kwargs.get('converter')
 
-        # Set placeholders:
+        # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
         plas.update(dict(
             class_name=kwargs.get('class_name'),
@@ -126,7 +126,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         ))
         plas.update(self.meta_info)
 
-        # Load templates:
+        # Templates:
         tpls = self._load_templates(language.value.KEY)
 
         # Handle EXPORT template:

@@ -104,8 +104,8 @@ class SVC(EstimatorBase, EstimatorApiABC):
         method, language, template = self.check(
             method=method, language=language, template=template)
 
+        # Arguments:
         kwargs.setdefault('method_name', method.value)
-
         converter = kwargs.get('converter')
 
         # Placeholders:
@@ -116,7 +116,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         ))
         plas.update(self.meta_info)
 
-        # Load templates:
+        # Templates:
         tpls = self._load_templates(language.value.KEY)
 
         if template == Template.EXPORTED:

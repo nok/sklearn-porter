@@ -55,8 +55,8 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         method, language, template = self.check(
             method=method, language=language, template=template)
 
+        # Arguments:
         kwargs.setdefault('method_name', method.value)
-
         converter = kwargs.get('converter')
 
         # Placeholders:
@@ -67,7 +67,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         ))
         plas.update(self.meta_info)
 
-        # Load templates:
+        # Templates:
         temps = self._load_templates(language.value.KEY)
 
         return str(self.estimator)

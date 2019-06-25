@@ -76,10 +76,11 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         method, language, template = self.check(
             method=method, language=language, template=template)
 
+        # Arguments:
         kwargs.setdefault('method_name', method.value)
-
         converter = kwargs.get('converter')
 
+        # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
         plas.update(dict(
             class_name=kwargs.get('class_name'),
@@ -87,7 +88,7 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         ))
         plas.update(self.meta_info)
 
-        # Load templates:
+        # Templates:
         tpls = self._load_templates(language.value.KEY)
 
         # Export template:
