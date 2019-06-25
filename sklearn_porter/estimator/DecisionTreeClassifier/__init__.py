@@ -136,32 +136,48 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         # Make contents:
         lefts_val = list(map(str, self.model_data['lefts']))
-        lefts_str = tpl_arr_1.format(type=tpl_int, name='lefts',
-                                     values=', '.join(lefts_val),
-                                     n=len(lefts_val))
+        lefts_str = tpl_arr_1.format(
+            type=tpl_int,
+            name='lefts',
+            values=', '.join(lefts_val),
+            n=len(lefts_val)
+        )
 
         rights_val = list(map(str, self.model_data['rights']))
-        rights_str = tpl_arr_1.format(type=tpl_int, name='rights',
-                                      values=', '.join(rights_val),
-                                      n=len(rights_val))
+        rights_str = tpl_arr_1.format(
+            type=tpl_int,
+            name='rights',
+            values=', '.join(rights_val),
+            n=len(rights_val)
+        )
 
         thresholds_val = list(map(converter, self.model_data['thresholds']))
-        thresholds_str = tpl_arr_1.format(type=tpl_double, name='thresholds',
-                                          values=', '.join(thresholds_val),
-                                          n=len(thresholds_val))
+        thresholds_str = tpl_arr_1.format(
+            type=tpl_double,
+            name='thresholds',
+            values=', '.join(thresholds_val),
+            n=len(thresholds_val)
+        )
 
         indices_val = list(map(str, self.model_data['indices']))
-        indices_str = tpl_arr_1.format(type=tpl_int, name='indices',
-                                       values=', '.join(indices_val),
-                                       n=len(indices_val))
+        indices_str = tpl_arr_1.format(
+            type=tpl_int,
+            name='indices',
+            values=', '.join(indices_val),
+            n=len(indices_val)
+        )
 
         classes_val = [list(map(str, e)) for e in self.model_data['classes']]
-        n, m = len(classes_val), self.meta_info.get('n_classes')
         classes_str = [', '.join(e) for e in classes_val]
         classes_str = ', '.join([tpl_in_brackets.format(e)
                                  for e in classes_str])
-        classes_str = tpl_arr_2.format(type=tpl_int, name='classes',
-                                       values=classes_str, n=n, m=m)
+        classes_str = tpl_arr_2.format(
+            type=tpl_int,
+            name='classes',
+            values=classes_str,
+            n=len(classes_val),
+            m=len(classes_val[0])
+        )
 
         plas.update(dict(
             lefts=lefts_str,
