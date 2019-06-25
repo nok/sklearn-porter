@@ -1,0 +1,5 @@
+double *{method_name}(double features[]) {{
+    double *classes = malloc(sizeof(double) * {n_classes});
+    {methods}
+    return classes;
+}}

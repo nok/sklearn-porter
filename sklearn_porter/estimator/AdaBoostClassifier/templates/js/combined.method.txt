@@ -1,0 +1,43 @@
+{methods}
+this.{method_name} = function(features) {{
+    var n_estimators = forest.length;
+    var preds = new Array(n_estimators);
+    var n_classes = {n_classes};
+    var classes = new Array(n_classes).fill(0.);
+    var normalizer, sum, idx, val;
+    var i, j;
+
+    for (i = 0; i < n_estimators; i++) {{
+        preds[i] = forest[i](features);
+    }}
+    for (i = 0; i < n_estimators; i++) {{
+        normalizer = 0.;
+        for (j = 0; j < n_classes; j++) {{
+            normalizer += preds[i][j];
+        }}
+        if (normalizer == 0.) {{
+            normalizer = 1.0;
+        }}
+        for (j = 0; j < n_classes; j++) {{
+            preds[i][j] = preds[i][j] / normalizer;
+            if (preds[i][j] <= 2.2204460492503131e-16) {{
+                preds[i][j] = 2.2204460492503131e-16;
+            }}
+            preds[i][j] = Math.log(preds[i][j]);
+        }}
+        sum = 0.0;
+        for (j = 0; j < n_classes; j++) {{
+            sum += preds[i][j];
+        }}
+        for (j = 0; j < n_classes; j++) {{
+            preds[i][j] = (n_classes - 1) * (preds[i][j] - (1. / n_classes) * sum);
+        }}
+    }}
+    for (i = 0; i < n_estimators; i++) {{
+        for (j = 0; j < n_classes; j++) {{
+            classes[j] += preds[i][j];
+        }}
+    }}
+
+    return findMax(classes);
+}};

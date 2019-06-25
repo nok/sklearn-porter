@@ -1,0 +1,5 @@
+private static double[] {method_name}(double[] features) {{
+    double[] classes = new double[{n_classes}];
+    {methods}
+    return classes;
+}}
