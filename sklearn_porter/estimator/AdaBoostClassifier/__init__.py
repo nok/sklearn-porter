@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import Union, Tuple, Optional
+from copy import deepcopy
 
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier \
     as AdaBoostClassifierClass
@@ -63,15 +64,12 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
 
         converter = kwargs.get('converter')
 
-        # Placeholders:
-        placeholders = dict(
+        plas = deepcopy(self.placeholders)  # alias
+        plas.update(dict(
             class_name=kwargs.get('class_name'),
             method_name=kwargs.get('method_name'),
-        )
-        placeholders.update({  # merge all placeholders
-            **self.model_data,
-            **self.meta_info
-        })
+        ))
+        plas.update(self.meta_info)
 
         # Load templates:
         temps = self._load_templates(language.value.KEY)
