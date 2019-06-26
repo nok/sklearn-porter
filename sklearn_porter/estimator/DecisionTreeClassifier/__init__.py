@@ -56,8 +56,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         L.info('Extracted meta information (keys only): {}'.format(
             self.meta_info.keys()))
         if L.isEnabledFor(DEBUG):
-            dump = EstimatorBase._dump_dict(self.meta_info)
-            L.debug('Extracted meta information:\n{}'.format(dump))
+            L.debug('Extracted meta information: {}'.format(self.meta_info))
 
         # Extract and save model data:
         self.model_data = dict(
@@ -70,8 +69,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         L.info('Extracted model data (keys only): {}'.format(
             self.model_data.keys()))
         if L.isEnabledFor(DEBUG):
-            dump = EstimatorBase._dump_dict(self.model_data)
-            L.debug('Extracted model data:\n{}'.format(dump))
+            L.debug('Extracted model data: {}'.format(self.model_data))
 
     def port(
             self,
