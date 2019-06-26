@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Dict, Tuple, Optional, Callable
+from typing import Union, Tuple, Optional
 from json import encoder, dumps
 from textwrap import indent
 from copy import deepcopy
