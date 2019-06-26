@@ -1,0 +1,66 @@
+var {class_name} = function(data) {{
+
+    var Tree = function(lefts, rights, thresholds, indices, classes) {{
+        this.lefts = lefts;
+        this.rights = rights;
+        this.thresholds = thresholds;
+        this.indices = indices;
+        this.classes = classes;
+
+        this.predict = function(features, node) {{
+            if (this.thresholds[node] != -2) {{
+                if (features[this.indices[node]] <= this.thresholds[node]) {{
+                    return this.predict(features, this.lefts[node]);
+                }} else {{
+                    return this.predict(features, this.rights[node]);
+                }}
+            }}
+            return findMax(this.classes[node]);
+        }};
+    }};
+
+    var findMax = function(nums) {{
+        var index = 0;
+        for (var i = 0; i < nums.length; i++) {{
+            index = nums[i] > nums[index] ? i : index;
+        }}
+        return index;
+    }};
+
+    this.forest = Array();
+    for (var i = 0; i < data.length; i++) {{
+        var tree = new Tree(data[i]['left_childs'], data[i]['right_childs'],
+                            data[i]['thresholds'], data[i]['indices'],
+                            data[i]['classes']);
+        this.forest.push(tree);
+    }}
+
+    this.{method_name} = function(features) {{
+        var nClasses = this.forest[0].classes.length;
+        var classes = new Array(nClasses).fill(0);
+        for (var i = 0; i < forest.length; i++) {{
+            classes[forest[i].predict(features)]++;
+        }}
+        return findMax(classes);
+    }};
+
+}};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
+    if (process.argv.length - 2 === {n_features}) {{
+
+        // Features:
+        var features = process.argv.slice(2);
+
+        // Parameters:
+        var data = [
+            {model_data}
+        ];
+
+        // Prediction:
+        var clf = new {class_name}(data);
+        var prediction = clf.{method_name}(features);
+        console.log(prediction);
+
+    }}
+}}

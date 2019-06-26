@@ -1,0 +1,6 @@
+forest.push(function(features) {{
+    var classes = new Array({n_classes}).fill(0);
+    {methods}
+
+    return findMax(classes);
+}});

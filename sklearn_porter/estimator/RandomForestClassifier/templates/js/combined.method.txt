@@ -1,0 +1,8 @@
+{methods}
+this.{method_name} = function(features) {{
+    var classes = new Array({n_classes}).fill(0);
+    for (var i = 0; i < forest.length; i++) {{
+        classes[forest[i](features)]++;
+    }}
+    return findMax(classes);
+}}
