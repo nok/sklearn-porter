@@ -1,8 +1,8 @@
 import (
-	"os"
 	"fmt"
-	"strconv"
 	"math"
+	"os"
+	"strconv"
 )
 
 type {class_name} struct {{
