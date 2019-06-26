@@ -1,0 +1,35 @@
+{dist_comp}
+
+public int {method_name}(double[] features) {{
+    int classIdx = 0;
+    if (this.k == 1) {{
+        double minDist = Double.POSITIVE_INFINITY;
+        double curDist;
+        for (int i = 0; i < this.y.length; i++) {{
+            curDist = {class_name}.compute(this.X[i], features, this.power);
+            if (curDist <= minDist) {{
+                minDist = curDist;
+                classIdx = y[i];
+            }}
+        }}
+    }} else {{
+        int[] classes = new int[this.n];
+        ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
+        for (int i = 0; i < this.y.length; i++) {{
+            dists.add(new Neighbor(y[i], {class_name}.compute(this.X[i], features, this.power)));
+        }}
+        Collections.sort(dists, new Comparator<Neighbor>() {{
+            @Override
+            public int compare(Neighbor n1, Neighbor n2) {{
+                return n1.dist.compareTo(n2.dist);
+            }}
+        }});
+        for (Neighbor neighbor : dists.subList(0, this.k)) {{
+            classes[neighbor.clazz]++;
+        }}
+        for (int i = 0; i < this.n; i++) {{
+            classIdx = classes[i] > classes[classIdx] ? i : classIdx;
+        }}
+    }}
+    return classIdx;
+}}

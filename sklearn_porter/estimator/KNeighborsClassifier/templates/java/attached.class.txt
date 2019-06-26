@@ -1,0 +1,53 @@
+import java.util.*;
+
+class {class_name} {{
+
+    private double[][] X;
+    private int[] y;
+    private int k;
+    private int n;
+    private double power;
+
+    public {class_name}(double[][] X, int[] y, int k, int n, double power) {{
+        this.X = X;
+        this.y = y;
+        this.k = k;
+        this.n = n;
+        this.power = power;
+    }}
+
+    private static class Neighbor {{
+        Integer clazz;
+        Double dist;
+        public Neighbor(int clazz, double dist) {{
+            this.clazz = clazz;
+            this.dist = dist;
+        }}
+    }}
+
+    {method}
+
+    public static void main(String[] args) {{
+        if (args.length == {n_features}) {{
+
+            // Features:
+            double[] features = new double[args.length];
+            for (int i = 0, l = args.length; i < l; i++) {{
+                features[i] = Double.parseDouble(args[i]);
+            }}
+
+            // Parameters:
+            {X}
+            {y}
+
+            // Prediction:
+            {class_name} clf = new {class_name}(X, y, {k}, {n}, {power});
+
+            // Prediction:
+            int estimation = clf.{method_name}(features);
+            System.out.println(estimation);
+
+        }}
+    }}
+
+}}
