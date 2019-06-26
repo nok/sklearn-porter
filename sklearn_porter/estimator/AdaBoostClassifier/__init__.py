@@ -156,28 +156,25 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         out_fns = '\n'.join(out_fns)
 
         # Generate function names:
-        out_fn_calls = ''
-        if language in (Language.JAVA,):
-            out_fn_calls = []
+        tpl_calls = tpls.get('combined.method_calls')
+        out_calls = []
+        for idx in range(self.meta_info.get('n_estimators')):
+            plas_copy = deepcopy(plas)
+            plas_copy.update(dict(method_index=idx))
+            out_call = tpl_calls.format(**plas_copy)
+            out_calls.append(out_call)
+        out_calls = '\n'.join(out_calls)
 
-            tpl_call = tpls.get('combined.method_calls')
-            for idx in range(self.meta_info.get('n_estimators')):
-                plas_copy = deepcopy(plas)
-                plas_copy.update(dict(method_index=idx))
-                out_call = tpl_call.format(**plas_copy)
-                out_fn_calls.append(out_call)
-            out_fn_calls = '\n'.join(out_fn_calls)
-
-            n_indents = 1
-            out_fn_calls = indent(out_fn_calls, n_indents * tpl_indent)
-            out_fn_calls = out_fn_calls[(n_indents * len(tpl_indent)):]
+        n_indents = 1
+        out_calls = indent(out_calls, n_indents * tpl_indent)
+        out_calls = out_calls[(n_indents * len(tpl_indent)):]
 
         # Make method:
         tpl_method = tpls.get('combined.method')
         plas_copy = deepcopy(plas)
         plas_copy.update(dict(
             methods=out_fns,
-            method_calls=out_fn_calls
+            method_calls=out_calls
         ))
         out_method = tpl_method.format(**plas_copy)
 
@@ -234,7 +231,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             0, 1
         )
 
-        tpl_tree = templates.get('combined.tree')
+        tpl_tree = templates.get('combined.single_method')
         out_tree = tpl_tree.format(
             method_name=method_name,
             methods=tree_branches,
@@ -325,9 +322,10 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             tpl = indent(tpl, depth * temp_indent)
 
             for i, rate in enumerate(value[node]):
-                clazz = tpl.format(i, rate)
-                clazz = '\n' + clazz
-                clazzes.append(clazz)
+                if float(rate) > 0:
+                    clazz = tpl.format(i, rate)
+                    clazz = '\n' + clazz
+                    clazzes.append(clazz)
 
             tpl = tpls.get('join')
             out += tpl.join(clazzes) + tpl
