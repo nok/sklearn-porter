@@ -17,11 +17,11 @@
 class {class_name} {{
 
     private static int findMax(int[] nums) {{
-        int index = 0;
+        int idx = 0;
         for (int i = 0; i < nums.length; i++) {{
-            index = nums[i] > nums[index] ? i : index;
+            idx = nums[i] > nums[idx] ? i : idx;
         }}
-        return index;
+        return idx;
     }}
 
     {method}

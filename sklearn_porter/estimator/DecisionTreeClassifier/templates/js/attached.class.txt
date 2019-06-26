@@ -21,11 +21,11 @@ var {class_name} = function(lefts, rights, thresholds, indices, classes) {{
     this.classes = classes;
 
     var findMax = function(nums) {{
-        var index = 0;
+        var idx = 0;
         for (var i = 0; i < nums.length; i++) {{
-            index = nums[i] > nums[index] ? i : index;
+            idx = nums[i] > nums[idx] ? i : idx;
         }}
-        return index;
+        return idx;
     }};
 
     this.{method_name} = function(features, node) {{

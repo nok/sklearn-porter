@@ -332,9 +332,10 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             tpl = indent(tpl, depth * temp_indent)
 
             for i, rate in enumerate(value[node]):
-                clazz = tpl.format(i, rate)
-                clazz = '\n' + clazz
-                clazzes.append(clazz)
+                if int(rate) > 0:
+                    clazz = tpl.format(i, rate)
+                    clazz = '\n' + clazz
+                    clazzes.append(clazz)
 
             tpl = tpls.get('join')
             out += tpl.join(clazzes) + tpl

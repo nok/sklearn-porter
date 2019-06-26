@@ -1,11 +1,16 @@
 int {method_name}(double features[{n_features}]) {{
+    int i;
+    int n_classes = {n_classes};
+    int classes[n_classes];
 
-    int classes[{n_classes}];
+    for (i = 0; i < n_classes; i++) {{
+        classes[i] = 0;
+    }}
     {tree}
 
-    int index = 0;
-    for (int i = 0; i < {n_classes}; i++) {{
-        index = classes[i] > classes[index] ? i : index;
+    int idx = 0;
+    for (i = 0; i < n_classes; i++) {{
+        idx = classes[i] > classes[idx] ? i : idx;
     }}
-    return index;
+    return idx;
 }}
