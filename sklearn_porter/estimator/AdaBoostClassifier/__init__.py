@@ -4,6 +4,7 @@ from typing import Union, Tuple, Optional, Callable
 from json import encoder, dumps
 from textwrap import indent
 from copy import deepcopy
+from logging import DEBUG
 
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier \
     as AdaBoostClassifierClass
@@ -11,15 +12,9 @@ from sklearn.tree import DecisionTreeClassifier
 
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.enums import (
-    Method,
-    Language,
-    Template
-)
-from sklearn_porter.exceptions import (
-    NotSupportedYetError,
+from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.exceptions import NotSupportedYetError, \
     NotFittedEstimatorError
-)
 from sklearn_porter.utils import get_logger
 
 
@@ -74,7 +69,10 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             n_features=est.estimators_[0].n_features_,
             n_estimators=n_estimators,
         )
-        L.info(self.meta_info)
+        L.info('Meta info (keys): {}'.format(
+            self.meta_info.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Meta info: {}'.format(self.meta_info))
 
         self.model_data['estimators'] = []
         for e in estimators:
@@ -85,6 +83,10 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
                 classes=[c[0] for c in e.tree_.value.tolist()],
                 indices=e.tree_.feature.tolist()
             ))
+        L.info('Model data (keys): {}'.format(
+            self.model_data.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Model data: {}'.format(self.model_data))
 
     def port(
             self,

@@ -3,6 +3,7 @@
 from typing import Union, Tuple, Optional
 from json import encoder, dumps
 from copy import deepcopy
+from logging import DEBUG
 
 from sklearn.naive_bayes import GaussianNB as GaussianNBClass
 
@@ -38,11 +39,20 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
             n_features=len(est.sigma_[0]),
             n_classes=len(est.classes_),
         )
+        L.info('Meta info (keys): {}'.format(
+            self.meta_info.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Meta info: {}'.format(self.meta_info))
+
         self.model_data = dict(
             priors=est.class_prior_.tolist(),
             sigmas=est.sigma_.tolist(),
             thetas=est.theta_.tolist(),
         )
+        L.info('Model data (keys): {}'.format(
+            self.model_data.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Model data: {}'.format(self.model_data))
 
     def port(
             self,

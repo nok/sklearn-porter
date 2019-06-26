@@ -2,6 +2,7 @@
 
 from typing import Union, Tuple, Optional
 from copy import deepcopy
+from logging import DEBUG
 
 from sklearn.neighbors.classification import KNeighborsClassifier \
     as KNeighborsClassifierClass
@@ -26,7 +27,16 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         est = self.estimator  # alias
 
         self.meta_info = dict()
+        L.info('Meta info (keys): {}'.format(
+            self.meta_info.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Meta info: {}'.format(self.meta_info))
+
         self.model_data = dict()
+        L.info('Model data (keys): {}'.format(
+            self.model_data.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Model data: {}'.format(self.model_data))
 
     def port(
             self,

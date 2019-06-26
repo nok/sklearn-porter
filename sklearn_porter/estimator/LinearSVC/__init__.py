@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+from typing import Union, Tuple, Optional
 from json import encoder, dumps
 from textwrap import indent
-from typing import Union, Tuple, Optional
 from copy import deepcopy
+from logging import DEBUG
 
 from sklearn.svm.classes import LinearSVC as LinearSVCClass
 
@@ -43,20 +44,26 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
             n_features=len(est.coef_[0]),
             n_classes=len(est.classes_)
         )
+        L.info('Meta info (keys): {}'.format(
+            self.meta_info.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Meta info: {}'.format(self.meta_info))
 
         is_binary = self.meta_info['n_classes'] == 2
-
         if is_binary:
             self.model_data = dict(
                 coeffs=est.coef_[0].tolist(),
                 inters=est.intercept_[0]
             )
-
         else:
             self.model_data = dict(
                 coeffs=est.coef_.tolist(),
                 inters=est.intercept_.tolist()
             )
+        L.info('Model data (keys): {}'.format(
+            self.model_data.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Model data: {}'.format(self.model_data))
 
     def port(
             self,

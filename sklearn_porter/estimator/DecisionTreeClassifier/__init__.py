@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Union, Tuple, Dict, Optional
+from typing import Union, Dict, Tuple, Optional, Callable
+from json import encoder, dumps
 from textwrap import indent
-from json import dumps, encoder
-from logging import DEBUG
 from copy import deepcopy
+from logging import DEBUG
 
 from sklearn.tree.tree import DecisionTreeClassifier \
     as DecisionTreeClassifierClass
@@ -53,10 +53,10 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n_features=est.n_features_,
             n_classes=len(est.tree_.value.tolist()[0][0]),
         )
-        L.info('Extracted meta information (keys only): {}'.format(
+        L.info('Meta info (keys): {}'.format(
             self.meta_info.keys()))
         if L.isEnabledFor(DEBUG):
-            L.debug('Extracted meta information: {}'.format(self.meta_info))
+            L.debug('Meta info: {}'.format(self.meta_info))
 
         # Extract and save model data:
         self.model_data = dict(
@@ -66,10 +66,10 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             indices=est.tree_.feature.tolist(),
             classes=[[int(c) for c in l[0]] for l in est.tree_.value.tolist()],
         )
-        L.info('Extracted model data (keys only): {}'.format(
+        L.info('Model data (keys): {}'.format(
             self.model_data.keys()))
         if L.isEnabledFor(DEBUG):
-            L.debug('Extracted model data: {}'.format(self.model_data))
+            L.debug('Model data: {}'.format(self.model_data))
 
     def port(
             self,

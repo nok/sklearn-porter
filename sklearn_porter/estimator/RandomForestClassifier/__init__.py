@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Tuple, Optional, Callable
-from textwrap import indent
+from typing import Union, Dict, Tuple, Optional, Callable
 from json import encoder, dumps
+from textwrap import indent
 from copy import deepcopy
+from logging import DEBUG
 
 from sklearn.ensemble.forest import RandomForestClassifier \
     as RandomForestClassifierClass
@@ -65,7 +66,10 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             n_classes=est.n_classes_,
             n_features=est.estimators_[0].n_features_,
         )
-        L.info(self.meta_info)
+        L.info('Meta info (keys): {}'.format(
+            self.meta_info.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Meta info: {}'.format(self.meta_info))
 
         # Extract and save model data:
         self.model_data['estimators'] = []
@@ -77,7 +81,10 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                 classes=[c[0] for c in e.tree_.value.astype(int).tolist()],
                 indices=e.tree_.feature.tolist()
             ))
-        L.info(self.model_data)
+        L.info('Model data (keys): {}'.format(
+            self.model_data.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Model data: {}'.format(self.model_data))
 
     def port(
             self,

@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from typing import Union, Tuple, Optional
-from copy import deepcopy
 from json import encoder, dumps
+from copy import deepcopy
 from numpy import exp, log
+from logging import DEBUG
 
 from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
 
@@ -39,6 +40,10 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             n_features=len(est.feature_log_prob_[0]),
             n_classes=len(est.classes_),
         )
+        L.info('Meta info (keys): {}'.format(
+            self.meta_info.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Meta info: {}'.format(self.meta_info))
 
         negatives = log(1 - exp(est.feature_log_prob_))
         deltas = (est.feature_log_prob_ - negatives).T
@@ -48,6 +53,10 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             negatives=negatives.tolist(),
             deltas=deltas.tolist()
         )
+        L.info('Model data (keys): {}'.format(
+            self.model_data.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Model data: {}'.format(self.model_data))
 
     def port(
             self,

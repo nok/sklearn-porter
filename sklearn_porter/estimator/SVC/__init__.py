@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from typing import Union, Tuple, Optional
+from json import encoder, dumps
 from textwrap import indent
-from json import dumps, encoder
 from copy import deepcopy
+from logging import DEBUG
 
 from sklearn.svm.classes import SVC as SVCClass
 
@@ -67,6 +68,10 @@ class SVC(EstimatorBase, EstimatorApiABC):
             coef0=params['coef0'],
             degree=params['degree'],
         )
+        L.info('Model data (keys): {}'.format(
+            self.model_data.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Model data: {}'.format(self.model_data))
 
         self.meta_info = dict(
             n_classes=len(est.classes_),
@@ -76,6 +81,10 @@ class SVC(EstimatorBase, EstimatorApiABC):
             n_coeffs=len(self.model_data['coeffs']),
             n_inters=len(self.model_data['inters']),
         )
+        L.info('Meta info (keys): {}'.format(
+            self.meta_info.keys()))
+        if L.isEnabledFor(DEBUG):
+            L.debug('Meta info: {}'.format(self.meta_info))
 
     def port(
             self,
