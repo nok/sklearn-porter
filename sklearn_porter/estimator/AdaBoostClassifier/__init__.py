@@ -48,7 +48,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             raise NotSupportedYetError(msg)
 
         # Check type of base estimators:
-        if not isinstance(est.base_estimator, DecisionTreeClassifier):
+        if not isinstance(est.base_estimator_, DecisionTreeClassifier):
             msg = 'The used base estimator `{}` is not supported yet.'
             msg = msg.format(est.base_estimator.__class__.__qualname__)
             raise NotSupportedYetError(msg)
