@@ -35,6 +35,7 @@ class JavaScript(LanguageABC):
         'in_brackets':  '[{0}]',
         'arr[]':        'var {name} = [{values}];',  # var ages = [1, 2];
         'arr[][]':      'var {name} = [{values}];',
+        'arr[][][]':    'var {name} = [{values}];',
 
         # Primitive data types:
         'int':          '',

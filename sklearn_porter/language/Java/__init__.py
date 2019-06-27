@@ -39,6 +39,7 @@ class Java(LanguageABC):
         # int[] ages = {1, 2};
         'arr[]':        '{type}[] {name} = {{{values}}};',
         'arr[][]':      '{type}[][] {name} = {{{values}}};',
+        'arr[][][]':    '{type}[][][] {name} = {{{values}}};',
 
         # Primitive data types:
         'int':          'int',

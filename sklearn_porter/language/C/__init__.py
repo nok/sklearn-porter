@@ -39,6 +39,7 @@ class C(LanguageABC):
         # in ages[2] = {1, 2};
         'arr[]':        '{type} {name}[{n}] = {{{values}}};',
         'arr[][]':      '{type} {name}[{n}][{m}] = {{{values}}};',
+        'arr[][][]':    '{type} {name}[{n}][{m}][{k}] = {{{values}}};',
 
         # Primitive data types:
         'int':          'int',

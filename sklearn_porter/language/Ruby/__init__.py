@@ -35,6 +35,7 @@ class Ruby(LanguageABC):
         'in_brackets':  '[{0}]',
         'arr[]':        '{name} = [{values}]',  # ages = [1, 2]
         'arr[][]':      '{name} = [{values}]',
+        'arr[][][]':    '{name} = [{values}]',
 
         # Primitive data types:
         'int':          '',

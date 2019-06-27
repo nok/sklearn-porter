@@ -39,6 +39,7 @@ class Go(LanguageABC):
         # ages := []int {1, 2}
         'arr[]':        '{name} := []{type} {{{values}}}',
         'arr[][]':      '{name} := [][]{type} {{{values}}}',
+        'arr[][][]':    '{name} := [][][]{type} {{{values}}}',
 
         # Primitive data types:
         'int':          'int',
