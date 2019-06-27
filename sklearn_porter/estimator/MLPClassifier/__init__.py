@@ -12,7 +12,8 @@ from sklearn.neural_network.multilayer_perceptron import MLPClassifier \
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.enums import Method, Language, Template
-from sklearn_porter.exceptions import NotSupportedYetError
+from sklearn_porter.exceptions import NotSupportedYetError, \
+    NotFittedEstimatorError
 from sklearn_porter.utils import get_logger
 
 
@@ -47,12 +48,18 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             raise NotSupportedYetError(msg)
 
         # Check output function:
-        out_fn = est.out_activation_
-        supported_out_fns = ['softmax', 'logistic']
-        if out_fn not in supported_out_fns:
-            msg = 'The passed output function `{}` is not supported yet.'
-            msg = msg.format(out_fn)
-            raise NotSupportedYetError(msg)
+        if self.estimator_name == 'MLPClassifier':
+            try:
+                out_fn = est.out_activation_
+            except AttributeError:
+                raise NotFittedEstimatorError(self.estimator_name)
+            else:
+                supported_out_fns = ['softmax', 'logistic']
+                if out_fn not in supported_out_fns:
+                    msg = 'The passed output function `{}`' \
+                          ' is not supported yet.'
+                    msg = msg.format(out_fn)
+                    raise NotSupportedYetError(msg)
 
         # Architecture:
         n_inputs = len(est.coefs_[0])
@@ -74,10 +81,12 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         self.model_data = dict(
             layers=list(map(int, layers[1:])),
             weights=list(map(np.ndarray.tolist, est.coefs_)),
-            bias=list(map(np.ndarray.tolist, est.coefs_)),
+            bias=list(map(np.ndarray.tolist, est.intercepts_)),
             hidden_activation=est.activation,
-            output_activation=est.out_activation_,
         )
+        if self.estimator_name == 'MLPClassifier':
+            self.model_data['output_activation'] = est.out_activation_
+
         L.info('Model data (keys): {}'.format(
             self.model_data.keys()))
         if L.isEnabledFor(DEBUG):

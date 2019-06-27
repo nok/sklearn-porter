@@ -1,83 +1,37 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Tuple, Optional
-from copy import deepcopy
-from logging import DEBUG
-
 from sklearn.neural_network.multilayer_perceptron \
     import MLPRegressor as MLPRegressorClass
 
-from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.estimator.MLPClassifier import MLPClassifier
 from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.exceptions import NotFittedEstimatorError
 from sklearn_porter.utils import get_logger
 
 
 L = get_logger(__name__)
 
 
-class MLPRegressor(EstimatorBase, EstimatorApiABC):
+class MLPRegressor(MLPClassifier, EstimatorBase):
     """Extract model data and port a MLPRegressor regressor."""
+
+    DEFAULT_LANGUAGE = Language.JS
+    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_TEMPLATE = Template.ATTACHED
+
+    SUPPORT = {
+        Language.JS: {Method.PREDICT: {Template.ATTACHED}},
+    }
 
     estimator = None  # type: MLPRegressorClass
 
     def __init__(self, estimator: MLPRegressorClass):
+
+        try:
+            estimator.coefs_
+        except AttributeError:
+            estimator_name = estimator.__class__.__qualname__
+            raise NotFittedEstimatorError(estimator_name)
+
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
-
-        self.meta_info = dict()
-        L.info('Meta info (keys): {}'.format(
-            self.meta_info.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Meta info: {}'.format(self.meta_info))
-
-        self.model_data = dict()
-        L.info('Model data (keys): {}'.format(
-            self.model_data.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Model data: {}'.format(self.model_data))
-
-    def port(
-            self,
-            method: Optional[Method] = None,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None,
-            **kwargs
-    ) -> Union[str, Tuple[str, str]]:
-        """
-        Port an estimator.
-
-        Parameters
-        ----------
-        method : Method
-            The required method.
-        language : Language
-            The required language.
-        template : Template
-            The required template.
-        kwargs
-
-        Returns
-        -------
-        The ported estimator.
-        """
-        method, language, template = self.check(
-            method=method, language=language, template=template)
-
-        # Arguments:
-        kwargs.setdefault('method_name', method.value)
-        converter = kwargs.get('converter')
-
-        # Placeholders:
-        plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=kwargs.get('class_name'),
-            method_name=kwargs.get('method_name'),
-        ))
-        plas.update(self.meta_info)
-
-        # Templates:
-        temps = self._load_templates(language.value.KEY)
-
-        return str(self.estimator)
