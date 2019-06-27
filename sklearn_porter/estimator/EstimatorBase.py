@@ -250,7 +250,7 @@ class EstimatorBase(EstimatorApiABC):
         # Add desired estimator at the end:
         bases.append(self.__class__.__name__)
 
-        for base_dir in set(bases):
+        for base_dir in bases:
             temps_dir = file_dir / base_dir / 'templates' / language.KEY
             if temps_dir.exists():
                 temps_paths = set(temps_dir.glob('*.txt'))
