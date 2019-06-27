@@ -11,7 +11,8 @@ from sklearn.svm.classes import SVC as SVCClass
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.enums import Method, Language, Template
-from sklearn_porter.exceptions import NotFittedEstimatorError
+from sklearn_porter.exceptions import NotFittedEstimatorError, \
+    NotSupportedYetError
 from sklearn_porter.utils import get_logger
 
 
@@ -50,8 +51,9 @@ class SVC(EstimatorBase, EstimatorApiABC):
         # Check kernel type:
         supported_kernels = ['linear', 'rbf', 'poly', 'sigmoid']
         if params['kernel'] not in supported_kernels:
-            msg = 'The kernel type is not supported.'
-            raise ValueError(msg)
+            msg = 'The passed kernel `{}` is not supported.'
+            msg = msg.format(params['kernel'])
+            raise NotSupportedYetError(msg)
 
         # Check gamma value:
         gamma = params['gamma']
