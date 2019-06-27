@@ -97,13 +97,12 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         tpls = self._load_templates(language.value.KEY)
 
         # Export:
-        if language == Language.JAVA and method == Template.EXPORTED:
+        if template == Template.EXPORTED:
             tpl_class = tpls.get('exported.class')
             out_class = tpl_class.format(**plas)
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
-            model_data = self.model_data['estimators']
-            model_data = dumps(model_data, separators=(',', ':'))
+            model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
         # Pick templates:

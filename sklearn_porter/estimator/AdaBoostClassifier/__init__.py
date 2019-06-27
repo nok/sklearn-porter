@@ -132,7 +132,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         tpls = self._load_templates(language.value.KEY)
 
         # Export:
-        if method == Template.EXPORTED:
+        if template == Template.EXPORTED:
             tpl_class = tpls.get('exported.class')
             out_class = tpl_class.format(**plas)
             converter = kwargs.get('converter')

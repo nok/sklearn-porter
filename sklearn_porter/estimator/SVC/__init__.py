@@ -136,8 +136,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
             out_class = tpl_class.format(**plas)
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
-            model_data = self.model_data['estimators']
-            model_data = dumps(model_data, separators=(',', ':'))
+            model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
         # Pick templates:
