@@ -4,6 +4,7 @@ from typing import Union, Tuple, Optional
 from json import encoder, dumps
 from copy import deepcopy
 from logging import DEBUG
+import numpy as np
 
 from sklearn.neural_network.multilayer_perceptron import MLPClassifier \
     as MLPClassifierClass
@@ -63,12 +64,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         layers = [n_inputs] + n_hidden_layers + [n_outputs]
 
         self.meta_info = dict(
-            n_layers=est.n_layers_,
-            n_inputs=len(est.coefs_[0]),
-            n_features=len(est.coefs_[0]),
-            n_outputs=est.n_outputs_,
-            n_hidden_layers=est.n_layers_ - 2,
-            layer_units=layers
+            n_features=n_inputs,
         )
         L.info('Meta info (keys): {}'.format(
             self.meta_info.keys()))
@@ -77,8 +73,8 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
         self.model_data = dict(
             layers=list(map(int, layers[1:])),
-            weights=est.coefs_,
-            bias=est.intercepts_,
+            weights=list(map(np.ndarray.tolist, est.coefs_)),
+            bias=list(map(np.ndarray.tolist, est.coefs_)),
             hidden_activation=est.activation,
             output_activation=est.out_activation_,
         )
