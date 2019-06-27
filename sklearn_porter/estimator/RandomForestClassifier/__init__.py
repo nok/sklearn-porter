@@ -128,7 +128,8 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         # Templates:
         tpls = self._load_templates(language.value.KEY)
 
-        if method is Template.EXPORTED:
+        # Export:
+        if method == Template.EXPORTED:
             tpl_class = tpls.get('exported.class')
             out_class = tpl_class.format(**plas)
             converter = kwargs.get('converter')

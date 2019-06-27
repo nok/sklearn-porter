@@ -110,13 +110,16 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         is_binary = self.meta_info['n_classes'] == 2
         variant = 'binary' if is_binary else 'multi'
 
-        if language is Language.JAVA and template == Template.EXPORTED:
+        # Export:
+        if method == Template.EXPORTED:
             tpl_name = 'exported.' + variant + '.class'
-            output = str(tpls.get(tpl_name).format(**plas))
+            tpl_class = tpls.get(tpl_name)
+            out_class = tpl_class.format(**plas)
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
-            model_data = dumps(self.model_data, sort_keys=True)
-            return output, model_data
+            model_data = self.model_data['estimators']
+            model_data = dumps(model_data, separators=(',', ':'))
+            return out_class, model_data
 
         # Pick templates:
         tpl_init = tpls.get('init')

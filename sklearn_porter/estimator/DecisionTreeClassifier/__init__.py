@@ -114,6 +114,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         # Templates:
         tpls = self._load_templates(language.value.KEY)
 
+        # Export:
         if template == Template.EXPORTED:
             tpl_class = tpls.get('exported.class')
             out_class = tpl_class.format(**plas)
