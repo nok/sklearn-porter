@@ -74,6 +74,8 @@ SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
     KNeighborsClassifier,
     GaussianNB,
     BernoulliNB,
+    MLPClassifier,
+    MLPRegressor,
 ], ids=[
     'DecisionTreeClassifier',
     'AdaBoostClassifier',
@@ -85,12 +87,15 @@ SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
     'KNeighborsClassifier',
     'GaussianNB',
     'BernoulliNB',
+    'MLPClassifier',
+    'MLPRegressor',
 ])
-def test_valid_base_estimator(Class):
+def test_valid_base_estimator_since_0_14(Class):
     """Test initialization with valid base estimator."""
-    clf = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
-    est = Estimator(clf)
-    assert isinstance(est.estimator, Class)
+    if Class:
+        est = Estimator(Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2]))
+        assert isinstance(est.estimator, Class)
+
 
 
 @pytest.mark.skipif(
@@ -142,6 +147,8 @@ def test_list_of_classifiers():
     KNeighborsClassifier,
     GaussianNB,
     BernoulliNB,
+    MLPClassifier,
+    MLPRegressor,
 ], ids=[
     'DecisionTreeClassifier',
     'AdaBoostClassifier',
@@ -153,30 +160,14 @@ def test_list_of_classifiers():
     'KNeighborsClassifier',
     'GaussianNB',
     'BernoulliNB',
-])
-def test_unfitted_est(Class):
-    """Test unfitted estimators."""
-    with pytest.raises(NotFittedEstimatorError):
-        est = Class()
-        Estimator(est)
-
-
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 18),
-    reason='requires scikit-learn >= v0.18'
-)
-@pytest.mark.parametrize('Class', [
-    MLPClassifier,
-    MLPRegressor
-], ids=[
     'MLPClassifier',
     'MLPRegressor',
 ])
-def test_valid_base_estimator_neural_nets(Class):
-    """Test initialization with valid base estimator."""
-    clf = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
-    est = Estimator(clf)
-    assert isinstance(est.estimator, Class)
+def test_unfitted_est(Class):
+    """Test unfitted estimators."""
+    if Class:
+        with pytest.raises(NotFittedEstimatorError):
+            Estimator(Class())
 
 
 @pytest.mark.parametrize('obj', [None, object, 0, 'string'])
@@ -211,6 +202,33 @@ def test_unfitted_est_in_pipeline():
         Estimator(pipeline)
 
 
+@pytest.mark.parametrize('Class', [
+    DecisionTreeClassifier,
+    AdaBoostClassifier,
+    RandomForestClassifier,
+    ExtraTreesClassifier,
+    LinearSVC,
+    SVC,
+    NuSVC,
+    KNeighborsClassifier,
+    GaussianNB,
+    BernoulliNB,
+    MLPClassifier,
+    MLPRegressor,
+], ids=[
+    'DecisionTreeClassifier',
+    'AdaBoostClassifier',
+    'RandomForestClassifier',
+    'ExtraTreesClassifier',
+    'LinearSVC',
+    'SVC',
+    'NuSVC',
+    'KNeighborsClassifier',
+    'GaussianNB',
+    'BernoulliNB',
+    'MLPClassifier',
+    'MLPRegressor',
+])
 @pytest.mark.parametrize('params', [
     (InvalidMethodError, dict(method='i_n_v_a_l_i_d')),
     (InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
@@ -220,14 +238,41 @@ def test_unfitted_est_in_pipeline():
     'InvalidLanguageError',
     'InvalidTemplateError',
 ])
-def test_invalid_params_on_port_method(params: Tuple):
+def test_invalid_params_on_port_method(Class, params: Tuple):
     """Test initialization with valid base estimator."""
-    clf = SVC().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
-    est = Estimator(clf)
-    with pytest.raises(params[0]):
-        est.port(**params[1])
+    if Class:
+        est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
+        with pytest.raises(params[0]):
+            Estimator(est).port(**params[1])
 
 
+@pytest.mark.parametrize('Class', [
+    DecisionTreeClassifier,
+    AdaBoostClassifier,
+    RandomForestClassifier,
+    ExtraTreesClassifier,
+    LinearSVC,
+    SVC,
+    NuSVC,
+    KNeighborsClassifier,
+    GaussianNB,
+    BernoulliNB,
+    MLPClassifier,
+    MLPRegressor,
+], ids=[
+    'DecisionTreeClassifier',
+    'AdaBoostClassifier',
+    'RandomForestClassifier',
+    'ExtraTreesClassifier',
+    'LinearSVC',
+    'SVC',
+    'NuSVC',
+    'KNeighborsClassifier',
+    'GaussianNB',
+    'BernoulliNB',
+    'MLPClassifier',
+    'MLPRegressor',
+])
 @pytest.mark.parametrize('params', [
     (InvalidMethodError, dict(method='i_n_v_a_l_i_d')),
     (InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
@@ -237,12 +282,12 @@ def test_invalid_params_on_port_method(params: Tuple):
     'InvalidLanguageError',
     'InvalidTemplateError',
 ])
-def test_invalid_params_on_dump_method(params: Tuple):
+def test_invalid_params_on_dump_method(Class, params: Tuple):
     """Test initialization with valid base estimator."""
-    clf = SVC().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
-    est = Estimator(clf)
-    with pytest.raises(params[0]):
-        est.dump(**params[1])
+    if Class:
+        est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
+        with pytest.raises(params[0]):
+            Estimator(est).dump(**params[1])
 
 
 @pytest.mark.skipif(
