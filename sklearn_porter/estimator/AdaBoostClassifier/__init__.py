@@ -13,8 +13,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.enums import Method, Language, Template
-from sklearn_porter.exceptions import NotSupportedYetError, \
-    NotFittedEstimatorError
+from sklearn_porter.exceptions import NotSupportedYetError
 from sklearn_porter.utils import get_logger
 
 
@@ -52,10 +51,6 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             msg = 'The used base estimator `{}` is not supported yet.'
             msg = msg.format(est.base_estimator.__class__.__qualname__)
             raise NotSupportedYetError(msg)
-
-        # Check number of base estimators:
-        if not estimator.n_estimators > 0:
-            raise NotFittedEstimatorError(self.estimator_name)
 
         # Ignore estimators with zero weight:
         estimators = []

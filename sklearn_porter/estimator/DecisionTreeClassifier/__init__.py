@@ -12,6 +12,7 @@ from sklearn.tree.tree import DecisionTreeClassifier \
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.exceptions import NotFittedEstimatorError
 from sklearn_porter.utils import get_logger
 
 
@@ -47,6 +48,12 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         super().__init__(estimator)
         L.info('Create specific estimator `%s`.', self.estimator_name)
         est = self.estimator  # alias
+
+        # Is the estimator fitted?
+        try:
+            est.n_features_
+        except AttributeError:
+            raise NotFittedEstimatorError(self.estimator_name)
 
         # Extract and save meta information:
         self.meta_info = dict(

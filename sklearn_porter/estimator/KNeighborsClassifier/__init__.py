@@ -12,7 +12,8 @@ from sklearn.neighbors.classification import KNeighborsClassifier \
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.enums import Method, Language, Template
-from sklearn_porter.exceptions import NotSupportedYetError
+from sklearn_porter.exceptions import NotSupportedYetError, \
+    NotFittedEstimatorError
 from sklearn_porter.utils import get_logger
 
 
@@ -37,6 +38,12 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         super().__init__(estimator)
         L.info('Create specific estimator `%s`.', self.estimator_name)
         est = self.estimator  # alias
+
+        # Is the estimator fitted?
+        try:
+            est.classes_
+        except AttributeError:
+            raise NotFittedEstimatorError(self.estimator_name)
 
         if est.weights != 'uniform':
             msg = 'Only `uniform` weights are supported.'

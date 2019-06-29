@@ -131,6 +131,36 @@ def test_list_of_classifiers():
     assert classifiers == candidates
 
 
+@pytest.mark.parametrize('Class', [
+    DecisionTreeClassifier,
+    AdaBoostClassifier,
+    RandomForestClassifier,
+    ExtraTreesClassifier,
+    LinearSVC,
+    SVC,
+    NuSVC,
+    KNeighborsClassifier,
+    GaussianNB,
+    BernoulliNB,
+], ids=[
+    'DecisionTreeClassifier',
+    'AdaBoostClassifier',
+    'RandomForestClassifier',
+    'ExtraTreesClassifier',
+    'LinearSVC',
+    'SVC',
+    'NuSVC',
+    'KNeighborsClassifier',
+    'GaussianNB',
+    'BernoulliNB',
+])
+def test_unfitted_est(Class):
+    """Test unfitted estimators."""
+    with pytest.raises(NotFittedEstimatorError):
+        est = Class()
+        Estimator(est)
+
+
 @pytest.mark.skipif(
     SKLEARN_VERSION[:2] < (0, 18),
     reason='requires scikit-learn >= v0.18'

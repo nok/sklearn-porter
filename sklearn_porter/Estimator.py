@@ -12,6 +12,8 @@ from sklearn.base import ClassifierMixin
 from sklearn.base import RegressorMixin
 
 # sklearn-porter
+from sklearn.ensemble import BaseEnsemble
+
 from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter.enums import (
     Method,
@@ -21,8 +23,8 @@ from sklearn_porter.enums import (
 from sklearn_porter.exceptions import (
     InvalidMethodError,
     InvalidLanguageError,
-    InvalidTemplateError
-)
+    InvalidTemplateError,
+    NotFittedEstimatorError)
 from sklearn_porter.utils import (
     get_logger,
     get_qualname
@@ -130,6 +132,13 @@ class Estimator:
             msg = msg.format(qualname, sklearn_version)
             L.error(msg)
             raise ValueError(msg)
+
+        # Check BaseEnsemble:
+        if isinstance(est, BaseEnsemble):
+            try:
+                est.estimators_
+            except AttributeError:
+                raise NotFittedEstimatorError(qualname)
 
         # Check GridSearchCV and RandomizedSearchCV:
         L.debug('Check whether the estimator is embedded in an optimizer.')

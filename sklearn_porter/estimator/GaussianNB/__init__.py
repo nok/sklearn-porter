@@ -10,6 +10,7 @@ from sklearn.naive_bayes import GaussianNB as GaussianNBClass
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.exceptions import NotFittedEstimatorError
 from sklearn_porter.utils import get_logger
 
 
@@ -34,6 +35,12 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         super().__init__(estimator)
         L.info('Create specific estimator `%s`.', self.estimator_name)
         est = self.estimator  # alias
+
+        # Is the estimator fitted?
+        try:
+            est.sigma_
+        except AttributeError:
+            raise NotFittedEstimatorError(self.estimator_name)
 
         self.meta_info = dict(
             n_features=len(est.sigma_[0]),
