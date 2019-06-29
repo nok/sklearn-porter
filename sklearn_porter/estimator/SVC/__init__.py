@@ -78,10 +78,10 @@ class SVC(EstimatorBase, EstimatorApiABC):
         self.meta_info = dict(
             n_classes=len(est.classes_),
             n_features=len(est.support_vectors_[0]),
-            n_weights=len(self.model_data['weights']),
-            n_vectors=len(self.model_data['vectors']),
-            n_coeffs=len(self.model_data['coeffs']),
-            n_inters=len(self.model_data['inters']),
+            n_weights=len(self.model_data.get('weights')),
+            n_vectors=len(self.model_data.get('vectors')),
+            n_coeffs=len(self.model_data.get('coeffs')),
+            n_inters=len(self.model_data.get('inters')),
         )
         L.info('Meta info (keys): {}'.format(
             self.meta_info.keys()))
@@ -149,7 +149,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Convert weights:
         weights_val = list(map(lambda x: str(int(x)),
-                               self.model_data['weights']))
+                               self.model_data.get('weights')))
         weights_str = tpl_arr_1.format(
             type=tpl_int,
             name='weights',
@@ -158,7 +158,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         )
 
         # Convert vectors:
-        vectors_val = self.model_data['vectors']
+        vectors_val = self.model_data.get('vectors')
         vectors_str = tpl_arr_2.format(
             type=tpl_double,
             name='vectors',  # convert 2D lists to a string `{{1, 2, 3}, {...}}`
@@ -169,7 +169,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         )
 
         # Convert coefficients:
-        coeffs_val = self.model_data['coeffs']
+        coeffs_val = self.model_data.get('coeffs')
         coeffs_str = tpl_arr_2.format(
             type=tpl_double,
             name='coeffs',
@@ -180,29 +180,29 @@ class SVC(EstimatorBase, EstimatorApiABC):
         )
 
         # Convert interceptions:
-        inters_val = self.model_data['inters']
+        inters_val = self.model_data.get('inters')
         inters_str = tpl_arr_1.format(
             type=tpl_double,
             name='inters',
             values=', '.join(list(map(converter, inters_val))),
-            n=len(self.model_data['inters'])
+            n=len(self.model_data.get('inters'))
         )
 
         # Convert kernel:
-        kernel_val = self.model_data['kernel']
+        kernel_val = self.model_data.get('kernel')
         kernel_str = str(kernel_val)[0] \
             if language == Language.C else str(kernel_val)
 
         # Convert gamma:
-        gamma_val = self.model_data['gamma']
+        gamma_val = self.model_data.get('gamma')
         gamma_str = converter(gamma_val)
 
         # Convert coefficient:
-        coef0_val = self.model_data['coef0']
+        coef0_val = self.model_data.get('coef0')
         coef0_str = converter(coef0_val)
 
         # Convert degree:
-        degree_val = self.model_data['degree']
+        degree_val = self.model_data.get('degree')
         degree_str = converter(degree_val)
 
         plas.update(dict(

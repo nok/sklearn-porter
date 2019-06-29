@@ -146,7 +146,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             m=len(x_val[0])
         )
 
-        y_val = list(map(str, self.model_data['y']))
+        y_val = list(map(str, self.model_data.get('y')))
         y_str = tpl_arr_1.format(
             type=tpl_int,
             name='y',

@@ -131,7 +131,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         tpl_in_brackets = tpls.get('in_brackets')
 
         # Make contents:
-        lefts_val = list(map(str, self.model_data['lefts']))
+        lefts_val = list(map(str, self.model_data.get('lefts')))
         lefts_str = tpl_arr_1.format(
             type=tpl_int,
             name='lefts',
@@ -139,7 +139,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(lefts_val)
         )
 
-        rights_val = list(map(str, self.model_data['rights']))
+        rights_val = list(map(str, self.model_data.get('rights')))
         rights_str = tpl_arr_1.format(
             type=tpl_int,
             name='rights',
@@ -147,7 +147,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(rights_val)
         )
 
-        thresholds_val = list(map(converter, self.model_data['thresholds']))
+        thresholds_val = list(map(converter, self.model_data.get('thresholds')))
         thresholds_str = tpl_arr_1.format(
             type=tpl_double,
             name='thresholds',
@@ -155,7 +155,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(thresholds_val)
         )
 
-        indices_val = list(map(str, self.model_data['indices']))
+        indices_val = list(map(str, self.model_data.get('indices')))
         indices_str = tpl_arr_1.format(
             type=tpl_int,
             name='indices',
@@ -163,7 +163,8 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(indices_val)
         )
 
-        classes_val = [list(map(str, e)) for e in self.model_data['classes']]
+        classes_val = [list(map(str, e))
+                       for e in self.model_data.get('classes')]
         classes_str = [', '.join(e) for e in classes_val]
         classes_str = ', '.join([tpl_in_brackets.format(e)
                                  for e in classes_str])
@@ -242,11 +243,11 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         n_indents = 1 if language in {'java', 'js', 'php', 'ruby'} else 0
         return self._create_branch(
             tpls, language, converter,
-            self.model_data['lefts'],
-            self.model_data['rights'],
-            self.model_data['thresholds'],
-            self.model_data['classes'],
-            self.model_data['indices'],
+            self.model_data.get('lefts'),
+            self.model_data.get('rights'),
+            self.model_data.get('thresholds'),
+            self.model_data.get('classes'),
+            self.model_data.get('indices'),
             0, n_indents
         )
 

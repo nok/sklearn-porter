@@ -130,14 +130,14 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
 
         if is_binary:
 
-            inters_val = converter(self.model_data['inters'])
+            inters_val = converter(self.model_data.get('inters'))
             inters_str = tpl_init.format(
                 type=tpl_double,
                 name='inters',
                 value=inters_val
             )
 
-            coeffs_val = list(map(converter, self.model_data['coeffs']))
+            coeffs_val = list(map(converter, self.model_data.get('coeffs')))
             coeffs_str = tpl_arr_1.format(
                 type=tpl_double,
                 name='coeffs',
@@ -147,7 +147,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
 
         else:  # is multi
 
-            inters_val = list(map(converter, self.model_data['inters']))
+            inters_val = list(map(converter, self.model_data.get('inters')))
             inters_str = tpl_arr_1.format(
                 type=tpl_double,
                 name='inters',
@@ -155,7 +155,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
                 n=len(inters_val)
             )
 
-            coeffs_val = self.model_data['coeffs']
+            coeffs_val = self.model_data.get('coeffs')
             coeffs_str = tpl_arr_2.format(
                 type=tpl_double,
                 name='coeffs',
