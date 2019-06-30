@@ -21,12 +21,8 @@ from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
-from sklearn_porter.exceptions import (
-    InvalidTemplateError,
-    InvalidMethodError,
-    InvalidLanguageError,
-    NotFittedEstimatorError
-)
+from sklearn_porter.exceptions import InvalidTemplateError, \
+    InvalidMethodError, InvalidLanguageError, NotFittedEstimatorError
 
 try:
     from sklearn.neural_network.multilayer_perceptron import MLPClassifier
