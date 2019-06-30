@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Dict, Tuple, Optional, Callable
+from typing import Union, Tuple, Optional, Callable
 from json import encoder, dumps
 from textwrap import indent
 from copy import deepcopy
 from logging import DEBUG
 
+from jinja2 import Environment
 from sklearn.tree.tree import DecisionTreeClassifier \
     as DecisionTreeClassifierClass
 
@@ -121,25 +122,25 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         # Templates:
         tpls = self._load_templates(language.value.KEY)
 
-        # Export:
+        # Export variant:
         if template == Template.EXPORTED:
-            tpl_class = tpls.get('exported.class')
-            out_class = tpl_class.format(**plas)
+            tpl_class = tpls.get_template('exported.class')
+            out_class = tpl_class.render(**plas)
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
         # Pick templates:
-        tpl_int = tpls.get('int')
-        tpl_double = tpls.get('double')
-        tpl_arr_1 = tpls.get('arr[]')
-        tpl_arr_2 = tpls.get('arr[][]')
-        tpl_in_brackets = tpls.get('in_brackets')
+        tpl_int = tpls.get_template('int').render()
+        tpl_double = tpls.get_template('double').render()
+        tpl_arr_1 = tpls.get_template('arr[]')
+        tpl_arr_2 = tpls.get_template('arr[][]')
+        tpl_in_brackets = tpls.get_template('in_brackets')
 
         # Make contents:
         lefts_val = list(map(str, self.model_data.get('lefts')))
-        lefts_str = tpl_arr_1.format(
+        lefts_str = tpl_arr_1.render(
             type=tpl_int,
             name='lefts',
             values=', '.join(lefts_val),
@@ -147,7 +148,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         )
 
         rights_val = list(map(str, self.model_data.get('rights')))
-        rights_str = tpl_arr_1.format(
+        rights_str = tpl_arr_1.render(
             type=tpl_int,
             name='rights',
             values=', '.join(rights_val),
@@ -155,7 +156,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         )
 
         thresholds_val = list(map(converter, self.model_data.get('thresholds')))
-        thresholds_str = tpl_arr_1.format(
+        thresholds_str = tpl_arr_1.render(
             type=tpl_double,
             name='thresholds',
             values=', '.join(thresholds_val),
@@ -163,7 +164,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         )
 
         indices_val = list(map(str, self.model_data.get('indices')))
-        indices_str = tpl_arr_1.format(
+        indices_str = tpl_arr_1.render(
             type=tpl_int,
             name='indices',
             values=', '.join(indices_val),
@@ -173,9 +174,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         classes_val = [list(map(str, e))
                        for e in self.model_data.get('classes')]
         classes_str = [', '.join(e) for e in classes_val]
-        classes_str = ', '.join([tpl_in_brackets.format(e)
+        classes_str = ', '.join([tpl_in_brackets.render(value=e)
                                  for e in classes_str])
-        classes_str = tpl_arr_2.format(
+        classes_str = tpl_arr_2.render(
             type=tpl_int,
             name='classes',
             values=classes_str,
@@ -191,44 +192,24 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             classes=classes_str,
         ))
 
+        # Attached variant:
         if template == Template.ATTACHED:
-            tpl_class = tpls.get('attached.class')
-            out_class = tpl_class.format(**plas)
+            tpl_class = tpls.get_template('attached.class')
+            out_class = tpl_class.render(**plas)
             return out_class
 
+        # Combined variant:
         if template == Template.COMBINED:
-
-            # Pick templates:
-            tpl_indent = tpls.get('indent')
-            tpl_method = tpls.get('combined.method')
-            tpl_class = tpls.get('combined.class')
-
-            # Make tree:
-            out_tree = self._create_tree(tpls, language.value.KEY, converter)
-            out_tree = indent(out_tree, 1 * tpl_indent)
-
-            # Make method:
+            tpl_class = tpls.get_template('combined.class')
+            out_tree = self._create_tree(tpls, language, converter)
             plas.update(dict(tree=out_tree))
-            n_indents = 1 if language in [
-                Language.JAVA,
-                Language.JS,
-                Language.PHP,
-                Language.RUBY
-            ] else 0
-            tpl_method = indent(tpl_method, n_indents * tpl_indent)
-            tpl_method = tpl_method[(n_indents * len(tpl_indent)):]
-            out_method = tpl_method.format(**plas)
-
-            # Make class:
-            plas.update(dict(method=out_method))
-            out_class = tpl_class.format(**plas)
-
+            out_class = tpl_class.render(**plas)
             return out_class
 
     def _create_tree(
             self,
-            tpls: Dict[str, str],
-            language: str,
+            tpls: Environment,
+            language: Language,
             converter: Callable[[object], str]
     ):
         """
@@ -236,7 +217,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         Parameters
         ----------
-        tpls : Dict[str, str]
+        tpls : Environment
             All relevant templates.
         language : str
             The required language.
@@ -247,7 +228,12 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         -------
         A tree of a DecisionTreeClassifier.
         """
-        n_indents = 1 if language in {'java', 'js', 'php', 'ruby'} else 0
+        n_indents = 1 if language in {
+            Language.JAVA,
+            Language.JS,
+            Language.PHP,
+            Language.RUBY
+        } else 0
         return self._create_branch(
             tpls, language, converter,
             self.model_data.get('lefts'),
@@ -260,8 +246,8 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     def _create_branch(
             self,
-            tpls: dict,
-            language: str,
+            tpls: Environment,
+            language: Language,
             converter: Callable[[object], str],
             left_nodes: list,
             right_nodes: list,
@@ -276,7 +262,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         Parameters
         ----------
-        tpls : Dict[str, str]
+        tpls : Environment
             All relevant templates.
         language
             The required language.
@@ -302,17 +288,17 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         A single branch of a DecisionTreeClassifier.
         """
         out = ''
-        temp_indent = tpls.get('indent')
+        out_indent = tpls.get_template('indent').render()
         if threshold[node] != -2.:
-
             out += '\n'
-            tpl = tpls.get('if')
-            tpl = indent(tpl, depth * temp_indent)
-            val_1 = 'features[{}]'.format(features[node])
-            if language == 'php':
-                val_1 = '$' + val_1
-            val_2 = converter(threshold[node])
-            out += tpl.format(val_1, '<=', val_2)
+            val_a = 'features[{}]'.format(features[node])
+            if language is Language.PHP:
+                val_a = '$' + val_a
+            val_b = converter(threshold[node])
+            tpl_if = tpls.get_template('if')
+            out_if = tpl_if.render(a=val_a, op='<=', b=val_b)
+            out_if = indent(out_if, depth * out_indent)
+            out += out_if
 
             if left_nodes[node] != -1.:
                 out += self._create_branch(
@@ -320,9 +306,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
                     threshold, value, features, left_nodes[node], depth + 1)
 
             out += '\n'
-            tpl = tpls.get('else')
-            tpl = indent(tpl, depth * temp_indent)
-            out += tpl
+            out_else = tpls.get_template('else').render()
+            out_else = indent(out_else, depth * out_indent)
+            out += out_else
 
             if right_nodes[node] != -1.:
                 out += self._create_branch(
@@ -330,15 +316,15 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
                     threshold, value, features, right_nodes[node], depth + 1)
 
             out += '\n'
-            tpl = tpls.get('endif')
-            tpl = indent(tpl, depth * temp_indent)
-            out += tpl
+            out_endif = tpls.get_template('endif').render()
+            out_endif = indent(out_endif, depth * out_indent)
+            out += out_endif
         else:
             clazzes = []
             tpl = 'classes[{0}] = {1}'
-            if language == 'php':
+            if language is Language.PHP:
                 tpl = '$' + tpl
-            tpl = indent(tpl, depth * temp_indent)
+            tpl = indent(tpl, depth * out_indent)
 
             for i, rate in enumerate(value[node]):
                 if int(rate) > 0:
@@ -346,6 +332,6 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
                     clazz = '\n' + clazz
                     clazzes.append(clazz)
 
-            tpl = tpls.get('join')
-            out += tpl.join(clazzes) + tpl
+            out_join = tpls.get_template('join').render()
+            out += out_join.join(clazzes) + out_join
         return out

@@ -22,26 +22,25 @@ class Java(LanguageABC):
     CMD_EXECUTE = 'java {class_path} {dest_dir}' + sep + '{dest_file}'
 
     TEMPLATES = {
-        'init':         '{type} {name} = {value};',
+        'init':         '{{ type }} {{ name }} = {{ value }};',
 
         # if/else condition:
-        'if':           'if ({0} {1} {2}) {{',
+        'if':           'if ({{ a }} {{ op }} {{ b }}) {',
         'else':         '} else {',
         'endif':        '}',
 
         # Basics:
         'indent':       '    ',
         'join':         '; ',
-        'type':         '{0}',
+        'type':         '{{ value }}',
 
         # Arrays:
-        'in_brackets':  '{{{0}}}',
-        # int[] ages = {1, 2};
-        'arr[]':        '{type}[] {name} = {{{values}}};',
-        'arr[][]':      '{type}[][] {name} = {{{values}}};',
-        'arr[][][]':    '{type}[][][] {name} = {{{values}}};',
+        'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
+        'arr[]':        '{{ type }}[] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[][]':      '{{ type }}[][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[][][]':    '{{ type }}[][][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',
 
         # Primitive data types:
         'int':          'int',
-        'double':       'double'
+        'double':       'double',
     }

@@ -2,10 +2,11 @@
 
 from typing import Union, Set, Dict, Optional, Tuple
 from pathlib import Path
-from os import getcwd
+from os import getcwd, environ
 from json import dumps
 
 from sklearn.base import BaseEstimator
+from jinja2 import Environment, DictLoader
 
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.utils import get_logger
@@ -57,9 +58,15 @@ class EstimatorBase(EstimatorApiABC):
                        'modules/generated/sklearn.{}.html'
             self.estimator_url = base_url.format(urls.get(self.estimator_name))
 
+        # Add base information:
         self.placeholders.update(dict(
             estimator_name=self.estimator_name,
             estimator_url=self.estimator_url,
+        ))
+
+        # Is it a test?
+        self.placeholders.update(dict(
+            is_test='PYTEST_CURRENT_TEST' in environ,
         ))
 
     def port(
@@ -208,7 +215,7 @@ class EstimatorBase(EstimatorApiABC):
 
         return paths
 
-    def _load_templates(self, language: Union[str, Language]) -> Dict:
+    def _load_templates(self, language: Union[str, Language]) -> Environment:
         """
         Load templates from static files and the global language files.
 
@@ -222,43 +229,52 @@ class EstimatorBase(EstimatorApiABC):
 
         Returns
         -------
-        temps : dict
-            A dictionary with all loaded templates.
+        environment : Environment
+            An Jinja environment with all loaded templates.
         """
         language = Language[language.upper()].value if \
             isinstance(language, str) else language
 
-        temps = {}
+        tpls = {}  # Dict
 
-        # 1. Load default templates from language files:
-        lang_temps = language.TEMPLATES
+        # 1. Load basic language templates (e.g. `if`, `else`, ...):
+        lang_tpls = language.TEMPLATES
         if isinstance(language.TEMPLATES, dict):
-            temps.update(lang_temps)
+            tpls.update(lang_tpls)
         L.debug('Load template variables: {}'.format(
-            ', '.join(lang_temps.keys())))
+            ', '.join(lang_tpls.keys())))
 
-        # 2. Load specific templates from template files:
-        file_dir = Path(__file__).parent
+        # 2. Load base language templates (e.g. `base.attached.class`):
+        root_dir = Path(__file__).parent.parent
+        tpls_dir = root_dir / 'language' / language.LABEL / 'templates'
+        if tpls_dir.exists():
+            tpls_paths = set(tpls_dir.glob('*.jinja2'))
+            tpls.update({path.stem: path.read_text() for path in tpls_paths})
 
-        # Add extended base estimators:
+        # 3. Load specific templates from template files:
         bases = list(set([base.__name__ for base in self.__class__.__bases__]))
         if 'EstimatorBase' in bases:
             bases.remove('EstimatorBase')
         if 'EstimatorApiABC' in bases:
             bases.remove('EstimatorApiABC')
-
-        # Add desired estimator at the end:
         bases.append(self.__class__.__name__)
-
+        est_dir = root_dir / 'estimator'
         for base_dir in bases:
-            temps_dir = file_dir / base_dir / 'templates' / language.KEY
-            if temps_dir.exists():
-                temps_paths = set(temps_dir.glob('*.txt'))
-                temps.update({path.stem: path.read_text()
-                              for path in temps_paths})
-            L.debug('Load template files: {}'.format(', '.join(temps.keys())))
+            tpls_dir = est_dir / base_dir / 'templates' / language.KEY
+            if tpls_dir.exists():
+                tpls_paths = set(tpls_dir.glob('*.jinja2'))
+                tpls.update({path.stem: path.read_text()
+                             for path in tpls_paths})
 
-        return temps
+        L.debug('Load template files: {}'.format(', '.join(tpls.keys())))
+
+        environment = Environment(
+            autoescape=False,
+            trim_blocks=True,
+            lstrip_blocks=True,
+            loader=DictLoader(tpls),
+        )
+        return environment
 
     @staticmethod
     def _dump_dict(

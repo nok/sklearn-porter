@@ -58,7 +58,8 @@ def main():
         author=meta.get('author'),
         author_email=meta.get('author_email'),
         install_requires=[
-            'scikit-learn>=0.14.1'
+            'scikit-learn>=0.14.1',
+            'Jinja2>=2.10.1',
         ],
         extras_require={
             'examples': [
