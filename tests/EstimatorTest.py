@@ -299,8 +299,12 @@ def test_invalid_params_on_dump_method(Class, params: Tuple):
 ])
 def test_extraction_from_optimizer(Class):
     """Test the extraction from an optimizer."""
-    params = {'kernel': ('linear', 'rbf'), 'C': [1, 10]}
-    search = Class(SVC(gamma='scale'), params, cv=2)
+    params = {
+        'kernel': ('linear', 'rbf'),
+        'C': [1, 10, 100],
+        'gamma': [0.001, 0.0001]
+    }
+    search = Class(SVC(), params, cv=2)
 
     # Test unfitted optimizer:
     with pytest.raises(ValueError):

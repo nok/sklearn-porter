@@ -52,7 +52,8 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         # Is the estimator fitted?
         try:
-            est.n_features_
+            est.n_features_  # for sklearn >  0.19
+            est.tree_.value  # for sklearn <= 0.18
         except AttributeError:
             raise NotFittedEstimatorError(self.estimator_name)
 

@@ -136,8 +136,12 @@ class Estimator:
         # Check BaseEnsemble:
         if isinstance(est, BaseEnsemble):
             try:
-                est.estimators_
+                est.estimators_  # for sklearn > 0.19
             except AttributeError:
+                raise NotFittedEstimatorError(qualname)
+            try:
+                est.estimators_[0]  # for sklearn <= 0.18
+            except IndexError:
                 raise NotFittedEstimatorError(qualname)
 
         # Check GridSearchCV and RandomizedSearchCV:
