@@ -13,9 +13,9 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     gcc=4:6.3.0-4                                                   `# gcc v6.3.0`      \
     ruby=1:2.3.3                                                    `# ruby v2.3.3`     \
     php7.0=7.0.33-0+deb9u3                                          `# php v7.0.33`     \
-    openjdk-8-jdk=8u212-b01-1~deb9u1                                `# java v1.8.0`     \
+    openjdk-8-jdk                                                   `# java v1.8.x`     \
     && curl -sL https://deb.nodesource.com/setup_10.x | bash \
-    && apt-get install -y nodejs=10.15.3-1nodesource1               `# node v10.15.3`   \
+    && apt-get install -y nodejs                                    `# node v10.x.x`    \
     && npm install --global xmlhttprequest \
     && wget --quiet https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz \
     && tar -xf go1.12.4.linux-amd64.tar.gz                          `# go v1.12.4`      \
