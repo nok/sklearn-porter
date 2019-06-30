@@ -14,6 +14,7 @@ class Logger:
     def get_logger(name: str = '') -> logging.Logger:
         if name not in Logger.loggers.keys():
             config_path = Path(__file__).parent / 'logging.ini'
+            config_path = str(config_path)  # for Python 3.5
             fileConfig(config_path)
             Logger.loggers[name] = logging.getLogger(name)
         return Logger.loggers.get(name)
