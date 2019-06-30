@@ -40,7 +40,7 @@ script:
   docker exec -it test
     conda run -n sklearn-porter
       pytest tests -v -x -p no:doctest
-        -o python_files="*Test.py"
+        -o python_files="EstimatorTest.py"
         -o python_functions="test_*"
 
 after_script: docker rm -f $(docker ps --filter name=test -q)
