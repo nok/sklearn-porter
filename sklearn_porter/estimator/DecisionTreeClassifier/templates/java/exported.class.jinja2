@@ -23,7 +23,7 @@ class {{ class_name }} {
         this.tree = new Gson().fromJson(jsonStr, Tree.class);
     }
 
-    private int max(int[] nums) {
+    private int findMax(int[] nums) {
         int idx = 0;
         for (int i = 0; i < nums.length; i++) {
             idx = nums[i] > nums[idx] ? i : idx;
@@ -58,7 +58,7 @@ class {{ class_name }} {
                 return predict(features, this.tree.rights[node]);
             }
         }
-        return max(this.tree.classes[node]);
+        return findMax(this.tree.classes[node]);
     }
 
     public int predict(double[] features) {

@@ -9,7 +9,7 @@ class {{ class_name }} {
         return classes;
     }
 
-    private static int max(int[] nums) {
+    private static int findMax(int[] nums) {
         int idx = 0;
         for (int i = 0; i < nums.length; i++) {
             idx = nums[i] > nums[idx] ? i : idx;
@@ -37,7 +37,7 @@ class {{ class_name }} {
     }
 
     public static int predict(double[] features) {
-        return max(inference(features));
+        return findMax(inference(features));
     }
 
     public static double[] predictProba (double[] features) {

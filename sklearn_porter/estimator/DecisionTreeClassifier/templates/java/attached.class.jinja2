@@ -25,14 +25,14 @@ class {{ class_name }} {
                 return predict(features, this.rights[node]);
             }
         }
-        return max(this.classes[node]);
+        return findMax(this.classes[node]);
     }
 
     public int predict(double[] features) {
         return this.predict(features, 0);
     }
 
-    private int max(int[] nums) {
+    private int findMax(int[] nums) {
         int i = 0, l = nums.length, idx = 0;
         for (i = 0; i < l; i++) {
             idx = nums[i] > nums[idx] ? i : idx;
