@@ -22,24 +22,24 @@ class C(LanguageABC):
     CMD_EXECUTE = '{dest_dir}' + sep + '{dest_file}'
 
     TEMPLATES = {
-        'init':         '{type} {name} = {value};',
+        'init':         '{{ type }} {{ name }} = {{ value }};',
 
         # if/else condition:
-        'if':           'if ({0} {1} {2}) {{',
+        'if':           'if ({{ a }} {{ op }} {{ b }}) {',
         'else':         '} else {',
         'endif':        '}',
 
         # Basics:
         'indent':       '    ',
         'join':         '; ',
-        'type':         '{0}',
+        'type':         '{{ value }}',
 
         # Arrays:
-        'in_brackets':  '{{{0}}}',
+        'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
         # in ages[2] = {1, 2};
-        'arr[]':        '{type} {name}[{n}] = {{{values}}};',
-        'arr[][]':      '{type} {name}[{n}][{m}] = {{{values}}};',
-        'arr[][][]':    '{type} {name}[{n}][{m}][{k}] = {{{values}}};',
+        'arr[]':        '{{ type }} {{ name }}[{{ n }}] = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[][]':      '{{ type }} {{ name }}[{{ n }}][{{ m }}] = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[][][]':    '{{ type }} {{ name }}[{{ n }}][{{ m }}][{{ k }}] = {{ "{" }}{{ values }}{{ "}" }};',
 
         # Primitive data types:
         'int':          'int',
