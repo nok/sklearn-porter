@@ -22,10 +22,10 @@ class Go(LanguageABC):
     CMD_EXECUTE = '{dest_dir}' + sep + '{dest_file}'
 
     TEMPLATES = {
-        'init':         '{name} := {value}',
+        'init':         '{{ name }} := {{ value }}',
 
         # if/else condition:
-        'if':           'if {0} {1} {2} {{',
+        'if':           'if ({{ a }} {{ op }} {{ b }}) {',
         'else':         '} else {',
         'endif':        '}',
 
@@ -35,11 +35,11 @@ class Go(LanguageABC):
         'type':         '{0}',
 
         # Arrays:
-        'in_brackets':  '{{{0}}}',
+        'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
         # ages := []int {1, 2}
-        'arr[]':        '{name} := []{type} {{{values}}}',
-        'arr[][]':      '{name} := [][]{type} {{{values}}}',
-        'arr[][][]':    '{name} := [][][]{type} {{{values}}}',
+        'arr[]':        '{{ name }} := []{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
+        'arr[][]':      '{{ name }} := [][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
+        'arr[][][]':    '{{ name }} := [][][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
 
         # Primitive data types:
         'int':          'int',

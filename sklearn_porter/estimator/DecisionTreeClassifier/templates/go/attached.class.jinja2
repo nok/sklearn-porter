@@ -1,0 +1,68 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+)
+
+type {{ class_name }} struct {
+	lefts []int
+	rights []int
+	thresholds []float64
+	indices []int
+	classes [][]int
+}
+
+func (dtc {{ class_name }}) predict_(features []float64, node int) int {
+	if dtc.thresholds[node] != -2 {
+		if features[dtc.indices[node]] <= dtc.thresholds[node] {
+			return dtc.predict_(features, dtc.lefts[node])
+		} else {
+			return dtc.predict_(features, dtc.rights[node])
+		}
+	}
+	var index = 0
+	for i := 0; i < len(dtc.classes[node]); i++ {
+		if dtc.classes[node][i] > dtc.classes[node][index] {
+			index = i
+		}
+	}
+	return index
+}
+
+func (dtc {{ class_name }}) predict(features []float64) int {
+	return dtc.predict_(features, 0)
+}
+
+func main() {
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[1:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	// Parameters:
+	{{ lefts }}
+	{{ rights }}
+	{{ thresholds }}
+	{{ indices }}
+	{{ classes }}
+
+	// Prediction:
+	clf := {{ class_name }}{lefts, rights, thresholds, indices, classes}
+	estimation := clf.predict(features)
+  {% if is_test %}
+	fmt.Printf("%d\n", estimation)
+  {% else %}
+	fmt.Printf("Predicted class: %d\n", estimation)
+  {% endif %}
+
+}
+{% endblock %}

@@ -1,0 +1,40 @@
+package main
+
+import (
+	"fmt"
+	"os"
+	"strconv"
+)
+
+func predict(features []float64) int {
+	var classes [{{ n_classes }}]float64
+	{{ tree | indent(4, True) }}
+
+	var idx = 0
+	for i := 0; i < len(classes); i++ {
+		if classes[i] > classes[idx] {
+			idx = i
+		}
+	}
+	return idx
+}
+
+func main() {
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[1:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	// Prediction:
+	var estimation = predict(features)
+	{% if is_test %}
+	fmt.Printf("%d\n", estimation)
+	{% else %}
+	fmt.Printf("Predicted class: %d\n", estimation)
+	{% endif %}
+
+}
