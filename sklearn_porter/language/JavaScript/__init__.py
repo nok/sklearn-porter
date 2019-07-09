@@ -19,23 +19,23 @@ class JavaScript(LanguageABC):
     CMD_EXECUTE = 'node {dest_dir}' + sep + '{dest_file}'
 
     TEMPLATES = {
-        'init':         'var {name} = {value};',
+        'init':         'var {{ name }} = {{ value }};',
 
         # if/else condition:
-        'if':           'if ({0} {1} {2}) {{',
+        'if':           'if ({{ a }} {{ op }} {{ b }}) {',
         'else':         '} else {',
         'endif':        '}',
 
         # Basics:
         'indent':       '    ',
         'join':         '; ',
-        'type':         '{0}',
+        'type':         '{{ value }}',
 
         # Arrays:
-        'in_brackets':  '[{0}]',
-        'arr[]':        'var {name} = [{values}];',  # var ages = [1, 2];
-        'arr[][]':      'var {name} = [{values}];',
-        'arr[][][]':    'var {name} = [{values}];',
+        'in_brackets':  '[{{ value }}]',
+        'arr[]':        'var {{ name }} = [{{ values }}];',  # var ages = [1, 2];
+        'arr[][]':      'var {{ name }} = [{{ values }}];',
+        'arr[][][]':    'var {{ name }} = [{{ values }}];',
 
         # Primitive data types:
         'int':          '',

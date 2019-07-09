@@ -1,0 +1,40 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+var {{ class_name }} = function() {
+
+    var findMax = function(nums) {
+        var idx = 0;
+        for (var i = 0; i < nums.length; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    };
+
+    this.predict = function(features) {
+        var classes = new Array({{ n_classes }}).fill(0);
+        {{ tree | indent(4, True) }}
+
+        return findMax(classes);
+    };
+
+};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+    if (process.argv.length - 2 === {{ n_features }}) {
+
+        // Features:
+        var features = process.argv.slice(2);
+
+        // Prediction:
+        var clf = new {{ class_name }}();
+        var prediction = clf.predict(features);
+        {% if is_test %}
+        console.log(prediction);
+        {% else %}
+        console.log("Predicted class: #" + prediction);
+        {% endif %}
+
+    }
+}
+{% endblock %}
