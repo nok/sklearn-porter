@@ -19,22 +19,22 @@ class PHP(LanguageABC):
     CMD_EXECUTE = 'php -f {dest_dir}' + sep + '{dest_file}'
 
     TEMPLATES = {
-        'init':         '${name} = {value};',
+        'init':         '${{ name }} = {{ value }};',
         # if/else condition:
-        'if':           'if ({0} {1} {2}) {{',
+        'if':           'if ({{ a }} {{ op }} {{ b }}) {',
         'else':         '} else {',
         'endif':        '}',
 
         # Basics:
         'indent':       '    ',
         'join':         '; ',
-        'type':         '{0}',
+        'type':         '{{ value }}',
 
         # Arrays:
-        'in_brackets':  '[{0}]',
-        'arr[]':        '${name} = [{values}];',  # $ages = [1, 2];
-        'arr[][]':      '${name} = [{values}];',
-        'arr[][][]':    '${name} = [{values}];',
+        'in_brackets':  '[{{ value }}]',
+        'arr[]':        '${{ name }} = [{{ values }}];',  # $ages = [1, 2];
+        'arr[][]':      '${{ name }} = [{{ values }}];',
+        'arr[][][]':    '${{ name }} = [{{ values }}];',
 
         # Primitive data types:
         'int':          '',

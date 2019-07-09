@@ -1,0 +1,59 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    public function __construct($lefts, $rights, $thresholds, $indices, $classes) {
+        $this->lefts = $lefts;
+        $this->rights = $rights;
+        $this->thresholds = $thresholds;
+        $this->indices = $indices;
+        $this->classes = $classes;
+    }
+
+    private function findMax($nums) {
+        $idx = 0;
+        for ($i = 0; $i < count($nums); $i++) {
+            $idx = $nums[$i] > $nums[$idx] ? $i : $idx;
+        }
+        return $idx;
+    }
+
+    public function predict($features) {
+        $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
+        if ($this->thresholds[$node] != -2) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+                return $this->predict($features, $this->lefts[$node]);
+            } else {
+                return $this->predict($features, $this->rights[$node]);
+            }
+        }
+        return $this->findMax($this->classes[$node]);
+    }
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = $argv;
+
+    // Parameters:
+    {{ lefts }}
+    {{ rights }}
+    {{ thresholds }}
+    {{ indices }}
+    {{ classes }}
+
+    // Prediction:
+    $clf = new {{ class_name }}($lefts, $rights, $thresholds, $indices, $classes);
+    $prediction = $clf->predict($features);
+    {% if is_test %}
+    fwrite(STDOUT, $prediction);
+    {% else %}
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction));
+    {% endif %}
+
+}
+{% endblock %}

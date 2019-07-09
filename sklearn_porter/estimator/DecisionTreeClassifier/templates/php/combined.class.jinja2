@@ -1,0 +1,35 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    public static function predict($features) {
+        if (sizeof($features) != {{ n_features }}) { return -1; }
+
+        $classes = array_fill(0, {{ n_classes }}, 0);
+        {{ tree }}
+
+        $class_idx = 0;
+        $class_val = $classes[0];
+
+        for ($i = 1; $i < {{ n_classes }}; $i++) {
+            if ($classes[$i] > $class_val) {
+                $class_idx = $i;
+                $class_val = $classes[$i];
+            }
+        }
+        return $class_idx;
+    }
+
+}
+
+if ($argc > 1) {
+    array_shift($argv);
+    $prediction = {{ class_name }}::predict($argv);
+    {% if is_test %}
+    fwrite(STDOUT, $prediction);
+    {% else %}
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction));
+    {% endif %}
+}
+{% endblock %}
