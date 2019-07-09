@@ -37,8 +37,7 @@ int main(int argc, const char * argv[]) {
 
     /* Features: */
     double features[argc-1];
-    int i;
-    for (i = 1; i < argc; i++) {
+    for (int i = 1; i < argc; i++) {
         features[i-1] = atof(argv[i]);
     }
 
