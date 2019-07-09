@@ -123,13 +123,14 @@ class Estimator:
         est = estimator  # shorter <3
         qualname = get_qualname(est)
 
-        L.debug('Start validation of the passed estimator: `%s`.', qualname)
+        L.debug('Start validation of the passed '
+                'estimator: `{}`.'.format(qualname))
 
         # Check BaseEstimator:
         if not isinstance(est, BaseEstimator):
             msg = 'The passed estimator `{}` is not a ' \
-                  'valid base estimator of scikit-learn v{} .'
-            msg = msg.format(qualname, sklearn_version)
+                  'valid base estimator of scikit-learn v{} .' \
+                  ''.format(qualname, sklearn_version)
             L.error(msg)
             raise ValueError(msg)
 
@@ -150,9 +151,10 @@ class Estimator:
             from sklearn.model_selection._search \
                 import BaseSearchCV  # pylint: disable=protected-access
         except ImportError:
-            L.warn('Your installed version of scikit-learn '
-                   'v% does not support optimizers in general.',
-                   sklearn_version)
+            msg = 'Your installed version of scikit-learn v{} ' \
+                  'does not support optimizers in general.' \
+                  ''.format(sklearn_version)
+            L.warn(msg)
         else:
             if isinstance(est, BaseSearchCV):
                 L.info('Yes, the estimator is embedded in an optimizer.')
@@ -160,9 +162,10 @@ class Estimator:
                     from sklearn.model_selection import GridSearchCV
                     from sklearn.model_selection import RandomizedSearchCV
                 except ImportError:
-                    L.warn('Your installed version of scikit-learn '
-                           'v% does not support `GridSearchCV` or '
-                           '`RandomizedSearchCV`.', sklearn_version)
+                    msg = 'Your installed version of scikit-learn ' \
+                          'v{} does not support `GridSearchCV` or ' \
+                          '`RandomizedSearchCV`.'.format(sklearn_version)
+                    L.warn(msg)
                 else:
                     optimizers = (GridSearchCV, RandomizedSearchCV)
                     if isinstance(est, optimizers):
@@ -172,9 +175,10 @@ class Estimator:
                         if is_fitted:
                             est = est.best_estimator_
                             est_qualname = get_qualname(est)
-                            L.info('Extract the embedded estimator of '
-                                   'type `%s` from optimizer `%s`.',
-                                   est_qualname, qualname)
+                            msg = 'Extract the embedded estimator of ' \
+                                  'type `{}` from optimizer `{}`.' \
+                                  ''.format(est_qualname, qualname)
+                            L.info(msg)
                         # pylint: enable=protected-access
                         else:
                             msg = 'The embedded estimator is not fitted.'
@@ -195,8 +199,9 @@ class Estimator:
         try:
             from sklearn.pipeline import Pipeline
         except ImportError:
-            L.warn('Your installed version of scikit-learn '
-                   'v% does not support pipelines.', sklearn_version)
+            msg = 'Your installed version of scikit-learn ' \
+                  'v{} does not support pipelines.'.format(sklearn_version)
+            L.warn(msg)
         else:
             if isinstance(est, Pipeline):
                 L.info('Yes, the estimator is embedded in a pipeline.')
@@ -206,8 +211,9 @@ class Estimator:
                 if has_est:
                     est = est._final_estimator
                     est_qualname = get_qualname(est)
-                    L.info('Extract the embedded estimator of type '
-                           '`%s` from the pipeline.', est_qualname)
+                    msg = 'Extract the embedded estimator of type ' \
+                          '`{}` from the pipeline.'.format(est_qualname)
+                    L.info(msg)
                 # pylint: enable=protected-access
                 else:
                     msg = 'There is no final estimator is the pipeline.'
@@ -259,7 +265,7 @@ class Estimator:
         """
         est = estimator  # shorter <3
         qualname = get_qualname(est)
-        L.debug('Start loading the passed estimator: `%s`.', qualname)
+        L.debug('Start loading the passed estimator: `{}`.'.format(qualname))
 
         name = est.__class__.__qualname__
 
