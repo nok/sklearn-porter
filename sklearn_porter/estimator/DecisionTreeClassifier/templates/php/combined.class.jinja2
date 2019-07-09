@@ -25,6 +25,8 @@ class {{ class_name }} {
 
 if ($argc > 1) {
     array_shift($argv);
+
+    // Get class prediction:
     $prediction = {{ class_name }}::predict($argv);
     {% if is_test %}
     fwrite(STDOUT, $prediction);

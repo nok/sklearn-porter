@@ -29,7 +29,7 @@ int main(int argc, const char * argv[]) {
         features[i-1] = atof(argv[i]);
     }
 
-    /* Prediction: */
+    /* Get class prediction: */
     {% if is_test %}
     printf("%d\n", predict(features));
     {% else %}

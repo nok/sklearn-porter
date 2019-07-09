@@ -29,7 +29,7 @@ func main() {
 		}
 	}
 
-	// Prediction:
+	// Get class prediction:
 	var estimation = predict(features)
 	{% if is_test %}
 	fmt.Printf("%d\n", estimation)

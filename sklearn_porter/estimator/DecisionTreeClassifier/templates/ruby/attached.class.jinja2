@@ -38,15 +38,17 @@ if ARGV.length == {{ n_features }}
     # Features:
     features = ARGV.collect { |i| i.to_f }
 
-    # Parameters:
+    # Model data:
     {{ lefts }}
     {{ rights }}
     {{ thresholds }}
     {{ indices }}
     {{ classes }}
 
-    # Prediction:
+    # Estimator:
     clf = {{ class_name }}.new lefts, rights, thresholds, indices, classes
+
+    # Get class prediction:
     estimation = clf.predict features
     {% if is_test %}
     puts estimation

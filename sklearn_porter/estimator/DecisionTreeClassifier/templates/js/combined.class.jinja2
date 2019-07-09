@@ -26,8 +26,10 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
         // Features:
         var features = process.argv.slice(2);
 
-        // Prediction:
+        // Estimator:
         var clf = new {{ class_name }}();
+
+        // Get class prediction:
         var prediction = clf.predict(features);
         {% if is_test %}
         console.log(prediction);
