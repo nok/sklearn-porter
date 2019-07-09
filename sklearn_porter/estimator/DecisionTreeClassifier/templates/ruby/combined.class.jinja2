@@ -1,0 +1,29 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+
+class {{ class_name }}
+    def self.predict (features)
+        classes = Array.new({{ n_classes }}, 0)
+        {{ tree | indent(4, True) }}
+
+        pos = classes.each_with_index.select {|e, i| e==classes.max}.map &:last
+        return pos.min
+    end
+end
+
+if ARGV.length == {{ n_features }}
+
+    # Features:
+    features = ARGV.collect { |i| i.to_f }
+
+    # Prediction:
+    estimation = {{ class_name }}.predict(features)
+    {% if is_test %}
+    puts estimation
+    {% else %}
+    puts "Predicted class: ##{estimation}"
+    {% endif %}
+
+end
+{% endblock %}

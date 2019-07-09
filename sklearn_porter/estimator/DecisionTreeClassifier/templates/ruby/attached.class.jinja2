@@ -1,0 +1,58 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+
+class {{ class_name }}
+
+    def initialize (lefts, rights, thresholds, indices, classes)
+        @lefts = lefts
+        @rights = rights
+        @thresholds = thresholds
+        @indices = indices
+        @classes = classes
+    end
+
+    def findMax (nums)
+        idx = 0
+        for i in 0 ... nums.length
+            idx = nums[i] > nums[idx] ? i : idx
+        end
+        return idx
+    end
+
+    def predict (features, node=0)
+        if @thresholds[node] != -2
+            if features[@indices[node]] <= @thresholds[node]
+                return predict features, @lefts[node]
+            else
+                return predict features, @rights[node]
+            end
+        end
+        return findMax @classes[node]
+    end
+
+end
+
+if ARGV.length == {{ n_features }}
+
+    # Features:
+    features = ARGV.collect { |i| i.to_f }
+
+    # Parameters:
+    {{ lefts }}
+    {{ rights }}
+    {{ thresholds }}
+    {{ indices }}
+    {{ classes }}
+
+    # Prediction:
+    clf = {{ class_name }}.new lefts, rights, thresholds, indices, classes
+    estimation = clf.predict features
+    {% if is_test %}
+    puts estimation
+    {% else %}
+    puts "Predicted class: ##{estimation}"
+    {% endif %}
+
+end
+{% endblock %}
