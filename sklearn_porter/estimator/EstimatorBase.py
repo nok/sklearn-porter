@@ -5,9 +5,11 @@ from pathlib import Path
 from os import getcwd, environ
 from json import dumps
 
+from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator
 from jinja2 import Environment, DictLoader
 
+from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.utils import get_logger
 from sklearn_porter.exceptions import NotSupportedYetError
@@ -62,6 +64,8 @@ class EstimatorBase(EstimatorApiABC):
         self.placeholders.update(dict(
             estimator_name=self.estimator_name,
             estimator_url=self.estimator_url,
+            sklearn_version=sklearn_version,
+            sklearn_porter_version=sklearn_porter_version,
         ))
 
         # Is it a test?
