@@ -43,7 +43,16 @@ int main(int argc, const char * argv[]) {
 
     /* Get class prediction: */
     {% if is_test %}
-    printf("%d", predict(features, 0));
+    // double probabilities[N_CLASSES] = predict_proba(features, 0);
+    double probabilities[N_CLASSES] = {1., 2., 3.};
+    printf("{\"predict\": %d, \"predict_proba\": [", predict(features, 0));
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("%.6f", probabilities[i]);
+        if (i < (N_CLASSES - 1)) {
+            printf(",");
+        }
+    }
+    printf("]}");
     {% else %}
     printf("Predicted class: #%d", predict(features, 0));
     {% endif %}

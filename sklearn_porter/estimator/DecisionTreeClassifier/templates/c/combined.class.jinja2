@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <math.h>
 
+{% if is_test %}
+#define N_CLASSES {{ n_classes }}
+{% endif %}
+
 int predict(double features[{{ n_features }}]) {
     int i;
     int n_classes = {{ n_classes }};
@@ -31,7 +35,16 @@ int main(int argc, const char * argv[]) {
 
     /* Get class prediction: */
     {% if is_test %}
-    printf("%d\n", predict(features));
+    // double probabilities[N_CLASSES] = predict_proba(features);
+    double probabilities[N_CLASSES] = {1., 2., 3.};
+    printf("{\"predict\": %d, \"predict_proba\": [", predict(features));
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("%.6f", probabilities[i]);
+        if (i < (N_CLASSES - 1)) {
+            printf(",");
+        }
+    }
+    printf("]}");
     {% else %}
     printf("Predicted class: #%d\n", predict(features));
     {% endif %}
