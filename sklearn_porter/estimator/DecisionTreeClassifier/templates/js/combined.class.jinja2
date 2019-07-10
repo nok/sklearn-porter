@@ -31,12 +31,16 @@ if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
 
         // Get class prediction:
         var prediction = clf.predict(features);
-        {% if is_test %}
-        console.log(prediction);
-        {% else %}
+        {% if not is_test %}
         console.log("Predicted class: #" + prediction);
         {% endif %}
 
+        {% if is_test %}
+        console.log(JSON.stringify({
+            "predict": prediction,
+            "predict_proba": []
+        }));
+        {% endif %}
     }
 }
 {% endblock %}
