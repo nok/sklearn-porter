@@ -1,7 +1,9 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-
+{% if is_test %}
+require 'json'
+{% endif %}
 class {{ class_name }}
 
     def initialize (lefts, rights, thresholds, indices, classes)
@@ -49,12 +51,12 @@ if ARGV.length == {{ n_features }}
     clf = {{ class_name }}.new lefts, rights, thresholds, indices, classes
 
     # Get class prediction:
-    estimation = clf.predict features
-    {% if is_test %}
-    puts estimation
-    {% else %}
-    puts "Predicted class: ##{estimation}"
+    prediction = clf.predict features
+    {% if not is_test %}
+    puts "Predicted class: ##{prediction}"
     {% endif %}
-
+    {% if is_test %}
+    puts JSON.generate({:predict => prediction, :predict_proba => []})
+    {% endif %}
 end
 {% endblock %}
