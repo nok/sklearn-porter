@@ -4,10 +4,19 @@
 package main
 
 import (
+  {% if is_test %}
+	"encoding/json"
+  {% endif %}
 	"fmt"
 	"os"
 	"strconv"
 )
+{% if is_test %}
+type response struct {
+	Predict int `json:"predict"`
+	PredictProba []float64 `json:"predict_proba"`
+}
+{% endif %}
 
 type {{ class_name }} struct {
 	lefts []int
@@ -59,12 +68,14 @@ func main() {
 	clf := {{ class_name }}{lefts, rights, thresholds, indices, classes}
 
 	// Get class prediction:
-	estimation := clf.predict(features)
-  {% if is_test %}
-	fmt.Printf("%d\n", estimation)
-  {% else %}
-	fmt.Printf("Predicted class: %d\n", estimation)
+	prediction := clf.predict(features)
+  {% if not is_test %}
+	fmt.Printf("Predicted class: %d\n", prediction)
   {% endif %}
 
+  {% if is_test %}
+	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: []float64{}})
+	fmt.Println(string(res))
+  {% endif %}
 }
 {% endblock %}

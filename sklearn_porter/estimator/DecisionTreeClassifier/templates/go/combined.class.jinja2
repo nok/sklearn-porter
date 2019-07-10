@@ -1,10 +1,19 @@
 package main
 
 import (
+	{% if is_test %}
+	"encoding/json"
+	{% endif %}
 	"fmt"
 	"os"
 	"strconv"
 )
+{% if is_test %}
+type response struct {
+	Predict int `json:"predict"`
+	PredictProba []float64 `json:"predict_proba"`
+}
+{% endif %}
 
 func predict(features []float64) int {
 	var classes [{{ n_classes }}]float64
@@ -30,11 +39,13 @@ func main() {
 	}
 
 	// Get class prediction:
-	var estimation = predict(features)
-	{% if is_test %}
-	fmt.Printf("%d\n", estimation)
-	{% else %}
-	fmt.Printf("Predicted class: %d\n", estimation)
+	var prediction = predict(features)
+	{% if not is_test %}
+	fmt.Printf("Predicted class: %d\n", prediction)
 	{% endif %}
 
+	{% if is_test %}
+	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: []float64{}})
+	fmt.Println(string(res))
+	{% endif %}
 }
