@@ -27,6 +27,7 @@ int predict(double features[{{ n_features }}]) {
 }
 
 int main(int argc, const char * argv[]) {
+
     /* Features: */
     double features[argc-1];
     for (int i = 1; i < argc; i++) {
@@ -34,6 +35,10 @@ int main(int argc, const char * argv[]) {
     }
 
     /* Get class prediction: */
+    {% if not is_test %}
+    printf("Predicted class: #%d\n", predict(features));
+    {% endif %}
+
     {% if is_test %}
     // double probabilities[N_CLASSES] = predict_proba(features);
     double probabilities[N_CLASSES] = {1., 2., 3.};
@@ -45,8 +50,6 @@ int main(int argc, const char * argv[]) {
         }
     }
     printf("]}");
-    {% else %}
-    printf("Predicted class: #%d\n", predict(features));
     {% endif %}
     return 0;
 }

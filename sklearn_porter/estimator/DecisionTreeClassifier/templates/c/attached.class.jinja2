@@ -42,6 +42,10 @@ int main(int argc, const char * argv[]) {
     }
 
     /* Get class prediction: */
+    {% if not is_test %}
+    printf("Predicted class: #%d", predict(features, 0));
+    {% endif %}
+
     {% if is_test %}
     // double probabilities[N_CLASSES] = predict_proba(features, 0);
     double probabilities[N_CLASSES] = {1., 2., 3.};
@@ -53,8 +57,6 @@ int main(int argc, const char * argv[]) {
         }
     }
     printf("]}");
-    {% else %}
-    printf("Predicted class: #%d", predict(features, 0));
     {% endif %}
     return 0;
 }
