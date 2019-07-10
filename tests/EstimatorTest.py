@@ -21,6 +21,9 @@ from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
+from sklearn.datasets import load_digits, load_diabetes, load_iris
+
+
 from sklearn_porter.exceptions import InvalidTemplateError, \
     InvalidMethodError, InvalidLanguageError, NotFittedEstimatorError
 
@@ -316,3 +319,36 @@ def test_extraction_from_optimizer(Class):
                y=[1, 2, 3, 1, 2, 3])
     est = Estimator(search)
     assert isinstance(est.estimator, SVC)
+
+@pytest.mark.parametrize('template', [
+    'attached',
+    'combined',
+    'exported',
+])
+@pytest.mark.parametrize('language', [
+    'java',
+])
+@pytest.mark.parametrize('load', [
+    load_iris,
+    load_diabetes,
+    load_digits,
+], ids=[
+    'load_iris',
+    'load_diabetes',
+    'load_digits',
+])
+@pytest.mark.parametrize('Class', [
+    DecisionTreeClassifier,
+], ids=[
+    'DecisionTreeClassifier',
+])
+def test_range_of_variations(Class, load, template, language):
+    """Test a wide range of variations."""
+    if Class:
+        orig_est = Class()
+        data = load()
+        orig_est.fit(X=data.data, y=data.target)
+        try:
+            Estimator(orig_est).port(language=language, template=template)
+        except:
+            pytest.fail('Unexpected exception ...')
