@@ -96,7 +96,6 @@ def test_valid_base_estimator_since_0_14(Class):
         assert isinstance(est.estimator, Class)
 
 
-
 @pytest.mark.skipif(
     SKLEARN_VERSION[:2] < (0, 18),
     reason='requires scikit-learn >= v0.18'
@@ -319,6 +318,7 @@ def test_extraction_from_optimizer(Class):
                y=[1, 2, 3, 1, 2, 3])
     est = Estimator(search)
     assert isinstance(est.estimator, SVC)
+
 
 @pytest.mark.parametrize('template', [
     'attached',
