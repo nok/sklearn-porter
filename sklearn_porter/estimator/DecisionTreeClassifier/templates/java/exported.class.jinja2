@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import com.google.gson.Gson;
-
+{% if is_test %}
+import java.util.Arrays;
+{% endif %}
 
 class {{ class_name }} {
 
@@ -100,25 +102,23 @@ class {{ class_name }} {
 
         // Get class prediction:
         int prediction = clf.predict(features);
-        {% if is_test %}
-        System.out.println(String.valueOf(prediction));
-        {% else %}
+        {% if not is_test %}
         System.out.println("Predicted class: #" + String.valueOf(prediction));
         {% endif %}
 
         // Get class probabilities:
         double[] probabilities = clf.predictProba(features);
-        {% if is_test %}
+        {% if not is_test %}
         for (int i = 0; i < probabilities.length; i++) {
             System.out.print(String.valueOf(probabilities[i]));
             if (i != probabilities.length - 1) {
                 System.out.print(",");
             }
         }
-        {% else %}
-        for (int i = 0; i < probabilities.length; i++) {
-            System.out.println("Probability of class #" + i + " : " + String.valueOf(probabilities[i]));
-        }
+        {% endif %}
+
+        {% if is_test %}
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
         {% endif %}
     }
 }
