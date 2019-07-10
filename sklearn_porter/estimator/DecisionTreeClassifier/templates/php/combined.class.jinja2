@@ -31,6 +31,7 @@ if ($argc > 1) {
     {% if not is_test %}
     fwrite(STDOUT, "Predicted class: #" . strval($prediction));
     {% endif %}
+
     {% if is_test %}
     fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => array())));
     {% endif %}
