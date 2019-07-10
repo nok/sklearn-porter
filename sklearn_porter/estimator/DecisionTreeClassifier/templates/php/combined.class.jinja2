@@ -28,10 +28,11 @@ if ($argc > 1) {
 
     // Get class prediction:
     $prediction = {{ class_name }}::predict($argv);
-    {% if is_test %}
-    fwrite(STDOUT, $prediction);
-    {% else %}
+    {% if not is_test %}
     fwrite(STDOUT, "Predicted class: #" . strval($prediction));
+    {% endif %}
+    {% if is_test %}
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => array())));
     {% endif %}
 }
 {% endblock %}

@@ -50,12 +50,11 @@ if ($argc > 1) {
     $clf = new {{ class_name }}($lefts, $rights, $thresholds, $indices, $classes);
 
     // Get class prediction:
-    $prediction = $clf->predict($features);
-    {% if is_test %}
-    fwrite(STDOUT, $prediction);
-    {% else %}
+    {% if not is_test %}
     fwrite(STDOUT, "Predicted class: #" . strval($prediction));
     {% endif %}
-
+    {% if is_test %}
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => array())));
+    {% endif %}
 }
 {% endblock %}
