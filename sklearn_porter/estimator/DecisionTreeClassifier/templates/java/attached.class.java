@@ -21,21 +21,6 @@ class {{ class_name }} {
         this.classes = classes;
     }
 
-    private int predict(double[] features, int node) {
-        if (this.thresholds[node] != -2) {
-            if (features[this.indices[node]] <= this.thresholds[node]) {
-                return predict(features, this.lefts[node]);
-            } else {
-                return predict(features, this.rights[node]);
-            }
-        }
-        return findMax(this.classes[node]);
-    }
-
-    public int predict(double[] features) {
-        return this.predict(features, 0);
-    }
-
     private int findMax(int[] nums) {
         int i = 0, l = nums.length, idx = 0;
         for (i = 0; i < l; i++) {
@@ -44,22 +29,7 @@ class {{ class_name }} {
         return idx;
     }
 
-    private double[] predictProba(double[] features, int node) {
-        if (this.thresholds[node] != -2) {
-            if (features[this.indices[node]] <= this.thresholds[node]) {
-                return this.predictProba(features, this.lefts[node]);
-            } else {
-                return this.predictProba(features, this.rights[node]);
-            }
-        }
-        return norm(this.classes[node]);
-    }
-
-    public double[] predictProba (double[] features) {
-        return this.predictProba(features, 0);
-    }
-
-    private double[] norm(int[] nums) {
+    private double[] normVals(int[] nums) {
         int i = 0, l = nums.length;
         double[] result = new double[l];
         double sum = 0.;
@@ -76,6 +46,36 @@ class {{ class_name }} {
             }
         }
         return result;
+    }
+
+    private int predict(double[] features, int node) {
+        if (this.thresholds[node] != -2) {
+            if (features[this.indices[node]] <= this.thresholds[node]) {
+                return predict(features, this.lefts[node]);
+            } else {
+                return predict(features, this.rights[node]);
+            }
+        }
+        return findMax(this.classes[node]);
+    }
+
+    public int predict(double[] features) {
+        return this.predict(features, 0);
+    }
+
+    private double[] predictProba(double[] features, int node) {
+        if (this.thresholds[node] != -2) {
+            if (features[this.indices[node]] <= this.thresholds[node]) {
+                return this.predictProba(features, this.lefts[node]);
+            } else {
+                return this.predictProba(features, this.rights[node]);
+            }
+        }
+        return normVals(this.classes[node]);
+    }
+
+    public double[] predictProba (double[] features) {
+        return this.predictProba(features, 0);
     }
 
     public static void main(String[] args) {

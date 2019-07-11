@@ -7,7 +7,7 @@ import java.util.Arrays;
 {% endif %}
 class {{ class_name }} {
 
-    public static int[] inference(double[] features) {
+    public static int[] compute(double[] features) {
         int[] classes = new int[{{ n_classes }}];
         {{ tree | indent(4, True) }}
         return classes;
@@ -21,7 +21,7 @@ class {{ class_name }} {
         return idx;
     }
 
-    private static double[] norm(int[] nums) {
+    private static double[] normVals(int[] nums) {
         int i = 0, l = nums.length;
         double[] result = new double[l];
         double sum = 0.;
@@ -41,11 +41,11 @@ class {{ class_name }} {
     }
 
     public static int predict(double[] features) {
-        return findMax(inference(features));
+        return findMax(compute(features));
     }
 
     public static double[] predictProba (double[] features) {
-        return norm(inference(features));
+        return normVals(compute(features));
     }
 
     public static void main(String[] args) {

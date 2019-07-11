@@ -33,7 +33,7 @@ class {{ class_name }} {
         return idx;
     }
 
-    private double[] norm(int[] nums) {
+    private double[] normVals(int[] nums) {
         int i = 0, l = nums.length;
         double[] result = new double[l];
         double sum = 0.;
@@ -75,7 +75,7 @@ class {{ class_name }} {
                 return predictProba(features, this.tree.rights[node]);
             }
         }
-        return norm(this.tree.classes[node]);
+        return normVals(this.tree.classes[node]);
     }
 
     public double[] predictProba (double[] features) {
