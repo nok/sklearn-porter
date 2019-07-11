@@ -3,37 +3,72 @@
 {% block content %}
 class {{ class_name }} {
 
-    public static function predict($features) {
-        if (sizeof($features) != {{ n_features }}) { return -1; }
+    private static function findMax($nums) {
+        $i = 0; $l = count($nums); $idx = 0;
+        for (; $i < $l; $i++) {
+            $idx = $nums[$i] > $nums[$idx] ? $i : $idx;
+        }
+        return $idx;
+    }
 
-        $classes = array_fill(0, {{ n_classes }}, 0);
-        {{ tree }}
+    private static function normVals($nums) {
+        $i = 0; $l = count($nums);
+        $result = [];
+        $sum = 0.;
 
-        $class_idx = 0;
-        $class_val = $classes[0];
-
-        for ($i = 1; $i < {{ n_classes }}; $i++) {
-            if ($classes[$i] > $class_val) {
-                $class_idx = $i;
-                $class_val = $classes[$i];
+        for ($i = 0; $i < $l; $i++) {
+            $sum += $nums[$i];
+        }
+        if($sum === 0) {
+            for ($i = 0; $i < $l; $i++) {
+                $result[$i] = 1.0 / $l;
+            }
+        } else {
+            for ($i = 0; $i < $l; $i++) {
+                $result[$i] = $nums[$i] / $sum;
             }
         }
-        return $class_idx;
+        return $result;
+    }
+
+    private static function compute($features) {
+        if (sizeof($features) != {{ n_features }}) { return -1; }
+        $classes = array_fill(0, {{ n_classes }}, 0);
+        {{ tree | indent(4, True) }}
+        return $classes;
+    }
+
+    public static function predict($features) {
+        $classes = {{ class_name }}::compute($features);
+        return {{ class_name }}::findMax($classes);
+    }
+
+    public static function predictProba($features) {
+        $classes = {{ class_name }}::compute($features);
+        return {{ class_name }}::normVals($classes);
     }
 
 }
 
 if ($argc > 1) {
     array_shift($argv);
+    $features = $argv;
 
     // Get class prediction:
     $prediction = {{ class_name }}::predict($argv);
     {% if not is_test %}
-    fwrite(STDOUT, "Predicted class: #" . strval($prediction));
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
     {% endif %}
 
+    // Get class probabilities:
+    $probabilities = {{ class_name }}::predictProba($features);
+    {% if not is_test %}
+    for ($i = 0; $i < count($probabilities); $i++) {
+        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+    }
+    {% endif %}
     {% if is_test %}
-    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => array())));
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
     {% endif %}
 }
 {% endblock %}
