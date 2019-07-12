@@ -8,6 +8,7 @@
 #define N_FEATURES {{ n_features }}
 #define N_CLASSES {{ n_classes }}
 
+
 {{ lefts }}
 {{ rights }}
 {{ thresholds }}
@@ -15,11 +16,29 @@
 {{ classes }}
 
 int findMax(int nums[N_CLASSES]) {
+    int i;
     int idx = 0;
-    for (int i = 0; i < N_CLASSES; i++) {
+    for (i = 0; i < N_CLASSES; i++) {
         idx = nums[i] > nums[idx] ? i : idx;
     }
     return idx;
+}
+
+void normVals(double *result, int nums[N_CLASSES]) {
+    int i;
+    double sum = 0.;
+    for (i = 0; i < N_CLASSES; i++) {
+        sum += nums[i];
+    }
+    if(sum == 0) {
+        for (i = 0; i < N_CLASSES; i++) {
+            result[i] = 1. / N_CLASSES;
+        }
+    } else {
+        for (i = 0; i < N_CLASSES; i++) {
+            result[i] = nums[i] / sum;
+        }
+    }
 }
 
 int predict(double features[N_FEATURES], int node) {
@@ -33,7 +52,19 @@ int predict(double features[N_FEATURES], int node) {
     return findMax(classes[node]);
 }
 
-int main(int argc, const char * argv[]) {
+void predictProba(double *result, double features[N_FEATURES], int node) {
+    if (thresholds[node] != -2) {
+        if (features[indices[node]] <= thresholds[node]) {
+            predictProba(result, features, lefts[node]);
+        } else {
+            predictProba(result, features, rights[node]);
+        }
+    } else {
+        normVals(result, classes[node]);
+    }
+}
+
+int main(int argc, const char *argv[]) {
 
     /* Features: */
     double features[argc-1];
@@ -43,12 +74,17 @@ int main(int argc, const char * argv[]) {
 
     /* Get class prediction: */
     {% if not is_test %}
-    printf("Predicted class: #%d", predict(features, 0));
-    {% endif %}
+    printf("Predicted class: #%d\n", predict(features, 0));
 
-    {% if is_test %}
-    // double probabilities[N_CLASSES] = predict_proba(features, 0);
-    double probabilities[N_CLASSES] = {1., 2., 3.};
+    /* Get class probabilities: */
+    double probabilities[N_CLASSES];
+    predictProba(probabilities, features, 0);
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+    }
+    {% else %}
+    double probabilities[N_CLASSES];
+    predictProba(probabilities, features, 0);
     printf("{\"predict\": %d, \"predict_proba\": [", predict(features, 0));
     for (int i = 0; i < N_CLASSES; i++) {
         printf("%.6f", probabilities[i]);
@@ -58,6 +94,7 @@ int main(int argc, const char * argv[]) {
     }
     printf("]}");
     {% endif %}
+
     return 0;
 }
 {% endblock %}
