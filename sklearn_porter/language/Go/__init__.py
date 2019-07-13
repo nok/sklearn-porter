@@ -25,7 +25,7 @@ class Go(LanguageABC):
         'init':         '{{ name }} := {{ value }}',
 
         # if/else condition:
-        'if':           'if ({{ a }} {{ op }} {{ b }}) {',
+        'if':           'if {{ a }} {{ op }} {{ b }} {',
         'else':         '} else {',
         'endif':        '}',
 
