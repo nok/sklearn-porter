@@ -62,7 +62,10 @@ class {{ class_name }}
 
 end
 
-if ARGV.length == {{ n_features }}
+if __FILE__ == $0
+    if ARGV.length != {{ n_features }}
+        raise "You have to pass {{ n_features }} features."
+    end
 
     # Features:
     features = ARGV.collect(&:to_f)
