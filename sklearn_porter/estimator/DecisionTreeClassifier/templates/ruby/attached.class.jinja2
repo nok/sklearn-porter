@@ -14,23 +14,50 @@ class {{ class_name }}
         @classes = classes
     end
 
-    def findMax (nums)
+    def _find_max (nums)
         idx = 0
         for i in 0 ... nums.length
             idx = nums[i] > nums[idx] ? i : idx
         end
-        return idx
+        idx
     end
 
-    def predict (features, node=0)
-        if @thresholds[node] != -2
-            if features[@indices[node]] <= @thresholds[node]
-                return predict features, @lefts[node]
-            else
-                return predict features, @rights[node]
+    def _norm_vals (nums)
+        result = []
+        sum = 0
+        for i in 0 ... nums.length
+            sum += nums[i]
+        end
+        if sum == 0
+            l = nums.length
+            for i in 0 ... l
+                result[i] = 1.0 / l
+            end
+        else
+            for i in 0 ... nums.length
+                result[i] = nums[i] / sum
             end
         end
-        return findMax @classes[node]
+        result
+    end
+
+    def _compute (features, node, post)
+        if @thresholds[node] != -2
+            if features[@indices[node]] <= @thresholds[node]
+                return _compute features, @lefts[node], post
+            else
+                return _compute features, @rights[node], post
+            end
+        end
+        post.call @classes[node]
+    end
+
+    def predict (features)
+        _compute features, 0, post=method(:_find_max)
+    end
+
+    def predict_proba (features)
+        _compute features, 0, post=method(:_norm_vals)
     end
 
 end
@@ -38,7 +65,7 @@ end
 if ARGV.length == {{ n_features }}
 
     # Features:
-    features = ARGV.collect { |i| i.to_f }
+    features = ARGV.collect(&:to_f)
 
     # Model data:
     {{ lefts }}
@@ -56,8 +83,16 @@ if ARGV.length == {{ n_features }}
     puts "Predicted class: ##{prediction}"
     {% endif %}
 
+    # Get class probabilities:
+    probabilities = clf.predict_proba features
+    {% if not is_test %}
+    for i in 0 ... probabilities.length
+        puts "Probability of class ##{i} : #{probabilities[i]}"
+    end
+    {% endif %}
+
     {% if is_test %}
-    puts JSON.generate({:predict => prediction, :predict_proba => []})
+    puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
     {% endif %}
 end
 {% endblock %}

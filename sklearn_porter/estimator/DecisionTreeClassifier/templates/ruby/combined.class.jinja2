@@ -5,19 +5,54 @@
 require 'json'
 {% endif %}
 class {{ class_name }}
-    def self.predict (features)
+
+    def self._find_max (nums)
+        idx = 0
+        for i in 0 ... nums.length
+            idx = nums[i] > nums[idx] ? i : idx
+        end
+        idx
+    end
+
+    def self._norm_vals (nums)
+        result = []
+        sum = 0
+        for i in 0 ... nums.length
+            sum += nums[i]
+        end
+        if sum == 0
+            l = nums.length
+            for i in 0 ... l
+                result[i] = 1.0 / l
+            end
+        else
+            for i in 0 ... nums.length
+                result[i] = nums[i] / sum
+            end
+        end
+        result
+    end
+
+    def self._compute (features)
         classes = Array.new({{ n_classes }}, 0)
         {{ tree | indent(4, True) }}
-
-        pos = classes.each_with_index.select {|e, i| e==classes.max}.map &:last
-        return pos.min
+        classes
     end
+
+    def self.predict (features)
+        self._find_max self._compute features
+    end
+
+    def self.predict_proba (features)
+        self._norm_vals self._compute features
+    end
+
 end
 
 if ARGV.length == {{ n_features }}
 
     # Features:
-    features = ARGV.collect { |i| i.to_f }
+    features = ARGV.collect(&:to_f)
 
     # Get class prediction:
     prediction = {{ class_name }}.predict features
@@ -25,8 +60,16 @@ if ARGV.length == {{ n_features }}
     puts "Predicted class: ##{prediction}"
     {% endif %}
 
+    # Get class probabilities:
+    probabilities = {{ class_name }}.predict_proba features
+    {% if not is_test %}
+    for i in 0 ... probabilities.length
+        puts "Probability of class ##{i} : #{probabilities[i]}"
+    end
+    {% endif %}
+
     {% if is_test %}
-    puts JSON.generate({:predict => prediction, :predict_proba => []})
+    puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
     {% endif %}
 end
 {% endblock %}
