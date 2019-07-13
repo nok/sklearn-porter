@@ -9,7 +9,7 @@ var {{ class_name }} = function(lefts, rights, thresholds, indices, classes) {
     this.indices = indices;
     this.classes = classes;
 
-    var findMax = function(nums) {
+    var _findMax = function(nums) {
         var i = 0, l = nums.length, idx = 0;
         for (; i < l; i++) {
             idx = nums[i] > nums[idx] ? i : idx;
@@ -17,7 +17,7 @@ var {{ class_name }} = function(lefts, rights, thresholds, indices, classes) {
         return idx;
     };
 
-    var normVals = function(nums) {
+    var _normVals = function(nums) {
         var i = 0, l = nums.length;
         var result = [];
         var sum = 0.;
@@ -50,51 +50,61 @@ var {{ class_name }} = function(lefts, rights, thresholds, indices, classes) {
     };
 
     this.predict = function(features, node) {
-        return this._compute(features, node, findMax);
+        return this._compute(features, node, _findMax);
     };
 
     this.predictProba = function(features, node) {
-        return this._compute(features, node, normVals);
+        return this._compute(features, node, _normVals);
     };
 
 };
 
-if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
-    if (process.argv.length - 2 === {{ n_features }}) {
-
-        // Features:
-        var features = process.argv.slice(2);
-
-        // Model data:
-        {{ lefts }}
-        {{ rights }}
-        {{ thresholds }}
-        {{ indices }}
-        {{ classes }}
-
-        // Estimator:
-        var clf = new {{ class_name }}(lefts, rights, thresholds, indices, classes);
-
-        // Get class prediction:
-        var prediction = clf.predict(features);
-        {% if not is_test %}
-        console.log("Predicted class: #" + prediction);
-        {% endif %}
-
-        // Get class probabilities:
-        var probabilities = clf.predictProba(features);
-        {% if not is_test %}
-        for (var i = 0; i < probabilities.length; i++) {
-            console.log("Probability of class #" + i + " : " + probabilities[i]);
+var main = function () {
+    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+        if (process.argv.length - 2 !== {{ n_features }}) {
+            var IllegalArgumentException = function(message) {
+                this.message = message;
+                this.name = "IllegalArgumentException";
+            }
+            throw new IllegalArgumentException("You have to pass {{ n_features }} features.");
         }
-        {% endif %}
-
-        {% if is_test %}
-        console.log(JSON.stringify({
-            "predict": prediction,
-            "predict_proba": probabilities
-        }));
-        {% endif %}
     }
+
+    // Features:
+    var features = process.argv.slice(2);
+
+    // Model data:
+    {{ lefts }}
+    {{ rights }}
+    {{ thresholds }}
+    {{ indices }}
+    {{ classes }}
+
+    // Estimator:
+    var clf = new {{ class_name }}(lefts, rights, thresholds, indices, classes);
+
+    // Get class prediction:
+    var prediction = clf.predict(features);
+    {% if not is_test %}
+    console.log("Predicted class: #" + prediction);
+    {% endif %}
+
+    // Get class probabilities:
+    var probabilities = clf.predictProba(features);
+    {% if not is_test %}
+    for (var i = 0; i < probabilities.length; i++) {
+        console.log("Probability of class #" + i + " : " + probabilities[i]);
+    }
+    {% endif %}
+    {% if is_test %}
+    console.log(JSON.stringify({
+        "predict": prediction,
+        "predict_proba": probabilities
+    }));
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
 }
 {% endblock %}
