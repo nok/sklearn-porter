@@ -15,17 +15,47 @@ type response struct {
 }
 {% endif %}
 
-func predict(features []float64) int {
-	var classes [{{ n_classes }}]float64
-	{{ tree | indent(4, True) }}
-
+func findMax(nums []int) int {
 	var idx = 0
-	for i := 0; i < len(classes); i++ {
-		if classes[i] > classes[idx] {
+	for i := 0; i < len(nums); i++ {
+		if nums[i] > nums[idx] {
 			idx = i
 		}
 	}
 	return idx
+}
+
+func normVals(nums []int) []float64 {
+	var l = len(nums)
+	var sum = 0
+	for i := 0; i < l; i++ {
+		sum += nums[i]
+	}
+	result := make([]float64, l)
+	if sum == 0 {
+		for i := 0; i < l; i++ {
+			result[i] = float64(1) / float64(l)
+		}
+	} else {
+		for i := 0; i < l; i++ {
+			result[i] = float64(nums[i]) / float64(sum)
+		}
+	}
+	return result
+}
+
+func compute(features []float64) []int {
+	classes := make([]int, {{ n_classes }})
+	{{ tree | indent(4, True) }}
+	return classes
+}
+
+func Predict(features []float64) int {
+	return findMax(compute(features))
+}
+
+func PredictProba(features []float64) []float64 {
+	return normVals(compute(features))
 }
 
 func main() {
@@ -39,13 +69,21 @@ func main() {
 	}
 
 	// Get class prediction:
-	var prediction = predict(features)
+	prediction := Predict(features)
 	{% if not is_test %}
-	fmt.Printf("Predicted class: %d\n", prediction)
+	fmt.Printf("Predicted class: #%d\n", prediction)
+	{% endif %}
+
+	// Get class probabilities:
+	probabilities := PredictProba(features)
+	{% if not is_test %}
+	for i := 0; i < len(probabilities); i++ {
+		fmt.Printf("Probability of class #%d : %.f\n", i, probabilities[i])
+	}
 	{% endif %}
 
 	{% if is_test %}
-	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: []float64{}})
+	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: probabilities})
 	fmt.Println(string(res))
 	{% endif %}
 }
