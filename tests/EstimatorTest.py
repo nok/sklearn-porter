@@ -23,10 +23,14 @@ from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
-from sklearn.datasets import load_digits, load_breast_cancer, load_iris
-
 from sklearn_porter.exceptions import InvalidTemplateError, \
     InvalidMethodError, InvalidLanguageError, NotFittedEstimatorError
+
+from sklearn.datasets import load_digits, load_iris
+try:  # for sklearn < 0.16
+    from sklearn.datasets import load_breast_cancer
+except ImportError:
+    load_breast_cancer = lambda: None
 
 try:
     from sklearn.neural_network.multilayer_perceptron import MLPClassifier
@@ -351,7 +355,7 @@ def test_extraction_from_optimizer(Class: Callable):
     ('digits', load_digits()),
 ], ids=[
     'iris',
-    'diabetes',
+    'breast_cancer',
     'digits',
 ])
 @pytest.mark.parametrize('Class', [
@@ -396,7 +400,7 @@ def test_and_compare_accuracies(
         return x[(np.random.uniform(0, 1, n_samples)
                   * (len(x) - 1)).astype(int)]
 
-    if Class:
+    if Class and dataset[1]:
         orig_est = Class[1](**Class[2])
         x, y = dataset[1].data, dataset[1].target
         orig_est.fit(X=x, y=y)
