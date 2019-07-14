@@ -63,20 +63,6 @@ if PYTHON_VERSION[:2] < (3, 5):
 SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
 
 
-def mkdir_path(base_dir: Path, test_name: str,
-               estimator_name: str, dataset_name: str,
-               language_name: str, template_name: str) -> Path:
-    """Helper function to create a directory for tests."""
-    base_dir = base_dir \
-           / ('test__' + test_name) \
-           / ('estimator__' + estimator_name) \
-           / ('dataset__' + dataset_name) \
-           / ('language__' + language_name) \
-           / ('template__' + template_name)
-    base_dir.mkdir(parents=True, exist_ok=True)
-    return base_dir
-
-
 @pytest.fixture(scope='session')
 def tmp(worker_id) -> Path:
     """Fixture to get the path to the temporary directory."""
@@ -349,7 +335,7 @@ def test_extraction_from_optimizer(Class: Callable):
 @pytest.mark.parametrize('template', [
     'attached',
     'combined',
-    'exported',
+    # 'exported',
 ])
 @pytest.mark.parametrize('language', [
     'c',
@@ -373,17 +359,47 @@ def test_extraction_from_optimizer(Class: Callable):
 ], ids=[
     'DecisionTreeClassifier',
 ])
-def test_range_of_variations(
+def test_and_compare_accuracies(
         tmp: Path,
         Class: Optional[Tuple[str, Callable, Dict]],
         dataset: Tuple, template: str, language: str):
     """Test a wide range of variations."""
+
+    def fs_mkdir(base_dir: Path, test_name: str,
+                 estimator_name: str, dataset_name: str,
+                 language_name: str, template_name: str) -> Path:
+        """Helper function to create a directory for tests."""
+        base_dir = base_dir \
+                   / ('test__' + test_name) \
+                   / ('estimator__' + estimator_name) \
+                   / ('dataset__' + dataset_name) \
+                   / ('language__' + language_name) \
+                   / ('template__' + template_name)
+        base_dir.mkdir(parents=True, exist_ok=True)
+        return base_dir
+
+    def ds_generate_x(x: np.ndarray, n_samples: int) -> np.ndarray:
+        if not isinstance(x, np.ndarray) or x.ndim != 2:
+            msg = 'Two dimensional numpy array is required.'
+            raise AssertionError(msg)
+        return np.random.uniform(
+            low=np.amin(x, axis=0),
+            high=np.amax(x, axis=0),
+            size=(n_samples, len(x[0]))
+        )
+
+    def ds_uniform_x(x: np.ndarray, n_samples: int) -> np.ndarray:
+        if not isinstance(x, np.ndarray) or x.ndim != 2:
+            msg = 'Two dimensional numpy array is required.'
+            raise AssertionError(msg)
+        n_samples = min(n_samples, len(x))
+        return x[(np.random.uniform(0, 1, n_samples)
+                  * (len(x) - 1)).astype(int)]
+
     if Class:
         orig_est = Class[1](**Class[2])
-        orig_est.fit(
-            X=dataset[1].data,
-            y=dataset[1].target,
-        )
+        x, y = dataset[1].data, dataset[1].target
+        orig_est.fit(X=x, y=y)
         try:
             est = Estimator(orig_est)
             if est.support(
@@ -391,7 +407,7 @@ def test_range_of_variations(
                     template=template,
                     method='predict'
             ):
-                tmp = mkdir_path(
+                tmp = fs_mkdir(
                     base_dir=tmp, test_name='test_range_of_variations',
                     estimator_name=Class[0], dataset_name=dataset[0],
                     language_name=language, template_name=template
@@ -401,5 +417,10 @@ def test_range_of_variations(
                     template=template,
                     directory=tmp
                 )
+
+                # Generate test data:
+                synt_x = ds_generate_x(x, 100)
+                unif_x = ds_uniform_x(x, 100)
+
         except:
             pytest.fail('Unexpected exception ...')
