@@ -23,7 +23,7 @@ from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
-from sklearn.datasets import load_digits, load_diabetes, load_iris
+from sklearn.datasets import load_digits, load_breast_cancer, load_iris
 
 from sklearn_porter.exceptions import InvalidTemplateError, \
     InvalidMethodError, InvalidLanguageError, NotFittedEstimatorError
@@ -361,7 +361,7 @@ def test_extraction_from_optimizer(Class: Callable):
 ])
 @pytest.mark.parametrize('dataset', [
     ('iris', load_iris()),
-    ('diabetes', load_diabetes()),
+    ('breast_cancer', load_breast_cancer()),
     ('digits', load_digits()),
 ], ids=[
     'iris',
