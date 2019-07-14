@@ -24,12 +24,18 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a KNeighborsClassifier classifier."""
 
     DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.ATTACHED
+    DEFAULT_METHOD = Method.PREDICT
 
     SUPPORT = {
-        Language.JAVA: {Method.PREDICT: {Template.ATTACHED, Template.EXPORTED}},
-        Language.JS: {Method.PREDICT: {Template.ATTACHED, Template.EXPORTED}},
+        Language.JAVA: {
+            Template.ATTACHED: {Method.PREDICT, },
+            Template.EXPORTED: {Method.PREDICT, },
+        },
+        Language.JS: {
+            Template.ATTACHED: {Method.PREDICT, },
+            Template.EXPORTED: {Method.PREDICT, },
+        },
     }
 
     estimator = None  # type: KNeighborsClassifierClass

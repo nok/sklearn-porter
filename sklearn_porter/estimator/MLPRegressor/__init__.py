@@ -17,11 +17,13 @@ class MLPRegressor(MLPClassifier, EstimatorBase):
     """Extract model data and port a MLPRegressor regressor."""
 
     DEFAULT_LANGUAGE = Language.JS
-    DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.ATTACHED
+    DEFAULT_METHOD = Method.PREDICT
 
     SUPPORT = {
-        Language.JS: {Method.PREDICT: {Template.ATTACHED}},
+        Language.JS: {
+            Template.ATTACHED: {Method.PREDICT, },
+        },
     }
 
     estimator = None  # type: MLPRegressorClass

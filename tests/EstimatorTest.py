@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from sys import version_info as PYTHON_VERSION
-from typing import Tuple
+from typing import Tuple, Dict, Optional, Callable
+from pathlib import Path
+import shutil
 
 import pytest
 
@@ -22,7 +24,6 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
 from sklearn.datasets import load_digits, load_diabetes, load_iris
-
 
 from sklearn_porter.exceptions import InvalidTemplateError, \
     InvalidMethodError, InvalidLanguageError, NotFittedEstimatorError
@@ -62,6 +63,31 @@ if PYTHON_VERSION[:2] < (3, 5):
 SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
 
 
+def mkdir_path(base_dir: Path, test_name: str,
+               estimator_name: str, dataset_name: str,
+               language_name: str, template_name: str) -> Path:
+    """Helper function to create a directory for tests."""
+    base_dir = base_dir \
+           / ('test__' + test_name) \
+           / ('estimator__' + estimator_name) \
+           / ('dataset__' + dataset_name) \
+           / ('language__' + language_name) \
+           / ('template__' + template_name)
+    base_dir.mkdir(parents=True, exist_ok=True)
+    return base_dir
+
+
+@pytest.fixture(scope='session')
+def tmp(worker_id) -> Path:
+    """Fixture to get the path to the temporary directory."""
+    tmp = Path(__file__).parent / 'tmp'
+    if worker_id is 'master':
+        if tmp.exists():
+            shutil.rmtree(str(tmp.resolve()), ignore_errors=True)
+    tmp.mkdir(parents=True, exist_ok=True)
+    return tmp
+
+
 @pytest.mark.parametrize('Class', [
     DecisionTreeClassifier,
     AdaBoostClassifier,
@@ -89,7 +115,7 @@ SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
     'MLPClassifier',
     'MLPRegressor',
 ])
-def test_valid_base_estimator_since_0_14(Class):
+def test_valid_base_estimator_since_0_14(Class: Callable):
     """Test initialization with valid base estimator."""
     if Class:
         est = Estimator(Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2]))
@@ -161,7 +187,7 @@ def test_list_of_classifiers():
     'MLPClassifier',
     'MLPRegressor',
 ])
-def test_unfitted_est(Class):
+def test_unfitted_est(Class: Callable):
     """Test unfitted estimators."""
     if Class:
         with pytest.raises(NotFittedEstimatorError):
@@ -236,7 +262,7 @@ def test_unfitted_est_in_pipeline():
     'InvalidLanguageError',
     'InvalidTemplateError',
 ])
-def test_invalid_params_on_port_method(Class, params: Tuple):
+def test_invalid_params_on_port_method(Class: Callable, params: Tuple):
     """Test initialization with valid base estimator."""
     if Class:
         est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
@@ -280,7 +306,7 @@ def test_invalid_params_on_port_method(Class, params: Tuple):
     'InvalidLanguageError',
     'InvalidTemplateError',
 ])
-def test_invalid_params_on_dump_method(Class, params: Tuple):
+def test_invalid_params_on_dump_method(Class: Callable, params: Tuple):
     """Test initialization with valid base estimator."""
     if Class:
         est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
@@ -299,7 +325,7 @@ def test_invalid_params_on_dump_method(Class, params: Tuple):
     'GridSearchCV',
     'RandomizedSearchCV',
 ])
-def test_extraction_from_optimizer(Class):
+def test_extraction_from_optimizer(Class: Callable):
     """Test the extraction from an optimizer."""
     params = {
         'kernel': ('linear', 'rbf'),
@@ -326,29 +352,54 @@ def test_extraction_from_optimizer(Class):
     'exported',
 ])
 @pytest.mark.parametrize('language', [
+    'c',
+    'go',
     'java',
+    'js',
+    'php',
+    'ruby',
 ])
-@pytest.mark.parametrize('load', [
-    load_iris,
-    load_diabetes,
-    load_digits,
+@pytest.mark.parametrize('dataset', [
+    ('iris', load_iris()),
+    ('diabetes', load_diabetes()),
+    ('digits', load_digits()),
 ], ids=[
-    'load_iris',
-    'load_diabetes',
-    'load_digits',
+    'iris',
+    'diabetes',
+    'digits',
 ])
 @pytest.mark.parametrize('Class', [
-    DecisionTreeClassifier,
+    ('DecisionTreeClassifier', DecisionTreeClassifier, dict(random_state=0)),
 ], ids=[
     'DecisionTreeClassifier',
 ])
-def test_range_of_variations(Class, load, template, language):
+def test_range_of_variations(
+        tmp: Path,
+        Class: Optional[Tuple[str, Callable, Dict]],
+        dataset: Tuple, template: str, language: str):
     """Test a wide range of variations."""
     if Class:
-        orig_est = Class()
-        data = load()
-        orig_est.fit(X=data.data, y=data.target)
+        orig_est = Class[1](**Class[2])
+        orig_est.fit(
+            X=dataset[1].data,
+            y=dataset[1].target,
+        )
         try:
-            Estimator(orig_est).port(language=language, template=template)
+            est = Estimator(orig_est)
+            if est.support(
+                    language=language,
+                    template=template,
+                    method='predict'
+            ):
+                tmp = mkdir_path(
+                    base_dir=tmp, test_name='test_range_of_variations',
+                    estimator_name=Class[0], dataset_name=dataset[0],
+                    language_name=language, template_name=template
+                )
+                est.dump(
+                    language=language,
+                    template=template,
+                    directory=tmp
+                )
         except:
             pytest.fail('Unexpected exception ...')

@@ -23,15 +23,26 @@ class SVC(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a SVC classifier."""
 
     DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.ATTACHED
+    DEFAULT_METHOD = Method.PREDICT
 
     SUPPORT = {
-        Language.C: {Method.PREDICT: {Template.ATTACHED}},
-        Language.JAVA: {Method.PREDICT: {Template.ATTACHED, Template.EXPORTED}},
-        Language.JS: {Method.PREDICT: {Template.ATTACHED}},
-        Language.PHP: {Method.PREDICT: {Template.ATTACHED}},
-        Language.RUBY: {Method.PREDICT: {Template.ATTACHED}},
+        Language.C: {
+            Template.ATTACHED: {Method.PREDICT, },
+        },
+        Language.JAVA: {
+            Template.ATTACHED: {Method.PREDICT, },
+            Template.EXPORTED: {Method.PREDICT, },
+        },
+        Language.JS: {
+            Template.ATTACHED: {Method.PREDICT, },
+        },
+        Language.PHP: {
+            Template.ATTACHED: {Method.PREDICT, },
+        },
+        Language.RUBY: {
+            Template.ATTACHED: {Method.PREDICT, },
+        },
     }
 
     estimator = None  # type: SVCClass

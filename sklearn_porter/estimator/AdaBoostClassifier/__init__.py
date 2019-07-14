@@ -24,13 +24,21 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port an AdaBoostClassifier classifier."""
 
     DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.COMBINED
+    DEFAULT_METHOD = Method.PREDICT
 
     SUPPORT = {
-        Language.C: {Method.PREDICT: {Template.COMBINED, }},
-        Language.JAVA: {Method.PREDICT: {Template.COMBINED, Template.EXPORTED}},
-        Language.JS: {Method.PREDICT: {Template.COMBINED, Template.EXPORTED}},
+        Language.C: {
+            Template.COMBINED: {Method.PREDICT, },
+        },
+        Language.JAVA: {
+            Template.COMBINED: {Method.PREDICT, },
+            Template.EXPORTED: {Method.PREDICT, },
+        },
+        Language.JS: {
+            Template.COMBINED: {Method.PREDICT, },
+            Template.EXPORTED: {Method.PREDICT, },
+        },
     }
 
     estimator = None  # type: AdaBoostClassifierClass

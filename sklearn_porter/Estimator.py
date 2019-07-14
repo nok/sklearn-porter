@@ -102,6 +102,17 @@ class Estimator:
         if estimator:  # if valid
             self._estimator = self._load(estimator)
 
+    def support(self, language: str, template: str, method: str):
+        support = self._estimator.SUPPORT
+        language = Language[language.upper()]
+        if language in support.keys():
+            template = Template[template.upper()]
+            if template in support[language].keys():
+                method = Method[method.upper()]
+                if method in support[language][template]:
+                    return True
+        return False
+
     @staticmethod
     def _validate(estimator: BaseEstimator):
         """

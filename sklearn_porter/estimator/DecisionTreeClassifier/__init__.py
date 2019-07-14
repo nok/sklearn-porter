@@ -12,7 +12,7 @@ from sklearn.tree.tree import DecisionTreeClassifier \
 
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.enums import Method, Language, Template, ALL_METHODS
 from sklearn_porter.exceptions import NotFittedEstimatorError
 from sklearn_porter.utils import get_logger
 
@@ -24,23 +24,35 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a DecisionTreeClassifier classifier."""
 
     DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.ATTACHED
+    DEFAULT_METHOD = Method.PREDICT
 
-    _full_support = {
-        Method.PREDICT: {
-            Template.COMBINED,
-            Template.ATTACHED,
-            Template.EXPORTED
-        }
-    }
     SUPPORT = {
-        Language.C: _full_support,
-        Language.GO: _full_support,
-        Language.JAVA: _full_support,
-        Language.JS: _full_support,
-        Language.PHP: _full_support,
-        Language.RUBY: _full_support
+        Language.C: {
+            Template.ATTACHED: ALL_METHODS,
+            Template.COMBINED: ALL_METHODS,
+        },
+        Language.GO: {
+            Template.ATTACHED: ALL_METHODS,
+            Template.COMBINED: ALL_METHODS,
+        },
+        Language.JAVA: {
+            Template.ATTACHED: ALL_METHODS,
+            Template.COMBINED: ALL_METHODS,
+            Template.EXPORTED: ALL_METHODS,
+        },
+        Language.JS: {
+            Template.ATTACHED: ALL_METHODS,
+            Template.COMBINED: ALL_METHODS,
+        },
+        Language.PHP: {
+            Template.ATTACHED: ALL_METHODS,
+            Template.COMBINED: ALL_METHODS,
+        },
+        Language.RUBY: {
+            Template.ATTACHED: ALL_METHODS,
+            Template.COMBINED: ALL_METHODS,
+        }
     }
 
     estimator = None  # type: DecisionTreeClassifierClass

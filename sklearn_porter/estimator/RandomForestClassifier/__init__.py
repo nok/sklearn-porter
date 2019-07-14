@@ -25,16 +25,30 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a RandomForestClassifier classifier."""
 
     DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.COMBINED
+    DEFAULT_METHOD = Method.PREDICT
 
     SUPPORT = {
-        Language.C: {Method.PREDICT: {Template.COMBINED, }},
-        Language.GO: {Method.PREDICT: {Template.COMBINED, }},
-        Language.JAVA: {Method.PREDICT: {Template.COMBINED, Template.EXPORTED}},
-        Language.JS: {Method.PREDICT: {Template.COMBINED, Template.EXPORTED}},
-        Language.PHP: {Method.PREDICT: {Template.COMBINED, }},
-        Language.RUBY: {Method.PREDICT: {Template.COMBINED, }},
+        Language.C: {
+            Template.COMBINED: {Method.PREDICT, },
+        },
+        Language.GO: {
+            Template.COMBINED: {Method.PREDICT, },
+        },
+        Language.JAVA: {
+            Template.COMBINED: {Method.PREDICT, },
+            Template.EXPORTED: {Method.PREDICT, },
+        },
+        Language.JS: {
+            Template.COMBINED: {Method.PREDICT, },
+            Template.EXPORTED: {Method.PREDICT, },
+        },
+        Language.PHP: {
+            Template.COMBINED: {Method.PREDICT, },
+        },
+        Language.RUBY: {
+            Template.COMBINED: {Method.PREDICT, },
+        },
     }
 
     estimator = None  # type: RandomForestClassifierClass

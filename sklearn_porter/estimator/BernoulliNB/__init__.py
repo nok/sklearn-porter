@@ -22,12 +22,17 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a BernoulliNB classifier."""
 
     DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_METHOD = Method.PREDICT
     DEFAULT_TEMPLATE = Template.ATTACHED
+    DEFAULT_METHOD = Method.PREDICT
 
     SUPPORT = {
-        Language.JAVA: {Method.PREDICT: {Template.ATTACHED, Template.EXPORTED}},
-        Language.JS: {Method.PREDICT: {Template.ATTACHED, }},
+        Language.JAVA: {
+            Template.ATTACHED: {Method.PREDICT, },
+            Template.EXPORTED: {Method.PREDICT, },
+        },
+        Language.JS: {
+            Template.ATTACHED: {Method.PREDICT, },
+        },
     }
 
     estimator = None  # type: BernoulliNBClass

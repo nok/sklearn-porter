@@ -24,7 +24,7 @@ class EstimatorBase(EstimatorApiABC):
     DEFAULT_METHOD = None  # type: Method
     DEFAULT_TEMPLATE = None  # type: Template
 
-    SUPPORT = None  # type: Dict[Language, Dict[Method, Set[Template]]]
+    SUPPORT = None  # type: Dict[Language, Dict[Template, Set[Method]]]
 
     estimator = None  # type: BaseEstimator
     estimator_name = None  # type: str
@@ -129,27 +129,25 @@ class EstimatorBase(EstimatorApiABC):
                   'in the class of the estimator.'
             raise NotImplementedError(msg)
 
-        # Set default:
-        method = method or self.DEFAULT_METHOD
-        language = language or self.DEFAULT_LANGUAGE
-        template = template or self.DEFAULT_TEMPLATE
-
-        # Check method support:
-        if method not in self.SUPPORT[language].keys():
-            msg = 'Currently only `predict` ' \
-                  'is a valid method type.'
-            raise NotSupportedYetError(msg)
-
         # Check language support:
+        language = language or self.DEFAULT_LANGUAGE
         if language not in self.SUPPORT.keys():
             msg = 'Currently the language `{}` ' \
                   'is not supported yet.'.format(language.value)
             raise NotSupportedYetError(msg)
 
         # Check the template support:
-        if template not in self.SUPPORT[language][method]:
+        template = template or self.DEFAULT_TEMPLATE
+        if template not in self.SUPPORT[language].keys():
             msg = 'Currently the template `{}` ' \
                   'is not implemented yet.'.format(template.value)
+            raise NotSupportedYetError(msg)
+
+        # Check method support:
+        method = method or self.DEFAULT_METHOD
+        if method not in self.SUPPORT[language][template]:
+            msg = 'Currently only `predict` ' \
+                  'is a valid method type.'
             raise NotSupportedYetError(msg)
 
         return method, language, template

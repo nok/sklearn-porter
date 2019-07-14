@@ -10,10 +10,23 @@ class Method(Enum):
     PREDICT_PROBA = 'predict_proba'
 
 
+ALL_METHODS = {
+    Method.PREDICT,
+    Method.PREDICT_PROBA,
+}
+
+
 class Template(Enum):
-    COMBINED = 'combined'
     ATTACHED = 'attached'
+    COMBINED = 'combined'
     EXPORTED = 'exported'
+
+
+ALL_TEMPLATES = {
+    Template.ATTACHED,
+    Template.COMBINED,
+    Template.EXPORTED,
+}
 
 
 class Language(Enum):
@@ -23,3 +36,13 @@ class Language(Enum):
     JS = JavaScript
     PHP = PHP
     RUBY = Ruby
+
+
+ALL_LANGUAGES = {
+    Language.C,
+    Language.GO,
+    Language.JAVA,
+    Language.JS,
+    Language.PHP,
+    Language.RUBY,
+}
