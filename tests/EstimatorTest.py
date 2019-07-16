@@ -107,9 +107,10 @@ def tmp(worker_id) -> Path:
 ])
 def test_valid_base_estimator_since_0_14(Class: Callable):
     """Test initialization with valid base estimator."""
-    if Class:
-        est = Estimator(Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2]))
-        assert isinstance(est.estimator, Class)
+    if not Class:
+        return
+    est = Estimator(Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2]))
+    assert isinstance(est.estimator, Class)
 
 
 @pytest.mark.skipif(
@@ -179,9 +180,10 @@ def test_list_of_classifiers():
 ])
 def test_unfitted_est(Class: Callable):
     """Test unfitted estimators."""
-    if Class:
-        with pytest.raises(NotFittedEstimatorError):
-            Estimator(Class())
+    if not Class:
+        return
+    with pytest.raises(NotFittedEstimatorError):
+        Estimator(Class())
 
 
 @pytest.mark.parametrize('obj', [None, object, 0, 'string'])
@@ -254,10 +256,11 @@ def test_unfitted_est_in_pipeline():
 ])
 def test_invalid_params_on_port_method(Class: Callable, params: Tuple):
     """Test initialization with valid base estimator."""
-    if Class:
-        est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
-        with pytest.raises(params[0]):
-            Estimator(est).port(**params[1])
+    if not Class:
+        return
+    est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
+    with pytest.raises(params[0]):
+        Estimator(est).port(**params[1])
 
 
 @pytest.mark.parametrize('Class', [
@@ -298,10 +301,11 @@ def test_invalid_params_on_port_method(Class: Callable, params: Tuple):
 ])
 def test_invalid_params_on_dump_method(Class: Callable, params: Tuple):
     """Test initialization with valid base estimator."""
-    if Class:
-        est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
-        with pytest.raises(params[0]):
-            Estimator(est).dump(**params[1])
+    if not Class:
+        return
+    est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
+    with pytest.raises(params[0]):
+        Estimator(est).dump(**params[1])
 
 
 @pytest.mark.skipif(
@@ -368,6 +372,8 @@ def test_and_compare_accuracies(
         Class: Optional[Tuple[str, Callable, Dict]],
         dataset: Tuple, template: str, language: str):
     """Test a wide range of variations."""
+    if not Class or not dataset[1]:
+        return
 
     def fs_mkdir(base_dir: Path, test_name: str,
                  estimator_name: str, dataset_name: str,
@@ -400,31 +406,30 @@ def test_and_compare_accuracies(
         return x[(np.random.uniform(0, 1, n_samples)
                   * (len(x) - 1)).astype(int)]
 
-    if Class and dataset[1]:
-        orig_est = Class[1](**Class[2])
-        x, y = dataset[1].data, dataset[1].target
-        orig_est.fit(X=x, y=y)
-        try:
-            est = Estimator(orig_est)
-            if est.support(
-                    language=language,
-                    template=template,
-                    method='predict'
-            ):
-                tmp = fs_mkdir(
-                    base_dir=tmp, test_name='test_range_of_variations',
-                    estimator_name=Class[0], dataset_name=dataset[0],
-                    language_name=language, template_name=template
-                )
-                est.dump(
-                    language=language,
-                    template=template,
-                    directory=tmp
-                )
+    orig_est = Class[1](**Class[2])
+    x, y = dataset[1].data, dataset[1].target
+    orig_est.fit(X=x, y=y)
+    try:
+        est = Estimator(orig_est)
+        if est.support(
+                language=language,
+                template=template,
+                method='predict'
+        ):
+            tmp = fs_mkdir(
+                base_dir=tmp, test_name='test_range_of_variations',
+                estimator_name=Class[0], dataset_name=dataset[0],
+                language_name=language, template_name=template
+            )
+            est.dump(
+                language=language,
+                template=template,
+                directory=tmp
+            )
 
-                # Generate test data:
-                synt_x = ds_generate_x(x, 100)
-                unif_x = ds_uniform_x(x, 100)
+            # Generate test data:
+            synt_x = ds_generate_x(x, 100)
+            unif_x = ds_uniform_x(x, 100)
 
-        except:
-            pytest.fail('Unexpected exception ...')
+    except:
+        pytest.fail('Unexpected exception ...')
