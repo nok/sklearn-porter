@@ -15,11 +15,11 @@ class Java(LanguageABC):
 
     # javac {class_path} tmp/Estimator.java
     # class_path = '-cp ./gson.jar'
-    CMD_COMPILE = 'javac {class_path} {src_dir}' + sep + '{src_file}'
+    CMD_COMPILE = 'javac {class_path} -d {dest_dir} {src_path}'
 
     # java {class_path} Estimator <args>
     # class_path = '-cp ./gson.jar:./tmp'
-    CMD_EXECUTE = 'java {class_path} {dest_dir}' + sep + '{dest_file}'
+    CMD_EXECUTE = 'java {class_path} {dest_path}'
 
     TEMPLATES = {
         'init':         '{{ type }} {{ name }} = {{ value }};',

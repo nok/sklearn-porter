@@ -246,11 +246,11 @@ def test_unfitted_est_in_pipeline():
     'MLPRegressor',
 ])
 @pytest.mark.parametrize('params', [
-    (InvalidMethodError, dict(method='i_n_v_a_l_i_d')),
+    # (InvalidMethodError, dict(method='i_n_v_a_l_i_d')),
     (InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
     (InvalidTemplateError, dict(template='i_n_v_a_l_i_d')),
 ], ids=[
-    'InvalidMethodError',
+    # 'InvalidMethodError',
     'InvalidLanguageError',
     'InvalidTemplateError',
 ])
@@ -291,11 +291,11 @@ def test_invalid_params_on_port_method(Class: Callable, params: Tuple):
     'MLPRegressor',
 ])
 @pytest.mark.parametrize('params', [
-    (InvalidMethodError, dict(method='i_n_v_a_l_i_d')),
+    # (InvalidMethodError, dict(method='i_n_v_a_l_i_d')),
     (InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
     (InvalidTemplateError, dict(template='i_n_v_a_l_i_d')),
 ], ids=[
-    'InvalidMethodError',
+    # 'InvalidMethodError',
     'InvalidLanguageError',
     'InvalidTemplateError',
 ])

@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 
+from os import sep
 from pathlib import Path
 from sys import version_info, platform as system_platform
 from typing import Callable, Optional, Tuple, Union, Dict
 from textwrap import dedent
+from tempfile import mktemp
+from subprocess import call, check_output, STDOUT
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -104,11 +107,11 @@ class Estimator:
 
     def support(self, language: str, template: str, method: str):
         support = self._estimator.SUPPORT
-        language = Language[language.upper()]
+        language = self._convert_language(language)
         if language in support.keys():
-            template = Template[template.upper()]
+            template = self._convert_template(template)
             if template in support[language].keys():
-                method = Method[method.upper()]
+                method = self._convert_method(method)
                 if method in support[language][template]:
                     return True
         return False
@@ -376,9 +379,35 @@ class Estimator:
 
         return None
 
+    @staticmethod
+    def _convert_method(method: Union[str, Method]) -> Method:
+        if method and isinstance(method, str):
+            try:
+                method = Method[method.upper()]
+            except KeyError:
+                raise InvalidMethodError(method)
+        return method
+
+    @staticmethod
+    def _convert_language(language: Union[str, Language]) -> Language:
+        if language and isinstance(language, str):
+            try:
+                language = Language[language.upper()]
+            except KeyError:
+                raise InvalidLanguageError(language)
+        return language
+
+    @staticmethod
+    def _convert_template(template: Union[str, Template]) -> Template:
+        if template and isinstance(template, str):
+            try:
+                template = Template[template.upper()]
+            except KeyError:
+                raise InvalidTemplateError(template)
+        return template
+
     def port(
             self,
-            method: Optional[Union[str, Method]] = None,
             language: Optional[Union[str, Language]] = None,
             template: Optional[Union[str, Template]] = None,
             **kwargs
@@ -399,23 +428,8 @@ class Estimator:
         -------
         The transpiled estimator in the target programming language.
         """
-        if method and isinstance(method, str):
-            try:
-                method = Method[method.upper()]
-            except KeyError:
-                raise InvalidMethodError(method)
-
-        if language and isinstance(language, str):
-            try:
-                language = Language[language.upper()]
-            except KeyError:
-                raise InvalidLanguageError(language)
-
-        if template and isinstance(template, str):
-            try:
-                template = Template[template.upper()]
-            except KeyError:
-                raise InvalidTemplateError(template)
+        language = self._convert_language(language)
+        template = self._convert_template(template)
 
         locs = locals()
         locs.pop('self')
@@ -427,7 +441,6 @@ class Estimator:
 
     def export(
             self,
-            method: Optional[Union[str, Method]] = None,
             language: Optional[Union[str, Language]] = None,
             template: Optional[Union[str, Template]] = None,
             **kwargs
@@ -456,7 +469,6 @@ class Estimator:
 
     def dump(
             self,
-            method: Optional[Union[str, Method]] = None,
             language: Optional[Union[str, Language]] = None,
             template: Optional[Union[str, Template]] = None,
             directory: Optional[Union[str, Path]] = None,
@@ -480,23 +492,8 @@ class Estimator:
         -------
         The path(s) to the generated file(s).
         """
-        if method and isinstance(method, str):
-            try:
-                method = Method[method.upper()]
-            except KeyError:
-                raise InvalidMethodError(method)
-
-        if language and isinstance(language, str):
-            try:
-                language = Language[language.upper()]
-            except KeyError:
-                raise InvalidLanguageError(language)
-
-        if template and isinstance(template, str):
-            try:
-                template = Template[template.upper()]
-            except KeyError:
-                raise InvalidTemplateError(template)
+        language = self._convert_language(language)
+        template = self._convert_template(template)
 
         locs = locals()
         locs.pop('self')
@@ -505,6 +502,48 @@ class Estimator:
         # Set defaults:
         kwargs = self._set_kwargs_defaults(kwargs)
         return self._estimator.dump(**locs, **kwargs)
+
+    def execute(
+            self,
+            language: Optional[Union[str, Language]],
+            template: Optional[Union[str, Template]] = None,
+            directory: Optional[Union[str, Path]] = None,
+            **kwargs
+    ):
+        language = self._convert_language(language)
+        template = self._convert_template(template)
+
+        if not directory:
+            directory = mktemp()
+
+        locs = locals()
+        locs.pop('self')
+        locs.pop('kwargs')
+
+        kwargs = self._set_kwargs_defaults(kwargs)
+        paths = self.dump(**locs, **kwargs)
+
+        if not isinstance(paths, Path):
+            paths = Path(paths)
+
+        language = language.value
+
+        cmd_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
+        print(language.CMD_COMPILE)
+        cmd = language.CMD_COMPILE.format(class_path='', dest_dir=str(paths.parent), src_path=str(paths))
+        print(cmd)
+        out = call(cmd, **cmd_args)
+        out = str(out).strip()
+        print(out)
+
+        # CMD_EXECUTE = 'java {class_path} {dest_dir}' + sep + '{dest_file}'
+        print(language.CMD_EXECUTE)
+        cmd = 'PYTEST'
+        cmd = language.CMD_EXECUTE.format(class_path='-cp ' + str(paths.parent), dest_path=(paths.stem))
+        cmd += ' 1 2 3 4'
+        print(cmd)
+        out = check_output(cmd, **cmd_args)
+        print(out)
 
     def _set_kwargs_defaults(self, kwargs: Dict) -> Dict:
         """
