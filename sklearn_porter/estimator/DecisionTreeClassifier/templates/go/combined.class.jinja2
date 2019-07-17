@@ -8,7 +8,7 @@ import (
 	"os"
 	"strconv"
 )
-{% if is_test %}
+{% if is_test or to_json %}
 type response struct {
 	Predict int `json:"predict"`
 	PredictProba []float64 `json:"predict_proba"`
@@ -68,22 +68,21 @@ func main() {
 		}
 	}
 
+	{% if is_test or to_json %}
+	prediction := Predict(features)
+	probabilities := PredictProba(features)
+	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: probabilities})
+	fmt.Println(string(res))
+	{% else %}
 	// Get class prediction:
 	prediction := Predict(features)
-	{% if not is_test %}
 	fmt.Printf("Predicted class: #%d\n", prediction)
-	{% endif %}
 
 	// Get class probabilities:
 	probabilities := PredictProba(features)
-	{% if not is_test %}
 	for i := 0; i < len(probabilities); i++ {
 		fmt.Printf("Probability of class #%d : %.f\n", i, probabilities[i])
 	}
 	{% endif %}
 
-	{% if is_test %}
-	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: probabilities})
-	fmt.Println(string(res))
-	{% endif %}
 }

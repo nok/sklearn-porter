@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from os import sep
+from json import loads, dumps
 from pathlib import Path
 from sys import version_info, platform as system_platform
 from typing import Callable, Optional, Tuple, Union, Dict
@@ -17,7 +17,8 @@ from sklearn.base import RegressorMixin
 # sklearn-porter
 from sklearn.ensemble import BaseEnsemble
 
-from sklearn_porter import __version__ as sklearn_porter_version
+from sklearn_porter import __version__ as sklearn_porter_version, Logger
+from sklearn_porter.utils import Options
 from sklearn_porter.enums import (
     Method,
     Language,
@@ -134,6 +135,8 @@ class Estimator:
         -------
         A valid base estimator or None.
         """
+        L.setLevel(Options.get_option('logging.level'))
+
         est = estimator  # shorter <3
         qualname = get_qualname(est)
 
@@ -410,6 +413,7 @@ class Estimator:
             self,
             language: Optional[Union[str, Language]] = None,
             template: Optional[Union[str, Template]] = None,
+            to_json: bool = False,
             **kwargs
     ) -> Union[str, Tuple[str]]:
         """
@@ -417,12 +421,12 @@ class Estimator:
 
         Parameters
         ----------
-        method : str (default: 'predict')
-            Set the target method.
         language : str (default: 'java')
             Set the target programming language.
         template : str (default: it depends on the used estimator)
             Set the kind of desired template.
+        to_json : bool (default: False)
+            Return the result as JSON string.
 
         Returns
         -------
@@ -443,6 +447,7 @@ class Estimator:
             self,
             language: Optional[Union[str, Language]] = None,
             template: Optional[Union[str, Template]] = None,
+            to_json: bool = False,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -450,12 +455,12 @@ class Estimator:
 
         Parameters
         ----------
-        method : str (default: 'predict')
-            Set the target method.
         language : str (default: 'java')
             Set the target programming language.
         template : str (default: it depends on the used estimator)
             Set the kind of desired template.
+        to_json : bool (default: False)
+            Return the result as JSON string.
 
         Returns
         -------
@@ -472,6 +477,7 @@ class Estimator:
             language: Optional[Union[str, Language]] = None,
             template: Optional[Union[str, Template]] = None,
             directory: Optional[Union[str, Path]] = None,
+            to_json: bool = False,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -479,15 +485,14 @@ class Estimator:
 
         Parameters
         ----------
-        method : str (default: 'predict')
-            Set the target method.
         language : str (default: 'java')
             Set the target programming language.
         template : str (default: 'embedding')
             Set the kind of desired template.
         directory : Optional[Union[str, Path]] (default: current working dir)
             Set the directory where all generated files should be saved.
-
+        to_json : bool (default: False)
+            Return the result as JSON string.
         Returns
         -------
         The path(s) to the generated file(s).
@@ -512,38 +517,62 @@ class Estimator:
     ):
         language = self._convert_language(language)
         template = self._convert_template(template)
-
         if not directory:
             directory = mktemp()
+        to_json = True
 
         locs = locals()
         locs.pop('self')
         locs.pop('kwargs')
 
         kwargs = self._set_kwargs_defaults(kwargs)
-        paths = self.dump(**locs, **kwargs)
+        out = self.dump(**locs, **kwargs)
 
-        if not isinstance(paths, Path):
-            paths = Path(paths)
+        if isinstance(out, tuple):
+            src_path, data_path = out[0], out[1]
+            if not isinstance(data_path, Path):
+                data_path = Path(data_path)
+        else:
+            src_path, json_path = out, None
+        if not isinstance(src_path, Path):
+            src_path = Path(src_path)
 
-        language = language.value
-
+        lang = language.value
         cmd_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
-        print(language.CMD_COMPILE)
-        cmd = language.CMD_COMPILE.format(class_path='', dest_dir=str(paths.parent), src_path=str(paths))
-        print(cmd)
-        out = call(cmd, **cmd_args)
-        out = str(out).strip()
-        print(out)
 
-        # CMD_EXECUTE = 'java {class_path} {dest_dir}' + sep + '{dest_file}'
-        print(language.CMD_EXECUTE)
-        cmd = 'PYTEST'
-        cmd = language.CMD_EXECUTE.format(class_path='-cp ' + str(paths.parent), dest_path=(paths.stem))
-        cmd += ' 1 2 3 4'
-        print(cmd)
-        out = check_output(cmd, **cmd_args)
-        print(out)
+        # Compilation:
+        com_cmd = lang.CMD_COMPILE
+        if com_cmd:
+            L.info('Compilation command: ' + com_cmd)
+            cmd = com_cmd.format(
+                class_path='',
+                dest_dir=str(src_path.parent),
+                src_path=str(src_path)
+            )
+            L.info('Compilation command: `{}`'.format(cmd))
+
+            out = call(cmd, **cmd_args)
+            if int(str(out).strip()) != 0:
+                msg = 'Compilation failed.'
+                raise AssertionError(msg)
+
+        # Execution:
+        exe_cmd = lang.CMD_EXECUTE
+        if exe_cmd:
+            L.info('Execution command: ' + exe_cmd)
+            cmd = exe_cmd.format(
+                class_path='-cp ' + str(src_path.parent),
+                dest_path=str(src_path.stem)
+            )
+            L.info('Execution command: `{}`'.format(cmd))
+
+            cmd += ' 1 2 3 4'
+
+            out = loads(check_output(cmd, **cmd_args))
+            out_str = dumps(out, indent=2, sort_keys=True)
+            print('JSON result:\n{}'.format(out_str))
+            L.info('JSON result:\n{}'.format(out_str))
+            return out
 
     def _set_kwargs_defaults(self, kwargs: Dict) -> Dict:
         """

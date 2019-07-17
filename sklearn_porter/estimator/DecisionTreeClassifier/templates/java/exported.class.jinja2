@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
 import com.google.gson.Gson;
-{% if is_test %}
+{% if is_test or to_json %}
 import java.util.Arrays;
 {% endif %}
 
@@ -100,15 +100,17 @@ class {{ class_name }} {
         // Estimator:
         {{ class_name }} clf = new {{ class_name }}(modelData);
 
+        {% if is_test or to_json %}
+        int prediction = clf.predict(features);
+        double[] probabilities = clf.predictProba(features);
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
+        {% else %}
         // Get class prediction:
         int prediction = clf.predict(features);
-        {% if not is_test %}
         System.out.println("Predicted class: #" + String.valueOf(prediction));
-        {% endif %}
 
         // Get class probabilities:
         double[] probabilities = clf.predictProba(features);
-        {% if not is_test %}
         for (int i = 0; i < probabilities.length; i++) {
             System.out.print(String.valueOf(probabilities[i]));
             if (i != probabilities.length - 1) {
@@ -117,9 +119,6 @@ class {{ class_name }} {
         }
         {% endif %}
 
-        {% if is_test %}
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
-        {% endif %}
     }
 }
 {% endblock %}

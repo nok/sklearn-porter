@@ -73,33 +73,6 @@ class EstimatorBase(EstimatorApiABC):
             is_test='PYTEST_CURRENT_TEST' in environ,
         ))
 
-    def port(
-            self,
-            method: Optional[Method] = None,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None,
-            **kwargs
-    ):
-        """
-        Port an estimator.
-
-        Parameters
-        ----------
-        method : Method
-            The required method.
-        language : Language
-            The required language.
-        template : Template
-            The required template.
-
-        Returns
-        -------
-        The ported estimator.
-        """
-        msg = 'You have to overwrite this method ' \
-              '`port` in the class of the estimator.'
-        raise NotImplementedError(msg)
-
     def check(
             self,
             method: Optional[Method] = None,
@@ -152,12 +125,39 @@ class EstimatorBase(EstimatorApiABC):
 
         return method, language, template
 
+    def port(
+            self,
+            language: Optional[Language] = None,
+            template: Optional[Template] = None,
+            to_json: bool = False,
+            **kwargs
+    ):
+        """
+        Port an estimator.
+
+        Parameters
+        ----------
+        language : Language
+            The required language.
+        template : Template
+            The required template.
+        to_json : bool (default: False)
+            Return the result as JSON string.
+
+        Returns
+        -------
+        The ported estimator.
+        """
+        msg = 'You have to overwrite this method ' \
+              '`port` in the class of the estimator.'
+        raise NotImplementedError(msg)
+
     def dump(
             self,
-            method: Optional[Method] = None,
             language: Optional[Language] = None,
             template: Optional[Template] = None,
             directory: Optional[Union[str, Path]] = None,
+            to_json: bool = False,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -165,14 +165,14 @@ class EstimatorBase(EstimatorApiABC):
 
         Parameters
         ----------
-        method : Method
-            The required method.
         language : Language
             The required language.
         template : Template
             The required template
         directory : str or Path
             The destination directory.
+        to_json : bool (default: False)
+            Return the result as JSON string.
         kwargs
 
         Returns
@@ -188,15 +188,17 @@ class EstimatorBase(EstimatorApiABC):
             directory = directory.parent
 
         method, language, template = self.check(
-            method=method, language=language, template=template)
+            language=language,
+            template=template
+        )
 
         class_name = kwargs.get('class_name')
 
         # Port/Transpile estimator:
         ported = self.port(
-            method=method,
             language=language,
             template=template,
+            to_json=to_json,
             **kwargs
         )
         if not isinstance(ported, tuple):

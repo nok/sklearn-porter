@@ -73,16 +73,7 @@ int main(int argc, const char *argv[]) {
     }
 
     /* Get class prediction: */
-    {% if not is_test %}
-    printf("Predicted class: #%d\n", predict(features, 0));
-
-    /* Get class probabilities: */
-    double probabilities[N_CLASSES];
-    predict_proba(probabilities, features, 0);
-    for (int i = 0; i < N_CLASSES; i++) {
-        printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
-    }
-    {% else %}
+    {% if is_test or to_json %}
     double probabilities[N_CLASSES];
     predict_proba(probabilities, features, 0);
     printf("{\"predict\": %d, \"predict_proba\": [", predict(features, 0));
@@ -93,6 +84,15 @@ int main(int argc, const char *argv[]) {
         }
     }
     printf("]}");
+    {% else %}
+    printf("Predicted class: #%d\n", predict(features, 0));
+
+    /* Get class probabilities: */
+    double probabilities[N_CLASSES];
+    predict_proba(probabilities, features, 0);
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+    }
     {% endif %}
 
     return 0;

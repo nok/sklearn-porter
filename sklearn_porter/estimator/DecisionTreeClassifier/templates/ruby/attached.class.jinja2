@@ -1,7 +1,7 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-{% if is_test %}
+{% if is_test or to_json %}
 require 'json'
 {% endif %}
 class {{ class_name }}
@@ -80,22 +80,20 @@ if __FILE__ == $0
     # Estimator:
     clf = {{ class_name }}.new lefts, rights, thresholds, indices, classes
 
+    {% if is_test or to_json %}
+    prediction = clf.predict features
+    probabilities = clf.predict_proba features
+    puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+    {% else %}
     # Get class prediction:
     prediction = clf.predict features
-    {% if not is_test %}
     puts "Predicted class: ##{prediction}"
-    {% endif %}
 
     # Get class probabilities:
     probabilities = clf.predict_proba features
-    {% if not is_test %}
     for i in 0 ... probabilities.length
         puts "Probability of class ##{i} : #{probabilities[i]}"
     end
-    {% endif %}
-
-    {% if is_test %}
-    puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
     {% endif %}
 end
 {% endblock %}

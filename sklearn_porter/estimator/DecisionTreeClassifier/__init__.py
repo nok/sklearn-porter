@@ -94,9 +94,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
             self,
-            method: Optional[Method] = None,
             language: Optional[Language] = None,
             template: Optional[Template] = None,
+            to_json: bool = False,
             **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
@@ -104,12 +104,13 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         Parameters
         ----------
-        method : Method
-            The required method.
+
         language : Language
             The required language.
         template : Template
             The required template.
+        to_json : bool (default: False)
+            Return the result as JSON string.
         kwargs
 
         Returns
@@ -118,7 +119,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             The ported estimator.
         """
         method, language, template = self.check(
-            method=method, language=language, template=template)
+            language=language, template=template)
 
         # Arguments:
         kwargs.setdefault('method_name', method.value)
@@ -129,6 +130,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         plas.update(dict(
             class_name=kwargs.get('class_name'),
             method_name=kwargs.get('method_name'),
+            to_json=to_json,
         ))
         plas.update(self.meta_info)
 

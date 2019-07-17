@@ -15,6 +15,8 @@ from sklearn_porter.utils import Logger
 Options.add_option('logging.level', callback=Logger.set_level)
 Options.set_option('logging.level', ERROR)
 
+L = Logger.get_logger(__name__)
+
 
 def load_meta(path):
     """
@@ -58,5 +60,9 @@ __email__ = meta_.get('author_email')
 __license__ = meta_.get('license')
 __version__ = meta_.get('version', '1.0.0')
 
+L.info('Setup __author__: {}'.format(__author__))
+L.info('Setup __email__: {}'.format(__email__))
+L.info('Setup __license__: {}'.format(__license__))
+L.info('Setup __version__: {}'.format(__version__))
 
 from sklearn_porter.Estimator import Estimator

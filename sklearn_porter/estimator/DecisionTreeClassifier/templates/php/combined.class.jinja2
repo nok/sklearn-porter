@@ -51,24 +51,26 @@ class {{ class_name }} {
 }
 
 if ($argc > 1) {
+
+    // Features:
     array_shift($argv);
     $features = $argv;
 
+    {% if is_test or to_json %}
+    $prediction = {{ class_name }}::predict($argv);
+    $probabilities = {{ class_name }}::predictProba($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
+    {% else %}
     // Get class prediction:
     $prediction = {{ class_name }}::predict($argv);
-    {% if not is_test %}
     fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
-    {% endif %}
 
     // Get class probabilities:
     $probabilities = {{ class_name }}::predictProba($features);
-    {% if not is_test %}
     for ($i = 0; $i < count($probabilities); $i++) {
         fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
     }
     {% endif %}
-    {% if is_test %}
-    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
-    {% endif %}
+
 }
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.combined.class' %}
 
 {% block content %}
-{% if is_test %}
+{% if is_test or to_json %}
 import java.util.Arrays;
 
 {% endif %}
@@ -60,15 +60,17 @@ class {{ class_name }} {
             features[i] = Double.parseDouble(args[i]);
         }
 
+        {% if is_test or to_json %}
+        int prediction = {{ class_name }}.predict(features);
+        double[] probabilities = {{ class_name }}.predictProba(features);
+				System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
+        {% else %}
         // Get class prediction:
         int prediction = {{ class_name }}.predict(features);
-        {% if not is_test %}
         System.out.println("Predicted class: #" + String.valueOf(prediction));
-        {% endif %}
 
         // Get class probabilities:
         double[] probabilities = {{ class_name }}.predictProba(features);
-        {% if not is_test %}
         for (int i = 0; i < probabilities.length; i++) {
             System.out.print(String.valueOf(probabilities[i]));
             if (i != probabilities.length - 1) {
@@ -77,9 +79,6 @@ class {{ class_name }} {
         }
         {% endif %}
 
-        {% if is_test %}
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
-        {% endif %}
     }
 }
 {% endblock %}

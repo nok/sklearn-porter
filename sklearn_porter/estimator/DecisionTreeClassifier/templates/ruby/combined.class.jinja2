@@ -1,7 +1,7 @@
 {% extends 'base.combined.class' %}
 
 {% block content %}
-{% if is_test %}
+{% if is_test or to_json %}
 require 'json'
 {% endif %}
 class {{ class_name }}
@@ -57,22 +57,20 @@ if __FILE__ == $0
     # Features:
     features = ARGV.collect(&:to_f)
 
+    {% if is_test or to_json %}
+    prediction = {{ class_name }}.predict features
+    probabilities = {{ class_name }}.predict_proba features
+    puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+    {% else %}
     # Get class prediction:
     prediction = {{ class_name }}.predict features
-    {% if not is_test %}
     puts "Predicted class: ##{prediction}"
-    {% endif %}
 
     # Get class probabilities:
     probabilities = {{ class_name }}.predict_proba features
-    {% if not is_test %}
     for i in 0 ... probabilities.length
         puts "Probability of class ##{i} : #{probabilities[i]}"
     end
-    {% endif %}
-
-    {% if is_test %}
-    puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
     {% endif %}
 end
 {% endblock %}
