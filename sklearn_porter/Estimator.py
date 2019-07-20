@@ -1,38 +1,31 @@
 # -*- coding: utf-8 -*-
 
-from json import loads, dumps
+from os import environ
+import urllib.request
+from json import loads
 from pathlib import Path
 from sys import version_info, platform as system_platform
-from typing import Callable, Optional, Tuple, Union, Dict
+from typing import Callable, Optional, Tuple, Union, Dict, List
 from textwrap import dedent
 from tempfile import mktemp
 from subprocess import call, check_output, STDOUT
+from multiprocessing import cpu_count, Pool
+
+import numpy as np
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
-from sklearn.base import BaseEstimator
-from sklearn.base import ClassifierMixin
-from sklearn.base import RegressorMixin
-
-# sklearn-porter
+from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.ensemble import BaseEnsemble
 
-from sklearn_porter import __version__ as sklearn_porter_version, Logger
-from sklearn_porter.utils import Options
-from sklearn_porter.enums import (
-    Method,
-    Language,
-    Template
-)
-from sklearn_porter.exceptions import (
-    InvalidMethodError,
-    InvalidLanguageError,
-    InvalidTemplateError,
-    NotFittedEstimatorError)
-from sklearn_porter.utils import (
-    get_logger,
-    get_qualname
-)
+# sklearn-porter
+from sklearn_porter import __version__ as sklearn_porter_version
+from sklearn_porter.enums import Language, Method, Template
+from sklearn_porter.utils import Options, get_logger, get_qualname
+from sklearn_porter.exceptions import (InvalidLanguageError,
+                                       InvalidMethodError,
+                                       InvalidTemplateError,
+                                       NotFittedEstimatorError)
 
 L = get_logger(__name__)
 
@@ -508,71 +501,115 @@ class Estimator:
         kwargs = self._set_kwargs_defaults(kwargs)
         return self._estimator.dump(**locs, **kwargs)
 
-    def execute(
+    def make(
             self,
+            x: Union[List, np.ndarray],
             language: Optional[Union[str, Language]],
             template: Optional[Union[str, Template]] = None,
             directory: Optional[Union[str, Path]] = None,
+            n_jobs=True,
             **kwargs
-    ):
+    ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
         language = self._convert_language(language)
         template = self._convert_template(template)
         if not directory:
             directory = mktemp()
-        to_json = True
-
-        locs = locals()
-        locs.pop('self')
-        locs.pop('kwargs')
-
         kwargs = self._set_kwargs_defaults(kwargs)
-        out = self.dump(**locs, **kwargs)
 
-        if isinstance(out, tuple):
+        # Transpile model:
+        out = self.dump(language=language, template=template,
+                        directory=directory, to_json=True, **kwargs)
+
+        if isinstance(out, tuple):  # indicator for Template.EXPORTED
             src_path, data_path = out[0], out[1]
             if not isinstance(data_path, Path):
                 data_path = Path(data_path)
+            data_path = data_path.resolve()
         else:
-            src_path, json_path = out, None
+            src_path, data_path = out, None
         if not isinstance(src_path, Path):
             src_path = Path(src_path)
+        src_path = src_path.resolve()
 
-        lang = language.value
-        cmd_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
+        class_paths = []
 
         # Compilation:
-        com_cmd = lang.CMD_COMPILE
-        if com_cmd:
-            L.info('Compilation command: ' + com_cmd)
-            cmd = com_cmd.format(
-                class_path='',
-                dest_dir=str(src_path.parent),
-                src_path=str(src_path)
-            )
-            L.info('Compilation command: `{}`'.format(cmd))
+        cmd = language.value.CMD_COMPILE
+        if cmd:
+            cmd_args = {}
 
-            out = call(cmd, **cmd_args)
-            if int(str(out).strip()) != 0:
-                msg = 'Compilation failed.'
-                raise AssertionError(msg)
+            if language is Language.JAVA:
+                cmd_args['dest_dir'] = '-d {}'.format(str(src_path.parent))
+                cmd_args['src_path'] = str(src_path)
+                class_paths.append(str(src_path.parent))
+
+                # Dependencies:
+                if template is Template.EXPORTED:
+                    if 'SKLEARN_PORTER_PYTEST' in environ and \
+                            'SKLEARN_PORTER_PYTEST_GSON_PATH' in environ:
+                        class_paths.append(environ.get(
+                            'SKLEARN_PORTER_PYTEST_GSON_PATH'))
+                    else:
+                        url = language.value.GSON_DOWNLOAD_URI
+                        path = src_path.parent / 'gson.jar'
+                        urllib.request.urlretrieve(url, str(path))
+                        class_paths.append(str(path))
+
+                if len(class_paths) > 0:
+                    cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
+
+                cmd = cmd.format(**cmd_args)
+                L.info('Compilation command: `{}`'.format(cmd))
+
+        subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
+        out = call(cmd, **subp_args)
+        if int(str(out).strip()) != 0:
+            msg = 'Compilation failed.'
+            raise AssertionError(msg)
 
         # Execution:
-        exe_cmd = lang.CMD_EXECUTE
-        if exe_cmd:
-            L.info('Execution command: ' + exe_cmd)
-            cmd = exe_cmd.format(
-                class_path='-cp ' + str(src_path.parent),
-                dest_path=str(src_path.stem)
-            )
+        cmd = language.value.CMD_EXECUTE
+        cmd_args = {}
+
+        if language is Language.JAVA:
+            if len(class_paths) > 0:
+                cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
+
+            cmd_args['dest_path'] = str(src_path.stem)
+            cmd = cmd.format(**cmd_args)
             L.info('Execution command: `{}`'.format(cmd))
 
-            cmd += ' 1 2 3 4'
+        # Model data:
+        data_path = ' ' if not data_path else ' ' + str(data_path) + ' '
 
-            out = loads(check_output(cmd, **cmd_args))
-            out_str = dumps(out, indent=2, sort_keys=True)
-            print('JSON result:\n{}'.format(out_str))
-            L.info('JSON result:\n{}'.format(out_str))
-            return out
+        # Features:
+        if not isinstance(x, np.ndarray):
+            x = np.array(x)
+        if x.ndim is 1:
+            x = x[np.newaxis, :]
+        x = x.tolist()
+
+        # Command:
+        x = [cmd + data_path + ' '.join(list(map(str, e))) for e in x]
+
+        if isinstance(n_jobs, int) and n_jobs <= 1:
+            n_jobs = False
+        if not n_jobs:
+            y = list(map(_multiprocessed_call, x))
+        else:
+            if isinstance(n_jobs, bool):
+                n_jobs = cpu_count()
+            if not isinstance(n_jobs, int):
+                n_jobs = cpu_count()
+            with Pool(n_jobs) as pool:
+                y = pool.map(_multiprocessed_call, x)
+        y = list(zip(*y))
+        y = list(map(np.array, y))
+
+        if len(y[0]) is 1:
+            return y[0][0], y[1][0]
+        else:
+            return y[0], y[1]
 
     def _set_kwargs_defaults(self, kwargs: Dict) -> Dict:
         """
@@ -679,3 +716,13 @@ class Estimator:
         '''.format(system_platform, python_version, sklearn_version,
                    sklearn_porter_version, self._estimator.estimator_name)
         return dedent(report)
+
+
+def _multiprocessed_call(cmd: str):
+    subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
+    out = check_output(cmd, **subp_args)
+    out = str(out).strip()
+    out = loads(out, encoding='utf-8')
+    if 'predict_proba' in out.keys():
+        return [out.get('predict'), out.get('predict_proba')]
+    return [out.get('predict')]

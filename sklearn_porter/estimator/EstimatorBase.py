@@ -70,7 +70,7 @@ class EstimatorBase(EstimatorApiABC):
 
         # Is it a test?
         self.placeholders.update(dict(
-            is_test='PYTEST_CURRENT_TEST' in environ,
+            is_test='SKLEARN_PORTER_PYTEST' in environ,
         ))
 
     def check(

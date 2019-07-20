@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from sys import version_info as PYTHON_VERSION
+from os import environ
 from typing import Tuple, Dict, Optional, Callable
 from pathlib import Path
 import shutil
+import urllib.request
 
 import pytest
 
@@ -11,7 +13,6 @@ import random as rd
 import numpy as np
 
 import sklearn
-
 from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
 from sklearn.ensemble.forest import RandomForestClassifier
@@ -23,8 +24,9 @@ from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.naive_bayes import BernoulliNB
 
-from sklearn_porter.exceptions import InvalidTemplateError, \
-    InvalidMethodError, InvalidLanguageError, NotFittedEstimatorError
+from sklearn_porter.language.Java import Java
+from sklearn_porter.exceptions import NotFittedEstimatorError,\
+    InvalidLanguageError, InvalidTemplateError
 
 from sklearn.datasets import load_digits, load_iris
 try:  # for sklearn < 0.16
@@ -66,16 +68,34 @@ if PYTHON_VERSION[:2] < (3, 5):
 # Parse and prepare scikit-learn version:
 SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
 
+environ['SKLEARN_PORTER_PYTEST'] = 'True'
+
 
 @pytest.fixture(scope='session')
 def tmp(worker_id) -> Path:
     """Fixture to get the path to the temporary directory."""
+
     tmp = Path(__file__).parent / 'tmp'
     if worker_id is 'master':
         if tmp.exists():
             shutil.rmtree(str(tmp.resolve()), ignore_errors=True)
     tmp.mkdir(parents=True, exist_ok=True)
+
+    # Download GSON:
+    url = Java.GSON_DOWNLOAD_URI
+    path = tmp / 'gson.jar'
+    if not path.exists():
+        urllib.request.urlretrieve(url, str(path))
+    environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(path)
+
     return tmp
+
+
+@pytest.fixture(scope='session')
+def tree():
+    data = load_iris()
+    X, y = data.data, data.target
+    return DecisionTreeClassifier(random_state=0).fit(X=X, y=y)
 
 
 @pytest.mark.parametrize('Class', [
@@ -343,7 +363,82 @@ def test_extraction_from_optimizer(Class: Callable):
 @pytest.mark.parametrize('template', [
     'attached',
     'combined',
-    # 'exported',
+    'exported',
+])
+@pytest.mark.parametrize('language', [
+    'java',
+])
+@pytest.mark.parametrize('x', [
+    [5.1, 3.5, 1.4, 0.2],
+    np.array([5.1, 3.5, 1.4, 0.2]),
+    [[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]],
+    np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]]),
+    [np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])],
+], ids=[
+    '{}_{}'.format(
+        type([5.1, 3.5, 1.4, 0.2]).__qualname__,
+        type([5.1, 3.5, 1.4, 0.2][0]).__qualname__
+    ),
+    '{}_{}'.format(
+        type(np.array([5.1, 3.5, 1.4, 0.2])).__qualname__,
+        type(np.array([5.1, 3.5, 1.4, 0.2])[0]).__qualname__
+    ),
+    '{}_{}'.format(
+        type([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]]).__qualname__,
+        type([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]][0]).__qualname__
+    ),
+    '{}_{}'.format(
+        type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])).__qualname__,
+        type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])[0]).__qualname__
+    ),
+    '{}_{}'.format(
+        type([np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])]).__qualname__,
+        type([np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])][0]).__qualname__
+    ),
+])
+def test_make(tmp: Path, x, tree, template: str, language: str):
+
+    def fs_mkdir(base_dir: Path, test_name: str,
+                 estimator_name: str,
+                 language_name: str, template_name: str) -> Path:
+        """Helper function to create a directory for tests."""
+        base_dir = base_dir \
+                   / ('test__' + test_name) \
+                   / ('estimator__' + estimator_name) \
+                   / ('language__' + language_name) \
+                   / ('template__' + template_name)
+        base_dir.mkdir(parents=True, exist_ok=True)
+        return base_dir
+
+    tmp = fs_mkdir(
+        base_dir=tmp, test_name='test_make',
+        estimator_name='DecisionTreeClassifier',
+        language_name=language, template_name=template
+    )
+
+    est = Estimator(tree)
+    out = est.make(x, language=language, template=template,
+                   directory=tmp, n_jobs=False)
+
+    assert isinstance(out, tuple)
+    assert len(out) == 2
+    y_pred, y_proba = out
+    if isinstance(x[0], (int, float)):
+        assert isinstance(y_pred, np.int64)
+        assert y_pred == 0
+        assert isinstance(y_proba, np.ndarray)
+        assert list(y_proba) == [1, 0, 0]
+    if isinstance(x[0], (list, np.ndarray)):
+        assert isinstance(y_pred, np.ndarray)
+        assert y_pred[0] == 0
+        assert isinstance(y_proba, np.ndarray)
+        assert list(y_proba[0]) == [1, 0, 0]
+
+
+@pytest.mark.parametrize('template', [
+    'attached',
+    'combined',
+    'exported',
 ])
 @pytest.mark.parametrize('language', [
     'c',
@@ -417,7 +512,7 @@ def test_and_compare_accuracies(
                 method='predict'
         ):
             tmp = fs_mkdir(
-                base_dir=tmp, test_name='test_range_of_variations',
+                base_dir=tmp, test_name='test_and_compare_accuracies',
                 estimator_name=Class[0], dataset_name=dataset[0],
                 language_name=language, template_name=template
             )

@@ -15,7 +15,7 @@ class Java(LanguageABC):
 
     # javac {class_path} tmp/Estimator.java
     # class_path = '-cp ./gson.jar'
-    CMD_COMPILE = 'javac {class_path} -d {dest_dir} {src_path}'
+    CMD_COMPILE = 'javac {class_path} {dest_dir} {src_path}'
 
     # java {class_path} Estimator <args>
     # class_path = '-cp ./gson.jar:./tmp'
@@ -44,3 +44,6 @@ class Java(LanguageABC):
         'int':          'int',
         'double':       'double',
     }
+
+    GSON_DOWNLOAD_URI = 'http://central.maven.org/maven2/' \
+                        'com/google/code/gson/gson/2.8.5/gson-2.8.5.jar'
