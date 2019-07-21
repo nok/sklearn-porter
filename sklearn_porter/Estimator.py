@@ -557,8 +557,9 @@ class Estimator:
 
                 # Dependencies:
                 if template is Template.EXPORTED:
-                    if 'SKLEARN_PORTER_PYTEST' in environ and \
-                            'SKLEARN_PORTER_PYTEST_GSON_PATH' in environ:
+                    is_test = 'SKLEARN_PORTER_PYTEST' in environ and \
+                              'SKLEARN_PORTER_PYTEST_GSON_PATH' in environ
+                    if is_test:
                         class_paths.append(environ.get(
                             'SKLEARN_PORTER_PYTEST_GSON_PATH'))
                     else:
