@@ -367,6 +367,7 @@ def test_extraction_from_optimizer(Class: Callable):
 ])
 @pytest.mark.parametrize('language', [
     'c',
+    'go',
     'java',
     'js',
     'php',
