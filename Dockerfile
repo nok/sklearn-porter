@@ -37,9 +37,8 @@ RUN env | grep _VER \
     && conda create -y -n ${CONDA_ENV} ${PYTHON_VER:-python=3.5} \
     && conda run -n ${CONDA_ENV} pip install --upgrade pip \
     && conda run -n ${CONDA_ENV} pip install ${CYTHON_VER:-cython} \
-                                             ${NUMPY_VER:-numpy} \
-                                             ${SCIPY_VER:-scipy} \
-                                             ${SCIPY_VER:-scipy} \
-                                             ${SCIKIT_LEARN_VER:-scikit-learn} \
+    && conda run -n ${CONDA_ENV} pip install ${NUMPY_VER:-numpy} \
+    && conda run -n ${CONDA_ENV} pip install ${SCIPY_VER:-scipy} \
+    && conda run -n ${CONDA_ENV} pip install ${SCIKIT_LEARN_VER:-scikit-learn} \
     && conda run -n ${CONDA_ENV} make install.requirements.development \
     && conda env export -n ${CONDA_ENV}
