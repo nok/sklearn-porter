@@ -728,18 +728,18 @@ class Estimator:
     def __repr__(self):
         python_version = '.'.join(map(str, version_info[:3]))
         report = '''\
+            estimator
+            ---------
+            name: {}
+        
             environment
             -----------
             platform       {}
             python         v{}
             scikit-learn   v{}
-            sklearn-porter v{}
-            
-            estimator
-            ---------
-            name: {}\
-        '''.format(system_platform, python_version, sklearn_version,
-                   sklearn_porter_version, self._estimator.estimator_name)
+            sklearn-porter v{}\
+        '''.format(self._estimator.estimator_name, system_platform,
+                   python_version, sklearn_version, sklearn_porter_version)
         return dedent(report)
 
 
