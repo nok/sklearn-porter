@@ -17,6 +17,7 @@ import numpy as np
 from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.ensemble import BaseEnsemble
+from sklearn.metrics import accuracy_score
 
 # sklearn-porter
 from sklearn_porter import __version__ as sklearn_porter_version
@@ -511,6 +512,29 @@ class Estimator:
             final_deletion: Optional[bool] = False,
             **kwargs
     ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+        """
+        Make predictions with transpiled estimators locally.
+
+        Parameters
+        ----------
+        x : Union[List, np.ndarray] of shape (n_samples, n_features) or (n_features)
+            Input data.
+        language : str (default: 'java')
+            Set the target programming language.
+        template : str (default: 'embedding')
+            Set the kind of desired template.
+        directory : Optional[Union[str, Path]] (default: current working dir)
+            Set the directory where all generated files should be saved.
+        n_jobs : Union[bool, int] (default: True, which uses `count_cpus()`)
+            The number of processes to make the predictions.
+        final_deletion : bool (default: False)
+            Whether to delete the generated files finally or not.
+        kwargs
+
+        Returns
+        -------
+        Return the predictions and probabilities.
+        """
         language = self._convert_language(language)
         template = self._convert_template(template)
         if not directory:
@@ -635,6 +659,49 @@ class Estimator:
             return y[0][0], y[1][0]
         else:
             return y[0], y[1]
+
+    def integrity_score(
+            self,
+            x,
+            language: Optional[Union[str, Language]] = None,
+            template: Optional[Union[str, Template]] = None,
+            directory: Optional[Union[str, Path]] = None,
+            n_jobs: Optional[Union[bool, int]] = True,
+            final_deletion: Optional[bool] = True,
+            normalize: bool = True
+    ):
+        """
+        Compute the accuracy of the ported classifier.
+
+        Parameters
+        ----------
+        x : ndarray, shape (n_samples, n_features)
+            Input data.
+        language : str (default: 'java')
+            Set the target programming language.
+        template : str (default: 'embedding')
+            Set the kind of desired template.
+        directory : Optional[Union[str, Path]] (default: current working dir)
+            Set the directory where all generated files should be saved.
+        n_jobs : Union[bool, int] (default: True, which uses `count_cpus()`)
+            The number of processes to make the predictions.
+        final_deletion : bool (default: False)
+            Whether to delete the generated files finally or not.
+        normalize : bool, default: True
+            Whether to normalize the result or not.
+
+        Returns
+        -------
+        score : Tuple[float, int]
+            Return the relative and absolute number of correct
+            classified samples.
+        """
+        y_true = self._estimator.estimator.predict(x)
+        y_pred = self.make(x, language=language, template=template,
+                           directory=directory, n_jobs=n_jobs,
+                           final_deletion=final_deletion)
+        y_pred = y_pred[0]  # only predicts
+        return accuracy_score(y_true, y_pred, normalize=normalize)
 
     def _set_kwargs_defaults(self, kwargs: Dict) -> Dict:
         """
