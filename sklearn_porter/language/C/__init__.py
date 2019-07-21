@@ -14,12 +14,10 @@ class C(LanguageABC):
     SUFFIX = 'c'
 
     # gcc tmp/estimator.c -std=c99 -lm -o tmp/estimator
-    CMD_COMPILE = 'gcc {src_dir}' \
-                  + sep + '{src_file} -std=c99 -lm -o {dest_dir}' \
-                  + sep + '{dest_file}'
+    CMD_COMPILE = 'gcc {src_path} -std=c99 -lm -o {dest_path}'
 
     # tmp/estimator <args>
-    CMD_EXECUTE = '{dest_dir}' + sep + '{dest_file}'
+    CMD_EXECUTE = '{dest_path}'
 
     TEMPLATES = {
         'init':         '{{ type }} {{ name }} = {{ value }};',
