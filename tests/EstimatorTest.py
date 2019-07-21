@@ -367,6 +367,7 @@ def test_extraction_from_optimizer(Class: Callable):
 ])
 @pytest.mark.parametrize('language', [
     'java',
+    'js',
 ])
 @pytest.mark.parametrize('x', [
     [5.1, 3.5, 1.4, 0.2],
@@ -415,6 +416,14 @@ def test_extraction_from_optimizer(Class: Callable):
     ),
 ])
 def test_make_inputs_outputs(tmp: Path, x, tree, template: str, language: str):
+    est = Estimator(tree)
+
+    if not est.support(
+            language=language,
+            template=template,
+            method='predict'
+    ):
+        return
 
     def fs_mkdir(base_dir: Path, test_name: str,
                  estimator_name: str,
@@ -433,8 +442,6 @@ def test_make_inputs_outputs(tmp: Path, x, tree, template: str, language: str):
         estimator_name='DecisionTreeClassifier',
         language_name=language, template_name=template
     )
-
-    est = Estimator(tree)
     out = est.make(x, language=language, template=template,
                    directory=tmp, n_jobs=False)
 

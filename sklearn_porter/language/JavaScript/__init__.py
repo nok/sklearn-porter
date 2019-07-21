@@ -16,7 +16,7 @@ class JavaScript(LanguageABC):
     CMD_COMPILE = None
 
     # node estimator.js <args>
-    CMD_EXECUTE = 'node {dest_dir}' + sep + '{dest_file}'
+    CMD_EXECUTE = 'node {src_path}'
 
     TEMPLATES = {
         'init':         'var {{ name }} = {{ value }};',

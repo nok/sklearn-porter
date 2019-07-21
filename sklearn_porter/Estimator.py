@@ -558,14 +558,14 @@ class Estimator:
                 if len(class_paths) > 0:
                     cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
 
-                cmd = cmd.format(**cmd_args)
-                L.info('Compilation command: `{}`'.format(cmd))
+            cmd = cmd.format(**cmd_args)
+            L.info('Compilation command: `{}`'.format(cmd))
 
-        subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
-        out = call(cmd, **subp_args)
-        if int(str(out).strip()) != 0:
-            msg = 'Compilation failed.'
-            raise AssertionError(msg)
+            subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
+            out = call(cmd, **subp_args)
+            if int(str(out).strip()) != 0:
+                msg = 'Compilation failed.'
+                raise AssertionError(msg)
 
         # Execution:
         cmd = language.value.CMD_EXECUTE
@@ -574,10 +574,12 @@ class Estimator:
         if language is Language.JAVA:
             if len(class_paths) > 0:
                 cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
-
             cmd_args['dest_path'] = str(src_path.stem)
-            cmd = cmd.format(**cmd_args)
-            L.info('Execution command: `{}`'.format(cmd))
+        elif language is Language.JS:
+            cmd_args['src_path'] = str(src_path)
+
+        cmd = cmd.format(**cmd_args)
+        L.info('Execution command: `{}`'.format(cmd))
 
         # Model data:
         data_path = ' ' if not data_path else ' ' + str(data_path) + ' '
