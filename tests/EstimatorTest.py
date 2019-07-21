@@ -384,16 +384,34 @@ def test_extraction_from_optimizer(Class: Callable):
         type(np.array([5.1, 3.5, 1.4, 0.2])[0]).__qualname__
     ),
     '{}_{}'.format(
-        type([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]]).__qualname__,
-        type([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]][0]).__qualname__
+        type([
+            [5.1, 3.5, 1.4, 0.2],
+            [5.1, 3.5, 1.4, 0.2]
+        ]).__qualname__,
+        type([
+            [5.1, 3.5, 1.4, 0.2],
+            [5.1, 3.5, 1.4, 0.2]
+        ][0]).__qualname__
     ),
     '{}_{}'.format(
-        type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])).__qualname__,
-        type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])[0]).__qualname__
+        type(np.array([
+            [5.1, 3.5, 1.4, 0.2],
+            [5.1, 3.5, 1.4, 0.2]
+        ])).__qualname__,
+        type(np.array([
+            [5.1, 3.5, 1.4, 0.2],
+            [5.1, 3.5, 1.4, 0.2]
+        ])[0]).__qualname__
     ),
     '{}_{}'.format(
-        type([np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])]).__qualname__,
-        type([np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])][0]).__qualname__
+        type([
+            np.array([5.1, 3.5, 1.4, 0.2]),
+            np.array([5.1, 3.5, 1.4, 0.2])
+        ]).__qualname__,
+        type([
+            np.array([5.1, 3.5, 1.4, 0.2]),
+            np.array([5.1, 3.5, 1.4, 0.2])
+        ][0]).__qualname__
     ),
 ])
 def test_make(tmp: Path, x, tree, template: str, language: str):
