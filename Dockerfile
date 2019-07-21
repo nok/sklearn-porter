@@ -4,14 +4,15 @@ ARG CONDA_ENV=sklearn-porter
 
 ARG PYTHON_VER
 ARG CYTHON_VER
-ARG SCIPY_VER
 ARG NUMPY_VER
+ARG SCIPY_VER
 ARG SCIKIT_LEARN_VER
 
 COPY . $HOME/app
 WORKDIR $HOME/app
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    install gfortran libopenblas-dev liblapack-dev \
     curl \
     make=4.1-9.1 \
     g++=4:6.3.0-4 \
@@ -31,9 +32,12 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
 
 ENV PATH="/usr/bin/go/bin:${PATH}"
 
-RUN conda update -y -n base conda \
+RUN env | grep _VER \
+    && conda update -y -n base conda \
     && conda create -y -n ${CONDA_ENV} ${PYTHON_VER:-python=3.5} \
     && conda run -n ${CONDA_ENV} pip install --upgrade pip \
-    && conda run -n ${CONDA_ENV} pip install ${CYTHON_VER} ${NUMPY_VER} ${SCIPY_VER} ${SCIKIT_LEARN_VER} \
+    && conda run -n ${CONDA_ENV} pip install ${CYTHON_VER} ${NUMPY_VER} \
+    && conda run -n ${CONDA_ENV} pip install ${SCIPY_VER} \
+    && conda run -n ${CONDA_ENV} pip install ${SCIKIT_LEARN_VER} \
     && conda run -n ${CONDA_ENV} make install.requirements.development \
     && conda env export -n ${CONDA_ENV}
