@@ -3,6 +3,7 @@
 from typing import Union, Set, Dict, Optional, Tuple
 from pathlib import Path
 from os import getcwd, environ
+from time import sleep
 from json import dumps
 
 from sklearn import __version__ as sklearn_version
@@ -209,12 +210,16 @@ class EstimatorBase(EstimatorApiABC):
         filename = class_name + '.' + suffix
         filepath = directory / filename
         filepath.write_text(ported[0], encoding='utf-8')
+        while not filepath.exists():
+            sleep(0.01)
         paths = str(filepath)
 
         # Dump model data:
         if template == Template.EXPORTED and len(ported) == 2:
             json_path = directory / (class_name + '.json')
             json_path.write_text(ported[1], encoding='utf-8')
+            while not json_path.exists():
+                sleep(0.01)
             paths = (paths, str(json_path))
 
         return paths
