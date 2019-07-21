@@ -30,6 +30,6 @@ ENV PATH="/usr/bin/go/bin:${PATH}"
 RUN conda update -y -n base conda \
     && conda create -y -n ${CONDA_ENV} python=${PYTHON_VERSION:-3.5} \
     && conda run -n ${CONDA_ENV} pip install --upgrade pip \
-    && conda run -n ${CONDA_ENV} pip install numpy scikit-learn==${SCIKIT_LEARN_VERSION:-0.21} \
+    && conda run -n ${CONDA_ENV} pip install numpy scipy scikit-learn==${SCIKIT_LEARN_VERSION:-0.21} \
     && conda run -n ${CONDA_ENV} make install.requirements.development \
     && conda env export -n ${CONDA_ENV}
