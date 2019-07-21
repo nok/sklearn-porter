@@ -84,6 +84,7 @@ var main = function () {
     var clf = new {{ class_name }}(lefts, rights, thresholds, indices, classes);
 
     {% if is_test or to_json %}
+    // Get JSON:
     console.log(JSON.stringify({
         "predict": clf.predict(features),
         "predict_proba": clf.predictProba(features)

@@ -58,6 +58,7 @@ if __FILE__ == $0
     features = ARGV.collect(&:to_f)
 
     {% if is_test or to_json %}
+    # Get JSON:
     prediction = {{ class_name }}.predict features
     probabilities = {{ class_name }}.predict_proba features
     puts JSON.generate({:predict => prediction, :predict_proba => probabilities})

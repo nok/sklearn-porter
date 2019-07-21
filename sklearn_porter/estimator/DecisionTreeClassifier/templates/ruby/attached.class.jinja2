@@ -81,6 +81,7 @@ if __FILE__ == $0
     clf = {{ class_name }}.new lefts, rights, thresholds, indices, classes
 
     {% if is_test or to_json %}
+    # Get JSON:
     prediction = clf.predict features
     probabilities = clf.predict_proba features
     puts JSON.generate({:predict => prediction, :predict_proba => probabilities})

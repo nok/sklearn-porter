@@ -66,6 +66,7 @@ int main(int argc, const char *argv[]) {
     }
 
     {% if is_test or to_json %}
+    /* Get JSON: */
     double probabilities[N_CLASSES];
     predict_proba(probabilities, features);
     printf("{\"predict\": %d, \"predict_proba\": [", predict(features));

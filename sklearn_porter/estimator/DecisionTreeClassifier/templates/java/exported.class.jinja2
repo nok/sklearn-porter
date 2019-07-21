@@ -101,6 +101,7 @@ class {{ class_name }} {
         {{ class_name }} clf = new {{ class_name }}(modelData);
 
         {% if is_test or to_json %}
+        // Get JSON:
         int prediction = clf.predict(features);
         double[] probabilities = clf.predictProba(features);
         System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");

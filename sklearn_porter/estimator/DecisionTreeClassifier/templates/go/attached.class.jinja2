@@ -106,6 +106,7 @@ func main() {
 	clf := {{ class_name }}{lefts, rights, thresholds, indices, classes}
 
 	{% if is_test or to_json %}
+	// Get JSON:
 	prediction := clf.Predict(features)
 	probabilities := clf.PredictProba(features)
 	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: probabilities})

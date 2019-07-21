@@ -61,9 +61,10 @@ class {{ class_name }} {
         }
 
         {% if is_test or to_json %}
+        // Get JSON:
         int prediction = {{ class_name }}.predict(features);
         double[] probabilities = {{ class_name }}.predictProba(features);
-				System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
         {% else %}
         // Get class prediction:
         int prediction = {{ class_name }}.predict(features);

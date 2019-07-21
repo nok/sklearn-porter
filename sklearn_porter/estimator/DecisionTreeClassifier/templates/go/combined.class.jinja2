@@ -69,6 +69,7 @@ func main() {
 	}
 
 	{% if is_test or to_json %}
+	// Get JSON:
 	prediction := Predict(features)
 	probabilities := PredictProba(features)
 	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: probabilities})

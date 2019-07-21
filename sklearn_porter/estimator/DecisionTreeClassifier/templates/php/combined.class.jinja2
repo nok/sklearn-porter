@@ -57,6 +57,7 @@ if ($argc > 1) {
     $features = $argv;
 
     {% if is_test or to_json %}
+    // Get JSON:
     $prediction = {{ class_name }}::predict($argv);
     $probabilities = {{ class_name }}::predictProba($features);
     fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
