@@ -12,6 +12,7 @@ COPY . $HOME/app
 WORKDIR $HOME/app
 
 RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    gfortran libopenblas-dev liblapack-dev \
     curl \
     make=4.1-9.1 \
     g++=4:6.3.0-4 \
