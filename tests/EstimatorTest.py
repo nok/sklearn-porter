@@ -360,19 +360,6 @@ def test_extraction_from_optimizer(Class: Callable):
     assert isinstance(est.estimator, SVC)
 
 
-@pytest.mark.parametrize('template', [
-    'attached',
-    'combined',
-    'exported',
-])
-@pytest.mark.parametrize('language', [
-    'c',
-    'go',
-    'java',
-    'js',
-    'php',
-    'ruby'
-])
 @pytest.mark.parametrize('x', [
     [5.1, 3.5, 1.4, 0.2],
     np.array([5.1, 3.5, 1.4, 0.2]),
@@ -394,9 +381,9 @@ def test_extraction_from_optimizer(Class: Callable):
             [5.1, 3.5, 1.4, 0.2]
         ]).__qualname__,
         type([
-            [5.1, 3.5, 1.4, 0.2],
-            [5.1, 3.5, 1.4, 0.2]
-        ][0]).__qualname__
+                 [5.1, 3.5, 1.4, 0.2],
+                 [5.1, 3.5, 1.4, 0.2]
+             ][0]).__qualname__
     ),
     '{}_{}'.format(
         type(np.array([
@@ -414,10 +401,23 @@ def test_extraction_from_optimizer(Class: Callable):
             np.array([5.1, 3.5, 1.4, 0.2])
         ]).__qualname__,
         type([
-            np.array([5.1, 3.5, 1.4, 0.2]),
-            np.array([5.1, 3.5, 1.4, 0.2])
-        ][0]).__qualname__
+                 np.array([5.1, 3.5, 1.4, 0.2]),
+                 np.array([5.1, 3.5, 1.4, 0.2])
+             ][0]).__qualname__
     ),
+])
+@pytest.mark.parametrize('template', [
+    'attached',
+    'combined',
+    'exported',
+])
+@pytest.mark.parametrize('language', [
+    'c',
+    'go',
+    'java',
+    'js',
+    'php',
+    'ruby'
 ])
 def test_make_inputs_outputs(tmp: Path, x, tree, template: str, language: str):
     est = Estimator(tree)
