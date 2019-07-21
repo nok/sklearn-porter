@@ -567,8 +567,8 @@ class Estimator:
                         if not path.exists():
                             url = language.value.GSON_DOWNLOAD_URI
                             urllib.request.urlretrieve(url, str(path))
+                            created_files.append(path)
                         class_paths.append(str(path))
-                        created_files.append(path)
 
                 if len(class_paths) > 0:
                     cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
