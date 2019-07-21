@@ -414,7 +414,7 @@ def test_extraction_from_optimizer(Class: Callable):
         ][0]).__qualname__
     ),
 ])
-def test_make(tmp: Path, x, tree, template: str, language: str):
+def test_make_inputs_outputs(tmp: Path, x, tree, template: str, language: str):
 
     def fs_mkdir(base_dir: Path, test_name: str,
                  estimator_name: str,
@@ -429,7 +429,7 @@ def test_make(tmp: Path, x, tree, template: str, language: str):
         return base_dir
 
     tmp = fs_mkdir(
-        base_dir=tmp, test_name='test_make',
+        base_dir=tmp, test_name='test_make_inputs_outputs',
         estimator_name='DecisionTreeClassifier',
         language_name=language, template_name=template
     )
