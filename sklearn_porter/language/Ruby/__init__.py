@@ -16,7 +16,7 @@ class Ruby(LanguageABC):
     CMD_COMPILE = None
 
     # ruby estimator.rb <args>
-    CMD_EXECUTE = 'ruby {dest_dir}' + sep + '{dest_file}'
+    CMD_EXECUTE = 'ruby {src_path}'
 
     TEMPLATES = {
         'init':         '{name} = {value}',
