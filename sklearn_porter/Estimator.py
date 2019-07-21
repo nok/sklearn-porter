@@ -538,9 +538,13 @@ class Estimator:
         if cmd:
             cmd_args = {}
 
-            if language is Language.JAVA:
-                cmd_args['dest_dir'] = '-d {}'.format(str(src_path.parent))
+            if language in (Language.C, Language.GO):
                 cmd_args['src_path'] = str(src_path)
+                cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
+
+            elif language is Language.JAVA:
+                cmd_args['src_path'] = str(src_path)
+                cmd_args['dest_dir'] = '-d {}'.format(str(src_path.parent))
                 class_paths.append(str(src_path.parent))
 
                 # Dependencies:
@@ -558,10 +562,6 @@ class Estimator:
                 if len(class_paths) > 0:
                     cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
 
-            elif language in (Language.C, Language.GO):
-                cmd_args['src_path'] = str(src_path)
-                cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
-
             cmd = cmd.format(**cmd_args)
             L.info('Compilation command: `{}`'.format(cmd))
 
@@ -575,14 +575,14 @@ class Estimator:
         cmd = language.value.CMD_EXECUTE
         cmd_args = {}
 
-        if language is Language.JAVA:
+        if language in (Language.C, Language.GO):
+            cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
+        elif language is Language.JAVA:
             if len(class_paths) > 0:
                 cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
             cmd_args['dest_path'] = str(src_path.stem)
         elif language in (Language.JS, Language.PHP, Language.RUBY):
             cmd_args['src_path'] = str(src_path)
-        elif language in (Language.C, Language.GO):
-            cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
 
         cmd = cmd.format(**cmd_args)
         L.info('Execution command: `{}`'.format(cmd))
