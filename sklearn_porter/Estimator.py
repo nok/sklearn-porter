@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from os import environ
+from os import environ, remove
 import urllib.request
 from json import loads
 from pathlib import Path
@@ -507,7 +507,8 @@ class Estimator:
             language: Optional[Union[str, Language]],
             template: Optional[Union[str, Template]] = None,
             directory: Optional[Union[str, Path]] = None,
-            n_jobs=True,
+            n_jobs: Optional[Union[bool, int]] = True,
+            final_deletion: Optional[bool] = False,
             **kwargs
     ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
         language = self._convert_language(language)
@@ -515,6 +516,8 @@ class Estimator:
         if not directory:
             directory = mktemp()
         kwargs = self._set_kwargs_defaults(kwargs)
+
+        created_files = []  # for final deletion
 
         # Transpile model:
         out = self.dump(language=language, template=template,
@@ -525,11 +528,13 @@ class Estimator:
             if not isinstance(data_path, Path):
                 data_path = Path(data_path)
             data_path = data_path.resolve()
+            created_files.append(data_path)
         else:
             src_path, data_path = out, None
         if not isinstance(src_path, Path):
             src_path = Path(src_path)
         src_path = src_path.resolve()
+        created_files.append(src_path)
 
         class_paths = []
 
@@ -541,11 +546,14 @@ class Estimator:
             if language in (Language.C, Language.GO):
                 cmd_args['src_path'] = str(src_path)
                 cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
+                created_files.append((src_path.parent / src_path.stem))
 
             elif language is Language.JAVA:
                 cmd_args['src_path'] = str(src_path)
                 cmd_args['dest_dir'] = '-d {}'.format(str(src_path.parent))
                 class_paths.append(str(src_path.parent))
+                created_files.append(
+                    (src_path.parent / (src_path.stem + '.class')))
 
                 # Dependencies:
                 if template is Template.EXPORTED:
@@ -554,10 +562,10 @@ class Estimator:
                         class_paths.append(environ.get(
                             'SKLEARN_PORTER_PYTEST_GSON_PATH'))
                     else:
-                        url = language.value.GSON_DOWNLOAD_URI
                         path = src_path.parent / 'gson.jar'
                         urllib.request.urlretrieve(url, str(path))
                         class_paths.append(str(path))
+                        created_files.append(path)
 
                 if len(class_paths) > 0:
                     cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
@@ -588,7 +596,7 @@ class Estimator:
         L.info('Execution command: `{}`'.format(cmd))
 
         # Model data:
-        data_path = ' ' if not data_path else ' ' + str(data_path) + ' '
+        json_path = ' ' if not data_path else ' ' + str(data_path) + ' '
 
         # Features:
         if not isinstance(x, np.ndarray):
@@ -598,7 +606,7 @@ class Estimator:
         x = x.tolist()
 
         # Command:
-        x = [cmd + data_path + ' '.join(list(map(str, e))) for e in x]
+        x = [cmd + json_path + ' '.join(list(map(str, e))) for e in x]
 
         if isinstance(n_jobs, int) and n_jobs <= 1:
             n_jobs = False
@@ -613,6 +621,12 @@ class Estimator:
                 y = pool.map(_multiprocessed_call, x)
         y = list(zip(*y))
         y = list(map(np.array, y))
+
+        # Delete generated files finally:
+        if final_deletion:
+            for path in created_files:
+                if path and path.exists():
+                    remove(str(path))
 
         if len(y[0]) is 1:
             return y[0][0], y[1][0]
