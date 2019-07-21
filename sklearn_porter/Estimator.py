@@ -575,7 +575,7 @@ class Estimator:
             if len(class_paths) > 0:
                 cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
             cmd_args['dest_path'] = str(src_path.stem)
-        elif language is Language.JS:
+        elif language in (Language.JS, Language.PHP):
             cmd_args['src_path'] = str(src_path)
 
         cmd = cmd.format(**cmd_args)

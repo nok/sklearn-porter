@@ -16,7 +16,7 @@ class PHP(LanguageABC):
     CMD_COMPILE = None
 
     # php -f {} Estimator.php <args>
-    CMD_EXECUTE = 'php -f {dest_dir}' + sep + '{dest_file}'
+    CMD_EXECUTE = 'php -f {src_path}'
 
     TEMPLATES = {
         'init':         '${{ name }} = {{ value }};',

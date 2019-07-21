@@ -368,6 +368,7 @@ def test_extraction_from_optimizer(Class: Callable):
 @pytest.mark.parametrize('language', [
     'java',
     'js',
+    'php',
 ])
 @pytest.mark.parametrize('x', [
     [5.1, 3.5, 1.4, 0.2],
