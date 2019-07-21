@@ -563,7 +563,9 @@ class Estimator:
                             'SKLEARN_PORTER_PYTEST_GSON_PATH'))
                     else:
                         path = src_path.parent / 'gson.jar'
-                        urllib.request.urlretrieve(url, str(path))
+                        if not path.exists():
+                            url = language.value.GSON_DOWNLOAD_URI
+                            urllib.request.urlretrieve(url, str(path))
                         class_paths.append(str(path))
                         created_files.append(path)
 
