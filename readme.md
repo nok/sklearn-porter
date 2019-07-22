@@ -9,6 +9,11 @@
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
 
+## Important
+
+We're hard working on the [first major release](https://github.com/nok/sklearn-porter/tree/release/1.0.0) of sklearn-porter. <br>Until that we will just release bugfixes to the stable version.
+
+
 ## Estimators
 
 <table>
