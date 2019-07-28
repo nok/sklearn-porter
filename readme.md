@@ -299,6 +299,126 @@ $ porter estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
 
 ### Environment
 
+All tests run in a Docker container with following compilers and intepreters:
+
+(TODO: Add details)
+
+In addition to it all tests run against these combinations of [scikit-learn](https://github.com/scikit-learn/scikit-learn) and Python versions:
+
+<table border="0" width="100%">
+	<tbody>
+		<tr align="center">
+			<td colspan="2" rowspan="2"></td>
+			<td colspan="3">Python</td>
+		</tr>
+		<tr align="center">
+			<td>3.5</td>
+			<td>3.6</td>
+			<td>3.7</td>
+		</tr>
+		<tr align="center">
+			<td rowspan="18">scikit-learn</td>
+			<td rowspan="3">0.16</td>
+			<td>cython 0.27.3</td>
+			<td>cython 0.27.3</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td>numpy 1.8.1</td>
+			<td>numpy 1.8.1</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td>scipy 0.14.0</td>
+			<td>scipy 0.14.0</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td rowspan="3">0.17</td>
+			<td>cython 0.27.3</td>
+			<td>cython 0.27.3</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td>numpy 1.9.3</td>
+			<td>numpy 1.9.3</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td>scipy 0.16.0</td>
+			<td>scipy 0.16.0</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td rowspan="3">0.18</td>
+			<td>cython 0.27.3</td>
+			<td>cython 0.27.3</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td>numpy 1.9.3</td>
+			<td>numpy 1.9.3</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td>scipy 0.16.0</td>
+			<td>scipy 0.16.0</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td rowspan="3">0.19</td>
+			<td>cython 0.27.3</td>
+			<td>cython 0.27.3</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td>numpy 1.14.5</td>
+			<td>numpy 1.14.5</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td>scipy 1.1.0</td>
+			<td>scipy 1.1.0</td>
+			<td>-</td>
+		</tr>
+		<tr align="center">
+			<td rowspan="3">0.20</td>
+			<td>cython 0.27.3</td>
+			<td>cython 0.27.3</td>
+			<td>cython 0.27.3</td>
+		</tr>
+		<tr align="center">
+			<td>numpy</td>
+			<td>numpy</td>
+			<td>numpy</td>
+		</tr>
+		<tr align="center">
+			<td>scipy</td>
+			<td>scipy</td>
+			<td>scipy</td>
+		</tr>
+		<tr align="center">
+			<td rowspan="3">0.21</td>
+			<td>cython</td>
+			<td>cython</td>
+			<td>cython</td>
+		</tr>
+		<tr align="center">
+			<td>numpy</td>
+			<td>numpy</td>
+			<td>numpy</td>
+		</tr>
+		<tr align="center">
+			<td>scipy</td>
+			<td>scipy</td>
+			<td>scipy</td>
+		</tr>
+	</tbody>
+</table>
+
+
+### Environment
+
 You have to install required modules for broader development:
 
 ```bash
