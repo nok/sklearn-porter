@@ -318,7 +318,7 @@ class Estimator:
         )
 
         # Classifiers:
-        if name is 'DecisionTreeClassifier':
+        if name == 'DecisionTreeClassifier':
             from sklearn.tree.tree import (
                 DecisionTreeClassifier as DecisionTreeClassifierClass,
             )
@@ -329,7 +329,7 @@ class Estimator:
                 )
 
                 return DecisionTreeClassifier(est)
-        elif name is 'AdaBoostClassifier':
+        elif name == 'AdaBoostClassifier':
             from sklearn.ensemble.weight_boosting import (
                 AdaBoostClassifier as AdaBoostClassifierClass,
             )
@@ -340,7 +340,7 @@ class Estimator:
                 )
 
                 return AdaBoostClassifier(est)
-        elif name is 'RandomForestClassifier':
+        elif name == 'RandomForestClassifier':
             from sklearn.ensemble.forest import (
                 RandomForestClassifier as RandomForestClassifierClass,
             )
@@ -351,7 +351,7 @@ class Estimator:
                 )
 
                 return RandomForestClassifier(est)
-        elif name is 'ExtraTreesClassifier':
+        elif name == 'ExtraTreesClassifier':
             from sklearn.ensemble.forest import (
                 ExtraTreesClassifier as ExtraTreesClassifierClass,
             )
@@ -362,28 +362,28 @@ class Estimator:
                 )
 
                 return ExtraTreesClassifier(est)
-        elif name is 'LinearSVC':
+        elif name == 'LinearSVC':
             from sklearn.svm.classes import LinearSVC as LinearSVCClass
 
             if isinstance(estimator, LinearSVCClass):
                 from sklearn_porter.estimator.LinearSVC import LinearSVC
 
                 return LinearSVC(est)
-        elif name is 'SVC':
+        elif name == 'SVC':
             from sklearn.svm.classes import SVC as SVCClass
 
             if isinstance(estimator, SVCClass):
                 from sklearn_porter.estimator.SVC import SVC
 
                 return SVC(est)
-        elif name is 'NuSVC':
+        elif name == 'NuSVC':
             from sklearn.svm.classes import NuSVC as NuSVCClass
 
             if isinstance(estimator, NuSVCClass):
                 from sklearn_porter.estimator.NuSVC import NuSVC
 
                 return NuSVC(est)
-        elif name is 'KNeighborsClassifier':
+        elif name == 'KNeighborsClassifier':
             from sklearn.neighbors.classification import (
                 KNeighborsClassifier as KNeighborsClassifierClass,
             )
@@ -394,21 +394,21 @@ class Estimator:
                 )
 
                 return KNeighborsClassifier(est)
-        elif name is 'GaussianNB':
+        elif name == 'GaussianNB':
             from sklearn.naive_bayes import GaussianNB as GaussianNBClass
 
             if isinstance(estimator, GaussianNBClass):
                 from sklearn_porter.estimator.GaussianNB import GaussianNB
 
                 return GaussianNB(est)
-        elif name is 'BernoulliNB':
+        elif name == 'BernoulliNB':
             from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
 
             if isinstance(estimator, BernoulliNBClass):
                 from sklearn_porter.estimator.BernoulliNB import BernoulliNB
 
                 return BernoulliNB(est)
-        elif name is 'MLPClassifier':
+        elif name == 'MLPClassifier':
             try:
                 from sklearn.neural_network.multilayer_perceptron import (
                     MLPClassifier as MLPClassifierClass,
@@ -426,7 +426,7 @@ class Estimator:
                     return MLPClassifier(est)
 
         # Regressors:
-        elif name is 'MLPRegressor':
+        elif name == 'MLPRegressor':
             try:
                 from sklearn.neural_network.multilayer_perceptron import (
                     MLPRegressor as MLPRegressorClass,
