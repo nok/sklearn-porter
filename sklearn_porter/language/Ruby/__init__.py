@@ -16,6 +16,7 @@ class Ruby(LanguageABC):
     # ruby estimator.rb <args>
     CMD_EXECUTE = 'ruby {src_path}'
 
+    # fmt: off
     TEMPLATES = {
         'init':         '{name} = {value}',
 
@@ -31,7 +32,7 @@ class Ruby(LanguageABC):
 
         # Arrays:
         'in_brackets':  '[{{ value }}]',
-        'arr[]':        '{{ name }} = [{{ values }}]',  # ages = [1, 2]
+        'arr[]':        '{{ name }} = [{{ values }}]',
         'arr[][]':      '{{ name }} = [{{ values }}]',
         'arr[][][]':    '{{ name }} = [{{ values }}]',
 
@@ -39,3 +40,4 @@ class Ruby(LanguageABC):
         'int':          '',
         'double':       ''
     }
+    # fmt: on

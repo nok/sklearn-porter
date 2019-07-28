@@ -16,6 +16,7 @@ class PHP(LanguageABC):
     # php -f {} Estimator.php <args>
     CMD_EXECUTE = 'php -f {src_path}'
 
+    # fmt: off
     TEMPLATES = {
         'init':         '${{ name }} = {{ value }};',
         # if/else condition:
@@ -30,7 +31,7 @@ class PHP(LanguageABC):
 
         # Arrays:
         'in_brackets':  '[{{ value }}]',
-        'arr[]':        '${{ name }} = [{{ values }}];',  # $ages = [1, 2];
+        'arr[]':        '${{ name }} = [{{ values }}];',
         'arr[][]':      '${{ name }} = [{{ values }}];',
         'arr[][][]':    '${{ name }} = [{{ values }}];',
 
@@ -38,3 +39,4 @@ class PHP(LanguageABC):
         'int':          '',
         'double':       ''
     }
+    # fmt: on

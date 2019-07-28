@@ -1,20 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Set, Dict, Optional, Tuple
-from pathlib import Path
-from os import getcwd, environ
-from time import sleep
 from json import dumps
+from os import environ, getcwd
+from pathlib import Path
+from time import sleep
+from typing import Dict, Optional, Set, Tuple, Union
 
+from jinja2 import DictLoader, Environment
+
+# scikit-learn
 from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator
-from jinja2 import Environment, DictLoader
 
+# sklearn-porter
 from sklearn_porter import __version__ as sklearn_porter_version
+from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
-from sklearn_porter.utils import get_logger
 from sklearn_porter.exceptions import NotSupportedYetError
-from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.utils import get_logger
+
 
 L = get_logger(__name__)
 
@@ -57,28 +61,32 @@ class EstimatorBase(EstimatorApiABC):
             'SVC': 'svm.SVC',
         }
         if self.estimator_name in urls:
-            base_url = 'https://scikit-learn.org/stable/' \
-                       'modules/generated/sklearn.{}.html'
+            base_url = (
+                'https://scikit-learn.org/stable/'
+                'modules/generated/sklearn.{}.html'
+            )
             self.estimator_url = base_url.format(urls.get(self.estimator_name))
 
         # Add base information:
-        self.placeholders.update(dict(
-            estimator_name=self.estimator_name,
-            estimator_url=self.estimator_url,
-            sklearn_version=sklearn_version,
-            sklearn_porter_version=sklearn_porter_version,
-        ))
+        self.placeholders.update(
+            dict(
+                estimator_name=self.estimator_name,
+                estimator_url=self.estimator_url,
+                sklearn_version=sklearn_version,
+                sklearn_porter_version=sklearn_porter_version,
+            )
+        )
 
         # Is it a test?
-        self.placeholders.update(dict(
-            is_test='SKLEARN_PORTER_PYTEST' in environ,
-        ))
+        self.placeholders.update(
+            dict(is_test='SKLEARN_PORTER_PYTEST' in environ)
+        )
 
     def check(
-            self,
-            method: Optional[Method] = None,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None
+        self,
+        method: Optional[Method] = None,
+        language: Optional[Language] = None,
+        template: Optional[Template] = None,
     ) -> Tuple[Method, Language, Template]:
         """
         Check whether the passed values (kind of method, language
@@ -87,51 +95,61 @@ class EstimatorBase(EstimatorApiABC):
 
         # Check estimator defaults:
         if not self.SUPPORT:
-            msg = 'You have to update the support ' \
-                  'matrix in the class of the estimator.'
+            msg = (
+                'You have to update the support '
+                'matrix in the class of the estimator.'
+            )
             raise NotImplementedError(msg)
         if not self.DEFAULT_METHOD:
-            msg = 'You have to set a default method ' \
-                  'in the class of the estimator.'
+            msg = (
+                'You have to set a default method '
+                'in the class of the estimator.'
+            )
             raise NotImplementedError(msg)
         if not self.DEFAULT_LANGUAGE:
-            msg = 'You have to set a default language ' \
-                  'in the class of the estimator.'
+            msg = (
+                'You have to set a default language '
+                'in the class of the estimator.'
+            )
             raise NotImplementedError(msg)
         if not self.DEFAULT_TEMPLATE:
-            msg = 'You have to set a default template ' \
-                  'in the class of the estimator.'
+            msg = (
+                'You have to set a default template '
+                'in the class of the estimator.'
+            )
             raise NotImplementedError(msg)
 
         # Check language support:
         language = language or self.DEFAULT_LANGUAGE
         if language not in self.SUPPORT.keys():
-            msg = 'Currently the language `{}` ' \
-                  'is not supported yet.'.format(language.value)
+            msg = 'Currently the language `{}` ' 'is not supported yet.'.format(
+                language.value
+            )
             raise NotSupportedYetError(msg)
 
         # Check the template support:
         template = template or self.DEFAULT_TEMPLATE
         if template not in self.SUPPORT[language].keys():
-            msg = 'Currently the template `{}` ' \
-                  'is not implemented yet.'.format(template.value)
+            msg = (
+                'Currently the template `{}` '
+                'is not implemented yet.'.format(template.value)
+            )
             raise NotSupportedYetError(msg)
 
         # Check method support:
         method = method or self.DEFAULT_METHOD
         if method not in self.SUPPORT[language][template]:
-            msg = 'Currently only `predict` ' \
-                  'is a valid method type.'
+            msg = 'Currently only `predict` ' 'is a valid method type.'
             raise NotSupportedYetError(msg)
 
         return method, language, template
 
     def port(
-            self,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None,
-            to_json: bool = False,
-            **kwargs
+        self,
+        language: Optional[Language] = None,
+        template: Optional[Template] = None,
+        to_json: bool = False,
+        **kwargs,
     ):
         """
         Port an estimator.
@@ -149,17 +167,19 @@ class EstimatorBase(EstimatorApiABC):
         -------
         The ported estimator.
         """
-        msg = 'You have to overwrite this method ' \
-              '`port` in the class of the estimator.'
+        msg = (
+            'You have to overwrite this method '
+            '`port` in the class of the estimator.'
+        )
         raise NotImplementedError(msg)
 
     def dump(
-            self,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None,
-            directory: Optional[Union[str, Path]] = None,
-            to_json: bool = False,
-            **kwargs
+        self,
+        language: Optional[Language] = None,
+        template: Optional[Template] = None,
+        directory: Optional[Union[str, Path]] = None,
+        to_json: bool = False,
+        **kwargs,
     ) -> Union[str, Tuple[str, str]]:
         """
         Dump an estimator to the filesystem.
@@ -189,21 +209,17 @@ class EstimatorBase(EstimatorApiABC):
             directory = directory.parent
 
         method, language, template = self.check(
-            language=language,
-            template=template
+            language=language, template=template
         )
 
         class_name = kwargs.get('class_name')
 
         # Port/Transpile estimator:
         ported = self.port(
-            language=language,
-            template=template,
-            to_json=to_json,
-            **kwargs
+            language=language, template=template, to_json=to_json, **kwargs
         )
         if not isinstance(ported, tuple):
-            ported = (ported, )
+            ported = (ported,)
 
         # Dump ported estimator:
         suffix = language.value.SUFFIX
@@ -241,8 +257,11 @@ class EstimatorBase(EstimatorApiABC):
         environment : Environment
             An Jinja environment with all loaded templates.
         """
-        language = Language[language.upper()].value if \
-            isinstance(language, str) else language
+        language = (
+            Language[language.upper()].value
+            if isinstance(language, str)
+            else language
+        )
 
         tpls = {}  # Dict
 
@@ -250,8 +269,9 @@ class EstimatorBase(EstimatorApiABC):
         lang_tpls = language.TEMPLATES
         if isinstance(language.TEMPLATES, dict):
             tpls.update(lang_tpls)
-        L.debug('Load template variables: {}'.format(
-            ', '.join(lang_tpls.keys())))
+        L.debug(
+            'Load template variables: {}'.format(', '.join(lang_tpls.keys()))
+        )
 
         # 2. Load base language templates (e.g. `base.attached.class`):
         root_dir = Path(__file__).parent.parent
@@ -272,8 +292,9 @@ class EstimatorBase(EstimatorApiABC):
             tpls_dir = est_dir / base_dir / 'templates' / language.KEY
             if tpls_dir.exists():
                 tpls_paths = set(tpls_dir.glob('*.jinja2'))
-                tpls.update({path.stem: path.read_text()
-                             for path in tpls_paths})
+                tpls.update(
+                    {path.stem: path.read_text() for path in tpls_paths}
+                )
 
         L.debug('Load template files: {}'.format(', '.join(tpls.keys())))
 
@@ -287,9 +308,7 @@ class EstimatorBase(EstimatorApiABC):
 
     @staticmethod
     def _dump_dict(
-            obj: Dict,
-            sort_keys: bool = True,
-            indent: Union[bool, int] = 2
+        obj: Dict, sort_keys: bool = True, indent: Union[bool, int] = 2
     ) -> str:
         indent = indent if indent else None
         return dumps(obj, sort_keys=sort_keys, indent=indent)

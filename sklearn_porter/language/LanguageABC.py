@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from typing import List, Dict
 from abc import ABC, abstractmethod
+from typing import Dict, List
 
 
 class LanguageABC(ABC):
-
     @property
     @abstractmethod
     def KEY(self) -> str:

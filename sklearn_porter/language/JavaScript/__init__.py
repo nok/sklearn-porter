@@ -16,6 +16,7 @@ class JavaScript(LanguageABC):
     # node estimator.js <args>
     CMD_EXECUTE = 'node {src_path}'
 
+    # fmt: off
     TEMPLATES = {
         'init':         'var {{ name }} = {{ value }};',
 
@@ -31,7 +32,7 @@ class JavaScript(LanguageABC):
 
         # Arrays:
         'in_brackets':  '[{{ value }}]',
-        'arr[]':        'var {{ name }} = [{{ values }}];',  # var ages = [1, 2];
+        'arr[]':        'var {{ name }} = [{{ values }}];',
         'arr[][]':      'var {{ name }} = [{{ values }}];',
         'arr[][][]':    'var {{ name }} = [{{ values }}];',
 
@@ -39,3 +40,4 @@ class JavaScript(LanguageABC):
         'int':          '',
         'double':       ''
     }
+    # fmt: on

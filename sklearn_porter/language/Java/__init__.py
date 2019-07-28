@@ -19,6 +19,7 @@ class Java(LanguageABC):
     # class_path = '-cp ./gson.jar:./tmp'
     CMD_EXECUTE = 'java {class_path} {dest_path}'
 
+    # fmt: off
     TEMPLATES = {
         'init':         '{{ type }} {{ name }} = {{ value }};',
 
@@ -34,14 +35,17 @@ class Java(LanguageABC):
 
         # Arrays:
         'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
-        'arr[]':        '{{ type }}[] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',
-        'arr[][]':      '{{ type }}[][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',
-        'arr[][][]':    '{{ type }}[][][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[]':        '{{ type }}[] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',  # pylint: disable=line-too-long
+        'arr[][]':      '{{ type }}[][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',  # pylint: disable=line-too-long
+        'arr[][][]':    '{{ type }}[][][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',  # pylint: disable=line-too-long
 
         # Primitive data types:
         'int':          'int',
         'double':       'double',
     }
+    # fmt: on
 
-    GSON_DOWNLOAD_URI = 'http://central.maven.org/maven2/' \
-                        'com/google/code/gson/gson/2.8.5/gson-2.8.5.jar'
+    GSON_DOWNLOAD_URI = (
+        'http://central.maven.org/maven2/'
+        'com/google/code/gson/gson/2.8.5/gson-2.8.5.jar'
+    )

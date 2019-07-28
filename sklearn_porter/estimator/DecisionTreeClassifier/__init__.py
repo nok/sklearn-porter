@@ -1,21 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Tuple, Optional, Callable
-from json import encoder, dumps
-from textwrap import indent
 from copy import deepcopy
+from json import dumps, encoder
 from logging import DEBUG
+from textwrap import indent
+from typing import Callable, Optional, Tuple, Union
 
 from jinja2 import Environment
-from sklearn.tree.tree import DecisionTreeClassifier \
-    as DecisionTreeClassifierClass
 
+# scikit-learn
+from sklearn.tree.tree import (
+    DecisionTreeClassifier as DecisionTreeClassifierClass,
+)
+
+# sklearn-porter
+from sklearn_porter.enums import ALL_METHODS, Language, Method, Template
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.enums import Method, Language, Template, ALL_METHODS
 from sklearn_porter.exceptions import NotFittedEstimatorError
 from sklearn_porter.utils import get_logger
-
 
 L = get_logger(__name__)
 
@@ -52,7 +55,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         Language.RUBY: {
             Template.ATTACHED: ALL_METHODS,
             Template.COMBINED: ALL_METHODS,
-        }
+        },
     }
 
     estimator = None  # type: DecisionTreeClassifierClass
@@ -74,8 +77,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n_features=est.n_features_,
             n_classes=len(est.tree_.value.tolist()[0][0]),
         )
-        L.info('Meta info (keys): {}'.format(
-            self.meta_info.keys()))
+        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
         if L.isEnabledFor(DEBUG):
             L.debug('Meta info: {}'.format(self.meta_info))
 
@@ -87,24 +89,22 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             indices=est.tree_.feature.tolist(),
             classes=[[int(c) for c in l[0]] for l in est.tree_.value.tolist()],
         )
-        L.info('Model data (keys): {}'.format(
-            self.model_data.keys()))
+        L.info('Model data (keys): {}'.format(self.model_data.keys()))
         if L.isEnabledFor(DEBUG):
             L.debug('Model data: {}'.format(self.model_data))
 
     def port(
-            self,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None,
-            to_json: bool = False,
-            **kwargs
+        self,
+        language: Optional[Language] = None,
+        template: Optional[Template] = None,
+        to_json: bool = False,
+        **kwargs,
     ) -> Union[str, Tuple[str, str]]:
         """
         Port an estimator.
 
         Parameters
         ----------
-
         language : Language
             The required language.
         template : Template
@@ -119,7 +119,8 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             The ported estimator.
         """
         method, language, template = self.check(
-            language=language, template=template)
+            language=language, template=template
+        )
 
         # Arguments:
         kwargs.setdefault('method_name', method.value)
@@ -127,11 +128,13 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=kwargs.get('class_name'),
-            method_name=kwargs.get('method_name'),
-            to_json=to_json,
-        ))
+        plas.update(
+            dict(
+                class_name=kwargs.get('class_name'),
+                method_name=kwargs.get('method_name'),
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -159,7 +162,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             type=tpl_int,
             name='lefts',
             values=', '.join(lefts_val),
-            n=len(lefts_val)
+            n=len(lefts_val),
         )
 
         rights_val = list(map(str, self.model_data.get('rights')))
@@ -167,7 +170,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             type=tpl_int,
             name='rights',
             values=', '.join(rights_val),
-            n=len(rights_val)
+            n=len(rights_val),
         )
 
         thresholds_val = list(map(converter, self.model_data.get('thresholds')))
@@ -175,7 +178,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             type=tpl_double,
             name='thresholds',
             values=', '.join(thresholds_val),
-            n=len(thresholds_val)
+            n=len(thresholds_val),
         )
 
         indices_val = list(map(str, self.model_data.get('indices')))
@@ -183,29 +186,33 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             type=tpl_int,
             name='indices',
             values=', '.join(indices_val),
-            n=len(indices_val)
+            n=len(indices_val),
         )
 
-        classes_val = [list(map(str, e))
-                       for e in self.model_data.get('classes')]
+        classes_val = [
+            list(map(str, e)) for e in self.model_data.get('classes')
+        ]
         classes_str = [', '.join(e) for e in classes_val]
-        classes_str = ', '.join([tpl_in_brackets.render(value=e)
-                                 for e in classes_str])
+        classes_str = ', '.join(
+            [tpl_in_brackets.render(value=e) for e in classes_str]
+        )
         classes_str = tpl_arr_2.render(
             type=tpl_int,
             name='classes',
             values=classes_str,
             n=len(classes_val),
-            m=len(classes_val[0])
+            m=len(classes_val[0]),
         )
 
-        plas.update(dict(
-            lefts=lefts_str,
-            rights=rights_str,
-            thresholds=thresholds_str,
-            indices=indices_str,
-            classes=classes_str,
-        ))
+        plas.update(
+            dict(
+                lefts=lefts_str,
+                rights=rights_str,
+                thresholds=thresholds_str,
+                indices=indices_str,
+                classes=classes_str,
+            )
+        )
 
         # Attached variant:
         if template == Template.ATTACHED:
@@ -222,10 +229,10 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             return out_class
 
     def _create_tree(
-            self,
-            tpls: Environment,
-            language: Language,
-            converter: Callable[[object], str]
+        self,
+        tpls: Environment,
+        language: Language,
+        converter: Callable[[object], str],
     ):
         """
         Build a decision tree.
@@ -243,34 +250,37 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         -------
         A tree of a DecisionTreeClassifier.
         """
-        n_indents = 1 if language in {
-            Language.JAVA,
-            Language.JS,
-            Language.PHP,
-            Language.RUBY
-        } else 0
+        n_indents = (
+            1
+            if language
+            in {Language.JAVA, Language.JS, Language.PHP, Language.RUBY}
+            else 0
+        )
         return self._create_branch(
-            tpls, language, converter,
+            tpls,
+            language,
+            converter,
             self.model_data.get('lefts'),
             self.model_data.get('rights'),
             self.model_data.get('thresholds'),
             self.model_data.get('classes'),
             self.model_data.get('indices'),
-            0, n_indents
+            0,
+            n_indents,
         )
 
     def _create_branch(
-            self,
-            tpls: Environment,
-            language: Language,
-            converter: Callable[[object], str],
-            left_nodes: list,
-            right_nodes: list,
-            threshold: list,
-            value: list,
-            features: list,
-            node: int,
-            depth: int
+        self,
+        tpls: Environment,
+        language: Language,
+        converter: Callable[[object], str],
+        left_nodes: list,
+        right_nodes: list,
+        threshold: list,
+        value: list,
+        features: list,
+        node: int,
+        depth: int,
     ):
         """
         The ported single tree as function or method.
@@ -304,7 +314,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         """
         out = ''
         out_indent = tpls.get_template('indent').render()
-        if threshold[node] != -2.:
+        if threshold[node] != -2.0:
             out += '\n'
             val_a = 'features[{}]'.format(features[node])
             if language is Language.PHP:
@@ -315,20 +325,38 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             out_if = indent(out_if, depth * out_indent)
             out += out_if
 
-            if left_nodes[node] != -1.:
+            if left_nodes[node] != -1.0:
                 out += self._create_branch(
-                    tpls, language, converter, left_nodes, right_nodes,
-                    threshold, value, features, left_nodes[node], depth + 1)
+                    tpls,
+                    language,
+                    converter,
+                    left_nodes,
+                    right_nodes,
+                    threshold,
+                    value,
+                    features,
+                    left_nodes[node],
+                    depth + 1,
+                )
 
             out += '\n'
             out_else = tpls.get_template('else').render()
             out_else = indent(out_else, depth * out_indent)
             out += out_else
 
-            if right_nodes[node] != -1.:
+            if right_nodes[node] != -1.0:
                 out += self._create_branch(
-                    tpls, language, converter, left_nodes, right_nodes,
-                    threshold, value, features, right_nodes[node], depth + 1)
+                    tpls,
+                    language,
+                    converter,
+                    left_nodes,
+                    right_nodes,
+                    threshold,
+                    value,
+                    features,
+                    right_nodes[node],
+                    depth + 1,
+                )
 
             out += '\n'
             out_endif = tpls.get_template('endif').render()

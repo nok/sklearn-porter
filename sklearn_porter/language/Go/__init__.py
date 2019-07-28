@@ -17,6 +17,7 @@ class Go(LanguageABC):
     # tmp/estimator <args>
     CMD_EXECUTE = '{dest_path}'
 
+    # fmt: off
     TEMPLATES = {
         'init':         '{{ name }} := {{ value }}',
 
@@ -33,11 +34,12 @@ class Go(LanguageABC):
         # Arrays:
         'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
         # ages := []int {1, 2}
-        'arr[]':        '{{ name }} := []{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
-        'arr[][]':      '{{ name }} := [][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
-        'arr[][][]':    '{{ name }} := [][][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
+        'arr[]':        '{{ name }} := []{{ type }} {{ "{" }}{{ values }}{{ "}" }}',  # pylint: disable=line-too-long
+        'arr[][]':      '{{ name }} := [][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',  # pylint: disable=line-too-long
+        'arr[][][]':    '{{ name }} := [][][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',  # pylint: disable=line-too-long
 
         # Primitive data types:
         'int':          'int',
         'double':       'float64'
     }
+    # fmt: on

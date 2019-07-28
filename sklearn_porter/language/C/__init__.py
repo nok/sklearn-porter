@@ -17,6 +17,7 @@ class C(LanguageABC):
     # tmp/estimator <args>
     CMD_EXECUTE = '{dest_path}'
 
+    # fmt: off
     TEMPLATES = {
         'init':         '{{ type }} {{ name }} = {{ value }};',
 
@@ -33,11 +34,12 @@ class C(LanguageABC):
         # Arrays:
         'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
         # in ages[2] = {1, 2};
-        'arr[]':        '{{ type }} {{ name }}[{{ n }}] = {{ "{" }}{{ values }}{{ "}" }};',
-        'arr[][]':      '{{ type }} {{ name }}[{{ n }}][{{ m }}] = {{ "{" }}{{ values }}{{ "}" }};',
-        'arr[][][]':    '{{ type }} {{ name }}[{{ n }}][{{ m }}][{{ k }}] = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[]':        '{{ type }} {{ name }}[{{ n }}] = {{ "{" }}{{ values }}{{ "}" }};',  # pylint: disable=line-too-long
+        'arr[][]':      '{{ type }} {{ name }}[{{ n }}][{{ m }}] = {{ "{" }}{{ values }}{{ "}" }};',  # pylint: disable=line-too-long
+        'arr[][][]':    '{{ type }} {{ name }}[{{ n }}][{{ m }}][{{ k }}] = {{ "{" }}{{ values }}{{ "}" }};',  # pylint: disable=line-too-long
 
         # Primitive data types:
         'int':          'int',
         'double':       'double'
     }
+    # fmt: on
