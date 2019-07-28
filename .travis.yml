@@ -35,7 +35,7 @@ env:
     - PYTHON_VER=python=3.5 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy==1.8.1 SCIPY_VER=scipy==0.14.0 SCIKIT_LEARN_VER=scikit-learn==0.16
 
 before_install:
-  docker build
+  travis_wait 30 docker build
     -t sklearn-porter
     --build-arg PYTHON_VER=${PYTHON_VER}
     --build-arg CYTHON_VER=${CYTHON_VER}
