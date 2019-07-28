@@ -17,7 +17,7 @@ class Go(LanguageABC):
     # tmp/estimator <args>
     CMD_EXECUTE = '{dest_path}'
 
-    # fmt: off
+    # yapf: disable
     TEMPLATES = {
         'init':         '{{ name }} := {{ value }}',
 
@@ -42,4 +42,4 @@ class Go(LanguageABC):
         'int':          'int',
         'double':       'float64'
     }
-    # fmt: on
+    # yapf: enable

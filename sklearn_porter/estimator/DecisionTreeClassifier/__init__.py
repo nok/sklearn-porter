@@ -98,7 +98,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         language: Optional[Language] = None,
         template: Optional[Template] = None,
         to_json: bool = False,
-        **kwargs,
+        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Port an estimator.
@@ -251,10 +251,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         A tree of a DecisionTreeClassifier.
         """
         n_indents = (
-            1
-            if language
-            in {Language.JAVA, Language.JS, Language.PHP, Language.RUBY}
-            else 0
+            1 if language in {
+                Language.JAVA, Language.JS, Language.PHP, Language.RUBY
+            } else 0
         )
         return self._create_branch(
             tpls,

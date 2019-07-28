@@ -17,7 +17,7 @@ class C(LanguageABC):
     # tmp/estimator <args>
     CMD_EXECUTE = '{dest_path}'
 
-    # fmt: off
+    # yapf: disable
     TEMPLATES = {
         'init':         '{{ type }} {{ name }} = {{ value }};',
 
@@ -42,4 +42,4 @@ class C(LanguageABC):
         'int':          'int',
         'double':       'double'
     }
-    # fmt: on
+    # yapf: enable

@@ -14,14 +14,13 @@ class EstimatorApiABC(ABC):
     main class `sklearn_porter.Estimator` and all subclasses
     in `sklearn-porter.estimator.*`.
     """
-
     @abstractmethod
     def port(
         self,
         language: Optional[Language] = None,
         template: Optional[Template] = None,
         to_json: bool = False,
-        **kwargs,
+        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Port an estimator.
@@ -40,7 +39,6 @@ class EstimatorApiABC(ABC):
         -------
         The ported estimator.
         """
-
     @abstractmethod
     def dump(
         self,
@@ -48,7 +46,7 @@ class EstimatorApiABC(ABC):
         template: Optional[Template] = None,
         directory: Optional[Union[str, Path]] = None,
         to_json: bool = False,
-        **kwargs,
+        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Dump an estimator to the filesystem.

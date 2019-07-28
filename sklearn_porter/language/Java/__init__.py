@@ -19,7 +19,7 @@ class Java(LanguageABC):
     # class_path = '-cp ./gson.jar:./tmp'
     CMD_EXECUTE = 'java {class_path} {dest_path}'
 
-    # fmt: off
+    # yapf: disable
     TEMPLATES = {
         'init':         '{{ type }} {{ name }} = {{ value }};',
 
@@ -43,7 +43,7 @@ class Java(LanguageABC):
         'int':          'int',
         'double':       'double',
     }
-    # fmt: on
+    # yapf: enable
 
     GSON_DOWNLOAD_URI = (
         'http://central.maven.org/maven2/'

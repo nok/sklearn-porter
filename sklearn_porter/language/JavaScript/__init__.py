@@ -16,7 +16,7 @@ class JavaScript(LanguageABC):
     # node estimator.js <args>
     CMD_EXECUTE = 'node {src_path}'
 
-    # fmt: off
+    # yapf: disable
     TEMPLATES = {
         'init':         'var {{ name }} = {{ value }};',
 
@@ -40,4 +40,4 @@ class JavaScript(LanguageABC):
         'int':          '',
         'double':       ''
     }
-    # fmt: on
+    # yapf: enable

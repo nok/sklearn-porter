@@ -39,7 +39,6 @@ class Estimator:
     Main class which validates the passed estimator and
     coordinates the kind of estimator to a concrete subclass.
     """
-
     def __init__(
         self,
         estimator: BaseEstimator,
@@ -475,7 +474,7 @@ class Estimator:
         language: Optional[Union[str, Language]] = None,
         template: Optional[Union[str, Template]] = None,
         to_json: bool = False,
-        **kwargs,
+        **kwargs
     ) -> Union[str, Tuple[str]]:
         """
         Port or transpile a passed estimator to a target programming language.
@@ -505,7 +504,7 @@ class Estimator:
         language: Optional[Union[str, Language]] = None,
         template: Optional[Union[str, Template]] = None,
         to_json: bool = False,
-        **kwargs,
+        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Port or transpile a passed estimator to a target programming language.
@@ -533,7 +532,9 @@ class Estimator:
         template: Optional[Union[str, Template]] = None,
         directory: Optional[Union[str, Path]] = None,
         to_json: bool = False,
-        **kwargs,
+        # fmt: off
+        **kwargs
+        # fmt: on
     ) -> Union[str, Tuple[str, str]]:
         """
         Port a passed estimator to a target programming language and save them.
@@ -560,7 +561,7 @@ class Estimator:
             template=template,
             directory=directory,
             to_json=to_json,
-            **kwargs,
+            **kwargs
         )
 
     def make(
@@ -571,7 +572,7 @@ class Estimator:
         directory: Optional[Union[str, Path]] = None,
         n_jobs: Optional[Union[bool, int]] = True,
         final_deletion: Optional[bool] = False,
-        **kwargs,
+        **kwargs
     ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
         """
         Make predictions with transpiled estimators locally.
@@ -610,7 +611,7 @@ class Estimator:
             template=template,
             directory=directory,
             to_json=True,
-            **kwargs,
+            **kwargs
         )
 
         if isinstance(out, tuple):  # indicator for Template.EXPORTED
@@ -670,7 +671,9 @@ class Estimator:
             cmd = cmd.format(**cmd_args)
             L.info('Compilation command: `{}`'.format(cmd))
 
-            subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
+            subp_args = dict(
+                shell=True, universal_newlines=True, stderr=STDOUT
+            )
             out = call(cmd, **subp_args)
             if int(str(out).strip()) != 0:
                 msg = 'Compilation failed.'
@@ -838,7 +841,7 @@ class Estimator:
         except ImportError:
             pass
         else:
-            classifiers += (MLPClassifier,)
+            classifiers += (MLPClassifier, )
 
         return classifiers
 
@@ -864,7 +867,7 @@ class Estimator:
         except ImportError:
             pass
         else:
-            regressors += (MLPRegressor,)
+            regressors += (MLPRegressor, )
 
         return regressors
 

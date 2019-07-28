@@ -19,7 +19,6 @@ from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.exceptions import NotSupportedYetError
 from sklearn_porter.utils import get_logger
 
-
 L = get_logger(__name__)
 
 
@@ -149,7 +148,7 @@ class EstimatorBase(EstimatorApiABC):
         language: Optional[Language] = None,
         template: Optional[Template] = None,
         to_json: bool = False,
-        **kwargs,
+        **kwargs
     ):
         """
         Port an estimator.
@@ -179,7 +178,7 @@ class EstimatorBase(EstimatorApiABC):
         template: Optional[Template] = None,
         directory: Optional[Union[str, Path]] = None,
         to_json: bool = False,
-        **kwargs,
+        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Dump an estimator to the filesystem.
@@ -219,7 +218,7 @@ class EstimatorBase(EstimatorApiABC):
             language=language, template=template, to_json=to_json, **kwargs
         )
         if not isinstance(ported, tuple):
-            ported = (ported,)
+            ported = (ported, )
 
         # Dump ported estimator:
         suffix = language.value.SUFFIX
@@ -259,8 +258,7 @@ class EstimatorBase(EstimatorApiABC):
         """
         language = (
             Language[language.upper()].value
-            if isinstance(language, str)
-            else language
+            if isinstance(language, str) else language
         )
 
         tpls = {}  # Dict
@@ -293,7 +291,8 @@ class EstimatorBase(EstimatorApiABC):
             if tpls_dir.exists():
                 tpls_paths = set(tpls_dir.glob('*.jinja2'))
                 tpls.update(
-                    {path.stem: path.read_text() for path in tpls_paths}
+                    {path.stem: path.read_text()
+                     for path in tpls_paths}
                 )
 
         L.debug('Load template files: {}'.format(', '.join(tpls.keys())))
