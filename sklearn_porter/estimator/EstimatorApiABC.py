@@ -4,7 +4,7 @@ from typing import Union, Optional, Tuple
 from pathlib import Path
 from abc import ABC, abstractmethod
 
-from sklearn_porter.enums import Method, Language, Template
+from sklearn_porter.enums import Language, Template
 
 
 class EstimatorApiABC(ABC):
@@ -27,19 +27,18 @@ class EstimatorApiABC(ABC):
 
         Parameters
         ----------
-        method : Method
-            The required method.
         language : Language
             The required language.
         template : Template
             The required template.
+        to_json : bool (default: False)
+            Return the result as JSON string.
         kwargs
 
         Returns
         -------
         The ported estimator.
         """
-        pass
 
     @abstractmethod
     def dump(
@@ -55,18 +54,17 @@ class EstimatorApiABC(ABC):
 
         Parameters
         ----------
-        method : Method
-            The required method.
         language : Language
             The required language.
         template : Template
             The required template
         directory : str or Path
             The destination directory.
+        to_json : bool (default: False)
+            Return the result as JSON string.
         kwargs
 
         Returns
         -------
         The paths to the dumped files.
         """
-        pass
