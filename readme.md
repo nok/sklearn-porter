@@ -430,9 +430,15 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
 For the regression tests we have to use specific compilers and interpreters. Today the following compilers and interpreters are used for these tests:
 
 <table>
+  <thead>
+    <tr>
+      <td><strong>Name</strong></td>
+      <td><strong>Version</strong></td>
+    </tr>
+  </thead>
   <tbody>
     <tr>
-      <td>GCC (for C)</td>
+      <td>GCC</td>
       <td>6.3.0</td>
     </tr>
     <tr>
@@ -440,11 +446,11 @@ For the regression tests we have to use specific compilers and interpreters. Tod
       <td>1.12.4</td>
     </tr>
     <tr>
-      <td>Java</td>
-      <td>OpenJDK 1.8.0</td>
+      <td>Java (OpenJDK)</td>
+      <td>1.8.0</td>
     </tr>
     <tr>
-      <td>Node.js (for JavaScrip)</td>
+      <td>Node.js</td>
       <td>10.16.0</td>
     </tr>
     <tr>
