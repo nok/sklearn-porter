@@ -45,7 +45,7 @@ class Estimator:
         estimator: BaseEstimator,
         class_name: Optional[str] = None,
         method_name: Optional[str] = None,
-        converter: Optional[Callable[[object], str]] = lambda x: str(x),
+        converter: Optional[Callable[[object], str]] = None,
     ):
         """
         Validate and coordinate the passed estimator for transpiling.
@@ -97,7 +97,7 @@ class Estimator:
             self.method_name = None
 
         # Set the default converter:
-        self.converter = converter
+        self.converter = converter if converter else lambda x: str(x)
 
     @property
     def estimator(self):
@@ -268,8 +268,7 @@ class Estimator:
         if is_classifier:
             L.debug('Yes, the estimator is type of `ClassifierMixin`.')
             return est
-        else:
-            L.debug('No, the estimator is not type of `ClassifierMixin`.')
+        L.debug('No, the estimator is not type of `ClassifierMixin`.')
 
         # Check RegressorMixin:
         L.debug('Check whether the estimator is a `RegressorMixin`.')
@@ -277,8 +276,7 @@ class Estimator:
         if is_regressor:
             L.debug('Yes, the estimator is type of `RegressorMixin`.')
             return est
-        else:
-            L.debug('No, the estimator is not type of `RegressorMixin`.')
+        L.debug('No, the estimator is not type of `RegressorMixin`.')
 
         if not (is_classifier or is_regressor):
             msg = (
@@ -497,14 +495,10 @@ class Estimator:
         """
         language = self._convert_language(language)
         template = self._convert_template(template)
-
-        locs = locals()
-        locs.pop('self')
-        locs.pop('kwargs')
-
-        # Set defaults:
         kwargs = self._set_kwargs_defaults(kwargs)
-        return self._estimator.port(**locs, **kwargs)
+        return self._estimator.port(
+            language=language, template=template, to_json=to_json, **kwargs
+        )
 
     def export(
         self,
@@ -529,11 +523,9 @@ class Estimator:
         -------
         The transpiled estimator in the target programming language.
         """
-        locs = locals()
-        locs.pop('self')
-        locs.pop('kwargs')
-
-        return self.port(**locs, **kwargs)
+        return self._estimator.port(
+            language=language, template=template, to_json=to_json, **kwargs
+        )
 
     def dump(
         self,
@@ -562,14 +554,14 @@ class Estimator:
         """
         language = self._convert_language(language)
         template = self._convert_template(template)
-
-        locs = locals()
-        locs.pop('self')
-        locs.pop('kwargs')
-
-        # Set defaults:
         kwargs = self._set_kwargs_defaults(kwargs)
-        return self._estimator.dump(**locs, **kwargs)
+        return self._estimator.dump(
+            language=language,
+            template=template,
+            directory=directory,
+            to_json=to_json,
+            **kwargs,
+        )
 
     def make(
         self,
@@ -672,7 +664,7 @@ class Estimator:
                             created_files.append(path)
                         class_paths.append(str(path))
 
-                if len(class_paths) > 0:
+                if bool(class_paths):
                     cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
 
             cmd = cmd.format(**cmd_args)
@@ -691,7 +683,7 @@ class Estimator:
         if language in (Language.C, Language.GO):
             cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
         elif language is Language.JAVA:
-            if len(class_paths) > 0:
+            if bool(class_paths):
                 cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
             cmd_args['dest_path'] = str(src_path.stem)
         elif language in (Language.JS, Language.PHP, Language.RUBY):
@@ -706,7 +698,7 @@ class Estimator:
         # Features:
         if not isinstance(x, np.ndarray):
             x = np.array(x)
-        if x.ndim is 1:
+        if x.ndim == 1:
             x = x[np.newaxis, :]
         x = x.tolist()
 
@@ -733,10 +725,9 @@ class Estimator:
                 if path and path.exists():
                     remove(str(path))
 
-        if len(y[0]) is 1:
+        if len(y[0]) == 1:
             return y[0][0], y[1][0]
-        else:
-            return y[0], y[1]
+        return y[0], y[1]
 
     def integrity_score(
         self,
