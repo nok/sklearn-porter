@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from os.path import sep
-
 from sklearn_porter.language.LanguageABC import LanguageABC
 
 
