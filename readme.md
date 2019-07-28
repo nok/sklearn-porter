@@ -309,16 +309,16 @@ In addition to it all tests run against these combinations of [scikit-learn](htt
 	<tbody>
 		<tr align="center">
 			<td colspan="2" rowspan="2"></td>
-			<td colspan="3">Python</td>
+			<td colspan="3"><strong>Python</strong></td>
 		</tr>
 		<tr align="center">
-			<td>3.5</td>
-			<td>3.6</td>
-			<td>3.7</td>
+			<td><strong>3.5</strong></td>
+			<td><strong>3.6</strong></td>
+			<td><strong>3.7</strong></td>
 		</tr>
 		<tr align="center">
-			<td rowspan="18">scikit-learn</td>
-			<td rowspan="3">0.16</td>
+			<td rowspan="18"><strong>scikit-learn</strong></td>
+			<td rowspan="3"><strong>0.16</strong></td>
 			<td>cython 0.27.3</td>
 			<td>cython 0.27.3</td>
 			<td>-</td>
@@ -334,7 +334,7 @@ In addition to it all tests run against these combinations of [scikit-learn](htt
 			<td>-</td>
 		</tr>
 		<tr align="center">
-			<td rowspan="3">0.17</td>
+			<td rowspan="3"><strong>0.17</strong></td>
 			<td>cython 0.27.3</td>
 			<td>cython 0.27.3</td>
 			<td>-</td>
@@ -350,7 +350,7 @@ In addition to it all tests run against these combinations of [scikit-learn](htt
 			<td>-</td>
 		</tr>
 		<tr align="center">
-			<td rowspan="3">0.18</td>
+			<td rowspan="3"><strong>0.18</strong></td>
 			<td>cython 0.27.3</td>
 			<td>cython 0.27.3</td>
 			<td>-</td>
@@ -366,7 +366,7 @@ In addition to it all tests run against these combinations of [scikit-learn](htt
 			<td>-</td>
 		</tr>
 		<tr align="center">
-			<td rowspan="3">0.19</td>
+			<td rowspan="3"><strong>0.19</strong></td>
 			<td>cython 0.27.3</td>
 			<td>cython 0.27.3</td>
 			<td>-</td>
@@ -382,7 +382,7 @@ In addition to it all tests run against these combinations of [scikit-learn](htt
 			<td>-</td>
 		</tr>
 		<tr align="center">
-			<td rowspan="3">0.20</td>
+			<td rowspan="3"><strong>0.20</strong></td>
 			<td>cython 0.27.3</td>
 			<td>cython 0.27.3</td>
 			<td>cython 0.27.3</td>
@@ -398,7 +398,7 @@ In addition to it all tests run against these combinations of [scikit-learn](htt
 			<td>scipy</td>
 		</tr>
 		<tr align="center">
-			<td rowspan="3">0.21</td>
+			<td rowspan="3"><strong>0.21</strong></td>
 			<td>cython</td>
 			<td>cython</td>
 			<td>cython</td>
