@@ -5,10 +5,10 @@ sudo: required
 services:
   - docker
 
-dist: trusty
+dist: bionic
 
 git:
-  depth: 3
+  depth: 1
 
 notifications:
   email: false
