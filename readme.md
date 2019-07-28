@@ -297,13 +297,24 @@ $ porter estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
 ## Development
 
 
+### Dependencies
+
+The prerequisite is Python 3.5 which you can install with [conda](https://docs.conda.io/en/latest/miniconda.html):
+
+```bash
+$ conda env create -n sklearn-porter -c defaults python=3.5
+$ conda activate sklearn-porter  # or `source activate sklearn-porter` for older versions
+```
+
+After that you have to install all required packages:
+
+```bash
+$ pip install --no-cache-dir -e .[development]
+```
+
 ### Environment
 
-All tests run in a Docker container with following compilers and intepreters:
-
-(TODO: Add details)
-
-In addition to it all tests run against these combinations of [scikit-learn](https://github.com/scikit-learn/scikit-learn) and Python versions:
+All tests run against these combinations of [scikit-learn](https://github.com/scikit-learn/scikit-learn) and Python versions:
 
 <table border="0" width="100%">
 	<tbody>
@@ -416,59 +427,38 @@ In addition to it all tests run against these combinations of [scikit-learn](htt
 	</tbody>
 </table>
 
-
-### Environment
-
-You have to install required modules for broader development:
-
-```bash
-$ make install.environment  # conda environment (optional)
-$ make install.requirements.development  # pip requirements
-```
-
-Independently, the following compilers and intepreters are required to cover all tests:
+For the regression tests we have to use specific compilers and interpreters. Today the following compilers and interpreters are used for these tests:
 
 <table>
-    <thead>
-        <tr>
-            <td width="33%"><strong>Name</strong></td>
-            <td width="33%"><strong>Version</strong></td>
-            <td width="33%"><strong>Command</strong></td>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><a href="https://gcc.gnu.org">GCC</a></td>
-            <td><code>>=4.2</code></td>
-            <td><code>gcc --version</code></td>
-        </tr>
-        <tr>
-            <td><a href="https://java.com">Java</a></td>
-            <td><code>>=1.6</code></td>
-            <td><code>java -version</code></td>
-        </tr>
-        <tr>
-            <td><a href="http://www.php.net">PHP</a></td>
-            <td><code>>=5.6</code></td>
-            <td><code>php --version</code></td>
-        </tr>
-        <tr>
-            <td><a href="https://www.ruby-lang.org">Ruby</a></td>
-            <td><code>>=2.4.1</code></td>
-            <td><code>ruby --version</code></td>
-        </tr>
-        <tr>
-            <td><a href="https://golang.org">Go</a></td>
-            <td><code>>=1.7.4</code></td>
-            <td><code>go version</code></td>
-        </tr>
-        <tr>
-            <td><a href="https://nodejs.org">Node.js</a></td>
-            <td><code>>=6</code></td>
-            <td><code>node --version</code></td>
-        </tr>
-    </tbody>
+  <tbody>
+    <tr>
+      <td>GCC (for C)</td>
+      <td>6.3.0</td>
+    </tr>
+    <tr>
+      <td>Go</td>
+      <td>1.12.4</td>
+    </tr>
+    <tr>
+      <td>Java</td>
+      <td>OpenJDK 1.8.0</td>
+    </tr>
+    <tr>
+      <td>Node.js (for JavaScrip)</td>
+      <td>10.16.0</td>
+    </tr>
+    <tr>
+      <td>PHP</td>
+      <td>7.0.33</td>
+    </tr>
+    <tr>
+      <td>Ruby</td>
+      <td>2.3.3</td>
+    </tr>
+  </tbody>
 </table>
+
+Please notice that in general you can use older compilers and interpreters with the generated source code. For instance you can use Java 1.6 to compile and run models.
 
 
 ### Testing
