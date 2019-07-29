@@ -56,6 +56,9 @@ var main = function () {
 
     // Features:
     var features = process.argv.slice(2);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
 
     // Model data:
     {{ priors }}
