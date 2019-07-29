@@ -12,10 +12,9 @@ var {{ class_name }} = function() {
     };
 
     var _normVals = function(nums) {
-        var i = 0, l = nums.length;
-        var result = [];
-        var sum = 0.;
-
+        var i, l = nums.length,
+            result = [],
+            sum = 0.;
         for (i = 0; i < l; i++) {
             sum += nums[i];
         }
