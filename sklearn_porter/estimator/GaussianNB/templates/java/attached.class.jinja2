@@ -1,0 +1,80 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+import java.util.Arrays;
+
+
+{% endif %}
+class {{ class_name }} {
+
+    private double[] priors;
+    private double[][] sigmas;
+    private double[][] thetas;
+
+    public {{ class_name }}(double[] priors, double[][] sigmas, double[][] thetas) {
+        this.priors = priors;
+        this.sigmas = sigmas;
+        this.thetas = thetas;
+    }
+
+    private int findMax(double[] nums) {
+        int i = 0, l = nums.length, idx = 0;
+        for (i = 0; i < l; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
+
+    public int predict(double[] features) {
+        double[] likelihoods = new double[this.sigmas.length];
+        for (int i = 0, il = this.sigmas.length; i < il; i++) {
+            double sum = 0.;
+            for (int j = 0, jl = this.sigmas[0].length; j < jl; j++) {
+                sum += Math.log(2. * Math.PI * this.sigmas[i][j]);
+            }
+            double nij = -0.5 * sum;
+            sum = 0.;
+            for (int j = 0, jl = this.sigmas[0].length; j < jl; j++) {
+                sum += Math.pow(features[j] - this.thetas[i][j], 2.) / this.sigmas[i][j];
+            }
+            nij -= 0.5 * sum;
+            likelihoods[i] = Math.log(this.priors[i]) + nij;
+        }
+        return findMax(likelihoods);
+    }
+
+    public static void main(String[] args) {
+
+        int nFeatures = {{ n_features }};
+        if (args.length != nFeatures) {
+            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
+        }
+
+        // Features:
+        double[] features = new double[args.length];
+        for (int i = 0, l = args.length; i < l; i++) {
+            features[i] = Double.parseDouble(args[i]);
+        }
+
+        // Model data:
+        {{ priors }}
+        {{ sigmas }}
+        {{ thetas }}
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(priors, sigmas, thetas);
+
+        {% if is_test or to_json %}
+        // Get JSON:
+        int prediction = clf.predict(features);
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        {% else %}
+        // Get class prediction:
+        int prediction = clf.predict(features);
+        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {% endif %}
+
+    }
+}
+{% endblock %}
