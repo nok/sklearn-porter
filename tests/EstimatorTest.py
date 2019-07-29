@@ -55,7 +55,6 @@ try:
 except ImportError:
     RandomizedSearchCV = None
 
-
 # Force deterministic number generation:
 np.random.seed(0)
 rd.seed(0)
@@ -371,7 +370,8 @@ def test_extraction_from_optimizer(Class: Callable):
 
     # Test fitted optimizer:
     search.fit(
-        X=[[1, 1], [2, 2], [3, 3], [1, 1], [2, 2], [3, 3]], y=[1, 2, 3, 1, 2, 3]
+        X=[[1, 1], [2, 2], [3, 3], [1, 1], [2, 2], [3, 3]],
+        y=[1, 2, 3, 1, 2, 3]
     )
     est = Estimator(search)
     assert isinstance(est.estimator, SVC)
@@ -384,7 +384,8 @@ def test_extraction_from_optimizer(Class: Callable):
         np.array([5.1, 3.5, 1.4, 0.2]),
         [[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]],
         np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]]),
-        [np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])],
+        [np.array([5.1, 3.5, 1.4, 0.2]),
+         np.array([5.1, 3.5, 1.4, 0.2])],
     ],
     ids=[
         '{}_{}'.format(
@@ -400,16 +401,17 @@ def test_extraction_from_optimizer(Class: Callable):
             type([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]][0]).__qualname__,
         ),
         '{}_{}'.format(
-            type(
-                np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])
-            ).__qualname__,
-            type(
-                np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])[0]
-            ).__qualname__,
+            type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4,
+                                                  0.2]])).__qualname__,
+            type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4,
+                                                  0.2]])[0]).__qualname__,
         ),
         '{}_{}'.format(
             type(
-                [np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])]
+                [
+                    np.array([5.1, 3.5, 1.4, 0.2]),
+                    np.array([5.1, 3.5, 1.4, 0.2])
+                ]
             ).__qualname__,
             type(
                 [
@@ -437,11 +439,9 @@ def test_make_inputs_outputs(tmp: Path, x, tree, template: str, language: str):
     ) -> Path:
         """Helper function to create a directory for tests."""
         base_dir = (
-            base_dir
-            / ('test__' + test_name)
-            / ('estimator__' + estimator_name)
-            / ('language__' + language_name)
-            / ('template__' + template_name)
+            base_dir / ('test__' + test_name) /
+            ('estimator__' + estimator_name) / ('language__' + language_name) /
+            ('template__' + template_name)
         )
         base_dir.mkdir(parents=True, exist_ok=True)
         return base_dir
@@ -485,8 +485,13 @@ def test_make_inputs_outputs(tmp: Path, x, tree, template: str, language: str):
 )
 @pytest.mark.parametrize(
     'Class',
-    [('DecisionTreeClassifier', DecisionTreeClassifier, dict(random_state=0))],
-    ids=['DecisionTreeClassifier'],
+    [
+        (
+            'DecisionTreeClassifier', DecisionTreeClassifier,
+            dict(random_state=0)
+        ), ('BernoulliNB', BernoulliNB, dict())
+    ],
+    ids=['DecisionTreeClassifier', 'BernoulliNB'],
 )
 def test_and_compare_accuracies(
     tmp: Path,
@@ -509,12 +514,9 @@ def test_and_compare_accuracies(
     ) -> Path:
         """Helper function to create a directory for tests."""
         base_dir = (
-            base_dir
-            / ('test__' + test_name)
-            / ('estimator__' + estimator_name)
-            / ('dataset__' + dataset_name)
-            / ('language__' + language_name)
-            / ('template__' + template_name)
+            base_dir / ('test__' + test_name) /
+            ('estimator__' + estimator_name) / ('dataset__' + dataset_name) /
+            ('language__' + language_name) / ('template__' + template_name)
         )
         base_dir.mkdir(parents=True, exist_ok=True)
         return base_dir
@@ -534,9 +536,8 @@ def test_and_compare_accuracies(
             msg = 'Two dimensional numpy array is required.'
             raise AssertionError(msg)
         n_samples = min(n_samples, len(x))
-        return x[
-            (np.random.uniform(0, 1, n_samples) * (len(x) - 1)).astype(int)
-        ]
+        return x[(np.random.uniform(0, 1, n_samples) *
+                  (len(x) - 1)).astype(int)]
 
     orig_est = Class[1](**Class[2])
     x, y = dataset[1].data, dataset[1].target
