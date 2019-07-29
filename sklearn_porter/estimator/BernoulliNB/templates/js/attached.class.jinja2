@@ -1,0 +1,76 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+var {{ class_name }} = function(priors, negatives, deltas) {
+
+    this.priors = priors;
+    this.negatives = negatives;
+    this.deltas = deltas;
+
+    this.predict = function(features) {
+        var nClasses = this.priors.length,
+            nFeatures = this.deltas.length;
+
+        var jll = new Array(nClasses);
+        for (var i = 0; i < nClasses; i++) {
+            var sum = 0.;
+            for (var j = 0; j < nFeatures; j++) {
+                sum += features[i] * this.deltas[j][i];
+            }
+            jll[i] = sum;
+        }
+        for (var i = 0; i < nClasses; i++) {
+            var sum = 0.;
+            for (var j = 0; j < nFeatures; j++) {
+                sum += this.negatives[i][j];
+            }
+            jll[i] += this.priors[i] + sum;
+        }
+        var classIdx = 0;
+
+        for (var i = 0; i < nClasses; i++) {
+            classIdx = jll[i] > jll[classIdx] ? i : classIdx;
+        }
+        return classIdx;
+    };
+
+};
+
+var main = function () {
+    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+        if (process.argv.length - 2 !== {{ n_features }}) {
+            var IllegalArgumentException = function(message) {
+                this.message = message;
+                this.name = "IllegalArgumentException";
+            }
+            throw new IllegalArgumentException("You have to pass {{ n_features }} features.");
+        }
+    }
+
+    // Features:
+    var features = process.argv.slice(2);
+
+    // Model data:
+    {{ priors }}
+    {{ negatives }}
+    {{ deltas }}
+
+    // Estimator:
+    var clf = new {{ class_name }}(priors, negatives, deltas);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": clf.predict(features)
+    }));
+    {% else %}
+    // Get class prediction:
+    var prediction = clf.predict(features);
+    console.log("Predicted class: #" + prediction);
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

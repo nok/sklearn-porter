@@ -573,7 +573,8 @@ class Estimator:
         n_jobs: Optional[Union[bool, int]] = True,
         final_deletion: Optional[bool] = False,
         **kwargs
-    ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray]]:
+    ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray],
+               Tuple[np.ndarray, None]]:
         """
         Make predictions with transpiled estimators locally.
 
@@ -671,9 +672,7 @@ class Estimator:
             cmd = cmd.format(**cmd_args)
             L.info('Compilation command: `{}`'.format(cmd))
 
-            subp_args = dict(
-                shell=True, universal_newlines=True, stderr=STDOUT
-            )
+            subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
             out = call(cmd, **subp_args)
             if int(str(out).strip()) != 0:
                 msg = 'Compilation failed.'
@@ -728,9 +727,14 @@ class Estimator:
                 if path and path.exists():
                     remove(str(path))
 
-        if len(y[0]) == 1:
-            return y[0][0], y[1][0]
-        return y[0], y[1]
+        if len(y) == 1:  # predict
+            if len(y[0]) == 1:
+                return y[0][0], None
+            return y[0], None
+        else:
+            if len(y[0]) == 1:  # predict, predict_proba
+                return y[0][0], y[1][0]
+            return y[0], y[1]
 
     def integrity_score(
         self,
