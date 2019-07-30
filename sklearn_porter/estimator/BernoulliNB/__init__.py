@@ -64,13 +64,9 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         if L.isEnabledFor(DEBUG):
             L.debug('Meta info: {}'.format(self.meta_info))
 
-        negatives = log(1 - exp(est.feature_log_prob_))
-        deltas = (est.feature_log_prob_ - negatives).T
-
         self.model_data = dict(
-            priors=est.class_log_prior_.tolist(),
-            negatives=negatives.tolist(),
-            deltas=deltas.tolist()
+            class_log_prior=est.class_log_prior_.tolist(),
+            feature_log_prob=est.feature_log_prob_.tolist(),
         )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
         if L.isEnabledFor(DEBUG):
@@ -137,7 +133,7 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         tpl_arr_2 = tpls.get_template('arr[][]')
         tpl_in_brackets = tpls.get_template('in_brackets')
 
-        priors_val = self.model_data.get('priors')
+        priors_val = self.model_data.get('class_log_prior')
         priors_val_converted = list(map(converter, priors_val))
         priors_str = tpl_arr_1.render(
             type=tpl_double,
@@ -146,43 +142,25 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             n=len(priors_val)
         )
 
-        deltas_val = self.model_data.get('deltas')
-        deltas_str = tpl_arr_2.render(
+        probs_val = self.model_data.get('feature_log_prob')
+        probs_str = tpl_arr_2.render(
             type=tpl_double,
-            name='deltas',
+            name='probs',
             values=', '.join(
                 list(
                     tpl_in_brackets.render(
                         value=', '.join(list(map(converter, v)))
-                    ) for v in deltas_val
+                    ) for v in probs_val
                 )
             ),
-            n=len(deltas_val),
-            m=len(deltas_val[0])
+            n=len(probs_val),
+            m=len(probs_val[0])
         )
 
-        negatives_val = self.model_data.get('negatives')
-        negatives_str = tpl_arr_2.render(
-            type=tpl_double,
-            name='negatives',
-            values=', '.join(
-                list(
-                    tpl_in_brackets.render(
-                        value=', '.join(list(map(converter, v)))
-                    ) for v in negatives_val
-                )
-            ),
-            n=len(negatives_val),
-            m=len(negatives_val[0])
-        )
-
-        plas.update(
-            dict(
-                priors=priors_str,
-                deltas=deltas_str,
-                negatives=negatives_str,
-            )
-        )
+        plas.update(dict(
+            priors=priors_str,
+            probs=probs_str,
+        ))
 
         tpl_class = tpls.get_template('attached.class')
         out_class = tpl_class.render(**plas)

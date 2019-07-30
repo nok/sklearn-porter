@@ -1,44 +1,75 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-var {{ class_name }} = function(priors, negatives, deltas) {
+var {{ class_name }} = function(priors, probs) {
 
     this.priors = priors;
-    this.negatives = negatives;
-    this.deltas = deltas;
+    this.probs = probs;
 
     var _findMax = function(nums) {
-        var i = 0, l = nums.length, idx = 0;
-        for (; i < l; i++) {
+        var i, l = nums.length, idx = 0;
+        for (i = 0; i < l; i++) {
             idx = nums[i] > nums[idx] ? i : idx;
         }
         return idx;
     };
 
-    var _compute = function(features, priors, negatives, deltas) {
-        var nClasses = priors.length,
-            nFeatures = deltas.length,
-            jll = new Array(nClasses),
-            i, j, sum;
+    var _logSumExp = function(nums) {
+        var i, l = nums.length;
+        var max = Math.max(...nums);
+        var sum = 0.;
+        for (i = 0; i < l; i++) {
+            sum += Math.exp(nums[i] - max);
+        }
+        return max + Math.log(sum);
+    };
+
+    var _compute = function(features, priors, probs) {
+        var i, j, sum;
+        var nClasses = probs.length,
+            nFeatures = probs[0].length;
+        var deltas = new Array(nClasses),
+            jll = new Array(nClasses);
+        for (j = 0; j < nFeatures; j++) {
+            features[j] = features[j] > 0 ? 1 : 0;
+        }
         for (i = 0; i < nClasses; i++) {
-            sum = 0.;
+            deltas[i] = new Array(nFeatures);
+        }
+        for (i = 0; i < nClasses; i++) {
             for (j = 0; j < nFeatures; j++) {
-                sum += features[i] * deltas[j][i];
+                deltas[i][j] = Math.log(1 - Math.exp(probs[i][j]));
             }
-            jll[i] = sum;
+        }
+        for (i = 0; i < nClasses; i++) {
+            jll[i] = 0.;
+        }
+        for (j = 0; j < nFeatures; j++) {
+            for (i = 0; i < nClasses; i++) {
+                jll[i] += features[j] * (probs[i][j] - deltas[i][j]);
+            }
         }
         for (i = 0; i < nClasses; i++) {
             sum = 0.;
             for (j = 0; j < nFeatures; j++) {
-                sum += negatives[i][j];
+                sum += deltas[i][j];
             }
-            jll[i] += priors[i] + sum;
+            jll[i] = jll[i] + priors[i] + sum;
         }
         return jll;
     };
 
     this.predict = function(features) {
-        return _findMax(_compute(features, this.priors, this.negatives, this.deltas));
+        return _findMax(_compute(features, this.priors, this.probs));
+    };
+
+    this.predictProba = function(features) {
+        var jll = _compute(features, this.priors, this.probs);
+        var sum = _logSumExp(jll);
+        for (i = 0; i < jll.length; i++) {
+            jll[i] = Math.exp(jll[i] - sum);
+        }
+        return jll;
     };
 
 };
@@ -62,21 +93,27 @@ var main = function () {
 
     // Model data:
     {{ priors }}
-    {{ negatives }}
-    {{ deltas }}
+    {{ probs }}
 
     // Estimator:
-    var clf = new {{ class_name }}(priors, negatives, deltas);
+    var clf = new {{ class_name }}(priors, probs);
 
     {% if is_test or to_json %}
     // Get JSON:
     console.log(JSON.stringify({
-        "predict": clf.predict(features)
+        "predict": clf.predict(features),
+        "predict_proba": clf.predictProba(features)
     }));
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
     console.log("Predicted class: #" + prediction);
+
+    // Get class probabilities:
+    var probabilities = clf.predictProba(features);
+    for (var i = 0; i < probabilities.length; i++) {
+        console.log("Probability of class #" + i + " : " + probabilities[i]);
+    }
     {% endif %}
 }
 
