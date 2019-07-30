@@ -26,7 +26,16 @@ class {{ class_name }} {
         return idx;
     }
 
-    public int predict(double[] features) {
+    private double logSumExp(double[] nums) {
+        double max = nums[findMax(nums)];
+        double sum = 0.;
+        for (int i = 0 , il = nums.length; i < il; i++) {
+            sum += Math.exp(nums[i] - max);
+        }
+        return max - Math.log(sum);
+    }
+
+    private double[] compute(double[] features) {
         double[] likelihoods = new double[this.sigmas.length];
         for (int i = 0, il = this.sigmas.length; i < il; i++) {
             double sum = 0.;
@@ -41,7 +50,20 @@ class {{ class_name }} {
             nij -= 0.5 * sum;
             likelihoods[i] = Math.log(this.priors[i]) + nij;
         }
-        return findMax(likelihoods);
+        return likelihoods;
+    }
+
+    public int predict(double[] features) {
+        return findMax(compute(features));
+    }
+
+    public double[] predictProba(double[] features) {
+        double[] jll = compute(features);
+        double sum = logSumExp(jll);
+        for (int i = 0, il = jll.length; i < il; i++) {
+            jll[i] = Math.exp(jll[i] - sum);
+        }
+        return jll;
     }
 
     public static void main(String[] args) {
@@ -68,12 +90,19 @@ class {{ class_name }} {
         {% if is_test or to_json %}
         // Get JSON:
         int prediction = clf.predict(features);
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        double[] probabilities = clf.predictProba(features);
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
         {% else %}
         // Get class prediction:
         int prediction = clf.predict(features);
         System.out.println("Predicted class: #" + String.valueOf(prediction));
-        {% endif %}
+
+        // Get class probabilities:
+        double[] probabilities = clf.predictProba(features);
+        for (int i = 0; i < probabilities.length; i++) {
+            System.out.println("Probability of class #" + i + " : " + String.valueOf(probabilities[i]));
+        }
+		    {% endif %}
 
     }
 }
