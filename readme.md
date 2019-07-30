@@ -287,23 +287,23 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td align="left">
       <a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
     </td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
     <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
     <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
     <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
     <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
     <td></td>
   </tr>
   <tr align="center">
