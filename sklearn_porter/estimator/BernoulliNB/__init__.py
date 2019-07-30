@@ -5,8 +5,6 @@ from json import dumps, encoder
 from logging import DEBUG
 from typing import Optional, Tuple, Union
 
-from numpy import exp, log
-
 # scikit-learn
 from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
 from sklearn_porter.enums import Language, Method, Template
@@ -65,8 +63,8 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             L.debug('Meta info: {}'.format(self.meta_info))
 
         self.model_data = dict(
-            class_log_prior=est.class_log_prior_.tolist(),
-            feature_log_prob=est.feature_log_prob_.tolist(),
+            priors=est.class_log_prior_.tolist(),  # class_log_prior
+            probs=est.feature_log_prob_.tolist(),  # feature_log_prob
         )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
         if L.isEnabledFor(DEBUG):
@@ -133,7 +131,7 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         tpl_arr_2 = tpls.get_template('arr[][]')
         tpl_in_brackets = tpls.get_template('in_brackets')
 
-        priors_val = self.model_data.get('class_log_prior')
+        priors_val = self.model_data.get('priors')
         priors_val_converted = list(map(converter, priors_val))
         priors_str = tpl_arr_1.render(
             type=tpl_double,
@@ -142,7 +140,7 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             n=len(priors_val)
         )
 
-        probs_val = self.model_data.get('feature_log_prob')
+        probs_val = self.model_data.get('probs')
         probs_str = tpl_arr_2.render(
             type=tpl_double,
             name='probs',

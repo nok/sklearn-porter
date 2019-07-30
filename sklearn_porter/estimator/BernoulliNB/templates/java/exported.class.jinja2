@@ -13,8 +13,7 @@ class {{ class_name }} {
 
     private class Classifier {
         private double[] priors;
-        private double[][] negatives;
-        private double[][] deltas;
+        private double[][] probs;
     }
 
     private Classifier clf;
@@ -24,34 +23,78 @@ class {{ class_name }} {
         this.clf = new Gson().fromJson(jsonStr, Classifier.class);
     }
 
-    public int predict(double[] features) {
-        int nClasses = this.clf.priors.length;
-        int nFeatures = this.clf.deltas.length;
+    private int findMax(double[] nums) {
+        int i = 0, l = nums.length, idx = 0;
+        for (i = 0; i < l; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
 
+    private double logSumExp(double[] nums) {
+        double max = nums[findMax(nums)];
+        double sum = 0.;
+        for (int i = 0 , il = nums.length; i < il; i++) {
+            sum += Math.exp(nums[i] - max);
+        }
+        return max - Math.log(sum);
+    }
+
+    private double[] compute(double[] features) {
+        int nClasses = this.clf.probs.length;
+        int nFeatures = this.clf.probs[0].length;
+
+        double[][] deltas = new double[nClasses][nFeatures];
         double[] jll = new double[nClasses];
-        for (int i = 0; i < nClasses; i++) {
-            double sum = 0.;
-            for (int j = 0; j < nFeatures; j++) {
-                sum += features[i] * this.clf.deltas[j][i];
-            }
-            jll[i] = sum;
-        }
-        for (int i = 0; i < nClasses; i++) {
-            double sum = 0.;
-            for (int j = 0; j < nFeatures; j++) {
-                sum += this.clf.negatives[i][j];
-            }
-            jll[i] += this.clf.priors[i] + sum;
-        }
 
-        int classIndex = 0;
-        for (int i = 0; i < nClasses; i++) {
-            classIndex = jll[i] > jll[classIndex] ? i : classIndex;
+        int i, j;
+        double sum;
+
+        for (j = 0; j < nFeatures; j++) {
+            features[j] = features[j] > 0 ? 1 : 0;
         }
-        return classIndex;
+        for (i = 0; i < nClasses; i++) {
+            for (j = 0; j < nFeatures; j++) {
+                deltas[i][j] = Math.log(1 - Math.exp(this.clf.probs[i][j]));
+            }
+        }
+        for (i = 0; i < nClasses; i++) {
+            jll[i] = 0.;
+        }
+        for (j = 0; j < nFeatures; j++) {
+            for (i = 0; i < nClasses; i++) {
+                jll[i] += features[j] * (this.clf.probs[i][j] - deltas[i][j]);
+            }
+        }
+        for (i = 0; i < nClasses; i++) {
+            sum = 0.;
+            for (j = 0; j < nFeatures; j++) {
+                sum += deltas[i][j];
+            }
+            jll[i] = jll[i] + this.clf.priors[i] + sum;
+        }
+        return jll;
+    }
+
+    public int predict(double[] features) {
+        return findMax(compute(features));
+    }
+
+    public double[] predictProba(double[] features) {
+        double[] jll = compute(features);
+        double sum = logSumExp(jll);
+        for (int i = 0, il = jll.length; i < il; i++) {
+            jll[i] = Math.exp(jll[i] - sum);
+        }
+        return jll;
     }
 
     public static void main(String[] args) throws FileNotFoundException {
+
+        int nFeatures = {{ n_features }};
+        if (args.length != (nFeatures + 1) || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data and " +  String.valueOf(nFeatures) + " features.");
+        }
 
         // Features:
         double[] features = new double[args.length-1];
@@ -68,12 +111,19 @@ class {{ class_name }} {
         {% if is_test or to_json %}
         // Get JSON:
         int prediction = clf.predict(features);
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        double[] probabilities = clf.predictProba(features);
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
         {% else %}
         // Get class prediction:
         int prediction = clf.predict(features);
         System.out.println("Predicted class: #" + String.valueOf(prediction));
-        {% endif %}
+
+        // Get class probabilities:
+        double[] probabilities = clf.predictProba(features);
+        for (int i = 0; i < probabilities.length; i++) {
+            System.out.println("Probability of class #" + i + " : " + String.valueOf(probabilities[i]));
+        }
+		    {% endif %}
 
     }
 }
