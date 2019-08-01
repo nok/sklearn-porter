@@ -695,7 +695,10 @@ class Estimator:
         L.info('Execution command: `{}`'.format(cmd))
 
         # Model data:
-        json_path = ' ' if not data_path else ' ' + str(data_path) + ' '
+        if template is Template.EXPORTED and language is Language.JS:
+            json_path = ' http://0.0.0.0:80/' + data_path.name + ' '
+        else:
+            json_path = ' ' if not data_path else ' ' + str(data_path) + ' '
 
         # Features:
         if not isinstance(x, np.ndarray):
