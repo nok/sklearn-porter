@@ -1,0 +1,136 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+if (typeof XMLHttpRequest === 'undefined') {
+    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+}
+
+var {{ class_name }} = function(jsonFile) {
+    this.data = undefined;
+
+    var Neighbor = function(y, dist) {
+        this.y = y;
+        this.dist = dist;
+    };
+
+    var promise = new Promise(function(resolve, reject) {
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function() {
+            if (httpRequest.readyState === 4) {
+                if (httpRequest.status === 200) {
+                    resolve(JSON.parse(httpRequest.responseText));
+                } else {
+                    reject(new Error(httpRequest.statusText));
+                }
+            }
+        };
+        httpRequest.open('GET', jsonFile, true);
+        httpRequest.send();
+    });
+
+    var compute = function(temp, cand, q) {
+        var dist = 0.,
+            diff;
+        for (var i = 0, l = temp.length; i < l; i++) {
+            diff = Math.abs(temp[i] - cand[i]);
+            if (q==1) {
+                dist += diff;
+            } else if (q==2) {
+                dist += diff*diff;
+            } else if (q==Number.POSITIVE_INFINITY) {
+                if (diff > dist) {
+                    dist = diff;
+                }
+            } else {
+                dist += Math.pow(diff, q);
+            }
+        }
+        if (q==1 || q==Number.POSITIVE_INFINITY) {
+            return dist;
+        } else if (q==2) {
+            return Math.sqrt(dist);
+        } else {
+            return Math.pow(dist, 1. / q);
+        }
+    };
+
+    this.predict = function(features) {
+        return new Promise(function(resolve, reject) {
+            promise.then(function(data) {
+                if (typeof this.data === 'undefined') {
+                    this.data = data;
+                    this.size = this.data.X.length;
+                }
+                var classIdx = 0, i, dist;
+                if (this.data.nNeighbors === 1) {
+                    var minDist = Number.POSITIVE_INFINITY;
+                    for (i = 0; i < this.data.size; i++) {
+                        dist = compute(this.data.X[i], features, this.data.power);
+                        if (dist <= minDist) {
+                            minDist = dist;
+                            classIdx = this.data.y[i];
+                        }
+                    }
+                } else {
+                    var classes = new Array(this.data.n).fill(0);
+                    var dists = [];
+                    for (i = 0; i < this.size; i++) {
+                        dist = compute(this.data.X[i], features, this.data.power);
+                        dists.push(new Neighbor(this.data.y[i], dist));
+                    }
+                    dists.sort(function compare(n1, n2) {
+                        return (n1.dist < n2.dist) ? -1 : 1;
+                    });
+                    for (i = 0; i < this.data.k; i++) {
+                        classes[dists[i].y]++;
+                    }
+                    for (i = 0; i < this.data.n; i++) {
+                        classIdx = classes[i] > classes[classIdx] ? i : classIdx;
+                    }
+                }
+                resolve(classIdx);
+            }, function(error) {
+                reject(error);
+            });
+        });
+    };
+
+};
+
+
+var main = function () {
+    // Features:
+    var features = process.argv.slice(3);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    var json = process.argv[2];
+
+    // Estimator:
+    var clf = new {{ class_name }}(json);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    clf.predict(features).then(function(prediction) {
+        console.log(JSON.stringify({
+            "predict": prediction
+        }));
+    }).catch(function(error) {
+        console.log(error);
+    });
+    {% else %}
+    // Get class prediction:
+    clf.predict(features).then(function(prediction) {
+        console.log("Predicted class: #" + prediction);
+    }).catch(function(error) {
+        console.log(error);
+    });
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

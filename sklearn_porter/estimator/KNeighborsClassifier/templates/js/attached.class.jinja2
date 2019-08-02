@@ -1,0 +1,117 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+var {{ class_name }} = function(X, y, k, n, power) {
+
+    this.X = X;
+    this.y = y;
+    this.k = k;
+    this.n = n;
+    this.power = power;
+
+    var Neighbor = function(clazz, dist) {
+        this.clazz = clazz;
+        this.dist = dist;
+    };
+
+    // Compute minkowski distance:
+    var compute = function(temp, cand, q) {
+        var dist = 0.,
+            diff;
+        for (var i = 0, l = temp.length; i < l; i++) {
+            diff = Math.abs(temp[i] - cand[i]);
+            if (q === 1) {
+                dist += diff;
+            } else if (q === 2) {
+                dist += diff*diff;
+            } else if (q === Number.POSITIVE_INFINITY) {
+                if (diff > dist) {
+                    dist = diff;
+                }
+            } else {
+                dist += Math.pow(diff, q);
+            }
+        }
+        if (q === 1 || q === Number.POSITIVE_INFINITY) {
+            return dist;
+        } else if (q === 2) {
+            return Math.sqrt(dist);
+        } else {
+            return Math.pow(dist, 1. / q);
+        }
+    };
+
+    this.predict = function(features) {
+        var classIdx = 0, i;
+        if (this.k === 1) {
+            var minDist = Number.POSITIVE_INFINITY,
+                curDist;
+            for (i = 0; i < this.y.length; i++) {
+                curDist = compute(this.X[i], features, this.power);
+                if (curDist <= minDist) {
+                    minDist = curDist;
+                    classIdx = this.y[i];
+                }
+            }
+        } else {
+            var classes = new Array(this.n).fill(0);
+            var dists = [];
+            for (i = 0; i < this.y.length; i++) {
+                dists.push(new Neighbor(this.y[i], compute(this.X[i], features, this.power)));
+            }
+            dists.sort(function compare(n1, n2) {
+                return (n1.dist < n2.dist) ? -1 : 1;
+            });
+            for (i = 0; i < this.k; i++) {
+                classes[dists[i].clazz]++;
+            }
+            for (i = 0; i < this.n; i++) {
+                classIdx = classes[i] > classes[classIdx] ? i : classIdx;
+            }
+        }
+        return classIdx;
+    };
+
+};
+
+var main = function () {
+    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+        if (process.argv.length - 2 !== {{ n_features }}) {
+            var IllegalArgumentException = function(message) {
+                this.message = message;
+                this.name = "IllegalArgumentException";
+            }
+            throw new IllegalArgumentException("You have to pass {{ n_features }} features.");
+        }
+    }
+
+    // Features:
+    var features = process.argv.slice(2);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    {{ X }}
+    {{ y }}
+
+    // Estimator:
+    var clf = new {{ class_name }}(X, y, {{ k }}, {{ n }}, {{ power }});
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": clf.predict(features)
+    }));
+    {% else %}
+    // Get class prediction:
+    var prediction = clf.predict(features);
+    console.log("Predicted class: #" + prediction);
+    {% endif %}
+
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}
