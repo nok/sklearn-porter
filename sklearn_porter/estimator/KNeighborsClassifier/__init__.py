@@ -3,7 +3,6 @@
 from copy import deepcopy
 from json import dumps, encoder
 from logging import DEBUG
-from textwrap import indent
 from typing import Optional, Tuple, Union
 
 # scikit-learn
