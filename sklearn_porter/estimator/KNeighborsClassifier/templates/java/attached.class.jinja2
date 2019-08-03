@@ -1,0 +1,127 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+
+
+class {{ class_name }} {
+
+    private double[][] X;
+    private int[] y;
+    private int k;
+    private int n;
+    private double power;
+
+    public {{ class_name }}(double[][] X, int[] y, int k, int n, double power) {
+        this.X = X;
+        this.y = y;
+        this.k = k;
+        this.n = n;
+        this.power = power;
+    }
+
+    private static class Neighbor {
+        Integer clazz;
+        Double dist;
+
+        public Neighbor(int clazz, double dist) {
+            this.clazz = clazz;
+            this.dist = dist;
+        }
+    }
+
+    private static double compute(double[] temp, double[] cand, double q) {
+        double dist = 0.;
+        double diff;
+        for (int i = 0, l = temp.length; i < l; i++) {
+            diff = Math.abs(temp[i] - cand[i]);
+            if (q == 1) {
+                dist += diff;
+            } else if (q == 2) {
+                dist += diff * diff;
+            } else if (q == Double.POSITIVE_INFINITY) {
+                if (diff > dist) {
+                    dist = diff;
+                }
+            } else {
+                dist += Math.pow(diff, q);
+            }
+        }
+        if (q == 1 || q == Double.POSITIVE_INFINITY) {
+            return dist;
+        } else if (q == 2) {
+            return Math.sqrt(dist);
+        } else {
+            return Math.pow(dist, 1. / q);
+        }
+    }
+
+    public int predict(double[] features) {
+        int classIdx = 0;
+        if (this.k == 1) {
+            double minDist = Double.POSITIVE_INFINITY;
+            double curDist;
+            for (int i = 0; i < this.y.length; i++) {
+                curDist = {{ class_name }}.compute(this.X[i], features, this.power);
+                if (curDist <= minDist) {
+                    minDist = curDist;
+                    classIdx = y[i];
+                }
+            }
+        } else {
+            int[] classes = new int[this.n];
+            ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
+            for (int i = 0; i < this.y.length; i++) {
+                dists.add(new Neighbor(y[i], {{ class_name }}.compute(this.X[i], features, this.power)));
+            }
+            Collections.sort(dists, new Comparator<Neighbor>() {
+                @Override
+                public int compare(Neighbor n1, Neighbor n2) {
+                    return n1.dist.compareTo(n2.dist);
+                }
+            });
+            for (Neighbor neighbor : dists.subList(0, this.k)) {
+                classes[neighbor.clazz]++;
+            }
+            for (int i = 0; i < this.n; i++) {
+                classIdx = classes[i] > classes[classIdx] ? i : classIdx;
+            }
+        }
+        return classIdx;
+    }
+
+    public static void main(String[] args) {
+
+        int nFeatures = {{ n_features }};
+        if (args.length != nFeatures) {
+            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
+        }
+
+        // Features:
+        double[] features = new double[args.length];
+        for (int i = 0, l = args.length; i < l; i++) {
+            features[i] = Double.parseDouble(args[i]);
+        }
+
+        // Model data:
+        {{ X }}
+        {{ y }}
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(X, y, {{ k }}, {{ n }}, {{ power }});
+
+        {% if is_test or to_json %}
+        // Get JSON:
+        int prediction = clf.predict(features);
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        {% else %}
+        // Get class prediction:
+        int prediction = clf.predict(features);
+        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {% endif %}
+
+    }
+}
+{% endblock %}
