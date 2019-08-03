@@ -28,16 +28,16 @@ var {{ class_name }} = function(jsonFile) {
         httpRequest.send();
     });
 
-    var compute = function(temp, cand, q) {
+    var compute = function(temp, cand, q) {  // minkowski distance
         var dist = 0.,
             diff;
         for (var i = 0, l = temp.length; i < l; i++) {
             diff = Math.abs(temp[i] - cand[i]);
-            if (q==1) {
+            if (q === 1) {
                 dist += diff;
-            } else if (q==2) {
+            } else if (q === 2) {
                 dist += diff*diff;
-            } else if (q==Number.POSITIVE_INFINITY) {
+            } else if (q === Number.POSITIVE_INFINITY) {
                 if (diff > dist) {
                     dist = diff;
                 }
@@ -45,9 +45,9 @@ var {{ class_name }} = function(jsonFile) {
                 dist += Math.pow(diff, q);
             }
         }
-        if (q==1 || q==Number.POSITIVE_INFINITY) {
+        if (q === 1 || q === Number.POSITIVE_INFINITY) {
             return dist;
-        } else if (q==2) {
+        } else if (q === 2) {
             return Math.sqrt(dist);
         } else {
             return Math.pow(dist, 1. / q);
@@ -96,7 +96,6 @@ var {{ class_name }} = function(jsonFile) {
     };
 
 };
-
 
 var main = function () {
     // Features:

@@ -14,8 +14,7 @@ var {{ class_name }} = function(X, y, k, n, power) {
         this.dist = dist;
     };
 
-    // Compute minkowski distance:
-    var compute = function(temp, cand, q) {
+    var compute = function(temp, cand, q) {  // minkowski distance
         var dist = 0.,
             diff;
         for (var i = 0, l = temp.length; i < l; i++) {
