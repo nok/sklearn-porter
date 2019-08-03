@@ -110,10 +110,10 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td>✓ᴾ</td>
-    <td></td>
+    <td>-</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
-    <td></td>
+    <td>-</td>
     <td></td>
     <td></td>
     <td></td>
@@ -133,10 +133,10 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td>✓ᴾ</td>
-    <td></td>
+    <td>-</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
-    <td></td>
+    <td>-</td>
     <td></td>
     <td></td>
     <td></td>
@@ -158,9 +158,9 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td></td>
-    <td>✓</td>
-    <td></td>
-    <td>✓</td>
+    <td>✓ᴾ</td>
+    <td>-</td>
+    <td>✓ᴾ</td>
     <td></td>
     <td></td>
     <td></td>
@@ -333,7 +333,7 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
   </tr>
 </table>
 
-✓ = support of `predict`,　ᴾ = support of `predict_proba`<br>
+✓ = support of `predict`,　ᴾ = support of `predict_proba`,　x = no support,　- = not feasible<br>
 ᴀ = attached model data,　ᴄ = combined model data (not recommended),　ᴇ = exported model data (JSON)
 
 ---

@@ -13,6 +13,14 @@ var {{ class_name }} = function(jsonFile) {
         this.dist = dist;
     };
 
+    var findMax = function(nums) {
+        var i = 0, l = nums.length, idx = 0;
+        for (; i < l; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    };
+
     var promise = new Promise(function(resolve, reject) {
         var httpRequest = new XMLHttpRequest();
         httpRequest.onreadystatechange = function() {
@@ -29,8 +37,7 @@ var {{ class_name }} = function(jsonFile) {
     });
 
     var compute = function(temp, cand, q) {  // minkowski distance
-        var dist = 0.,
-            diff;
+        var dist = 0., diff;
         for (var i = 0, l = temp.length; i < l; i++) {
             diff = Math.abs(temp[i] - cand[i]);
             if (q === 1) {
@@ -55,40 +62,83 @@ var {{ class_name }} = function(jsonFile) {
     };
 
     this.predict = function(features) {
+        var that = this;
         return new Promise(function(resolve, reject) {
             promise.then(function(data) {
-                if (typeof this.data === 'undefined') {
-                    this.data = data;
-                    this.size = this.data.X.length;
+                if (typeof that.data === 'undefined') {
+                    that.data = data;
+                    that.size = that.data.X.length;
                 }
                 var classIdx = 0, i, dist;
-                if (this.data.nNeighbors === 1) {
+                if (that.data.nNeighbors === 1) {
                     var minDist = Number.POSITIVE_INFINITY;
-                    for (i = 0; i < this.data.size; i++) {
-                        dist = compute(this.data.X[i], features, this.data.power);
+                    for (i = 0; i < that.data.size; i++) {
+                        dist = compute(that.data.X[i], features, that.data.power);
                         if (dist <= minDist) {
                             minDist = dist;
-                            classIdx = this.data.y[i];
+                            classIdx = that.data.y[i];
                         }
                     }
                 } else {
-                    var classes = new Array(this.data.n).fill(0);
+                    var classes = new Array(that.data.n).fill(0);
                     var dists = [];
-                    for (i = 0; i < this.size; i++) {
-                        dist = compute(this.data.X[i], features, this.data.power);
-                        dists.push(new Neighbor(this.data.y[i], dist));
+                    for (i = 0; i < that.size; i++) {
+                        dist = compute(that.data.X[i], features, that.data.power);
+                        dists.push(new Neighbor(that.data.y[i], dist));
                     }
                     dists.sort(function compare(n1, n2) {
                         return (n1.dist < n2.dist) ? -1 : 1;
                     });
-                    for (i = 0; i < this.data.k; i++) {
+                    for (i = 0; i < that.data.k; i++) {
                         classes[dists[i].y]++;
                     }
-                    for (i = 0; i < this.data.n; i++) {
-                        classIdx = classes[i] > classes[classIdx] ? i : classIdx;
-                    }
+                    classIdx = findMax(classes);
                 }
                 resolve(classIdx);
+            }, function(error) {
+                reject(error);
+            });
+        });
+    };
+
+    this.predictProba = function(features) {
+        var that = this;
+        return new Promise(function(resolve, reject) {
+            promise.then(function(data) {
+                if (typeof that.data === 'undefined') {
+                    that.data = data;
+                    that.size = that.data.X.length;
+                }
+                var classProbas = new Array(that.data.n).fill(0);
+                var classIdx = 0, i, dist;
+
+                if (that.data.nNeighbors === 1) {
+                    var minDist = Number.POSITIVE_INFINITY;
+                    for (i = 0; i < that.data.size; i++) {
+                        dist = compute(that.data.X[i], features, that.data.power);
+                        if (dist <= minDist) {
+                            minDist = dist;
+                            classIdx = that.data.y[i];
+                        }
+                    }
+                    classProbas[classIdx] = 1;
+                } else {
+                    var dists = [];
+                    for (i = 0; i < that.size; i++) {
+                        dist = compute(that.data.X[i], features, that.data.power);
+                        dists.push(new Neighbor(that.data.y[i], dist));
+                    }
+                    dists.sort(function compare(n1, n2) {
+                        return (n1.dist < n2.dist) ? -1 : 1;
+                    });
+                    for (i = 0; i < that.data.k; i++) {
+                        classProbas[dists[i].y] += 1;
+                    }
+                    for (i = 0; i < that.data.n; i++) {
+                        classProbas[i] /= that.data.k;
+                    }
+                }
+                resolve(classProbas);
             }, function(error) {
                 reject(error);
             });
@@ -112,9 +162,13 @@ var main = function () {
 
     {% if is_test or to_json %}
     // Get JSON:
-    clf.predict(features).then(function(prediction) {
+    Promise.all([
+        clf.predict(features),
+        clf.predictProba(features)
+    ]).then(function(vals) {
         console.log(JSON.stringify({
-            "predict": prediction
+            "predict": vals[0],
+            "predict_proba": vals[1]
         }));
     }).catch(function(error) {
         console.log(error);
@@ -123,6 +177,15 @@ var main = function () {
     // Get class prediction:
     clf.predict(features).then(function(prediction) {
         console.log("Predicted class: #" + prediction);
+    }).catch(function(error) {
+        console.log(error);
+    });
+
+    // Get class prediction:
+    clf.predictProba(features).then(function(probabilities) {
+        for (var i = 0; i < probabilities.length; i++) {
+            console.log("Probability of class #" + i + " : " + probabilities[i]);
+        }
     }).catch(function(error) {
         console.log(error);
     });
