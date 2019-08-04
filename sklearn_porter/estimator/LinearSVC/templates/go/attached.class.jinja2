@@ -1,0 +1,102 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+{% if is_binary %}
+import (
+	{% if is_test or to_json %}
+	"encoding/json"
+	{% endif %}
+	"fmt"
+	"os"
+	"strconv"
+)
+
+type {{ class_name }} struct {
+	coeffs []float64
+	inters float64
+}
+{% else %}
+import (
+	{% if is_test or to_json %}
+	"encoding/json"
+	{% endif %}
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+)
+
+type {{ class_name }} struct {
+	coeffs [][]float64
+	inters []float64
+}
+{% endif %}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict int `json:"predict"`
+}
+{% endif %}
+
+{% if is_binary %}
+func (svc {{ class_name }}) Predict(features []float64) int {
+	var prob float64
+	for i := 0; i < len(svc.coeffs); i++ {
+		prob = prob + svc.coeffs[i] * features[i]
+	}
+	if (prob + svc.inters) > 0 {
+		return 1
+	}
+	return 0
+}
+{% else %}
+func (svc {{ class_name }}) Predict(features []float64) int {
+	classIdx := 0
+	classVal := math.Inf(-1)
+	outerCount, innerCount := len(svc.coeffs), len(svc.coeffs[0])
+	for i := 0; i < outerCount; i++ {
+		var prob float64
+		for j := 0; j < innerCount; j++ {
+			prob = prob + svc.coeffs[i][j] * features[j]
+		}
+		if prob + svc.inters[i] > classVal {
+			classVal = prob + svc.inters[i]
+			classIdx = i
+		}
+	}
+	return classIdx
+}
+{% endif %}
+
+func main() {
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[1:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	// Model data:
+	{{ coeffs }}
+	{{ inters }}
+
+	// Estimator:
+	clf := {{ class_name }}{coeffs, inters}
+
+	{% if is_test or to_json %}
+	// Get JSON:
+	prediction := clf.Predict(features)
+	res, _ := json.Marshal(&Response{Predict: prediction})
+	fmt.Println(string(res))
+	{% else %}
+	// Get class prediction:
+	prediction := clf.Predict(features)
+	fmt.Printf("Predicted class: #%d\n", prediction)
+	{% endif %}
+
+}
+{% endblock %}
