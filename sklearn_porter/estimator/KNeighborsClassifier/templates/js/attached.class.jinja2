@@ -48,32 +48,8 @@ var {{ class_name }} = function(X, y, k, n, power) {
     };
 
     this.predict = function(features) {
-        var classIdx = 0, dist, i;
-        if (this.k === 1) {
-            var minDist = Number.POSITIVE_INFINITY;
-            for (i = 0; i < this.y.length; i++) {
-                dist = compute(this.X[i], features, this.power);
-                if (dist <= minDist) {
-                    minDist = dist;
-                    classIdx = this.y[i];
-                }
-            }
-        } else {
-            var classes = new Array(this.n).fill(0);
-            var dists = [];
-            for (i = 0; i < this.y.length; i++) {
-                dist = compute(this.X[i], features, this.power);
-                dists.push(new Neighbor(this.y[i], dist));
-            }
-            dists.sort(function compare(n1, n2) {
-                return (n1.dist < n2.dist) ? -1 : 1;
-            });
-            for (i = 0; i < this.k; i++) {
-                classes[dists[i].y]++;
-            }
-            classIdx = findMax(classes);
-        }
-        return classIdx;
+        var classProbas = this.predictProba(features);
+        return findMax(classProbas);
     };
 
     this.predictProba = function(features) {
