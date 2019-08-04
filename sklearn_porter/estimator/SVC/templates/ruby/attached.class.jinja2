@@ -1,0 +1,177 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def initialize (vectors, coeffs, inters, weights, kernel, gamma, coef0, degree)
+		@n_classes = weights.length
+		@classes = Array.new(@n_classes)
+		for i in 0 ... @n_classes
+			@classes[i] = i
+		end
+
+		@vectors = vectors
+		@coeffs = coeffs
+		@inters = inters
+		@weights = weights
+
+		@kernel = kernel.upcase
+		@gamma = gamma
+		@coef0 = coef0
+		@degree = degree
+	end
+
+	def predict (features)
+
+		kernels = Array.new(@vectors.length)
+		case @kernel
+		when "LINEAR"
+			for i in 0 ... @vectors.length
+				kernel = 0
+				for j in 0 ... @vectors[i].length
+					kernel += @vectors[i][j] * features[j]
+				end
+				kernels[i] = kernel
+			end
+		when 'POLY'
+			for i in 0 ... @vectors.length
+				kernel = 0
+				for j in 0 ... @vectors[i].length
+					kernel += @vectors[i][j] * features[j]
+				end
+				kernels[i] = (((@gamma * kernel) + @coef0) ** @degree)
+			end
+		when "RBF"
+			for i in 0 ... @vectors.length
+				kernel = 0
+				for j in 0 ... @vectors[i].length
+					kernel += ((@vectors[i][j] - features[j]) ** 2)
+				end
+				kernels[i] = Math.exp(-@gamma * kernel)
+			end
+		when 'SIGMOID'
+			for i in 0 ... @vectors.length
+				kernel = 0
+				for j in 0 ... @vectors[i].length
+					kernel += @vectors[i][j] * features[j]
+				end
+				kernels[i] = Math.tanh((@gamma * kernel) + @coef0)
+			end
+		end
+
+		starts = Array.new(@weights.length, 0)
+		for i in 0 ... @weights.length
+			if i != 0
+				start = 0
+				for j in 0 ... i
+					start += @weights[j]
+				end
+				starts[i] = start
+			else
+				starts[0] = 0
+			end
+		end
+
+		ends = Array.new(@weights.length, 0)
+		for i in 0 ... @weights.length
+			ends[i] = @weights[i] + starts[i]
+		end
+
+		if @n_classes == 2
+
+			for i in 0 ... kernels.length
+				kernels[i] = -kernels[i]
+			end
+
+			decision = 0
+			for k in starts[1] ... ends[1]
+				decision += kernels[k] * @coeffs[0][k]
+			end
+			for k in starts[0] ... ends[0]
+				decision += kernels[k] * @coeffs[0][k]
+			end
+			decision += @inters[0];
+
+			if decision > 0
+				return 0
+			end
+			return 1
+
+		end
+
+		decisions = Array.new(@inters.length, 0)
+		d = 0
+		for i in 0 ... @weights.length
+			for j in i + 1 ... @weights.length
+				tmp = 0
+				for k in starts[j] ... ends[j]
+					tmp += @coeffs[i][k] * kernels[k]
+				end
+				for k in starts[i] ... ends[i]
+					tmp += @coeffs[j - 1][k] * kernels[k]
+				end
+				decisions[d] = tmp + @inters[d]
+				d = d + 1
+			end
+		end
+
+		votes = Array.new(@inters.length, 0)
+		d = 0
+		for i in 0 ... @weights.length
+			for j in i + 1 ... @weights.length
+				votes[d] = decisions[d] > 0 ? i : j
+				d = d + 1
+			end
+		end
+
+		amounts = Array.new(@n_classes, 0)
+		for i in 0 ... votes.length
+			amounts[votes[i]] += 1
+		end
+
+		class_val = -1
+		class_idx = -1
+		for i in 0 ... amounts.length
+			if amounts[i] > class_val
+					class_val = amounts[i]
+					class_idx = i
+			end
+		end
+		@classes[class_idx]
+
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ vectors }}
+	{{ coeffs }}
+	{{ inters }}
+	{{ weights }}
+
+	# Estimator:
+	clf = {{ class_name }}.new vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = clf.predict features
+	puts JSON.generate({:predict => prediction})
+	{% else %}
+	# Get class prediction:
+	prediction = clf.predict features
+	puts "Predicted class: ##{prediction}"
+	{% endif %}
+end
+{% endblock %}
