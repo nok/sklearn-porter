@@ -110,11 +110,11 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td>✓ᴾ</td>
-    <td>-</td>
     <td>✓ᴾ</td>
+    <td>×</td>
     <td>✓ᴾ</td>
-    <td>-</td>
     <td></td>
+    <td>×</td>
     <td></td>
     <td></td>
     <td></td>
@@ -133,11 +133,11 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td>✓ᴾ</td>
-    <td>-</td>
     <td>✓ᴾ</td>
+    <td>×</td>
     <td>✓ᴾ</td>
-    <td>-</td>
     <td></td>
+    <td>×</td>
     <td></td>
     <td></td>
     <td></td>
@@ -156,11 +156,11 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td>✓ᴾ</td>
-    <td>-</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
-    <td>-</td>
-    <td>✓ᴾ</td>
+    <td>×</td>
     <td></td>
     <td></td>
     <td></td>
@@ -228,8 +228,8 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td>✓</td>
-    <td>-</td>
     <td></td>
+    <td>×</td>
     <td></td>
     <td></td>
     <td></td>
@@ -288,7 +288,6 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
       <a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
     </td>
     <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
     <td></td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
@@ -305,27 +304,28 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td></td>
+    <td>✓ᴾ</td>
   </tr>
   <tr align="center">
     <td></td>
     <td>ᴀ</td>
-    <td>ᴄ</td>
     <td>ᴇ</td>
+    <td>ᴄ</td>
     <td>ᴀ</td>
-    <td>ᴄ</td>
     <td>ᴇ</td>
+    <td>ᴄ</td>
     <td>ᴀ</td>
-    <td>ᴄ</td>
     <td>ᴇ</td>
+    <td>ᴄ</td>
     <td>ᴀ</td>
-    <td>ᴄ</td>
     <td>ᴇ</td>
+    <td>ᴄ</td>
     <td>ᴀ</td>
-    <td>ᴄ</td>
     <td>ᴇ</td>
+    <td>ᴄ</td>
     <td>ᴀ</td>
-    <td>ᴄ</td>
     <td>ᴇ</td>
+    <td>ᴄ</td>
   </tr>
   <tr>
     <th></th>
@@ -333,8 +333,8 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
   </tr>
 </table>
 
-✓ = support of `predict`,　ᴾ = support of `predict_proba`,　x = no support,　- = not feasible<br>
-ᴀ = attached model data,　ᴄ = combined model data (not recommended),　ᴇ = exported model data (JSON)
+✓ = support of `predict`,　ᴾ = support of `predict_proba`,　x = not supported or feasible<br>
+ᴀ = attached model data,　ᴇ = exported model data (JSON),　ᴄ = combined model data (not recommended)
 
 ---
 
