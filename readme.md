@@ -227,8 +227,8 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td></td>
-    <td></td>
-    <td></td>
+    <td>✓</td>
+    <td>-</td>
     <td></td>
     <td></td>
     <td></td>
@@ -614,12 +614,6 @@ For instance the result can be minified by using [UglifyJS](https://github.com/m
 ```bash
 $ porter estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
 ```
-
-
-## Limitations
-
-- Java
-    - A single method in a Java class may be at most 64KB of bytecode. Otherwise an `AssertionError` exception will be raised. It can be relevant for the `KNeighborsClassifier` estimator with the `attached` template in combination.
 
 
 ## Development
