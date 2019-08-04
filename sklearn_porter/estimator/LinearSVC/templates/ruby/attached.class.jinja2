@@ -1,0 +1,71 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def initialize (coeffs, inters)
+		@coeffs = coeffs
+		@inters = inters
+	end
+
+	{% if is_binary %}
+	def predict (features)
+		prob = 0
+		for i in 0 ... @coeffs.length
+			prob += @coeffs[i] * features[i].to_f
+		end
+		if prob + @inters > 0
+			return 1
+		end
+		return 0
+	end
+	{% else %}
+	def predict (features)
+		class_val = -1.0/0.0
+		class_idx = -1
+		for i in 0 ... @inters.length
+			prob = 0
+			for j in 0 ... @coeffs[i].length
+				prob += @coeffs[i][j] * features[j].to_f
+			end
+			if prob + @inters[i] > class_val
+				class_val = prob + @inters[i]
+				class_idx = i
+			end
+		end
+		class_idx
+	end
+	{% endif %}
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ coeffs }}
+	{{ inters }}
+
+	# Estimator:
+	clf = {{ class_name }}.new coeffs, inters
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = clf.predict features
+	puts JSON.generate({:predict => prediction})
+	{% else %}
+	# Get class prediction:
+	prediction = clf.predict features
+	puts "Predicted class: ##{prediction}"
+	{% endif %}
+end
+{% endblock %}

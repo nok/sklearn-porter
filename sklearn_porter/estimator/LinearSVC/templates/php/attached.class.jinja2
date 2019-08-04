@@ -8,7 +8,7 @@ class {{ class_name }} {
         $this->inters = $inters;
     }
 
-    {% if isbinary %}
+    {% if is_binary %}
     public function predict($features) {
         $prob = 0.;
         for ($i = 0, $il = count($this->coeffs); $i < $il; $i++) {

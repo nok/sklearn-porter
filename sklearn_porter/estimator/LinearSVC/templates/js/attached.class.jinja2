@@ -6,7 +6,7 @@ var {{ class_name }} = function(coeffs, inters) {
     this.coeffs = coeffs;
     this.inters = inters;
 
-    {% if isbinary %}
+    {% if is_binary %}
     this.predict = function(features) {
         var prob = 0.;
         for (var i = 0, il = this.coeffs.length; i < il; i++) {
