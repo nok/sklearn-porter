@@ -1,20 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Tuple, Optional
-from json import encoder, dumps
-from textwrap import indent
 from copy import deepcopy
+from json import dumps, encoder
 from logging import DEBUG
+from typing import Optional, Tuple, Union
 
+# scikit-learn
 from sklearn.svm.classes import SVC as SVCClass
 
+# sklearn-porter
+from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.enums import Method, Language, Template
-from sklearn_porter.exceptions import NotFittedEstimatorError, \
-    NotSupportedYetError
+from sklearn_porter.exceptions import (
+    NotFittedEstimatorError, NotSupportedYetError
+)
 from sklearn_porter.utils import get_logger
-
 
 L = get_logger(__name__)
 
@@ -28,20 +29,32 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.C: {
-            Template.ATTACHED: {Method.PREDICT, },
+            Template.ATTACHED: {
+                Method.PREDICT,
+            },
         },
         Language.JAVA: {
-            Template.ATTACHED: {Method.PREDICT, },
-            Template.EXPORTED: {Method.PREDICT, },
+            Template.ATTACHED: {
+                Method.PREDICT,
+            },
+            Template.EXPORTED: {
+                Method.PREDICT,
+            },
         },
         Language.JS: {
-            Template.ATTACHED: {Method.PREDICT, },
+            Template.ATTACHED: {
+                Method.PREDICT,
+            },
         },
         Language.PHP: {
-            Template.ATTACHED: {Method.PREDICT, },
+            Template.ATTACHED: {
+                Method.PREDICT,
+            },
         },
         Language.RUBY: {
-            Template.ATTACHED: {Method.PREDICT, },
+            Template.ATTACHED: {
+                Method.PREDICT,
+            },
         },
     }
 
@@ -81,8 +94,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
             coef0=params['coef0'],
             degree=params['degree'],
         )
-        L.info('Model data (keys): {}'.format(
-            self.model_data.keys()))
+        L.info('Model data (keys): {}'.format(self.model_data.keys()))
         if L.isEnabledFor(DEBUG):
             L.debug('Model data: {}'.format(self.model_data))
 
@@ -94,29 +106,28 @@ class SVC(EstimatorBase, EstimatorApiABC):
             n_coeffs=len(self.model_data.get('coeffs')),
             n_inters=len(self.model_data.get('inters')),
         )
-        L.info('Meta info (keys): {}'.format(
-            self.meta_info.keys()))
+        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
         if L.isEnabledFor(DEBUG):
             L.debug('Meta info: {}'.format(self.meta_info))
 
     def port(
-            self,
-            method: Optional[Method] = None,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None,
-            **kwargs
+        self,
+        language: Optional[Language] = None,
+        template: Optional[Template] = None,
+        to_json: bool = False,
+        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Port an estimator.
 
         Parameters
         ----------
-        method : Method
-            The required method.
         language : Language
             The required language.
         template : Template
             The required template.
+        to_json : bool (default: False)
+            Return the result as JSON string.
         kwargs
 
         Returns
@@ -124,7 +135,8 @@ class SVC(EstimatorBase, EstimatorApiABC):
         The ported estimator.
         """
         method, language, template = self.check(
-            method=method, language=language, template=template)
+            language=language, template=template
+        )
 
         # Arguments:
         kwargs.setdefault('method_name', method.value)
@@ -132,10 +144,13 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=kwargs.get('class_name'),
-            method_name=kwargs.get('method_name'),
-        ))
+        plas.update(
+            dict(
+                class_name=kwargs.get('class_name'),
+                method_name=kwargs.get('method_name'),
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -143,25 +158,25 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Export:
         if template == Template.EXPORTED:
-            tpl_class = tpls.get('exported.class')
-            out_class = tpl_class.format(**plas)
+            tpl_class = tpls.get_template('exported.class')
+            out_class = tpl_class.render(**plas)
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
         # Pick templates:
-        tpl_int = tpls.get('int')
-        tpl_double = tpls.get('double')
-        tpl_arr_1 = tpls.get('arr[]')
-        tpl_arr_2 = tpls.get('arr[][]')
-        tpl_in_brackets = tpls.get('in_brackets')
-        tpl_indent = tpls.get('indent')
+        tpl_int = tpls.get_template('int').render()
+        tpl_double = tpls.get_template('double').render()
+        tpl_arr_1 = tpls.get_template('arr[]')
+        tpl_arr_2 = tpls.get_template('arr[][]')
+        tpl_in_brackets = tpls.get_template('in_brackets')
 
         # Convert weights:
-        weights_val = list(map(lambda x: str(int(x)),
-                               self.model_data.get('weights')))
-        weights_str = tpl_arr_1.format(
+        weights_val = list(
+            map(lambda x: str(int(x)), self.model_data.get('weights'))
+        )
+        weights_str = tpl_arr_1.render(
             type=tpl_int,
             name='weights',
             values=', '.join(weights_val),
@@ -170,29 +185,39 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Convert vectors:
         vectors_val = self.model_data.get('vectors')
-        vectors_str = tpl_arr_2.format(
+        vectors_str = tpl_arr_2.render(
             type=tpl_double,
             name='vectors',  # convert 2D lists to a string `{{1, 2, 3}, {...}}`
-            values=', '.join(list(tpl_in_brackets.format(
-                ', '.join(list(map(converter, v)))) for v in vectors_val)),
+            values=', '.join(
+                list(
+                    tpl_in_brackets.render(
+                        value=', '.join(list(map(converter, v)))
+                    ) for v in vectors_val
+                )
+            ),
             n=len(vectors_val),
             m=len(vectors_val[0])
         )
 
         # Convert coefficients:
         coeffs_val = self.model_data.get('coeffs')
-        coeffs_str = tpl_arr_2.format(
+        coeffs_str = tpl_arr_2.render(
             type=tpl_double,
             name='coeffs',
-            values=', '.join(list(tpl_in_brackets.format(
-                ', '.join(list(map(converter, v)))) for v in coeffs_val)),
+            values=', '.join(
+                list(
+                    tpl_in_brackets.render(
+                        value=', '.join(list(map(converter, v)))
+                    ) for v in coeffs_val
+                )
+            ),
             n=len(coeffs_val),
             m=len(coeffs_val[0])
         )
 
         # Convert interceptions:
         inters_val = self.model_data.get('inters')
-        inters_str = tpl_arr_1.format(
+        inters_str = tpl_arr_1.render(
             type=tpl_double,
             name='inters',
             values=', '.join(list(map(converter, inters_val))),
@@ -216,32 +241,20 @@ class SVC(EstimatorBase, EstimatorApiABC):
         degree_val = self.model_data.get('degree')
         degree_str = converter(degree_val)
 
-        plas.update(dict(
-            weights=weights_str,
-            vectors=vectors_str,
-            coeffs=coeffs_str,
-            inters=inters_str,
-            kernel=kernel_str,
-            gamma=gamma_str,
-            coef0=coef0_str,
-            degree=degree_str
-        ))
-
-        # Make method:
-        tpl_method = tpls.get('attached.method')
-        n_indents = 1 if language in [
-            Language.JAVA,
-            Language.JS,
-            Language.PHP,
-            Language.RUBY
-        ] else 0
-        tpl_method = indent(tpl_method, n_indents * tpl_indent)
-        tpl_method = tpl_method[(n_indents * len(tpl_indent)):]
-        out_method = tpl_method.format(**plas)
-        plas.update(dict(method=out_method))
+        plas.update(
+            dict(
+                weights=weights_str,
+                vectors=vectors_str,
+                coeffs=coeffs_str,
+                inters=inters_str,
+                kernel=kernel_str,
+                gamma=gamma_str,
+                coef0=coef0_str,
+                degree=degree_str
+            )
+        )
 
         # Make class:
-        tpl_class = tpls.get('attached.class')
-        out_class = tpl_class.format(**plas)
-
+        tpl_class = tpls.get_template('attached.class')
+        out_class = tpl_class.render(**plas)
         return out_class
