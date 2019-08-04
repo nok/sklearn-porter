@@ -1,6 +1,7 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,13 +24,21 @@ class {{ class_name }} {
     }
 
     private static class Neighbor {
-        Integer clazz;
+        Integer y;
         Double dist;
 
-        public Neighbor(int clazz, double dist) {
-            this.clazz = clazz;
+        public Neighbor(int y, double dist) {
+            this.y = y;
             this.dist = dist;
         }
+    }
+
+    private int findMax(double[] nums) {
+        int idx = 0;
+        for (int i = 1; i < nums.length; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
     }
 
     private static double compute(double[] temp, double[] cand, double q) {
@@ -59,22 +68,29 @@ class {{ class_name }} {
     }
 
     public int predict(double[] features) {
+        double[] classProbas = this.predictProba(features);
+        return findMax(classProbas);
+    }
+
+    public double[] predictProba(double[] features) {
         int classIdx = 0;
+        double[] classProbas = new double[this.n];
+        double dist;
         if (this.k == 1) {
             double minDist = Double.POSITIVE_INFINITY;
-            double curDist;
             for (int i = 0; i < this.y.length; i++) {
-                curDist = {{ class_name }}.compute(this.X[i], features, this.power);
-                if (curDist <= minDist) {
-                    minDist = curDist;
+                dist = {{ class_name }}.compute(this.X[i], features, this.power);
+                if (dist <= minDist) {
+                    minDist = dist;
                     classIdx = y[i];
                 }
             }
+            classProbas[classIdx] = 1;
         } else {
-            int[] classes = new int[this.n];
             ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
             for (int i = 0; i < this.y.length; i++) {
-                dists.add(new Neighbor(y[i], {{ class_name }}.compute(this.X[i], features, this.power)));
+                dist = {{ class_name }}.compute(this.X[i], features, this.power);
+                dists.add(new Neighbor(y[i], dist));
             }
             Collections.sort(dists, new Comparator<Neighbor>() {
                 @Override
@@ -83,13 +99,13 @@ class {{ class_name }} {
                 }
             });
             for (Neighbor neighbor : dists.subList(0, this.k)) {
-                classes[neighbor.clazz]++;
+                classProbas[neighbor.y]++;
             }
             for (int i = 0; i < this.n; i++) {
-                classIdx = classes[i] > classes[classIdx] ? i : classIdx;
+                classProbas[i] /= this.k;
             }
         }
-        return classIdx;
+        return classProbas;
     }
 
     public static void main(String[] args) {
@@ -115,12 +131,19 @@ class {{ class_name }} {
         {% if is_test or to_json %}
         // Get JSON:
         int prediction = clf.predict(features);
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        double[] probabilities = clf.predictProba(features);
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
         {% else %}
         // Get class prediction:
         int prediction = clf.predict(features);
         System.out.println("Predicted class: #" + String.valueOf(prediction));
-        {% endif %}
+
+        // Get class probabilities:
+        double[] probabilities = clf.predictProba(features);
+        for (int i = 0; i < probabilities.length; i++) {
+            System.out.println("Probability of class #" + i + " : " + String.valueOf(probabilities[i]));
+        }
+		    {% endif %}
 
     }
 }
