@@ -264,9 +264,9 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td align="left">
       <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a>
     </td>
+    <td>✓</td>
     <td></td>
-    <td></td>
-    <td></td>
+    <td>×</td>
     <td></td>
     <td></td>
     <td></td>
