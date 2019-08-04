@@ -18,15 +18,15 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
     this.degree = degree;
 
     this.predict = function(features) {
-
         var kernels = new Array(vectors.length);
         var kernel;
+        var i, j, k, d, l;
         switch (this.kernel) {
             case 'LINEAR':
                 // <x,x'>
-                for (var i = 0; i < this.vectors.length; i++) {
+                for (i = 0; i < this.vectors.length; i++) {
                     kernel = 0.;
-                    for (var j = 0; j < this.vectors[i].length; j++) {
+                    for (j = 0; j < this.vectors[i].length; j++) {
                         kernel += this.vectors[i][j] * features[j];
                     }
                     kernels[i] = kernel;
@@ -34,9 +34,9 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
                 break;
             case 'POLY':
                 // (y<x,x'>+r)^d
-                for (var i = 0; i < this.vectors.length; i++) {
+                for (i = 0; i < this.vectors.length; i++) {
                     kernel = 0.;
-                    for (var j = 0; j < this.vectors[i].length; j++) {
+                    for (j = 0; j < this.vectors[i].length; j++) {
                         kernel += this.vectors[i][j] * features[j];
                     }
                     kernels[i] = Math.pow((this.gamma * kernel) + this.coef0, this.degree);
@@ -44,9 +44,9 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
                 break;
             case 'RBF':
                 // exp(-y|x-x'|^2)
-                for (var i = 0; i < this.vectors.length; i++) {
+                for (i = 0; i < this.vectors.length; i++) {
                     kernel = 0.;
-                    for (var j = 0; j < this.vectors[i].length; j++) {
+                    for (j = 0; j < this.vectors[i].length; j++) {
                         kernel += Math.pow(this.vectors[i][j] - features[j], 2);
                     }
                     kernels[i] = Math.exp(-this.gamma * kernel);
@@ -54,9 +54,9 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
                 break;
             case 'SIGMOID':
                 // tanh(y<x,x'>+r)
-                for (var i = 0; i < this.vectors.length; i++) {
+                for (i = 0; i < this.vectors.length; i++) {
                     kernel = 0.;
-                    for (var j = 0; j < this.vectors[i].length; j++) {
+                    for (j = 0; j < this.vectors[i].length; j++) {
                         kernel += this.vectors[i][j] * features[j];
                     }
                     kernels[i] = Math.tanh((this.gamma * kernel) + this.coef0);
@@ -65,10 +65,10 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
         }
 
         var starts = new Array(this.weights.length);
-        for (var i = 0; i < this.weights.length; i++) {
-            if (i != 0) {
+        for (i = 0; i < this.weights.length; i++) {
+            if (i !== 0) {
                 var start = 0;
-                for (var j = 0; j < i; j++) {
+                for (j = 0; j < i; j++) {
                     start += this.weights[j];
                 }
                 starts[i] = start;
@@ -78,21 +78,21 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
         }
 
         var ends = new Array(this.weights.length);
-        for (var i = 0; i < this.weights.length; i++) {
+        for (i = 0; i < this.weights.length; i++) {
             ends[i] = this.weights[i] + starts[i];
         }
 
-        if (this.nClasses == 2) {
+        if (this.nClasses === 2) {
 
-            for (var i = 0; i < kernels.length; i++) {
+            for (i = 0; i < kernels.length; i++) {
                 kernels[i] = -kernels[i];
             }
 
             var decision = 0.;
-            for (var k = starts[1]; k < ends[1]; k++) {
+            for (k = starts[1]; k < ends[1]; k++) {
                 decision += kernels[k] * this.coeffs[0][k];
             }
-            for (var k = starts[0]; k < ends[0]; k++) {
+            for (k = starts[0]; k < ends[0]; k++) {
                 decision += kernels[k] * this.coeffs[0][k];
             }
             decision += this.inters[0];
@@ -105,13 +105,13 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
         }
 
         var decisions = new Array(this.inters.length);
-        for (var i = 0, d = 0, l = this.weights.length; i < l; i++) {
-            for (var j = i + 1; j < l; j++) {
+        for (i = 0, d = 0, l = this.weights.length; i < l; i++) {
+            for (j = i + 1; j < l; j++) {
                 var tmp = 0.;
-                for (var k = starts[j]; k < ends[j]; k++) {
+                for (k = starts[j]; k < ends[j]; k++) {
                     tmp += this.coeffs[i][k] * kernels[k];
                 }
-                for (var k = starts[i]; k < ends[i]; k++) {
+                for (k = starts[i]; k < ends[i]; k++) {
                     tmp += this.coeffs[j - 1][k] * kernels[k];
                 }
                 decisions[d] = tmp + this.inters[d];
@@ -120,29 +120,27 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
         }
 
         var votes = new Array(this.inters.length);
-        for (var i = 0, d = 0, l = this.weights.length; i < l; i++) {
-            for (var j = i + 1; j < l; j++) {
+        for (i = 0, d = 0, l = this.weights.length; i < l; i++) {
+            for (j = i + 1; j < l; j++) {
                 votes[d] = decisions[d] > 0 ? i : j;
                 d++;
             }
         }
 
         var amounts = new Array(this.nClasses).fill(0);
-        for (var i = 0, l = votes.length; i < l; i++) {
+        for (i = 0, l = votes.length; i < l; i++) {
             amounts[votes[i]] += 1;
         }
 
         var classVal = -1, classIdx = -1;
-        for (var i = 0, l = amounts.length; i < l; i++) {
+        for (i = 0, l = amounts.length; i < l; i++) {
             if (amounts[i] > classVal) {
                 classVal = amounts[i];
                 classIdx= i;
             }
         }
         return this.classes[classIdx];
-
     }
-
 };
 
 var main = function () {
