@@ -5,7 +5,7 @@ from json import loads
 from multiprocessing import Pool, cpu_count
 from os import environ, remove
 from pathlib import Path
-from subprocess import STDOUT, call, check_output
+from subprocess import STDOUT, CalledProcessError, check_output
 from sys import platform as system_platform
 from sys import version_info
 from tempfile import mktemp
@@ -24,10 +24,8 @@ from sklearn.metrics import accuracy_score
 from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.exceptions import (
-    InvalidLanguageError,
-    InvalidMethodError,
-    InvalidTemplateError,
-    NotFittedEstimatorError,
+    CompilationFailed, InvalidLanguageError, InvalidMethodError,
+    InvalidTemplateError, NotFittedEstimatorError
 )
 from sklearn_porter.utils import Options, get_logger, get_qualname
 
@@ -673,10 +671,16 @@ class Estimator:
             L.info('Compilation command: `{}`'.format(cmd))
 
             subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
-            out = call(cmd, **subp_args)
-            if int(str(out).strip()) != 0:
-                msg = 'Compilation failed.'
-                raise AssertionError(msg)
+            try:
+                check_output(cmd, **subp_args)
+            except CalledProcessError as e:
+                msg = 'Command "{}" return with error (code {}):\n\n{}'
+                msg = msg.format(e.cmd, e.returncode, e.output)
+                if language is Language.JAVA and 'code too large' in e.output:
+                    msg += '\nPlease try to save the model data separately ' \
+                           'by changing the template type to `exported`: ' \
+                           '`template=\'exported\'`.'
+                raise CompilationFailed(msg)
 
         # Execution:
         cmd = language.value.CMD_EXECUTE

@@ -19,6 +19,12 @@ class NotSupportedYetError(Exception):
         super().__init__(self.message)
 
 
+class CompilationFailed(RuntimeError):
+    def __init__(self, message: str):
+        self.message = 'Compilation failed:\n\n{}'.format(message)
+        super().__init__(self.message)
+
+
 class InvalidMethodError(Exception):
     def __init__(self, message: str):
         opts = ', '.join(['`{}`'.format(m.value) for m in list(Method)])
