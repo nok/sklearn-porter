@@ -333,7 +333,7 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
   </tr>
 </table>
 
-✓ = support of `predict`,　ᴾ = support of `predict_proba`,　x = not supported or feasible<br>
+✓ = support of `predict`,　ᴾ = support of `predict_proba`,　× = not supported or feasible<br>
 ᴀ = attached model data,　ᴇ = exported model data (JSON),　ᴄ = combined model data (not recommended)
 
 ---
