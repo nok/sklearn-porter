@@ -179,7 +179,7 @@ var main = function () {
         console.log(error);
     });
 
-    // Get class prediction:
+    // Get class probabilities:
     clf.predictProba(features).then(function(probabilities) {
         for (var i = 0; i < probabilities.length; i++) {
             console.log("Probability of class #" + i + " : " + probabilities[i]);
