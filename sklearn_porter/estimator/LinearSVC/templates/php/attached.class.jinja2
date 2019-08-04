@@ -1,0 +1,66 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    public function __construct($coeffs, $inters) {
+        $this->coeffs = $coeffs;
+        $this->inters = $inters;
+    }
+
+    {% if isbinary %}
+    public function predict($features) {
+        $prob = 0.;
+        for ($i = 0, $il = count($this->coeffs); $i < $il; $i++) {
+            $prob += $this->coeffs[$i] * $features[$i];
+        }
+        if ($prob + $this->inters > 0) {
+            return 1;
+        }
+        return 0;
+    }
+    {% else %}
+    public function predict($features) {
+        $classIdx = -1;
+        $classVal = null;
+        for ($i = 0, $il = count($this->inters); $i < $il; $i++) {
+            $prob = 0.;
+            for ($j = 0, $jl = count($this->coeffs[0]); $j < $jl; $j++) {
+                $prob += $this->coeffs[$i][$j] * $features[$j];
+            }
+            if (is_null($classVal) || $prob + $this->inters[$i] > $classVal) {
+                $classVal = $prob + $this->inters[$i];
+                $classIdx = $i;
+            }
+        }
+        return $classIdx;
+    }
+    {% endif %}
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = $argv;
+
+    // Model data:
+    {{ coeffs }}
+    {{ inters }}
+
+    // Estimator:
+    $clf = new {{ class_name }}($coeffs, $inters);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction)));
+    {% else %}
+    // Get class prediction:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    {% endif %}
+
+}
+{% endblock %}
