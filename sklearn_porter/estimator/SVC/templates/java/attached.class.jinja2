@@ -1,0 +1,191 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private enum Kernel { LINEAR, POLY, RBF, SIGMOID }
+
+    private int nClasses;
+    private int[] classes;
+    private double[][] vectors;
+    private double[][] coeffs;
+    private double[] inters;
+    private int[] weights;
+    private Kernel kernel;
+    private double gamma;
+    private double coef0;
+    private double degree;
+
+    public {{ class_name }} (double[][] vectors, double[][] coeffs, double[] inters, int[] weights, String kernel, double gamma, double coef0, double degree) {
+        this.nClasses = weights.length;
+        this.classes = new int[this.nClasses];
+        for (int i = 0; i < this.nClasses; i++) {
+            this.classes[i] = i;
+        }
+
+        this.vectors = vectors;
+        this.coeffs = coeffs;
+        this.inters = inters;
+        this.weights = weights;
+
+        this.kernel = Kernel.valueOf(kernel.toUpperCase());
+        this.gamma = gamma;
+        this.coef0 = coef0;
+        this.degree = degree;
+    }
+
+    public int predict(double[] features) {
+        double[] kernels = new double[vectors.length];
+        double kernel;
+        switch (this.kernel) {
+            case LINEAR:
+                // <x,x'>
+                for (int i = 0; i < this.vectors.length; i++) {
+                    kernel = 0.;
+                    for (int j = 0; j < this.vectors[i].length; j++) {
+                        kernel += this.vectors[i][j] * features[j];
+                    }
+                    kernels[i] = kernel;
+                }
+                break;
+            case POLY:
+                // (y<x,x'>+r)^d
+                for (int i = 0; i < this.vectors.length; i++) {
+                    kernel = 0.;
+                    for (int j = 0; j < this.vectors[i].length; j++) {
+                        kernel += this.vectors[i][j] * features[j];
+                    }
+                    kernels[i] = Math.pow((this.gamma * kernel) + this.coef0, this.degree);
+                }
+                break;
+            case RBF:
+                // exp(-y|x-x'|^2)
+                for (int i = 0; i < this.vectors.length; i++) {
+                    kernel = 0.;
+                    for (int j = 0; j < this.vectors[i].length; j++) {
+                        kernel += Math.pow(this.vectors[i][j] - features[j], 2);
+                    }
+                    kernels[i] = Math.exp(-this.gamma * kernel);
+                }
+                break;
+            case SIGMOID:
+                // tanh(y<x,x'>+r)
+                for (int i = 0; i < this.vectors.length; i++) {
+                    kernel = 0.;
+                    for (int j = 0; j < this.vectors[i].length; j++) {
+                        kernel += this.vectors[i][j] * features[j];
+                    }
+                    kernels[i] = Math.tanh((this.gamma * kernel) + this.coef0);
+                }
+                break;
+        }
+
+        int[] starts = new int[this.weights.length];
+        for (int i = 0; i < this.weights.length; i++) {
+            if (i != 0) {
+                int start = 0;
+                for (int j = 0; j < i; j++) {
+                    start += this.weights[j];
+                }
+                starts[i] = start;
+            } else {
+                starts[0] = 0;
+            }
+        }
+
+        int[] ends = new int[this.weights.length];
+        for (int i = 0; i < this.weights.length; i++) {
+            ends[i] = this.weights[i] + starts[i];
+        }
+
+        if (this.nClasses == 2) {
+            for (int i = 0; i < kernels.length; i++) {
+                kernels[i] = -kernels[i];
+            }
+            double decision = 0.;
+            for (int k = starts[1]; k < ends[1]; k++) {
+                decision += kernels[k] * this.coeffs[0][k];
+            }
+            for (int k = starts[0]; k < ends[0]; k++) {
+                decision += kernels[k] * this.coeffs[0][k];
+            }
+            decision += this.inters[0];
+            if (decision > 0) {
+                return 0;
+            }
+            return 1;
+        }
+
+        double[] decisions = new double[this.inters.length];
+        for (int i = 0, d = 0, l = this.weights.length; i < l; i++) {
+            for (int j = i + 1; j < l; j++) {
+                double tmp = 0.;
+                for (int k = starts[j]; k < ends[j]; k++) {
+                    tmp += this.coeffs[i][k] * kernels[k];
+                }
+                for (int k = starts[i]; k < ends[i]; k++) {
+                    tmp += this.coeffs[j - 1][k] * kernels[k];
+                }
+                decisions[d] = tmp + this.inters[d];
+                d++;
+            }
+        }
+
+        int[] votes = new int[this.inters.length];
+        for (int i = 0, d = 0, l = this.weights.length; i < l; i++) {
+            for (int j = i + 1; j < l; j++) {
+                votes[d] = decisions[d] > 0 ? i : j;
+                d++;
+            }
+        }
+
+        int[] amounts = new int[this.nClasses];
+        for (int i = 0, l = votes.length; i < l; i++) {
+            amounts[votes[i]] += 1;
+        }
+
+        int classVal = -1, classIdx = -1;
+        for (int i = 0, l = amounts.length; i < l; i++) {
+            if (amounts[i] > classVal) {
+                classVal = amounts[i];
+                classIdx= i;
+            }
+        }
+        return this.classes[classIdx];
+    }
+
+    public static void main(String[] args) {
+
+        int nFeatures = {{ n_features }};
+        if (args.length != nFeatures) {
+            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
+        }
+
+        // Features:
+        double[] features = new double[args.length];
+        for (int i = 0, l = args.length; i < l; i++) {
+            features[i] = Double.parseDouble(args[i]);
+        }
+
+        // Model data:
+        {{ vectors }}
+        {{ coeffs }}
+        {{ inters }}
+        {{ weights }}
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+
+        {% if is_test or to_json %}
+        // Get JSON:
+        int prediction = clf.predict(features);
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        {% else %}
+        // Get class prediction:
+        int prediction = clf.predict(features);
+        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {% endif %}
+
+    }
+}
+{% endblock %}
