@@ -1,0 +1,196 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+if (typeof XMLHttpRequest === 'undefined') {
+    var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+}
+
+var {{ class_name }} = function(jsonFile) {
+    var that = this;
+    this.mdl = undefined;
+
+    var promise = new Promise(function(resolve, reject) {
+        var httpRequest = new XMLHttpRequest();
+        httpRequest.onreadystatechange = function() {
+            if (httpRequest.readyState === 4) {
+                if (httpRequest.status === 200) {
+                    that.initNetwork(JSON.parse(httpRequest.responseText));
+                    resolve();
+                } else {
+                    reject(new Error(httpRequest.status + ': ' + httpRequest.statusText));
+                }
+            }
+        };
+        httpRequest.open('GET', jsonFile, true);
+        httpRequest.send();
+    });
+
+    var findMax = function(nums) {
+        var i = 0, l = nums.length, idx = 0;
+        for (; i < l; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    };
+
+    var compute = function(activation, v) {
+        switch (activation) {
+            case 'LOGISTIC':
+                for (var i = 0, l = v.length; i < l; i++) {
+                    v[i] = 1. / (1. + Math.exp(-v[i]));
+                }
+                break;
+            case 'RELU':
+                for (var i = 0, l = v.length; i < l; i++) {
+                    v[i] = Math.max(0, v[i]);
+                }
+                break;
+            case 'TANH':
+                for (var i = 0, l = v.length; i < l; i++) {
+                    v[i] = Math.tanh(v[i]);
+                }
+                break;
+            case 'SOFTMAX':
+                var max = Number.NEGATIVE_INFINITY;
+                for (var i = 0, l = v.length; i < l; i++) {
+                    if (v[i] > max) {
+                        max = v[i];
+                    }
+                }
+                for (var i = 0, l = v.length; i < l; i++) {
+                    v[i] = Math.exp(v[i] - max);
+                }
+                var sum = 0.0;
+                for (var i = 0, l = v.length; i < l; i++) {
+                    sum += v[i];
+                }
+                for (var i = 0, l = v.length; i < l; i++) {
+                    v[i] /= sum;
+                }
+                break;
+        }
+        return v;
+    };
+
+    this.feedForward = function(neurons) {
+        this.mdl.network[0] = neurons;
+        for (var i = 0; i < this.mdl.network.length - 1; i++) {
+            for (var j = 0; j < this.mdl.network[i + 1].length; j++) {
+                this.mdl.network[i + 1][j] = this.mdl.bias[i][j];
+                for (var l = 0; l < this.mdl.network[i].length; l++) {
+                    this.mdl.network[i + 1][j] += this.mdl.network[i][l] * this.mdl.weights[i][l][j];
+                }
+            }
+            if ((i + 1) < (this.mdl.network.length - 1)) {
+                this.mdl.network[i + 1] = compute(this.mdl.hidden_activation, this.mdl.network[i + 1]);
+            }
+        }
+        this.mdl.network[this.mdl.network.length - 1] = compute(this.mdl.output_activation, this.mdl.network[this.mdl.network.length - 1]);
+        this.resetNetwork();
+        return this.mdl.network[this.mdl.network.length - 1];
+    };
+
+    this.initNetwork = function(mdl) {
+        mdl.hidden_activation = mdl.hidden_activation.toUpperCase();
+        mdl.output_activation = mdl.output_activation.toUpperCase();
+        mdl.network = new Array(mdl.layers.length + 1);
+        for (var i = 0, l = mdl.layers.length; i < l; i++) {
+            mdl.network[i + 1] = new Array(mdl.layers[i]).fill(0.);
+        }
+        this.mdl = mdl;
+    };
+
+    this.resetNetwork = function() {
+        for (var i = 1, l = this.mdl.network.length - 1; i < l; i++) {
+            for (var j = 0; j < this.mdl.network[i].length; j++) {
+                this.mdl.network[i][j] = 0;
+            }
+        }
+    };
+
+    this.predict = function(neurons) {
+        var that = this;
+        return new Promise(function(resolve, reject) {
+            promise.then(function() {
+                var lastLayer = that.feedForward(neurons);
+                if (lastLayer.length === 1) {
+                    if (lastLayer[0] > .5) {
+                        resolve(1);
+                    }
+                    resolve(0);
+                } else {
+                    resolve(findMax(lastLayer));
+                }
+            }, function(error) {
+                reject(error);
+            });
+        });
+    };
+
+    this.predictProba = function(neurons) {
+        var that = this;
+        return new Promise(function(resolve, reject) {
+            promise.then(function() {
+                var lastLayer = that.feedForward(neurons);
+                if (lastLayer.length === 1) {
+                    resolve([lastLayer[0], 1 - lastLayer[0]]);
+                } else {
+                    resolve(lastLayer);
+                }
+            }, function(error) {
+                reject(error);
+            });
+        });
+    };
+
+};
+
+var main = function () {
+    // Features:
+    var features = process.argv.slice(3);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    var json = process.argv[2];
+
+    // Estimator:
+    var clf = new {{ class_name }}(json);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    Promise.all([
+        clf.predict(features),
+        clf.predictProba(features)
+    ]).then(function(vals) {
+        console.log(JSON.stringify({
+            "predict": vals[0],
+            "predict_proba": vals[1]
+        }));
+    }).catch(function(error) {
+        console.log(error);
+    });
+    {% else %}
+    // Get class prediction:
+    clf.predict(features).then(function(prediction) {
+        console.log("Predicted class: #" + prediction);
+    }).catch(function(error) {
+        console.log(error);
+    });
+
+    // Get class prediction:
+    clf.predictProba(features).then(function(probabilities) {
+        for (var i = 0; i < probabilities.length; i++) {
+            console.log("Probability of class #" + i + " : " + probabilities[i]);
+        }
+    }).catch(function(error) {
+        console.log(error);
+    });
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

@@ -1,21 +1,24 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Tuple, Optional
-from json import encoder, dumps
 from copy import deepcopy
+from json import dumps, encoder
 from logging import DEBUG
+from typing import Optional, Tuple, Union
+
 import numpy as np
 
-from sklearn.neural_network.multilayer_perceptron import MLPClassifier \
-    as MLPClassifierClass
+# scikit-learn
+from sklearn.neural_network.multilayer_perceptron import \
+    MLPClassifier as MLPClassifierClass
 
+# sklearn-porter
+from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.enums import Method, Language, Template
-from sklearn_porter.exceptions import NotSupportedYetError, \
-    NotFittedEstimatorError
+from sklearn_porter.exceptions import (
+    NotFittedEstimatorError, NotSupportedYetError
+)
 from sklearn_porter.utils import get_logger
-
 
 L = get_logger(__name__)
 
@@ -29,12 +32,20 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.JAVA: {
-            Template.ATTACHED: {Method.PREDICT, },
-            Template.EXPORTED: {Method.PREDICT, },
+            Template.ATTACHED: {
+                Method.PREDICT,
+            },
+            Template.EXPORTED: {
+                Method.PREDICT,
+            },
         },
         Language.JS: {
-            Template.ATTACHED: {Method.PREDICT, },
-            Template.EXPORTED: {Method.PREDICT, },
+            Template.ATTACHED: {
+                Method.PREDICT,
+            },
+            Template.EXPORTED: {
+                Method.PREDICT,
+            },
         },
     }
 
@@ -76,11 +87,8 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         n_hidden_layers = list(n_hidden_layers)
         layers = [n_inputs] + n_hidden_layers + [n_outputs]
 
-        self.meta_info = dict(
-            n_features=n_inputs,
-        )
-        L.info('Meta info (keys): {}'.format(
-            self.meta_info.keys()))
+        self.meta_info = dict(n_features=n_inputs, )
+        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
         if L.isEnabledFor(DEBUG):
             L.debug('Meta info: {}'.format(self.meta_info))
 
@@ -93,29 +101,28 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         if self.estimator_name == 'MLPClassifier':
             self.model_data['output_activation'] = est.out_activation_
 
-        L.info('Model data (keys): {}'.format(
-            self.model_data.keys()))
+        L.info('Model data (keys): {}'.format(self.model_data.keys()))
         if L.isEnabledFor(DEBUG):
             L.debug('Model data: {}'.format(self.model_data))
 
     def port(
-            self,
-            method: Optional[Method] = None,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None,
-            **kwargs
+        self,
+        language: Optional[Language] = None,
+        template: Optional[Template] = None,
+        to_json: bool = False,
+        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Port an estimator.
 
         Parameters
         ----------
-        method : Method
-            The required method.
         language : Language
             The required language.
         template : Template
             The required template.
+        to_json : bool (default: False)
+            Return the result as JSON string.
         kwargs
 
         Returns
@@ -123,7 +130,8 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         The ported estimator.
         """
         method, language, template = self.check(
-            method=method, language=language, template=template)
+            language=language, template=template
+        )
 
         # Arguments:
         kwargs.setdefault('method_name', method.value)
@@ -131,10 +139,13 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=kwargs.get('class_name'),
-            method_name=kwargs.get('method_name'),
-        ))
+        plas.update(
+            dict(
+                class_name=kwargs.get('class_name'),
+                method_name=kwargs.get('method_name'),
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -142,24 +153,24 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
         # Export:
         if template == Template.EXPORTED:
-            tpl_class = tpls.get('exported.class')
-            out_class = tpl_class.format(**plas)
+            tpl_class = tpls.get_template('exported.class')
+            out_class = tpl_class.render(**plas)
             converter = kwargs.get('converter')
             encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
         # Pick templates:
-        tpl_int = tpls.get('int')
-        tpl_double = tpls.get('double')
-        tpl_arr_1 = tpls.get('arr[]')
-        tpl_arr_2 = tpls.get('arr[][]')
-        tpl_arr_3 = tpls.get('arr[][][]')
-        tpl_in_brackets = tpls.get('in_brackets')
+        tpl_int = tpls.get_template('int').render()
+        tpl_double = tpls.get_template('double').render()
+        tpl_arr_1 = tpls.get_template('arr[]')
+        tpl_arr_2 = tpls.get_template('arr[][]')
+        tpl_arr_3 = tpls.get_template('arr[][][]')
+        tpl_in_brackets = tpls.get_template('in_brackets')
 
         # Convert layers:
         layers_val = self.model_data.get('layers')
-        layers_str = tpl_arr_1.format(
+        layers_str = tpl_arr_1.render(
             type=tpl_int,
             name='layers',
             values=', '.join(list(map(str, layers_val))),
@@ -170,12 +181,15 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         weights_val = self.model_data.get('weights')
         weights_str = []
         for layer in weights_val:
-            layer_weights = ', '.join([
-                tpl_in_brackets.format(', '.join(
-                    list(map(converter, l)))) for l in layer
-            ])
-            weights_str.append(tpl_in_brackets.format(layer_weights))
-        weights_str = tpl_arr_3.format(
+            layer_weights = ', '.join(
+                [
+                    tpl_in_brackets.render(
+                        value=', '.join(list(map(converter, l)))
+                    ) for l in layer
+                ]
+            )
+            weights_str.append(tpl_in_brackets.render(value=layer_weights))
+        weights_str = tpl_arr_3.render(
             type=tpl_double,
             name='weights',
             values=', '.join(weights_str),
@@ -186,25 +200,31 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
         # Convert bias:
         bias_val = self.model_data.get('bias')
-        bias_str = tpl_arr_2.format(
+        bias_str = tpl_arr_2.render(
             type=tpl_double,
             name='bias',
-            values=', '.join(list(tpl_in_brackets.format(
-                ', '.join(list(map(converter, v)))) for v in bias_val)),
+            values=', '.join(
+                list(
+                    tpl_in_brackets.render(
+                        value=', '.join(list(map(converter, v)))
+                    ) for v in bias_val
+                )
+            ),
             n=len(bias_val),
             m=len(bias_val[0])
         )
 
-        plas.update(dict(
-            layers=layers_str,
-            weights=weights_str,
-            bias=bias_str,
-            hidden_activation=self.model_data.get('hidden_activation'),
-            output_activation=self.model_data.get('output_activation'),
-        ))
+        plas.update(
+            dict(
+                layers=layers_str,
+                weights=weights_str,
+                bias=bias_str,
+                hidden_activation=self.model_data.get('hidden_activation'),
+                output_activation=self.model_data.get('output_activation'),
+            )
+        )
 
         # Make class:
-        tpl_class = tpls.get('attached.class')
-        out_class = tpl_class.format(**plas)
-
+        tpl_class = tpls.get_template('attached.class')
+        out_class = tpl_class.render(**plas)
         return out_class
