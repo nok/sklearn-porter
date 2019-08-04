@@ -218,9 +218,9 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td align="left">
       <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a>
     </td>
+    <td>✓</td>
     <td></td>
-    <td></td>
-    <td></td>
+    <td>×</td>
     <td>✓</td>
     <td></td>
     <td>×</td>

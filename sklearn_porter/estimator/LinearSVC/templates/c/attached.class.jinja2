@@ -1,0 +1,62 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+
+{{ coeffs }}
+{{ inters }}
+
+{% if is_binary %}
+int predict(float features[]) {
+    int i, l;
+    double prob = 0.;
+    for (i = 0, l = sizeof(coeffs) / sizeof (coeffs[0]); i < l; i++) {
+        prob += coeffs[i] * features[i];
+    }
+    if (prob + intercepts > 0) {
+        return 1;
+    }
+    return 0;
+}
+{% else %}
+int predict(float features[]) {
+    double class_val = -INFINITY;
+    int class_idx = -1;
+    int i, il, j, jl;
+    for (i = 0, il = sizeof(coeffs) / sizeof (coeffs[0]); i < il; i++) {
+        double prob = 0.;
+        for (j = 0, jl = sizeof(coeffs[0]) / sizeof (coeffs[0][0]); j < jl; j++) {
+            prob += coeffs[i][j] * features[j];
+        }
+        if (prob + inters[i] > class_val) {
+            class_val = prob + inters[i];
+            class_idx = i;
+        }
+    }
+    return class_idx;
+}
+{% endif %}
+
+int main(int argc, const char *argv[]) {
+
+    /* Features: */
+    float features[argc-1];
+    int i;
+    for (int i = 1; i < argc; i++) {
+        features[i-1] = atof(argv[i]);
+    }
+
+    {% if is_test or to_json %}
+    /* Get JSON: */
+    printf("{\"predict\": %d }", predict(features));
+    {% else %}
+    /* Get class prediction: */
+    printf("Predicted class: #%d\n", predict(features));
+    {% endif %}
+
+    return 0;
+}
+{% endblock %}
