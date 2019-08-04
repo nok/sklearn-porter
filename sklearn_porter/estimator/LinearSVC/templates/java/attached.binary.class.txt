@@ -1,7 +1,0 @@
-private double[] coeffs;
-private double inters;
-
-public {class_name}(double[] coeffs, double inters) {{
-    this.coeffs = coeffs;
-    this.inters = inters;
-}}
