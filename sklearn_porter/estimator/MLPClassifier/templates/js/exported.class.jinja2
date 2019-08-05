@@ -34,37 +34,38 @@ var {{ class_name }} = function(jsonFile) {
     };
 
     var compute = function(activation, v) {
+        var i, l = v.length;
         switch (activation) {
             case 'LOGISTIC':
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] = 1. / (1. + Math.exp(-v[i]));
                 }
                 break;
             case 'RELU':
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] = Math.max(0, v[i]);
                 }
                 break;
             case 'TANH':
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] = Math.tanh(v[i]);
                 }
                 break;
             case 'SOFTMAX':
                 var max = Number.NEGATIVE_INFINITY;
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     if (v[i] > max) {
                         max = v[i];
                     }
                 }
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] = Math.exp(v[i] - max);
                 }
                 var sum = 0.0;
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     sum += v[i];
                 }
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] /= sum;
                 }
                 break;

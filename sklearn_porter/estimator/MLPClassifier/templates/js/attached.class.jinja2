@@ -12,45 +12,46 @@ var {{ class_name }} = function(hidden, output, layers, weights, bias) {
     this.bias = bias;
 
     var findMax = function(nums) {
-        var i = 0, l = nums.length, idx = 0;
-        for (; i < l; i++) {
+        var i, l = nums.length, idx = 0;
+        for (i = 0; i < l; i++) {
             idx = nums[i] > nums[idx] ? i : idx;
         }
         return idx;
     };
 
     var compute = function(activation, v) {
+        var i, l = v.length;
         switch (activation) {
             case 'LOGISTIC':
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] = 1. / (1. + Math.exp(-v[i]));
                 }
                 break;
             case 'RELU':
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] = Math.max(0, v[i]);
                 }
                 break;
             case 'TANH':
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] = Math.tanh(v[i]);
                 }
                 break;
             case 'SOFTMAX':
                 var max = Number.NEGATIVE_INFINITY;
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     if (v[i] > max) {
                         max = v[i];
                     }
                 }
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] = Math.exp(v[i] - max);
                 }
                 var sum = 0.0;
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     sum += v[i];
                 }
-                for (var i = 0, l = v.length; i < l; i++) {
+                for (i = 0; i < l; i++) {
                     v[i] /= sum;
                 }
                 break;
@@ -91,18 +92,16 @@ var {{ class_name }} = function(hidden, output, layers, weights, bias) {
                 return 1;
             }
             return 0;
-        } else {
-            return findMax(lastLayer);
         }
+        return findMax(lastLayer);
     };
 
     this.predictProba = function(neurons) {
         var lastLayer = this.feedForward(neurons);
         if (lastLayer.length === 1) {
             return [lastLayer[0], 1 - lastLayer[0]];
-        } else {
-            return lastLayer;
         }
+        return lastLayer;
     };
 
 };
