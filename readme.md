@@ -32,7 +32,99 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">ensemble.AdaBoostClassifier</a>
+      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a>
+    </td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a>
+    </td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a>
+    </td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+    <td>✓</td>
+    <td></td>
+    <td>×</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
+    </td>
+    <td>✓ᴾ</td>
+    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td></td>
+    <td>✓ᴾ</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">ensemble.RandomForestClassifier</a>
     </td>
     <td></td>
     <td></td>
@@ -43,9 +135,9 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
     <td></td>
     <td></td>
     <td></td>
@@ -78,7 +170,7 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">ensemble.RandomForestClassifier</a>
+      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">ensemble.AdaBoostClassifier</a>
     </td>
     <td></td>
     <td></td>
@@ -89,9 +181,32 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">neighbors.KNeighborsClassifier</a>
+    </td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
+    <td>×</td>
     <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
     <td></td>
     <td></td>
     <td></td>
@@ -125,29 +240,6 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
   <tr align="center">
     <td align="left">
       <a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">naive_bayes.GaussianNB</a>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">neighbors.KNeighborsClassifier</a>
     </td>
     <td></td>
     <td></td>
@@ -213,98 +305,6 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td></td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a>
-    </td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a>
-    </td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a>
-    </td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
-    </td>
-    <td>✓ᴾ</td>
-    <td></td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td></td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td></td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td></td>
-    <td>✓ᴾ</td>
   </tr>
   <tr align="center">
     <td></td>
