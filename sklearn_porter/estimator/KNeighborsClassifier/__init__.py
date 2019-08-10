@@ -30,20 +30,12 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.JAVA: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
-            Template.EXPORTED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: {Method.PREDICT},
+            Template.EXPORTED: {Method.PREDICT},
         },
         Language.JS: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
-            Template.EXPORTED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: {Method.PREDICT},
+            Template.EXPORTED: {Method.PREDICT},
         },
     }
 

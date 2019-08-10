@@ -13,7 +13,7 @@ from sklearn.ensemble.forest import \
 from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
-from sklearn_porter.enums import Language, Method, Template
+from sklearn_porter.enums import Language, Method, Template, ALL_METHODS
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.exceptions import (
@@ -51,18 +51,9 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             },
         },
         Language.JS: {
-            Template.COMBINED: {
-                Method.PREDICT,
-                Method.PREDICT_PROBA,
-            },
-            Template.EXPORTED: {
-                Method.PREDICT,
-                Method.PREDICT_PROBA,
-            },
-            Template.ATTACHED: {
-                Method.PREDICT,
-                Method.PREDICT_PROBA,
-            }
+            Template.COMBINED: ALL_METHODS,
+            Template.EXPORTED: ALL_METHODS,
+            Template.ATTACHED: ALL_METHODS
         },
         Language.PHP: {
             Template.COMBINED: {

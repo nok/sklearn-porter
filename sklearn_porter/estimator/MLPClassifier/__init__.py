@@ -12,7 +12,7 @@ from sklearn.neural_network.multilayer_perceptron import \
     MLPClassifier as MLPClassifierClass
 
 # sklearn-porter
-from sklearn_porter.enums import Language, Method, Template
+from sklearn_porter.enums import Language, Method, Template, ALL_METHODS
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.exceptions import (
@@ -32,20 +32,12 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.JAVA: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
-            Template.EXPORTED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: ALL_METHODS,
+            Template.EXPORTED: ALL_METHODS,
         },
         Language.JS: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
-            Template.EXPORTED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: ALL_METHODS,
+            Template.EXPORTED: ALL_METHODS,
         },
     }
 

@@ -7,7 +7,7 @@ from typing import Optional, Tuple, Union
 
 # scikit-learn
 from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
-from sklearn_porter.enums import Language, Method, Template
+from sklearn_porter.enums import Language, Method, Template, ALL_METHODS
 
 # sklearn-porter
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
@@ -27,12 +27,12 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.JAVA: {
-            Template.ATTACHED: {Method.PREDICT, Method.PREDICT_PROBA},
-            Template.EXPORTED: {Method.PREDICT, Method.PREDICT_PROBA},
+            Template.ATTACHED: ALL_METHODS,
+            Template.EXPORTED: ALL_METHODS,
         },
         Language.JS: {
-            Template.ATTACHED: {Method.PREDICT, Method.PREDICT_PROBA},
-            Template.EXPORTED: {Method.PREDICT, Method.PREDICT_PROBA},
+            Template.ATTACHED: ALL_METHODS,
+            Template.EXPORTED: ALL_METHODS,
         },
     }
 
