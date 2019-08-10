@@ -6,7 +6,6 @@ var fs = require('fs');
 
 var {{ class_name }} = function(jsonFile) {
     var that = this;
-    that.forest = [];
 
     var Tree = function(lefts, rights, thresholds, indices, classes) {
         this.lefts = lefts;
@@ -46,6 +45,7 @@ var {{ class_name }} = function(jsonFile) {
     };
 
     var modelData = JSON.parse(fs.readFileSync(jsonFile));
+    that.forest = [];
     for (var i = 0, il = modelData.length; i < il; i++) {
         that.forest.push(new Tree(
             modelData[i]['lefts'], modelData[i]['rights'],
@@ -104,33 +104,20 @@ var main = function () {
 
     {% if is_test or to_json %}
     // Get JSON:
-    Promise.all([
-        clf.predict(features),
-        clf.predictProba(features)
-    ]).then(function(vals) {
-        console.log(JSON.stringify({
-            "predict": vals[0],
-            "predict_proba": vals[1]
-        }));
-    }).catch(function(error) {
-        console.log(error);
-    });
+    console.log(JSON.stringify({
+        "predict": clf.predict(features),
+        "predict_proba": clf.predictProba(features)
+    }));
     {% else %}
     // Get class prediction:
-    clf.predict(features).then(function(prediction) {
-        console.log("Predicted class: #" + prediction);
-    }).catch(function(error) {
-        console.log(error);
-    });
+    var prediction = clf.predict(features);
+    console.log("Predicted class: #" + prediction);
 
     // Get class probabilities:
-    clf.predictProba(features).then(function(probabilities) {
-        for (var i = 0; i < probabilities.length; i++) {
-            console.log("Probability of class #" + i + " : " + probabilities[i]);
-        }
-    }).catch(function(error) {
-        console.log(error);
-    });
+    var probabilities = clf.predictProba(features);
+    for (var i = 0; i < probabilities.length; i++) {
+        console.log("Probability of class #" + i + " : " + probabilities[i]);
+    }
     {% endif %}
 }
 
