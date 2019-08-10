@@ -1,0 +1,112 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+var {{ class_name }} = function(jsonFile) {
+    this.data = JSON.parse(fs.readFileSync(jsonFile));
+
+    var _findMax = function(nums) {
+        var i, l = nums.length, idx = 0;
+        for (i = 0; i < l; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    };
+
+    var _logSumExp = function(nums) {
+        var i, l = nums.length;
+        var max = Math.max(...nums);
+        var sum = 0.;
+        for (i = 0; i < l; i++) {
+            sum += Math.exp(nums[i] - max);
+        }
+        return max + Math.log(sum);
+    };
+
+    var _compute = function(features, priors, probs) {
+        var i, j, sum;
+        var nClasses = probs.length,
+            nFeatures = probs[0].length;
+        var deltas = new Array(nClasses),
+            jll = new Array(nClasses);
+        for (j = 0; j < nFeatures; j++) {
+            features[j] = features[j] > 0 ? 1 : 0;
+        }
+        for (i = 0; i < nClasses; i++) {
+            deltas[i] = new Array(nFeatures);
+        }
+        for (i = 0; i < nClasses; i++) {
+            for (j = 0; j < nFeatures; j++) {
+                deltas[i][j] = Math.log(1 - Math.exp(probs[i][j]));
+            }
+        }
+        for (i = 0; i < nClasses; i++) {
+            jll[i] = 0.;
+        }
+        for (j = 0; j < nFeatures; j++) {
+            for (i = 0; i < nClasses; i++) {
+                jll[i] += features[j] * (probs[i][j] - deltas[i][j]);
+            }
+        }
+        for (i = 0; i < nClasses; i++) {
+            sum = 0.;
+            for (j = 0; j < nFeatures; j++) {
+                sum += deltas[i][j];
+            }
+            jll[i] = jll[i] + priors[i] + sum;
+        }
+        return jll;
+    };
+
+    this.predict = function(features) {
+        return _findMax(_compute(features, this.data.priors, this.data.probs));
+    };
+
+    this.predictProba = function(features) {
+        var jll = _compute(features, this.data.priors, this.data.probs);
+        var sum = _logSumExp(jll);
+        for (i = 0; i < jll.length; i++) {
+            jll[i] = Math.exp(jll[i] - sum);
+        }
+        return jll;
+    };
+};
+
+var main = function () {
+    // Features:
+    var features = process.argv.slice(3);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    var json = process.argv[2];
+
+    // Estimator:
+    var clf = new {{ class_name }}(json);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": clf.predict(features),
+        "predict_proba": clf.predictProba(features)
+    }));
+    {% else %}
+    // Get class prediction:
+    var prediction = clf.predict(features);
+    console.log("Predicted class: #" + prediction);
+
+    // Get class probabilities:
+    var probabilities = clf.predictProba(features);
+    for (var i = 0; i < probabilities.length; i++) {
+        console.log("Probability of class #" + i + " : " + probabilities[i]);
+    }
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}
