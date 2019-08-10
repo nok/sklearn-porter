@@ -136,7 +136,7 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td>✓ᴾ</td>
     <td>×</td>
     <td>✓ᴾ</td>
-    <td></td>
+    <td>✓ᴾ</td>
     <td>×</td>
     <td></td>
     <td></td>

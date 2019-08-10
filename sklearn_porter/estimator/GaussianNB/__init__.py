@@ -27,17 +27,12 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.JAVA: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
-            Template.EXPORTED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: {Method.PREDICT, Method.PREDICT_PROBA},
+            Template.EXPORTED: {Method.PREDICT, Method.PREDICT_PROBA},
         },
         Language.JS: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: {Method.PREDICT, Method.PREDICT_PROBA},
+            Template.EXPORTED: {Method.PREDICT, Method.PREDICT_PROBA},
         },
     }
 
