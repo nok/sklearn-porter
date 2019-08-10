@@ -22,7 +22,6 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     openjdk-8-jdk                                                   `# java v1.8.x`     \
     && curl -sL https://deb.nodesource.com/setup_10.x | bash \
     && apt-get install -y nodejs                                    `# node v10.x.x`    \
-    && npm install --global xmlhttprequest \
     && wget --quiet https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz \
     && tar -xf go1.12.4.linux-amd64.tar.gz                          `# go v1.12.4`      \
     && mv go /usr/bin \
