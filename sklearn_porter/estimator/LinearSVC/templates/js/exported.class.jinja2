@@ -1,0 +1,68 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+var {{ class_name }} = function(jsonFile) {
+    this.data = JSON.parse(fs.readFileSync(jsonFile));
+    {% if is_binary %}
+    this.predict = function(features) {
+        var prob = 0.;
+        for (var i = 0, il = this.data.coeffs.length; i < il; i++) {
+            prob += this.data.coeffs[i] * features[i];
+        }
+        if (prob + this.data.inters > 0) {
+            return 1;
+        }
+        return 0;
+    };
+    {% else %}
+    this.predict = function(features) {
+        var classIdx = 0,
+            classVal = Number.NEGATIVE_INFINITY,
+            prob = 0.;
+        for (var i = 0, il = this.data.inters.length; i < il; i++) {
+            prob = 0.;
+            for (var j = 0, jl = this.data.coeffs[0].length; j < jl; j++) {
+                prob += this.data.coeffs[i][j] * features[j];
+            }
+            if (prob + this.data.inters[i] > classVal) {
+                classVal = prob + this.data.inters[i];
+                classIdx = i;
+            }
+        }
+        return classIdx;
+    };
+    {% endif %}
+};
+
+var main = function () {
+    // Features:
+    var features = process.argv.slice(3);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    var json = process.argv[2];
+
+    // Estimator:
+    var clf = new {{ class_name }}(json);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": clf.predict(features)
+    }));
+    {% else %}
+    // Get class prediction:
+    var prediction = clf.predict(features);
+    console.log("Predicted class: #" + prediction);
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}
