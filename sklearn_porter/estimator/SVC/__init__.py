@@ -29,32 +29,21 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.C: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: {Method.PREDICT},
         },
         Language.JAVA: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
-            Template.EXPORTED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: {Method.PREDICT},
+            Template.EXPORTED: {Method.PREDICT},
         },
         Language.JS: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: {Method.PREDICT},
+            Template.EXPORTED: {Method.PREDICT},
         },
         Language.PHP: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: {Method.PREDICT},
         },
         Language.RUBY: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
+            Template.ATTACHED: {Method.PREDICT},
         },
     }
 

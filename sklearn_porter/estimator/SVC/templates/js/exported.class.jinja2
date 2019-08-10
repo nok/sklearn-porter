@@ -1,23 +1,28 @@
-{% extends 'base.attached.class' %}
+{% extends 'base.exported.class' %}
 
 {% block content %}
-var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma, coef0, degree) {
-    this.nClasses = weights.length;
+var fs = require('fs');
+
+
+var {{ class_name }} = function(jsonFile) {
+    this.data = JSON.parse(fs.readFileSync(jsonFile));
+
+    this.nClasses = this.data.weights.length;
     this.classes = new Array(this.nClasses);
     for (var i = 0; i < this.nClasses; i++) {
         this.classes[i] = i;
     }
-    this.vectors = vectors;
-    this.coeffs = coeffs;
-    this.inters = inters;
-    this.weights = weights;
-    this.kernel = kernel.toUpperCase();
-    this.gamma = gamma;
-    this.coef0 = coef0;
-    this.degree = degree;
+    this.vectors = this.data.vectors;
+    this.coeffs = this.data.coeffs;
+    this.inters = this.data.inters;
+    this.weights = this.data.weights;
+    this.kernel = this.data.kernel.toUpperCase();
+    this.gamma = this.data.gamma;
+    this.coef0 = this.data.coef0;
+    this.degree = this.data.degree;
 
     this.predict = function(features) {
-        var kernels = new Array(vectors.length);
+        var kernels = new Array(this.vectors.length);
         var kernel;
         var i, j, k, d, l;
         switch (this.kernel) {
@@ -132,30 +137,17 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
 };
 
 var main = function () {
-    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
-        if (process.argv.length - 2 !== {{ n_features }}) {
-            var IllegalArgumentException = function(message) {
-                this.message = message;
-                this.name = "IllegalArgumentException";
-            }
-            throw new IllegalArgumentException("You have to pass {{ n_features }} features.");
-        }
-    }
-
     // Features:
-    var features = process.argv.slice(2);
+    var features = process.argv.slice(3);
     for (var i = 0; i < features.length; i++) {
         features[i] = parseFloat(features[i]);
     }
 
     // Model data:
-    {{ vectors }}
-    {{ coeffs }}
-    {{ inters }}
-    {{ weights }}
+    var json = process.argv[2];
 
     // Estimator:
-    var clf = new {{ class_name }}(vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+    var clf = new {{ class_name }}(json);
 
     {% if is_test or to_json %}
     // Get JSON:
