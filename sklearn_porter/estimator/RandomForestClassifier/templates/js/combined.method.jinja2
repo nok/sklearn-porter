@@ -1,0 +1,26 @@
+{{ methods }}
+
+this._compute = function(features) {
+    var nTrees = forest.length,
+        nClasses = {{ n_classes }};
+    var probas = new Array(nClasses).fill(0);
+    var i, j;
+    for (i = 0; i < nTrees; i++) {
+        var temp = forest[i](features);
+        for (j = 0; j < nClasses; j++) {
+            probas[j] += temp[j];
+        }
+    }
+    for (j = 0; j < nClasses; j++) {
+        probas[j] /= nTrees;
+    }
+    return probas;
+}
+
+this.predict = function(features) {
+    return _findMax(this._compute(features));
+};
+
+this.predictProba = function(features) {
+    return this._compute(features);
+};
