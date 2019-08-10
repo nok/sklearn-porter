@@ -1,0 +1,99 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+var {{ class_name }} = function(jsonFile) {
+    this.data = JSON.parse(fs.readFileSync(jsonFile));
+
+    this.lefts = this.data.lefts;
+    this.rights = this.data.rights;
+    this.thresholds = this.data.thresholds;
+    this.indices = this.data.indices;
+    this.classes = this.data.classes;
+
+    var _findMax = function(nums) {
+        var i = 0, l = nums.length, idx = 0;
+        for (; i < l; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    };
+
+    var _normVals = function(nums) {
+        var i, l = nums.length,
+            result = [],
+            sum = 0.;
+        for (i = 0; i < l; i++) {
+            sum += nums[i];
+        }
+        if(sum === 0) {
+            for (i = 0; i < l; i++) {
+                result[i] = 1.0 / l;
+            }
+        } else {
+            for (i = 0; i < l; i++) {
+                result[i] = nums[i] / sum;
+            }
+        }
+        return result;
+    };
+
+    this._compute = function(features, node, post) {
+        node = (typeof node !== 'undefined') ? node : 0;
+        if (this.thresholds[node] !== -2) {
+            if (features[this.indices[node]] <= this.thresholds[node]) {
+                return this._compute(features, this.lefts[node], post);
+            } else {
+                return this._compute(features, this.rights[node], post);
+            }
+        }
+        return post(this.classes[node]);
+    };
+
+    this.predict = function(features, node) {
+        return this._compute(features, node, _findMax);
+    };
+
+    this.predictProba = function(features, node) {
+        return this._compute(features, node, _normVals);
+    };
+};
+
+var main = function () {
+    // Features:
+    var features = process.argv.slice(3);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    var json = process.argv[2];
+
+    // Estimator:
+    var clf = new {{ class_name }}(json);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": clf.predict(features),
+        "predict_proba": clf.predictProba(features)
+    }));
+    {% else %}
+    // Get class prediction:
+    var prediction = clf.predict(features);
+    console.log("Predicted class: #" + prediction);
+
+    // Get class probabilities:
+    var probabilities = clf.predictProba(features);
+    for (var i = 0; i < probabilities.length; i++) {
+        console.log("Probability of class #" + i + " : " + probabilities[i]);
+    }
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}
