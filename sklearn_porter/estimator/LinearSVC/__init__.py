@@ -46,6 +46,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         },
         Language.RUBY: {
             Template.ATTACHED: {Method.PREDICT},
+            Template.EXPORTED: {Method.PREDICT},
         }
     }
 
