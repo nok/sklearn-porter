@@ -33,22 +33,14 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.C: {
-            Template.COMBINED: {
-                Method.PREDICT,
-            },
+            Template.COMBINED: {Method.PREDICT},
         },
         Language.GO: {
-            Template.COMBINED: {
-                Method.PREDICT,
-            },
+            Template.COMBINED: {Method.PREDICT},
         },
         Language.JAVA: {
-            Template.COMBINED: {
-                Method.PREDICT,
-            },
-            Template.EXPORTED: {
-                Method.PREDICT,
-            },
+            Template.COMBINED: ALL_METHODS,
+            Template.EXPORTED: ALL_METHODS,
         },
         Language.JS: {
             Template.COMBINED: ALL_METHODS,
@@ -56,14 +48,10 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             Template.ATTACHED: ALL_METHODS
         },
         Language.PHP: {
-            Template.COMBINED: {
-                Method.PREDICT,
-            },
+            Template.COMBINED: {Method.PREDICT},
         },
         Language.RUBY: {
-            Template.COMBINED: {
-                Method.PREDICT,
-            },
+            Template.COMBINED: {Method.PREDICT},
         },
     }
 
@@ -195,7 +183,8 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                 templates=tpls,
                 language=language.value.KEY,
                 converter=converter,
-                method_name='predict_' + str(idx),
+                method_index=str(idx),
+                class_name=kwargs.get('class_name'),
                 model_data=model_data
             )
             out_fns.append(out_fn)
@@ -238,7 +227,8 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         templates: Environment,
         language: str,
         converter: Callable[[object], str],
-        method_name: str,
+        method_index: str,
+        class_name: str,
         model_data: dict,
     ):
         """
@@ -252,8 +242,10 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             The required language.
         converter
             The number converter.
-        method_name : int
-            The name of the single decision tree.
+        method_index : str
+            The index of a single decision tree.
+        class_name : str
+            The class name.
         model_data : dict
             The model data of the single decision tree.
 
@@ -272,7 +264,9 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         out_tree = tpl_tree.render(
             tree=tree,
             n_classes=self.meta_info.get('n_classes'),
-            method_name=method_name
+            n_estimators=self.meta_info.get('n_estimators'),
+            method_index=method_index,
+            class_name=class_name
         )
         return out_tree
 

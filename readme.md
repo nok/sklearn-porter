@@ -132,9 +132,9 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td></td>
+    <td>✓ᴾ</td>
     <td></td>
-    <td></td>
-    <td></td>
+    <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
@@ -155,9 +155,9 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
     <td></td>
     <td></td>
+    <td>✓ᴾ</td>
     <td></td>
-    <td></td>
-    <td></td>
+    <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>

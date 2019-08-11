@@ -1,0 +1,21 @@
+{{ methods }}
+
+private static double[] compute(double[] features) {
+    int nClasses = {{ n_classes }};
+    int nTrees = {{ n_estimators }};
+    double[] probas = new double[nClasses];
+    double[] temp;
+    {{ method_calls }}
+    for (int i = 0; i < nClasses; i++) {
+        probas[i] /= nTrees;
+    }
+    return probas;
+}
+
+public static double[] predictProba(double[] features) {
+    return {{ class_name }}.compute(features);
+}
+
+public static int predict(double[] features) {
+    return {{ class_name }}.findMax({{ class_name }}.predictProba(features));
+}
