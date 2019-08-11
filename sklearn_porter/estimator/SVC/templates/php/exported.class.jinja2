@@ -1,0 +1,176 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    public function __construct($path) {
+        $this->data = json_decode(file_get_contents($path, true), true);
+
+        $this->nClasses = count($this->data['weights']);
+        $this->classes = array_fill(0, $this->nClasses, 0);
+        for ($i = 0; $i < $this->nClasses; $i++) {
+            $this->classes[$i] = $i;
+        }
+
+        $this->vectors = $this->data['vectors'];
+        $this->coeffs = $this->data['coeffs'];
+        $this->inters = $this->data['inters'];
+        $this->weights = $this->data['weights'];
+
+        $this->kernel = strtoupper($this->data['kernel']);
+        $this->gamma = $this->data['gamma'];
+        $this->coef0 = $this->data['coef0'];
+        $this->degree = $this->data['degree'];
+    }
+
+    public function predict($features) {
+        $kernels = array_fill(0, count($this->vectors), 0);
+        switch ($this->kernel) {
+            case 'LINEAR':
+                // <x,x'>
+                for ($i = 0; $i < count($this->vectors); $i++) {
+                    $kernel = 0.;
+                    for ($j = 0; $j < count($this->vectors[$i]); $j++) {
+                        $kernel += $this->vectors[$i][$j] * $features[$j];
+                    }
+                    $kernels[$i] = $kernel;
+                }
+                break;
+            case 'POLY':
+                // (y<x,x'>+r)^d
+                for ($i = 0; $i < count($this->vectors); $i++) {
+                    $kernel = 0.;
+                    for ($j = 0; $j < count($this->vectors[$i]); $j++) {
+                        $kernel += $this->vectors[$i][$j] * $features[$j];
+                    }
+                    $kernels[$i] = pow(($this->gamma * $kernel) + $this->coef0, $this->degree);
+                }
+                break;
+            case 'RBF':
+                // exp(-y|x-x'|^2)
+                for ($i = 0; $i < count($this->vectors); $i++) {
+                    $kernel = 0.;
+                    for ($j = 0; $j < count($this->vectors[$i]); $j++) {
+                        $kernel += pow($this->vectors[$i][$j] - $features[$j], 2);
+                    }
+                    $kernels[$i] = exp(-$this->gamma * $kernel);
+                }
+                break;
+            case 'SIGMOID':
+                // tanh(y<x,x'>+r)
+                for ($i = 0; $i < count($this->vectors); $i++) {
+                    $kernel = 0.;
+                    for ($j = 0; $j < count($this->vectors[$i]); $j++) {
+                        $kernel += $this->vectors[$i][$j] * $features[$j];
+                    }
+                    $kernels[$i] = tanh(($this->gamma * $kernel) + $this->coef0);
+                }
+                break;
+        }
+
+        $starts = array_fill(0, count($this->weights), 0);
+        for ($i = 0; $i < count($this->weights); $i++) {
+            if ($i != 0) {
+                $start = 0;
+                for ($j = 0; $j < $i; $j++) {
+                    $start += $this->weights[$j];
+                }
+                $starts[$i] = $start;
+            } else {
+                $starts[0] = 0;
+            }
+        }
+
+        $ends = array_fill(0, count($this->weights), 0);
+        for ($i = 0; $i < count($this->weights); $i++) {
+            $ends[$i] = $this->weights[$i] + $starts[$i];
+        }
+
+        if ($this->nClasses == 2) {
+
+            for ($i = 0; $i < count($kernels); $i++) {
+                $kernels[$i] = -$kernels[$i];
+            }
+
+            $decision = 0.;
+            for ($k = $starts[1]; $k < $ends[1]; $k++) {
+                $decision += $kernels[$k] * $this->coeffs[0][$k];
+            }
+            for ($k = $starts[0]; $k < $ends[0]; $k++) {
+                $decision += $kernels[$k] * $this->coeffs[0][$k];
+            }
+            $decision += $this->inters[0];
+
+            if ($decision > 0) {
+                return 0;
+            }
+            return 1;
+
+        }
+
+        $decisions = array_fill(0, count($this->inters), 0);
+        for ($i = 0, $d = 0, $l = count($this->weights); $i < $l; $i++) {
+            for ($j = $i + 1; $j < $l; $j++) {
+                $tmp = 0.;
+                for ($k = $starts[$j]; $k < $ends[$j]; $k++) {
+                    $tmp += $this->coeffs[$i][$k] * $kernels[$k];
+                }
+                for ($k = $starts[$i]; $k < $ends[$i]; $k++) {
+                    $tmp += $this->coeffs[$j - 1][$k] * $kernels[$k];
+                }
+                $decisions[$d] = $tmp + $this->inters[$d];
+                $d++;
+            }
+        }
+
+        $votes = array_fill(0, count($this->inters), 0);
+        for ($i = 0, $d = 0, $l = count($this->weights); $i < $l; $i++) {
+            for ($j = $i + 1; $j < $l; $j++) {
+                $votes[$d] = $decisions[$d] > 0 ? $i : $j;
+                $d++;
+            }
+        }
+
+        $amounts = array_fill(0, $this->nClasses, 0);
+        for ($i = 0, $l = count($votes); $i < $l; $i++) {
+            $amounts[$votes[$i]] += 1;
+        }
+
+        $classVal = -1;
+        $classIdx = -1;
+        for ($i = 0, $l = count($amounts); $i < $l; $i++) {
+            if ($amounts[$i] > $classVal) {
+                $classVal = $amounts[$i];
+                $classIdx = $i;
+            }
+        }
+        return $this->classes[$classIdx];
+
+    }
+
+}
+
+if ($argc > 1) {
+    array_shift($argv);
+
+    // Model data:
+    $path = array_shift($argv);
+
+    // Features:
+    $features = $argv;
+
+    // Estimator:
+    $clf = new {{ class_name }}($path);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction)));
+    {% else %}
+    // Get class prediction:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    {% endif %}
+
+}
+{% endblock %}

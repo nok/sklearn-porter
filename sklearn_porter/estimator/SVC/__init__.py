@@ -41,6 +41,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         },
         Language.PHP: {
             Template.ATTACHED: {Method.PREDICT},
+            Template.EXPORTED: {Method.PREDICT},
         },
         Language.RUBY: {
             Template.ATTACHED: {Method.PREDICT},
