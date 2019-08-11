@@ -1,19 +1,19 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-{% if is_test or to_json %}
 require 'json'
 
 
-{% endif %}
 class {{ class_name }}
 
-	def initialize (lefts, rights, thresholds, indices, classes)
-		@lefts = lefts
-		@rights = rights
-		@thresholds = thresholds
-		@indices = indices
-		@classes = classes
+	def initialize (path)
+		@data = JSON.parse(File.read(path))
+
+		@lefts = @data['lefts']
+		@rights = @data['rights']
+		@thresholds = @data['thresholds']
+		@indices = @data['indices']
+		@classes = @data['classes']
 	end
 
 	def _find_max (nums)
@@ -65,22 +65,18 @@ class {{ class_name }}
 end
 
 if __FILE__ == $0
-	if ARGV.length != {{ n_features }}
-		raise "You have to pass {{ n_features }} features."
+	if ARGV.length != {{ n_features + 1 }}
+		raise "You have to pass the path to the model data and {{ n_features }} features."
 	end
+
+	# Model data:
+	modelData = ARGV.shift
 
 	# Features:
 	features = ARGV.collect(&:to_f)
 
-	# Model data:
-	{{ lefts }}
-	{{ rights }}
-	{{ thresholds }}
-	{{ indices }}
-	{{ classes }}
-
 	# Estimator:
-	clf = {{ class_name }}.new lefts, rights, thresholds, indices, classes
+	clf = {{ class_name }}.new modelData
 
 	{% if is_test or to_json %}
 	# Get JSON:

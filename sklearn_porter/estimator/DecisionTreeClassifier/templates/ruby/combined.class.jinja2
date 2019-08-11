@@ -3,75 +3,77 @@
 {% block content %}
 {% if is_test or to_json %}
 require 'json'
+
+
 {% endif %}
 class {{ class_name }}
 
-    def self._find_max (nums)
-        idx = 0
-        for i in 0 ... nums.length
-            idx = nums[i] > nums[idx] ? i : idx
-        end
-        idx
-    end
+	def self._find_max (nums)
+		idx = 0
+		for i in 0 ... nums.length
+			idx = nums[i] > nums[idx] ? i : idx
+		end
+		idx
+	end
 
-    def self._norm_vals (nums)
-        result = []
-        sum = 0
-        for i in 0 ... nums.length
-            sum += nums[i]
-        end
-        if sum == 0
-            l = nums.length
-            for i in 0 ... l
-                result[i] = 1.0 / l
-            end
-        else
-            for i in 0 ... nums.length
-                result[i] = nums[i] / sum
-            end
-        end
-        result
-    end
+	def self._norm_vals (nums)
+		result = []
+		sum = 0
+		for i in 0 ... nums.length
+			sum += nums[i]
+		end
+		if sum == 0
+			l = nums.length
+			for i in 0 ... l
+				result[i] = 1.0 / l
+			end
+		else
+			for i in 0 ... nums.length
+				result[i] = nums[i] / sum
+			end
+		end
+		result
+	end
 
-    def self._compute (features)
-        classes = Array.new({{ n_classes }}, 0)
-        {{ tree | indent(4, True) }}
-        classes
-    end
+	def self._compute (features)
+		classes = Array.new({{ n_classes }}, 0)
+		{{ tree | indent(4, True) }}
+		classes
+	end
 
-    def self.predict (features)
-        self._find_max self._compute features
-    end
+	def self.predict (features)
+		self._find_max self._compute features
+	end
 
-    def self.predict_proba (features)
-        self._norm_vals self._compute features
-    end
+	def self.predict_proba (features)
+		self._norm_vals self._compute features
+	end
 
 end
 
 if __FILE__ == $0
-    if ARGV.length != {{ n_features }}
-        raise "You have to pass {{ n_features }} features."
-    end
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
 
-    # Features:
-    features = ARGV.collect(&:to_f)
+	# Features:
+	features = ARGV.collect(&:to_f)
 
-    {% if is_test or to_json %}
-    # Get JSON:
-    prediction = {{ class_name }}.predict features
-    probabilities = {{ class_name }}.predict_proba features
-    puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
-    {% else %}
-    # Get class prediction:
-    prediction = {{ class_name }}.predict features
-    puts "Predicted class: ##{prediction}"
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = {{ class_name }}.predict features
+	probabilities = {{ class_name }}.predict_proba features
+	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+	{% else %}
+	# Get class prediction:
+	prediction = {{ class_name }}.predict features
+	puts "Predicted class: ##{prediction}"
 
-    # Get class probabilities:
-    probabilities = {{ class_name }}.predict_proba features
-    for i in 0 ... probabilities.length
-        puts "Probability of class ##{i} : #{probabilities[i]}"
-    end
-    {% endif %}
+	# Get class probabilities:
+	probabilities = {{ class_name }}.predict_proba features
+	for i in 0 ... probabilities.length
+		puts "Probability of class ##{i} : #{probabilities[i]}"
+	end
+	{% endif %}
 end
 {% endblock %}
