@@ -52,6 +52,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         Language.PHP: {
             Template.ATTACHED: ALL_METHODS,
             Template.COMBINED: ALL_METHODS,
+            Template.EXPORTED: ALL_METHODS,
         },
         Language.RUBY: {
             Template.ATTACHED: ALL_METHODS,

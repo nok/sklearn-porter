@@ -1,0 +1,99 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    public function __construct($path) {
+        $this->data = json_decode(file_get_contents($path, true), true);
+
+        $this->lefts = $this->data['lefts'];
+        $this->rights = $this->data['rights'];
+        $this->thresholds = $this->data['thresholds'];
+        $this->indices = $this->data['indices'];
+        $this->classes = $this->data['classes'];
+    }
+
+    private function findMax($nums) {
+        $i = 0; $l = count($nums); $idx = 0;
+        for (; $i < $l; $i++) {
+            $idx = $nums[$i] > $nums[$idx] ? $i : $idx;
+        }
+        return $idx;
+    }
+
+    private function normVals($nums) {
+        $i = 0; $l = count($nums);
+        $result = [];
+        $sum = 0.;
+
+        for ($i = 0; $i < $l; $i++) {
+            $sum += $nums[$i];
+        }
+        if($sum === 0) {
+            for ($i = 0; $i < $l; $i++) {
+                $result[$i] = 1. / $l;
+            }
+        } else {
+            for ($i = 0; $i < $l; $i++) {
+                $result[$i] = $nums[$i] / $sum;
+            }
+        }
+        return $result;
+    }
+
+    public function predict($features) {
+        $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
+        if ($this->thresholds[$node] != -2) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+                return $this->predict($features, $this->lefts[$node]);
+            } else {
+                return $this->predict($features, $this->rights[$node]);
+            }
+        }
+        return $this->findMax($this->classes[$node]);
+    }
+
+    public function predictProba($features) {
+        $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
+        if ($this->thresholds[$node] != -2) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+                return $this->predictProba($features, $this->lefts[$node]);
+            } else {
+                return $this->predictProba($features, $this->rights[$node]);
+            }
+        }
+        return $this->normVals($this->classes[$node]);
+    }
+
+}
+
+if ($argc > 1) {
+    array_shift($argv);
+
+    // Model data:
+    $path = array_shift($argv);
+
+    // Features:
+    $features = $argv;
+
+    // Estimator:
+    $clf = new {{ class_name }}($path);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $clf->predict($features);
+    $probabilities = $clf->predictProba($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
+    {% else %}
+    // Get class prediction:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+
+    // Get class probabilities:
+    $probabilities = $clf->predictProba($features);
+    for ($i = 0; $i < count($probabilities); $i++) {
+        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+    }
+    {% endif %}
+}
+{% endblock %}
