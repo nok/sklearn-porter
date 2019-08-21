@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
+# scikit-learn
 from sklearn.ensemble import ExtraTreesClassifier as ExtraTreesClassifierClass
 
+# sklearn-porter
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.estimator.RandomForestClassifier import \
+from sklearn_porter.estimator.RandomForestClassifier import (
     RandomForestClassifier
-from sklearn_porter.utils import get_logger
-
-
-L = get_logger(__name__)
+)
 
 
 class ExtraTreesClassifier(RandomForestClassifier, EstimatorBase):

@@ -18,8 +18,10 @@ def load_meta(path):
     """
     with open(path, mode='r', encoding='utf-8') as f:
         meta = load(f, encoding='utf-8')
-        meta = {k: v.decode('utf-8') if isinstance(v, bytes) else v
-                for k, v in meta.items()}
+        meta = {
+            k: v.decode('utf-8') if isinstance(v, bytes) else v
+            for k, v in meta.items()
+        }
 
         src_dir = abspath(dirname(path))
 
@@ -60,11 +62,10 @@ def main():
         install_requires=[
             'scikit-learn>=0.16',
             'Jinja2>=2.10.1',
+            'loguru=>0.3.2',
         ],
         extras_require={
-            'examples': [
-                'jupyterlab>=0.33.12'
-            ],
+            'examples': ['jupyterlab>=0.33.12'],
             'development': [
                 'twine>=1.12.1',
                 'pylint>=1.9.3',
@@ -73,16 +74,11 @@ def main():
                 'jupytext>=0.8.3',
             ],
         },
-        packages=find_packages(exclude=[
-            'tests.*',
-            'tests'
-        ]),
+        packages=find_packages(exclude=['tests.*', 'tests']),
         test_suite='pytest',
         include_package_data=True,
         entry_points={
-            'console_scripts': [
-                'porter = sklearn_porter.cli.__main__:main'
-            ],
+            'console_scripts': ['porter = sklearn_porter.cli.__main__:main'],
         },
         classifiers=[
             'Intended Audience :: Science/Research',

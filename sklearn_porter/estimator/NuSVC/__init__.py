@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
 
+# scikit-learn
 from sklearn.svm.classes import NuSVC as NuSVCClass
 
+# sklearn-porter
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.estimator.SVC import SVC
-from sklearn_porter.utils import get_logger
-
-
-L = get_logger(__name__)
 
 
 class NuSVC(SVC, EstimatorBase):

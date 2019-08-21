@@ -2,11 +2,11 @@
 
 from copy import deepcopy
 from json import dumps, encoder
-from logging import DEBUG
 from textwrap import indent
 from typing import Callable, Optional, Tuple, Union
 
 from jinja2 import Environment
+from loguru import logger as L
 
 # scikit-learn
 from sklearn.tree.tree import (
@@ -18,9 +18,6 @@ from sklearn_porter.enums import ALL_METHODS, Language, Method, Template
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.exceptions import NotFittedEstimatorError
-from sklearn_porter.utils import get_logger
-
-L = get_logger(__name__)
 
 
 class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
@@ -81,8 +78,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n_classes=len(est.tree_.value.tolist()[0][0]),
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Meta info: {}'.format(self.meta_info))
+        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
 
         # Extract and save model data:
         self.model_data = dict(
@@ -93,8 +89,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             classes=[[int(c) for c in l[0]] for l in est.tree_.value.tolist()],
         )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Model data: {}'.format(self.model_data))
+        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
 
     def port(
         self,

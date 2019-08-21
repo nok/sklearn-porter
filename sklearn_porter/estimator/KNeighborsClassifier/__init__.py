@@ -2,8 +2,9 @@
 
 from copy import deepcopy
 from json import dumps, encoder
-from logging import DEBUG
 from typing import Optional, Tuple, Union
+
+from loguru import logger as L
 
 # scikit-learn
 from sklearn.neighbors.classification import \
@@ -16,9 +17,6 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.exceptions import (
     NotFittedEstimatorError, NotSupportedYetError
 )
-from sklearn_porter.utils import get_logger
-
-L = get_logger(__name__)
 
 
 class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
@@ -63,8 +61,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             metric=est.metric
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Meta info: {}'.format(self.meta_info))
+        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
 
         self.model_data = dict(
             X=est._fit_X.tolist(),  # pylint: disable=W0212
@@ -74,8 +71,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             power=est.p
         )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Model data: {}'.format(self.model_data))
+        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
 
     def port(
         self,

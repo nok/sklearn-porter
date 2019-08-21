@@ -8,11 +8,13 @@ from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, check_output
 from sys import platform as system_platform
 from sys import version_info
+from sys import stdout
 from tempfile import mktemp
 from textwrap import dedent
 from typing import Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
+from loguru import logger as L
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -21,15 +23,13 @@ from sklearn.ensemble import BaseEnsemble
 from sklearn.metrics import accuracy_score
 
 # sklearn-porter
-from sklearn_porter import __version__ as sklearn_porter_version
+from sklearn_porter import __version__
 from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.exceptions import (
     CompilationFailed, InvalidLanguageError, InvalidMethodError,
     InvalidTemplateError, NotFittedEstimatorError
 )
-from sklearn_porter.utils import Options, get_logger, get_qualname
-
-L = get_logger(__name__)
+from sklearn_porter.utils import Options, get_qualname
 
 
 class Estimator:
@@ -64,18 +64,15 @@ class Estimator:
             data. By default a simple string cast `str(value)` will be used.
         """
         # Log basic environment information:
-        env_info = (
-            'Environment: platform: {}; python: v{}; '
-            'scikit-learn: v{}; sklearn-porter: v{}'
-        )
+        L.remove()
+        logging_level = Options.get_option('logging.level')
+        L.add(stdout, level=logging_level)
+
         python_version = '.'.join(map(str, version_info[:3]))
-        env_info = env_info.format(
-            system_platform,
-            python_version,
-            sklearn_version,
-            sklearn_porter_version,
-        )
-        L.debug(env_info)
+        L.debug('Platform: {}'.format(system_platform))
+        L.debug('Python: v{}'.format(python_version))
+        L.debug('Package: scikit-learn: v{}'.format(sklearn_version))
+        L.debug('Package: sklearn-porter: v{}'.format(__version__))
 
         # Set and load estimator:
         self._estimator = None
@@ -135,7 +132,8 @@ class Estimator:
         -------
         A valid base estimator or None.
         """
-        L.setLevel(Options.get_option('logging.level'))
+        # L.setLevel(Options.get_option('logging.level'))
+        # L.level = Options.get_option('logging.level')
 
         est = estimator  # shorter <3
         qualname = get_qualname(est)
@@ -219,7 +217,7 @@ class Estimator:
                             'The used optimizer `{}` is not supported '
                             'by sklearn-porter v{}. Try to extract the '
                             'internal estimator manually and pass it.'
-                            ''.format(qualname, sklearn_porter_version)
+                            ''.format(qualname, __version__)
                         )
                         L.error(msg)
                         raise ValueError(msg)
@@ -897,7 +895,7 @@ class Estimator:
             system_platform,
             python_version,
             sklearn_version,
-            sklearn_porter_version,
+            __version__,
         )
         return dedent(report)
 

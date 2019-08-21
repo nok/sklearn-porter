@@ -7,6 +7,7 @@ from time import sleep
 from typing import Dict, Optional, Set, Tuple, Union
 
 from jinja2 import DictLoader, Environment
+from loguru import logger as L
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -17,9 +18,6 @@ from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.exceptions import NotSupportedYetError
-from sklearn_porter.utils import get_logger
-
-L = get_logger(__name__)
 
 
 class EstimatorBase(EstimatorApiABC):

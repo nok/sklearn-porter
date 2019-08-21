@@ -100,7 +100,7 @@ def tree():
     'Class',
     [
         DecisionTreeClassifier,
-        AdaBoostClassifier,
+        # AdaBoostClassifier,
         RandomForestClassifier,
         ExtraTreesClassifier,
         LinearSVC,
@@ -114,7 +114,7 @@ def tree():
     ],
     ids=[
         'DecisionTreeClassifier',
-        'AdaBoostClassifier',
+        # 'AdaBoostClassifier',
         'RandomForestClassifier',
         'ExtraTreesClassifier',
         'LinearSVC',
@@ -173,7 +173,7 @@ def test_list_of_classifiers():
     'Class',
     [
         DecisionTreeClassifier,
-        AdaBoostClassifier,
+        # AdaBoostClassifier,
         RandomForestClassifier,
         ExtraTreesClassifier,
         LinearSVC,
@@ -187,7 +187,7 @@ def test_list_of_classifiers():
     ],
     ids=[
         'DecisionTreeClassifier',
-        'AdaBoostClassifier',
+        # 'AdaBoostClassifier',
         'RandomForestClassifier',
         'ExtraTreesClassifier',
         'LinearSVC',
@@ -244,7 +244,7 @@ def test_unfitted_est_in_pipeline():
     'Class',
     [
         DecisionTreeClassifier,
-        AdaBoostClassifier,
+        # AdaBoostClassifier,
         RandomForestClassifier,
         ExtraTreesClassifier,
         LinearSVC,
@@ -258,7 +258,7 @@ def test_unfitted_est_in_pipeline():
     ],
     ids=[
         'DecisionTreeClassifier',
-        'AdaBoostClassifier',
+        # 'AdaBoostClassifier',
         'RandomForestClassifier',
         'ExtraTreesClassifier',
         'LinearSVC',
@@ -297,7 +297,7 @@ def test_invalid_params_on_port_method(Class: Callable, params: Tuple):
     'Class',
     [
         DecisionTreeClassifier,
-        AdaBoostClassifier,
+        # AdaBoostClassifier,
         RandomForestClassifier,
         ExtraTreesClassifier,
         LinearSVC,
@@ -311,7 +311,7 @@ def test_invalid_params_on_port_method(Class: Callable, params: Tuple):
     ],
     ids=[
         'DecisionTreeClassifier',
-        'AdaBoostClassifier',
+        # 'AdaBoostClassifier',
         'RandomForestClassifier',
         'ExtraTreesClassifier',
         'LinearSVC',

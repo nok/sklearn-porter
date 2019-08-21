@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from sklearn.neural_network.multilayer_perceptron \
-    import MLPRegressor as MLPRegressorClass
+# scikit-learn
+from sklearn.neural_network.multilayer_perceptron import \
+    MLPRegressor as MLPRegressorClass
 
+# sklearn-porter
+from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.estimator.MLPClassifier import MLPClassifier
-from sklearn_porter.enums import Method, Language, Template
 from sklearn_porter.exceptions import NotFittedEstimatorError
-from sklearn_porter.utils import get_logger
-
-
-L = get_logger(__name__)
 
 
 class MLPRegressor(MLPClassifier, EstimatorBase):
@@ -22,7 +20,9 @@ class MLPRegressor(MLPClassifier, EstimatorBase):
 
     SUPPORT = {
         Language.JS: {
-            Template.ATTACHED: {Method.PREDICT, },
+            Template.ATTACHED: {
+                Method.PREDICT,
+            },
         },
     }
 

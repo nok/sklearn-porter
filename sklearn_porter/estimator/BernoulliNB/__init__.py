@@ -2,8 +2,9 @@
 
 from copy import deepcopy
 from json import dumps, encoder
-from logging import DEBUG
 from typing import Optional, Tuple, Union
+
+from loguru import logger as L
 
 # scikit-learn
 from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
@@ -13,9 +14,6 @@ from sklearn_porter.enums import Language, Method, Template, ALL_METHODS
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.exceptions import NotFittedEstimatorError
-from sklearn_porter.utils import get_logger
-
-L = get_logger(__name__)
 
 
 class BernoulliNB(EstimatorBase, EstimatorApiABC):
@@ -54,16 +52,14 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             n_classes=len(est.classes_),
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Meta info: {}'.format(self.meta_info))
+        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
 
         self.model_data = dict(
             priors=est.class_log_prior_.tolist(),  # class_log_prior
             probs=est.feature_log_prob_.tolist(),  # feature_log_prob
         )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Model data: {}'.format(self.model_data))
+        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
 
     def port(
         self,

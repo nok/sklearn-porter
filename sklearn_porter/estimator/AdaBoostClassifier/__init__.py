@@ -1,23 +1,22 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, Tuple, Optional, Callable
-from json import encoder, dumps
-from textwrap import indent
 from copy import deepcopy
-from logging import DEBUG
+from json import dumps, encoder
+from textwrap import indent
+from typing import Callable, Optional, Tuple, Union
 
-from sklearn.ensemble.weight_boosting import AdaBoostClassifier \
-    as AdaBoostClassifierClass
+from loguru import logger as L
+
+# scikit-learn
+from sklearn.ensemble.weight_boosting import \
+    AdaBoostClassifier as AdaBoostClassifierClass
 from sklearn.tree import DecisionTreeClassifier
 
+# sklearn-porter
+from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.enums import Method, Language, Template
 from sklearn_porter.exceptions import NotSupportedYetError
-from sklearn_porter.utils import get_logger
-
-
-L = get_logger(__name__)
 
 
 class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
@@ -29,15 +28,25 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.C: {
-            Template.COMBINED: {Method.PREDICT, },
+            Template.COMBINED: {
+                Method.PREDICT,
+            },
         },
         Language.JAVA: {
-            Template.COMBINED: {Method.PREDICT, },
-            Template.EXPORTED: {Method.PREDICT, },
+            Template.COMBINED: {
+                Method.PREDICT,
+            },
+            Template.EXPORTED: {
+                Method.PREDICT,
+            },
         },
         Language.JS: {
-            Template.COMBINED: {Method.PREDICT, },
-            Template.EXPORTED: {Method.PREDICT, },
+            Template.COMBINED: {
+                Method.PREDICT,
+            },
+            Template.EXPORTED: {
+                Method.PREDICT,
+            },
         },
     }
 
@@ -72,31 +81,29 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             n_features=est.estimators_[0].n_features_,
             n_estimators=n_estimators,
         )
-        L.info('Meta info (keys): {}'.format(
-            self.meta_info.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Meta info: {}'.format(self.meta_info))
+        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
+        L.opt(lazy=True).debug.debug('Meta info: {}'.format(self.meta_info))
 
         self.model_data['estimators'] = []
         for e in estimators:
-            self.model_data['estimators'].append(dict(
-                lefts=e.tree_.children_left.tolist(),
-                rights=e.tree_.children_right.tolist(),
-                thresholds=e.tree_.threshold.tolist(),
-                classes=[c[0] for c in e.tree_.value.tolist()],
-                indices=e.tree_.feature.tolist()
-            ))
-        L.info('Model data (keys): {}'.format(
-            self.model_data.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Model data: {}'.format(self.model_data))
+            self.model_data['estimators'].append(
+                dict(
+                    lefts=e.tree_.children_left.tolist(),
+                    rights=e.tree_.children_right.tolist(),
+                    thresholds=e.tree_.threshold.tolist(),
+                    classes=[c[0] for c in e.tree_.value.tolist()],
+                    indices=e.tree_.feature.tolist()
+                )
+            )
+        L.info('Model data (keys): {}'.format(self.model_data.keys()))
+        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
 
     def port(
-            self,
-            method: Optional[Method] = None,
-            language: Optional[Language] = None,
-            template: Optional[Template] = None,
-            **kwargs
+        self,
+        method: Optional[Method] = None,
+        language: Optional[Language] = None,
+        template: Optional[Template] = None,
+        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Port an estimator.
@@ -117,7 +124,8 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             The ported estimator.
         """
         method, language, template = self.check(
-            method=method, language=language, template=template)
+            method=method, language=language, template=template
+        )
 
         # Default arguments:
         kwargs.setdefault('method_name', method.value)
@@ -125,10 +133,12 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
 
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=kwargs.get('class_name'),
-            method_name=kwargs.get('method_name'),
-        ))
+        plas.update(
+            dict(
+                class_name=kwargs.get('class_name'),
+                method_name=kwargs.get('method_name'),
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -155,7 +165,8 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
                 language=language.value.KEY,
                 converter=converter,
                 method_name=plas.get('method_name') + '_' + str(idx),
-                model_data=model_data)
+                model_data=model_data
+            )
             out_fns.append(out_fn)
         out_fns = '\n'.join(out_fns)
 
@@ -176,10 +187,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         # Make method:
         tpl_method = tpls.get('combined.method')
         plas_copy = deepcopy(plas)
-        plas_copy.update(dict(
-            methods=out_fns,
-            method_calls=out_calls
-        ))
+        plas_copy.update(dict(methods=out_fns, method_calls=out_calls))
         out_method = tpl_method.format(**plas_copy)
 
         if language in (Language.JAVA, Language.JS):
@@ -195,12 +203,12 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         return out_class
 
     def _create_method(
-            self,
-            templates: dict,
-            language: str,
-            converter: Callable[[object], str],
-            method_name: str,
-            model_data: dict,
+        self,
+        templates: dict,
+        language: str,
+        converter: Callable[[object], str],
+        method_name: str,
+        model_data: dict,
     ):
         """
         Port a method for a single tree.
@@ -224,15 +232,9 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             The created method as string.
         """
         tree_branches = self._create_branch(
-            templates,
-            language,
-            converter,
-            model_data.get('lefts'),
-            model_data.get('rights'),
-            model_data.get('thresholds'),
-            model_data.get('classes'),
-            model_data.get('indices'),
-            0, 1
+            templates, language, converter, model_data.get('lefts'),
+            model_data.get('rights'), model_data.get('thresholds'),
+            model_data.get('classes'), model_data.get('indices'), 0, 1
         )
 
         tpl_tree = templates.get('combined.single_method')
@@ -244,17 +246,9 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         return out_tree
 
     def _create_branch(
-            self,
-            tpls: dict,
-            language: str,
-            converter: Callable[[object], str],
-            left_nodes: list,
-            right_nodes: list,
-            threshold: list,
-            value: list,
-            features: list,
-            node: int,
-            depth: int
+        self, tpls: dict, language: str, converter: Callable[[object], str],
+        left_nodes: list, right_nodes: list, threshold: list, value: list,
+        features: list, node: int, depth: int
     ):
         """
         The ported single tree as function or method.
@@ -302,7 +296,8 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             if left_nodes[node] != -1.:
                 out += self._create_branch(
                     tpls, language, converter, left_nodes, right_nodes,
-                    threshold, value, features, left_nodes[node], depth + 1)
+                    threshold, value, features, left_nodes[node], depth + 1
+                )
 
             out += '\n'
             tpl = tpls.get('else')
@@ -312,7 +307,8 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             if right_nodes[node] != -1.:
                 out += self._create_branch(
                     tpls, language, converter, left_nodes, right_nodes,
-                    threshold, value, features, right_nodes[node], depth + 1)
+                    threshold, value, features, right_nodes[node], depth + 1
+                )
 
             out += '\n'
             tpl = tpls.get('endif')

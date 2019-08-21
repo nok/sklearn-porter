@@ -2,10 +2,10 @@
 
 from copy import deepcopy
 from json import dumps, encoder
-from logging import DEBUG
 from typing import Optional, Tuple, Union
 
 import numpy as np
+from loguru import logger as L
 
 # scikit-learn
 from sklearn.neural_network.multilayer_perceptron import \
@@ -18,9 +18,6 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.exceptions import (
     NotFittedEstimatorError, NotSupportedYetError
 )
-from sklearn_porter.utils import get_logger
-
-L = get_logger(__name__)
 
 
 class MLPClassifier(EstimatorBase, EstimatorApiABC):
@@ -81,8 +78,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
         self.meta_info = dict(n_features=n_inputs, )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Meta info: {}'.format(self.meta_info))
+        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
 
         self.model_data = dict(
             layers=list(map(int, layers[1:])),
@@ -94,8 +90,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             self.model_data['output_activation'] = est.out_activation_
 
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Model data: {}'.format(self.model_data))
+        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
 
     def port(
         self,

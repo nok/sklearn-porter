@@ -2,8 +2,9 @@
 
 from copy import deepcopy
 from json import dumps, encoder
-from logging import DEBUG
 from typing import Optional, Tuple, Union
+
+from loguru import logger as L
 
 # scikit-learn
 from sklearn.svm.classes import LinearSVC as LinearSVCClass
@@ -13,9 +14,6 @@ from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.exceptions import NotFittedEstimatorError
-from sklearn_porter.utils import get_logger
-
-L = get_logger(__name__)
 
 
 class LinearSVC(EstimatorBase, EstimatorApiABC):
@@ -69,8 +67,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
             is_binary=len(est.classes_) == 2
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Meta info: {}'.format(self.meta_info))
+        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
 
         if self.meta_info['is_binary'] == 2:
             self.model_data = dict(
@@ -81,8 +78,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
                 coeffs=est.coef_.tolist(), inters=est.intercept_.tolist()
             )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Model data: {}'.format(self.model_data))
+        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
 
     def port(
         self,

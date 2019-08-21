@@ -6,6 +6,8 @@ from logging import DEBUG
 from textwrap import indent
 from typing import Callable, Dict, Optional, Tuple, Union
 
+from loguru import logger as L
+
 # scikit-learn
 from jinja2 import Environment
 from sklearn.ensemble.forest import \
@@ -19,9 +21,6 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.exceptions import (
     NotFittedEstimatorError, NotSupportedYetError
 )
-from sklearn_porter.utils import get_logger
-
-L = get_logger(__name__)
 
 
 class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
@@ -86,8 +85,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             n_features=est.estimators_[0].n_features_,
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Meta info: {}'.format(self.meta_info))
+        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
 
         # Extract and save model data:
         self.model_data['estimators'] = []
@@ -102,8 +100,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                 )
             )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Model data: {}'.format(self.model_data))
+        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
 
     def port(
         self,

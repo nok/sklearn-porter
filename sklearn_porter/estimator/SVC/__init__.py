@@ -2,8 +2,9 @@
 
 from copy import deepcopy
 from json import dumps, encoder
-from logging import DEBUG
 from typing import Optional, Tuple, Union
+
+from loguru import logger as L
 
 # scikit-learn
 from sklearn.svm.classes import SVC as SVCClass
@@ -15,9 +16,6 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.exceptions import (
     NotFittedEstimatorError, NotSupportedYetError
 )
-from sklearn_porter.utils import get_logger
-
-L = get_logger(__name__)
 
 
 class SVC(EstimatorBase, EstimatorApiABC):
@@ -86,8 +84,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
             degree=params['degree'],
         )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Model data: {}'.format(self.model_data))
+        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
 
         self.meta_info = dict(
             n_classes=len(est.classes_),
@@ -98,8 +95,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
             n_inters=len(self.model_data.get('inters')),
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        if L.isEnabledFor(DEBUG):
-            L.debug('Meta info: {}'.format(self.meta_info))
+        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
 
     def port(
         self,
