@@ -31,12 +31,12 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
     DEFAULT_METHOD = Method.PREDICT
 
     SUPPORT = {
-        Language.C: {
-            Template.COMBINED: {Method.PREDICT},
-        },
-        Language.GO: {
-            Template.COMBINED: {Method.PREDICT},
-        },
+        # Language.C: {
+        #     Template.COMBINED: {},
+        # },
+        # Language.GO: {
+        #     Template.COMBINED: {},
+        # },
         Language.JAVA: {
             Template.COMBINED: ALL_METHODS,
             Template.EXPORTED: ALL_METHODS,
@@ -44,14 +44,14 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         Language.JS: {
             Template.COMBINED: ALL_METHODS,
             Template.EXPORTED: ALL_METHODS,
-            Template.ATTACHED: ALL_METHODS
+            Template.ATTACHED: ALL_METHODS,
         },
-        Language.PHP: {
-            Template.COMBINED: {Method.PREDICT},
-        },
-        Language.RUBY: {
-            Template.COMBINED: {Method.PREDICT},
-        },
+        # Language.PHP: {
+        #     Template.COMBINED: {},
+        # },
+        # Language.RUBY: {
+        #     Template.COMBINED: {},
+        # },
     }
 
     estimator = None  # type: RandomForestClassifierClass

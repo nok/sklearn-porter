@@ -28,23 +28,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
     DEFAULT_METHOD = Method.PREDICT
 
     SUPPORT = {
-        Language.C: {
-            Template.COMBINED: {
-                Method.PREDICT,
-            },
-        },
-        Language.JAVA: {
-            Template.COMBINED: {
-                Method.PREDICT,
-            },
-            Template.EXPORTED: {
-                Method.PREDICT,
-            },
-        },
         Language.JS: {
-            Template.COMBINED: {
-                Method.PREDICT,
-            },
             Template.EXPORTED: ALL_METHODS,
         },
     }

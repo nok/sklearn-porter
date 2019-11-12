@@ -19,11 +19,11 @@ class MLPRegressor(MLPClassifier, EstimatorBase):
     DEFAULT_METHOD = Method.PREDICT
 
     SUPPORT = {
-        Language.JS: {
-            Template.ATTACHED: {
-                Method.PREDICT,
-            },
-        },
+        # Language.JS: {
+        #     Template.ATTACHED: {
+        #         Method.PREDICT,
+        #     },
+        # },
     }
 
     estimator = None  # type: MLPRegressorClass
