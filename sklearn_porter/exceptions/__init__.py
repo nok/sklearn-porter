@@ -25,6 +25,15 @@ class CompilationFailed(RuntimeError):
         super().__init__(self.message)
 
 
+class CodeTooLarge(CompilationFailed):
+    def __init__(self, message: str):
+        hint = 'Please try to save the model data separately ' \
+               'by changing the template type to `exported`: ' \
+               '`template=\'exported\'`.'
+        self.message = 'Compilation failed:\n\n{}\n\n{}'.format(message, hint)
+        super().__init__(self.message)
+
+
 class InvalidMethodError(Exception):
     def __init__(self, message: str):
         opts = ', '.join(['`{}`'.format(m.value) for m in list(Method)])
