@@ -502,8 +502,53 @@ $ pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/maste
 
 ## Usage
 
+### API
 
-### Export
+The following table shows the most relevant high-level methods. 
+
+<table>
+    <thead>
+        <tr>
+            <td>Step</td>
+            <td>Method</td>
+            <td>Alias</td>
+            <td>Description</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>1</td>
+            <td><code>port</code></td>
+            <td><code>export</code></td>
+            <td>Transpile the passed estimator to the desired programming language and template.</td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td><code>save</code></td>
+            <td><code>dump</code></td>
+            <td>Save the previously generated source code locally.</td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td><code>make</code></td>
+            <td><code>predict</code></td>
+            <td>Compile the saved source files and make predictions.</td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td><code>test</code></td>
+            <td><code>check</code></td>
+            <td>Make an integrity check by making regression tests between the original and transpiled estimator.</td>
+        </tr>
+    </tbody>
+</table>
+
+Each step executes the previous steps internally.
+
+
+### Examples
+
+#### Export
 
 The following example demonstrates how you can transpile a [decision tree estimator](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
 
@@ -527,7 +572,7 @@ print(output)
 The exported [result](examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.pct.py#L60-L110) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
 
 
-### Integrity
+#### Integrity
 
 You should always check and compute the integrity between the original and the transpiled estimator:
 
@@ -541,7 +586,7 @@ print(integrity)  # 1.0
 ```
 
 
-### Prediction
+#### Prediction
 
 You can compute the prediction(s) in the target programming language:
 
