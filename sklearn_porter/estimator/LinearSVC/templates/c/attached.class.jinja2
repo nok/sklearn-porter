@@ -16,7 +16,7 @@ int predict(float features[]) {
     for (i = 0, l = sizeof(coeffs) / sizeof (coeffs[0]); i < l; i++) {
         prob += coeffs[i] * features[i];
     }
-    if (prob + intercepts > 0) {
+    if (prob + inters > 0) {
         return 1;
     }
     return 0;

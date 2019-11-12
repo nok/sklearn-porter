@@ -27,7 +27,7 @@ from sklearn_porter import __version__
 from sklearn_porter.enums import Language, Method, Template
 from sklearn_porter.exceptions import (
     CompilationFailed, InvalidLanguageError, InvalidMethodError,
-    InvalidTemplateError, NotFittedEstimatorError
+    InvalidTemplateError, NotFittedEstimatorError, CodeTooLarge
 )
 from sklearn_porter.utils import Options, get_qualname
 
@@ -627,58 +627,7 @@ class Estimator:
         class_paths = []
 
         # Compilation:
-        cmd = language.value.CMD_COMPILE
-        if cmd:
-            cmd_args = {}
-
-            if language in (Language.C, Language.GO):
-                cmd_args['src_path'] = str(src_path)
-                cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
-                created_files.append((src_path.parent / src_path.stem))
-
-            elif language is Language.JAVA:
-                cmd_args['src_path'] = str(src_path)
-                cmd_args['dest_dir'] = '-d {}'.format(str(src_path.parent))
-                class_paths.append(str(src_path.parent))
-                created_files.append(
-                    (src_path.parent / (src_path.stem + '.class'))
-                )
-
-                # Dependencies:
-                if template is Template.EXPORTED:
-                    is_test = (
-                        'SKLEARN_PORTER_PYTEST' in environ
-                        and 'SKLEARN_PORTER_PYTEST_GSON_PATH' in environ
-                    )
-                    if is_test:
-                        class_paths.append(
-                            environ.get('SKLEARN_PORTER_PYTEST_GSON_PATH')
-                        )
-                    else:
-                        path = src_path.parent / 'gson.jar'
-                        if not path.exists():
-                            url = language.value.GSON_DOWNLOAD_URI
-                            urllib.request.urlretrieve(url, str(path))
-                            created_files.append(path)
-                        class_paths.append(str(path))
-
-                if bool(class_paths):
-                    cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
-
-            cmd = cmd.format(**cmd_args)
-            L.info('Compilation command: `{}`'.format(cmd))
-
-            subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
-            try:
-                check_output(cmd, **subp_args)
-            except CalledProcessError as e:
-                msg = 'Command "{}" return with error (code {}):\n\n{}'
-                msg = msg.format(e.cmd, e.returncode, e.output)
-                if language is Language.JAVA and 'code too large' in e.output:
-                    msg += '\nPlease try to save the model data separately ' \
-                           'by changing the template type to `exported`: ' \
-                           '`template=\'exported\'`.'
-                raise CompilationFailed(msg)
+        self._compile(src_path, class_paths, created_files, language, template)
 
         # Execution:
         cmd = language.value.CMD_EXECUTE
@@ -738,6 +687,66 @@ class Estimator:
                 return y[0][0], y[1][0]
             return y[0], y[1]
 
+    @staticmethod
+    def _compile(
+        src_path: Path,
+        class_paths: List,
+        created_files: List,
+        language: Language,
+        template: Optional[Template] = None,
+    ):
+        cmd = language.value.CMD_COMPILE
+
+        if not cmd:
+            return
+
+        cmd_args = {}
+
+        if language in (Language.C, Language.GO):
+            cmd_args['src_path'] = str(src_path)
+            cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
+            created_files.append((src_path.parent / src_path.stem))
+
+        elif language is Language.JAVA:
+            cmd_args['src_path'] = str(src_path)
+            cmd_args['dest_dir'] = '-d {}'.format(str(src_path.parent))
+            class_paths.append(str(src_path.parent))
+            created_files.append((src_path.parent / (src_path.stem + '.class')))
+
+            # Dependencies:
+            if template is Template.EXPORTED:
+                is_test = (
+                    'SKLEARN_PORTER_PYTEST' in environ
+                    and 'SKLEARN_PORTER_PYTEST_GSON_PATH' in environ
+                )
+                if is_test:
+                    class_paths.append(
+                        environ.get('SKLEARN_PORTER_PYTEST_GSON_PATH')
+                    )
+                else:
+                    path = src_path.parent / 'gson.jar'
+                    if not path.exists():
+                        url = language.value.GSON_DOWNLOAD_URI
+                        urllib.request.urlretrieve(url, str(path))
+                        created_files.append(path)
+                    class_paths.append(str(path))
+
+            if bool(class_paths):
+                cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
+
+        cmd = cmd.format(**cmd_args)
+        L.info('Compilation command: `{}`'.format(cmd))
+
+        subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
+        try:
+            check_output(cmd, **subp_args)
+        except CalledProcessError as e:
+            msg = 'Command "{}" return with error (code {}):\n\n{}'
+            msg = msg.format(e.cmd, e.returncode, e.output)
+            if language is Language.JAVA and 'code too large' in e.output:
+                raise CodeTooLarge(msg)
+            raise CompilationFailed(msg)
+
     def integrity_score(
         self,
         x,
@@ -745,7 +754,7 @@ class Estimator:
         template: Optional[Union[str, Template]] = None,
         directory: Optional[Union[str, Path]] = None,
         n_jobs: Optional[Union[bool, int]] = True,
-        final_deletion: Optional[bool] = True,
+        final_deletion: Optional[bool] = False,
         normalize: bool = True,
     ):
         """

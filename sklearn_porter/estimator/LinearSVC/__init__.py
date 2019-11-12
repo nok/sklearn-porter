@@ -69,9 +69,9 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
         L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
 
-        if self.meta_info['is_binary'] == 2:
+        if self.meta_info['is_binary']:
             self.model_data = dict(
-                coeffs=est.coef_[0].tolist(), inters=est.intercept_[0]
+                coeffs=est.coef_[0].tolist(), inters=est.intercept_[0].tolist()
             )
         else:
             self.model_data = dict(
@@ -154,7 +154,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
             coeffs_str = tpl_arr_1.render(
                 type=tpl_double,
                 name='coeffs',
-                value=', '.join(coeffs_val),
+                values=', '.join(coeffs_val),
                 n=len(coeffs_val)
             )
 
