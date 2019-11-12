@@ -18,7 +18,7 @@ class Ruby(LanguageABC):
 
     # yapf: disable
     TEMPLATES = {
-        'init':         '{name} = {value}',
+        'init':         '{{ name }} = {{ value }}',
 
         # if/else condition:
         'if':           'if {{ a }} {{ op }} {{ b }}',
