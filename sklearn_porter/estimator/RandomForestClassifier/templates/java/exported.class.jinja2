@@ -62,7 +62,7 @@ class {{ class_name }} {
     private int nTrees;
     private int nClasses;
 
-    public RandomForestClassifier (String file) throws FileNotFoundException {
+    public {{ class_name }} (String file) throws FileNotFoundException {
         String jsonStr = new Scanner(new File(file)).useDelimiter("\\Z").next();
         Gson gson = new Gson();
         Type listType = new TypeToken<List<Tree>>(){}.getType();
