@@ -131,7 +131,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         converter = kwargs.get('converter')
         encoder.FLOAT_REPR = lambda o: converter(o)
 
-        # Create 'exported' template:
+        # Make 'exported' variant:
         if template == Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
@@ -139,7 +139,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             model_data = dumps(model_data, separators=(',', ':'))
             return out_class, model_data
 
-        # Create 'attached' template:
+        # Make 'attached' variant:
         elif template == Template.ATTACHED:
             tpl_class = tpls.get_template('attached.class')
             tpl_init = tpls.get_template('init')
@@ -149,7 +149,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             out_class = tpl_class.render(**plas)
             return out_class, model_data
 
-        # Create 'combined' template:
+        # Make 'combined' variant:
         tpl_indent = tpls.get_template('indent')
         out_fns = []
         for idx, model_data in enumerate(self.model_data.get('estimators')):

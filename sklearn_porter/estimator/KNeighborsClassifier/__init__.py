@@ -119,7 +119,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         # Templates:
         tpls = self._load_templates(language.value.KEY)
 
-        # Export:
+        # Make 'exported' variant:
         if template == Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
@@ -135,6 +135,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         tpl_arr_2 = tpls.get_template('arr[][]')
         tpl_in_brackets = tpls.get_template('in_brackets')
 
+        # Make 'attached' variant:
         x_val = self.model_data.get('X')
         x_str = tpl_arr_2.render(
             type=tpl_double,
@@ -155,7 +156,6 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             type=tpl_int, name='y', values=', '.join(y_val), n=len(y_val)
         )
 
-        # Make class:
         tpl_class = tpls.get_template('attached.class')
         plas.update(
             dict(

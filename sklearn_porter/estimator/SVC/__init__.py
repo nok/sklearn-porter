@@ -143,7 +143,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         # Templates:
         tpls = self._load_templates(language.value.KEY)
 
-        # Export:
+        # Make 'exported' variant:
         if template == Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
@@ -152,6 +152,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
+        # Make 'attached' variant:
         # Pick templates:
         tpl_int = tpls.get_template('int').render()
         tpl_double = tpls.get_template('double').render()

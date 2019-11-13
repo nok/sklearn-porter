@@ -147,29 +147,28 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
+        converter = kwargs.get('converter')
+        encoder.FLOAT_REPR = lambda o: converter(o)
 
-        # Exported template:
+        # Make 'exported' variant:
         if template == Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            converter = kwargs.get('converter')
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = self.model_data.get('estimators')
             model_data = dumps(model_data, separators=(',', ':'))
             return out_class, model_data
 
-        # Attached template:
+        # Make 'attached' variant:
         if template == Template.ATTACHED:
             tpl_class = tpls.get_template('attached.class')
             tpl_init = tpls.get_template('init')
-            converter = kwargs.get('converter')
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = self.model_data.get('estimators')
             model_data = dumps(model_data, separators=(',', ':'))
             plas['model'] = tpl_init.render(name='model', value=model_data)
             out_class = tpl_class.render(**plas)
             return out_class, model_data
 
+        # Make 'combined' variant:
         # Pick templates:
         tpl_indent = tpls.get_template('indent').render()
 

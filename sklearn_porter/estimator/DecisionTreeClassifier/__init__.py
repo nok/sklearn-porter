@@ -138,7 +138,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         # Templates:
         tpls = self._load_templates(language.value.KEY)
 
-        # Export variant:
+        # Make 'exported' variant:
         if template == Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
@@ -147,6 +147,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
+        # Make 'atatched' or 'combined' variant:
         # Pick templates:
         tpl_int = tpls.get_template('int').render()
         tpl_double = tpls.get_template('double').render()
@@ -212,13 +213,13 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             )
         )
 
-        # Attached variant:
+        # Make 'attached' variant:
         if template == Template.ATTACHED:
             tpl_class = tpls.get_template('attached.class')
             out_class = tpl_class.render(**plas)
             return out_class
 
-        # Combined variant:
+        # Make 'combined' variant:
         if template == Template.COMBINED:
             tpl_class = tpls.get_template('combined.class')
             out_tree = self._create_tree(tpls, language, converter)
