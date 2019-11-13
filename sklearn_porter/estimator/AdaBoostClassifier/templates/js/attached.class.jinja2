@@ -1,10 +1,10 @@
-{% extends 'base.exported.class' %}
+{% extends 'base.attached.class' %}
 
 {% block content %}
 var fs = require('fs');
 
 
-var {{ class_name }} = function(jsonFile) {
+var {{ class_name }} = function(modelData) {
     var that = this;
 
     var Tree = function(lefts, rights, thresholds, indices, classes) {
@@ -45,8 +45,6 @@ var {{ class_name }} = function(jsonFile) {
     };
 
     that.forest = [];
-
-    var modelData = JSON.parse(fs.readFileSync(jsonFile));
     for (var i = 0, il = modelData.length; i < il; i++) {
         that.forest.push(new Tree(
             modelData[i]['lefts'], modelData[i]['rights'],
@@ -122,17 +120,27 @@ var {{ class_name }} = function(jsonFile) {
 };
 
 var main = function () {
+    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+        if (process.argv.length - 2 !== {{ n_features }}) {
+            var IllegalArgumentException = function(message) {
+                this.message = message;
+                this.name = "IllegalArgumentException";
+            }
+            throw new IllegalArgumentException("You have to pass {{ n_features }} features.");
+        }
+    }
+
     // Features:
-    var features = process.argv.slice(3);
+    var features = process.argv.slice(2);
     for (var i = 0; i < features.length; i++) {
         features[i] = parseFloat(features[i]);
     }
 
     // Model data:
-    var json = process.argv[2];
+    {{ model }}
 
     // Estimator:
-    var clf = new {{ class_name }}(json);
+    var clf = new {{ class_name }}(model);
 
     {% if is_test or to_json %}
     // Get JSON:

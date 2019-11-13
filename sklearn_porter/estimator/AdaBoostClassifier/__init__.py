@@ -29,6 +29,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
 
     SUPPORT = {
         Language.JS: {
+            Template.ATTACHED: ALL_METHODS,
             Template.EXPORTED: ALL_METHODS,
         },
     }
@@ -127,21 +128,29 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
+        converter = kwargs.get('converter')
+        encoder.FLOAT_REPR = lambda o: converter(o)
 
-        # Export:
+        # Create 'exported' template:
         if template == Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            converter = kwargs.get('converter')
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = self.model_data.get('estimators')
             model_data = dumps(model_data, separators=(',', ':'))
             return out_class, model_data
 
-        # Pick templates:
-        tpl_indent = tpls.get_template('indent')
+        # Create 'attached' template:
+        elif template == Template.ATTACHED:
+            tpl_class = tpls.get_template('attached.class')
+            tpl_init = tpls.get_template('init')
+            model_data = self.model_data.get('estimators')
+            model_data = dumps(model_data, separators=(',', ':'))
+            plas['model'] = tpl_init.render(name='model', value=model_data)
+            out_class = tpl_class.render(**plas)
+            return out_class, model_data
 
-        # Handle COMBINED template:
+        # Create 'combined' template:
+        tpl_indent = tpls.get_template('indent')
         out_fns = []
         for idx, model_data in enumerate(self.model_data.get('estimators')):
             out_fn = self._create_method(
