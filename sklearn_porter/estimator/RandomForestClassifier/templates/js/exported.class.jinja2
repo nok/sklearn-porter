@@ -44,8 +44,9 @@ var {{ class_name }} = function(jsonFile) {
         };
     };
 
-    var modelData = JSON.parse(fs.readFileSync(jsonFile));
     that.forest = [];
+
+    var modelData = JSON.parse(fs.readFileSync(jsonFile));
     for (var i = 0, il = modelData.length; i < il; i++) {
         that.forest.push(new Tree(
             modelData[i]['lefts'], modelData[i]['rights'],

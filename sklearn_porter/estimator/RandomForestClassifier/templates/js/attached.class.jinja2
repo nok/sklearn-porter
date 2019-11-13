@@ -1,9 +1,8 @@
-{% extends 'base.exported.class' %}
+{% extends 'base.attached.class' %}
 
 {% block content %}
 var {{ class_name }} = function(modelData) {
     var that = this;
-    that.forest = [];
 
     var Tree = function(lefts, rights, thresholds, indices, classes) {
         this.lefts = lefts;
@@ -41,6 +40,8 @@ var {{ class_name }} = function(modelData) {
             return _normVals(this.classes[node]);
         };
     };
+
+    that.forest = [];
 
     for (var i = 0, il = modelData.length; i < il; i++) {
         that.forest.push(new Tree(
