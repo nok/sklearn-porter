@@ -180,7 +180,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                 language=language.value.KEY,
                 converter=converter,
                 method_index=str(idx),
-                class_name=kwargs.get('class_name'),
+                class_name=plas.get('class_name'),
                 model_data=model_data
             )
             out_fns.append(out_fn)
