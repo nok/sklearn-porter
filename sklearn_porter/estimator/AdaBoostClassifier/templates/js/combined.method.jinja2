@@ -1,0 +1,58 @@
+{{ methods }}
+
+this._compute = function(features) {
+    var nTrees = that.forest.length,
+        nClasses = {{ n_classes }};
+    var probasTree = new Array(nTrees);
+    var probas = new Array(nClasses).fill(0.);
+    var sum;
+    var i, j;
+    for (i = 0; i < nTrees; i++) {
+        probasTree[i] = that.forest[i](features, 0);
+        for (j = 0; j < nClasses; j++) {
+            if (probasTree[i][j] > 0) {
+                probasTree[i][j] = Math.log(probasTree[i][j]);
+            } else {
+                probasTree[i][j] = Math.log(Number.EPSILON);
+            }
+        }
+        sum = 0;
+        for (j = 0; j < nClasses; j++) {
+            sum += probasTree[i][j];
+        }
+        for (j = 0; j < nClasses; j++) {
+            probasTree[i][j] = (nClasses - 1) * (probasTree[i][j] - (1. / nClasses) * sum);
+        }
+    }
+    for (i = 0; i < nTrees; i++) {
+        for (j = 0; j < nClasses; j++) {
+            probas[j] += probasTree[i][j];
+        }
+    }
+    if (nTrees > 1) {
+        for (j = 0; j < nClasses; j++) {
+            probas[j] /= nTrees;
+        }
+    }
+    for (j = 0; j < nClasses; j++) {
+        probas[j] = Math.exp((1. / (nClasses - 1)) * probas[j]);
+    }
+    sum = 0;
+    for (j = 0; j < nClasses; j++) {
+        sum += probas[j];
+    }
+    if (sum != 0.) {
+        for (j = 0; j < nClasses; j++) {
+            probas[j] /= sum;
+        }
+    }
+    return probas;
+};
+
+this.predict = function(features) {
+    return _findMax(this.predictProba(features));
+};
+
+this.predictProba = function(features) {
+    return this._compute(features);
+};

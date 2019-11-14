@@ -31,6 +31,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         Language.JS: {
             Template.ATTACHED: ALL_METHODS,
             Template.EXPORTED: ALL_METHODS,
+            Template.COMBINED: ALL_METHODS,
         },
     }
 
@@ -150,14 +151,18 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             return out_class, model_data
 
         # Make 'combined' variant:
-        tpl_indent = tpls.get_template('indent')
+        # Pick templates:
+        tpl_indent = tpls.get_template('indent').render()
+
+        # Generate functions:
         out_fns = []
         for idx, model_data in enumerate(self.model_data.get('estimators')):
             out_fn = self._create_method(
                 templates=tpls,
                 language=language.value.KEY,
                 converter=converter,
-                method_name=plas.get('method_name') + '_' + str(idx),
+                method_index=str(idx),
+                class_name=plas.get('class_name'),
                 model_data=model_data
             )
             out_fns.append(out_fn)
@@ -169,7 +174,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         for idx in range(self.meta_info.get('n_estimators')):
             plas_copy = deepcopy(plas)
             plas_copy.update(dict(method_index=idx))
-            out_call = tpl_calls.format(**plas_copy)
+            out_call = tpl_calls.render(**plas_copy)
             out_calls.append(out_call)
         out_calls = '\n'.join(out_calls)
 
@@ -181,102 +186,19 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         tpl_method = tpls.get_template('combined.method')
         plas_copy = deepcopy(plas)
         plas_copy.update(dict(methods=out_fns, method_calls=out_calls))
-        out_method = tpl_method.format(**plas_copy)
+        out_method = tpl_method.render(**plas_copy)
 
         if language in (Language.JAVA, Language.JS):
             n_indents = 1
             out_method = indent(out_method, n_indents * tpl_indent)
+            out_method = out_method[(n_indents * len(tpl_indent)):]
 
         # Make class:
         tpl_class = tpls.get_template('combined.class')
         copy_plas = deepcopy(plas)
         copy_plas.update(dict(method=out_method))
-        out_class = tpl_class.format(**copy_plas)
-
+        out_class = tpl_class.render(**copy_plas)
         return out_class
-
-    def _create_method(
-        self,
-        templates: Environment,
-        language: str,
-        converter: Callable[[object], str],
-        method_name: str,
-        model_data: dict,
-    ):
-        """
-        Port a method for a single tree.
-
-        Parameters
-        ----------
-        templates : Environment
-            All relevant templates.
-        language
-            The required language.
-        converter
-            The number converter.
-        method_name : int
-            The name of the single decision tree.
-        model_data : dict
-            The model data of the single decision tree.
-
-        Returns
-        -------
-        out_tree : str
-            The created method as string.
-        """
-        tree_branches = self._create_branch(
-            templates, language, converter, model_data.get('lefts'),
-            model_data.get('rights'), model_data.get('thresholds'),
-            model_data.get('classes'), model_data.get('indices'), 0, 1
-        )
-
-        tpl_tree = templates.get_template('combined.single_method')
-        out_tree = tpl_tree.format(
-            method_name=method_name,
-            methods=tree_branches,
-            n_classes=self.meta_info.get('n_classes')
-        )
-        return out_tree
-
-    def _create_tree(
-        self,
-        tpls: Environment,
-        language: Language,
-        converter: Callable[[object], str],
-    ):
-        """
-        Build a decision tree.
-
-        Parameters
-        ----------
-        tpls : Environment
-            All relevant templates.
-        language : str
-            The required language.
-        converter : Callable[[object], str]
-            The number converter.
-
-        Returns
-        -------
-        A tree of a DecisionTreeClassifier.
-        """
-        n_indents = (
-            1 if language in {
-                Language.JAVA, Language.JS, Language.PHP, Language.RUBY
-            } else 0
-        )
-        return self._create_branch(
-            tpls,
-            language,
-            converter,
-            self.model_data.get('lefts'),
-            self.model_data.get('rights'),
-            self.model_data.get('thresholds'),
-            self.model_data.get('classes'),
-            self.model_data.get('indices'),
-            0,
-            n_indents,
-        )
 
     def _create_method(
         self,
@@ -420,13 +342,11 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             if language is Language.PHP:
                 tpl = '$' + tpl
             tpl = indent(tpl, depth * out_indent)
-
             for i, rate in enumerate(value[node]):
-                if int(rate) > 0:
+                if rate > 0:
                     clazz = tpl.format(i, rate)
                     clazz = '\n' + clazz
                     clazzes.append(clazz)
-
             out_join = tpls.get_template('join').render()
             out += out_join.join(clazzes) + out_join
         return out
