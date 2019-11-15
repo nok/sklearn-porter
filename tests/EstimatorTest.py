@@ -6,7 +6,7 @@ import urllib.request
 from os import environ
 from pathlib import Path
 from sys import version_info as PYTHON_VERSION
-from typing import Callable, Dict, Optional, Tuple
+from typing import Tuple, List
 from collections import namedtuple
 import warnings
 
@@ -22,79 +22,15 @@ from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.neighbors.classification import KNeighborsClassifier
 from sklearn.svm.classes import SVC, LinearSVC, NuSVC
 from sklearn.tree.tree import DecisionTreeClassifier
-from sklearn_porter.Estimator import Estimator
-from sklearn_porter.exceptions import (
-    InvalidLanguageError, InvalidTemplateError, NotFittedEstimatorError,
-    CodeTooLarge
-)
 
 # sklearn-porter
 from sklearn_porter.language.Java import Java
+from sklearn_porter.Estimator import Estimator
+from sklearn_porter import exceptions as exception
 
-classifiers = [
-    DecisionTreeClassifier,
-    AdaBoostClassifier,
-    RandomForestClassifier,
-    ExtraTreesClassifier,
-    LinearSVC,
-    SVC,
-    NuSVC,
-    KNeighborsClassifier,
-    GaussianNB,
-    BernoulliNB,
-]
-try:
-    from sklearn.neural_network.multilayer_perceptron import MLPClassifier
-except ImportError:
-    pass
-else:
-    classifiers.append(MLPClassifier)
-
-regressors = []
-try:
-    from sklearn.neural_network.multilayer_perceptron import MLPRegressor
-except ImportError:
-    pass
-else:
-    regressors.append(MLPRegressor)
-
-estimators = classifiers + regressors
-
-searchers = []
-try:
-    from sklearn.model_selection import GridSearchCV
-except ImportError:
-    pass
-else:
-    searchers.append(GridSearchCV)
-try:
-    from sklearn.model_selection import RandomizedSearchCV
-except ImportError:
-    pass
-else:
-    searchers.append(RandomizedSearchCV)
-
+# List of named tuples:
 Dataset = namedtuple('Dataset', 'name data target')
-datasets = [
-    Dataset('digits',
-            load_digits().data,
-            load_digits().target),
-    Dataset('iris',
-            load_iris().data,
-            load_iris().target),
-]
-try:  # for sklearn < 0.16
-    from sklearn.datasets import load_breast_cancer
-except ImportError:
-    pass
-else:
-    datasets.append(
-        Dataset(
-            'breast_cancer',
-            load_breast_cancer().data,
-            load_breast_cancer().target
-        )
-    )
+Candidate = namedtuple('candidate', 'name clazz create')
 
 # Force deterministic number generation:
 np.random.seed(0)
@@ -110,24 +46,118 @@ SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
 
 
+def get_candidates() -> List[Candidate]:
+    _classifiers = [
+        DecisionTreeClassifier,
+        AdaBoostClassifier,
+        RandomForestClassifier,
+        ExtraTreesClassifier,
+        LinearSVC,
+        SVC,
+        NuSVC,
+        KNeighborsClassifier,
+        GaussianNB,
+        BernoulliNB,
+    ]
+    try:
+        from sklearn.neural_network.multilayer_perceptron import MLPClassifier
+    except ImportError:
+        pass
+    else:
+        _classifiers.append(MLPClassifier)
+
+    _regressors = []
+    try:
+        from sklearn.neural_network.multilayer_perceptron import MLPRegressor
+    except ImportError:
+        pass
+    else:
+        _regressors.append(MLPRegressor)
+
+    _estimators = _classifiers + _regressors
+
+    for e in _estimators:
+        yield (Candidate(e.__name__, e, e))
+
+
+def get_searchers() -> List[Candidate]:
+    _searchers = []
+    try:
+        from sklearn.model_selection import GridSearchCV
+    except ImportError:
+        pass
+    else:
+        _searchers.append(
+            Candidate(GridSearchCV.__name__, GridSearchCV, GridSearchCV)
+        )
+    try:
+        from sklearn.model_selection import RandomizedSearchCV
+    except ImportError:
+        pass
+    else:
+        _searchers.append(
+            Candidate(
+                RandomizedSearchCV.__name__, RandomizedSearchCV,
+                RandomizedSearchCV
+            )
+        )
+    return _searchers
+
+
+def get_datasets() -> List[Dataset]:
+    _datasets = [
+        Dataset('digits',
+                load_digits().data,
+                load_digits().target),
+        Dataset('iris',
+                load_iris().data,
+                load_iris().target),
+    ]
+    try:  # for sklearn < 0.16
+        from sklearn.datasets import load_breast_cancer
+    except ImportError:
+        pass
+    else:
+        _datasets.append(
+            Dataset(
+                'breast_cancer',
+                load_breast_cancer().data,
+                load_breast_cancer().target
+            )
+        )
+    return _datasets
+
+
+candidates = list(get_candidates())
+searchers = list(get_searchers())
+datasets = list(get_datasets())
+
+
 @pytest.fixture(scope='session')
 def tmp_root_dir(worker_id) -> Path:
     """Fixture to get the path to the temporary directory."""
 
-    tmp = Path(__file__).parent / 'tmp'
+    # Delete previous generated temporary directory:
+    tmp_dir = Path(__file__).parent / 'tmp'
     if worker_id is 'master':
-        if tmp.exists():
-            shutil.rmtree(str(tmp.resolve()), ignore_errors=True)
-    tmp.mkdir(parents=True, exist_ok=True)
+        if tmp_dir.exists():
+            shutil.rmtree(str(tmp_dir.resolve()), ignore_errors=True)
+    tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    # Download GSON:
-    url = Java.GSON_DOWNLOAD_URI
-    path = tmp / 'gson.jar'
-    if not path.exists():
-        urllib.request.urlretrieve(url, str(path))
-    environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(path)
+    src_dir = (Path(__file__).parent / '..').resolve()
+    gson_fname = 'gson.jar'
+    src_gson_path = src_dir / gson_fname
+    tmp_gson_path = tmp_dir / gson_fname
 
-    return tmp
+    # Download missing dependencies:
+    if not src_gson_path.exists():
+        url = Java.GSON_DOWNLOAD_URI
+        urllib.request.urlretrieve(url, str(src_gson_path))
+
+    shutil.copy(str(src_gson_path), str(tmp_gson_path))
+    environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(tmp_gson_path)
+
+    return tmp_dir
 
 
 @pytest.fixture(scope='session')
@@ -144,10 +174,15 @@ def fitted_tree() -> DecisionTreeClassifier:
 )
 def test_list_of_regressors():
     """Test and compare list of regressors."""
-    regressors = [MLPRegressor]
-    regressors = sorted([r.__class__.__name__ for r in regressors])
-    candidates = sorted([r.__class__.__name__ for r in Estimator.regressors()])
-    assert regressors == candidates
+    try:
+        from sklearn.neural_network.multilayer_perceptron import MLPRegressor
+    except ImportError:
+        pass
+    else:
+        regressors = [MLPRegressor]
+        regressors = sorted([r.__class__.__name__ for r in regressors])
+        result = sorted([r.__class__.__name__ for r in Estimator.regressors()])
+        assert regressors == result
 
 
 @pytest.mark.skipif(
@@ -155,29 +190,34 @@ def test_list_of_regressors():
 )
 def test_list_of_classifiers():
     """Test and compare list of classifiers."""
-    classifiers = [
-        AdaBoostClassifier,
-        BernoulliNB,
-        DecisionTreeClassifier,
-        ExtraTreesClassifier,
-        GaussianNB,
-        KNeighborsClassifier,
-        LinearSVC,
-        NuSVC,
-        RandomForestClassifier,
-        SVC,
-        MLPClassifier,
-    ]
-    classifiers = sorted([c.__class__.__name__ for c in classifiers])
-    candidates = sorted([c.__class__.__name__ for c in Estimator.classifiers()])
-    assert classifiers == candidates
+    try:
+        from sklearn.neural_network.multilayer_perceptron import MLPClassifier
+    except ImportError:
+        pass
+    else:
+        classifiers = [
+            AdaBoostClassifier,
+            BernoulliNB,
+            DecisionTreeClassifier,
+            ExtraTreesClassifier,
+            GaussianNB,
+            KNeighborsClassifier,
+            LinearSVC,
+            NuSVC,
+            RandomForestClassifier,
+            SVC,
+            MLPClassifier,
+        ]
+        classifiers = sorted([c.__class__.__name__ for c in classifiers])
+        result = sorted([c.__class__.__name__ for c in Estimator.classifiers()])
+        assert classifiers == result
 
 
-@pytest.mark.parametrize('Class', estimators, ids=lambda x: x.__qualname__)
-def test_unfitted_estimator(Class: Callable):
+@pytest.mark.parametrize('candidate', candidates, ids=lambda x: x.name)
+def test_unfitted_estimator(candidate: Candidate):
     """Test unfitted estimators."""
-    with pytest.raises(NotFittedEstimatorError):
-        Estimator(Class())
+    with pytest.raises(exception.NotFittedEstimatorError):
+        Estimator(candidate.create())
 
 
 @pytest.mark.parametrize('obj', [None, object, 0, 'string'])
@@ -206,44 +246,44 @@ def test_unfitted_estimator_in_pipeline():
     """Test the extraction of an estimator from a pipeline."""
     from sklearn.pipeline import Pipeline
     pipeline = Pipeline([('SVM', SVC())])
-    with pytest.raises(NotFittedEstimatorError):
+    with pytest.raises(exception.NotFittedEstimatorError):
         Estimator(pipeline)
 
 
-@pytest.mark.parametrize('Class', estimators, ids=lambda x: x.__qualname__)
+@pytest.mark.parametrize('candidate', candidates, ids=lambda x: x.name)
 @pytest.mark.parametrize(
     'params',
     [
-        (InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
-        (InvalidTemplateError, dict(template='i_n_v_a_l_i_d')),
+        (exception.InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
+        (exception.InvalidTemplateError, dict(template='i_n_v_a_l_i_d')),
     ],
     ids=[
         'InvalidLanguageError',
         'InvalidTemplateError',
     ],
 )
-def test_invalid_params_on_port_method(Class: Callable, params: Tuple):
+def test_invalid_params_on_port_method(candidate: Candidate, params: Tuple):
     """Test initialization with valid base estimator."""
-    est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
+    est = candidate.create().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
     with pytest.raises(params[0]):
         Estimator(est).port(**params[1])
 
 
-@pytest.mark.parametrize('Class', estimators, ids=lambda x: x.__qualname__)
+@pytest.mark.parametrize('candidate', candidates, ids=lambda x: x.name)
 @pytest.mark.parametrize(
     'params',
     [
-        (InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
-        (InvalidTemplateError, dict(template='i_n_v_a_l_i_d')),
+        (exception.InvalidLanguageError, dict(language='i_n_v_a_l_i_d')),
+        (exception.InvalidTemplateError, dict(template='i_n_v_a_l_i_d')),
     ],
     ids=[
         'InvalidLanguageError',
         'InvalidTemplateError',
     ],
 )
-def test_invalid_params_on_dump_method(Class: Callable, params: Tuple):
+def test_invalid_params_on_dump_method(candidate: Candidate, params: Tuple):
     """Test initialization with valid base estimator."""
-    est = Class().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
+    est = candidate.create().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
     with pytest.raises(params[0]):
         Estimator(est).dump(**params[1])
 
@@ -251,15 +291,15 @@ def test_invalid_params_on_dump_method(Class: Callable, params: Tuple):
 @pytest.mark.skipif(
     SKLEARN_VERSION[:2] < (0, 19), reason='requires scikit-learn >= v0.19'
 )
-@pytest.mark.parametrize('Class', searchers, ids=lambda x: x.__qualname__)
-def test_extraction_from_optimizer(Class: Callable):
+@pytest.mark.parametrize('candidate', searchers, ids=lambda x: x.name)
+def test_extraction_from_optimizer(candidate: Candidate):
     """Test the extraction from an optimizer."""
     params = {
         'kernel': ('linear', 'rbf'),
         'C': [1, 10, 100],
         'gamma': [0.001, 0.0001],
     }
-    search = Class(SVC(), params, cv=2)
+    search = candidate.create(SVC(), params, cv=2)
 
     # Test unfitted optimizer:
     with pytest.raises(ValueError):
@@ -314,10 +354,8 @@ def test_make_inputs_outputs(
     tmp_root_dir: Path, x, fitted_tree: DecisionTreeClassifier, template: str,
     language: str
 ):
-    est = Estimator(fitted_tree)
-
-    if not est.support(language=language, template=template, method='predict'):
-        return
+    if not Estimator.can(fitted_tree, language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
 
     def fs_mkdir(
         base_dir: Path,
@@ -342,6 +380,8 @@ def test_make_inputs_outputs(
         language_name=language,
         template_name=template,
     )
+
+    est = Estimator(fitted_tree)
     out = est.make(
         x,
         language=language,
@@ -368,39 +408,17 @@ def test_make_inputs_outputs(
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 @pytest.mark.parametrize('dataset', datasets, ids=lambda x: x.name)
-@pytest.mark.parametrize(
-    'Class',
-    [  # fmt: off
-        ('DecisionTreeClassifier', DecisionTreeClassifier, dict(random_state=0)),
-        ('BernoulliNB', BernoulliNB, dict()),
-        ('RandomForestClassifier', RandomForestClassifier, dict()),
-        ('ExtraTreesClassifier', ExtraTreesClassifier, dict()),
-        ('LinearSVC', LinearSVC, dict()),
-        ('SVC', SVC, dict()),
-        ('NuSVC', NuSVC, dict()),
-        ('KNeighborsClassifier', KNeighborsClassifier, dict()),
-        ('GaussianNB', GaussianNB, dict()),
-    ],  # fmt: on
-    ids=[
-        'DecisionTreeClassifier',
-        'BernoulliNB',
-        'RandomForestClassifier',
-        'ExtraTreesClassifier',
-        'LinearSVC',
-        'SVC',
-        'NuSVC',
-        'KNeighborsClassifier',
-        'GaussianNB'
-    ]
-)
+@pytest.mark.parametrize('candidate', candidates, ids=lambda x: x.name)
 def test_and_compare_accuracies(
     tmp_root_dir: Path,
-    Class: Optional[Tuple[str, Callable, Dict]],
+    candidate: Candidate,
     dataset: Dataset,
     template: str,
     language: str,
 ):
-    """Test a wide range of variations."""
+    if not Estimator.can(candidate.clazz, language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+
     def fs_mkdir(
         base_dir: Path,
         test_name: str,
@@ -409,7 +427,10 @@ def test_and_compare_accuracies(
         language_name: str,
         template_name: str,
     ) -> Path:
-        """Helper function to create a directory for tests."""
+        """
+        Helper function to create a separate
+        directory for generated source files.
+        """
         base_dir = (
             base_dir / ('test__' + test_name) /
             ('estimator__' + estimator_name) / ('dataset__' + dataset_name) /
@@ -419,6 +440,7 @@ def test_and_compare_accuracies(
         return base_dir
 
     def ds_generate_x(x: np.ndarray, n_samples: int) -> np.ndarray:
+        """Helper function to create uniform test samples."""
         if not isinstance(x, np.ndarray) or x.ndim != 2:
             msg = 'Two dimensional numpy array is required.'
             raise AssertionError(msg)
@@ -429,6 +451,7 @@ def test_and_compare_accuracies(
         )
 
     def ds_uniform_x(x: np.ndarray, n_samples: int) -> np.ndarray:
+        """Helper function to pick random test samples."""
         if not isinstance(x, np.ndarray) or x.ndim != 2:
             msg = 'Two dimensional numpy array is required.'
             raise AssertionError(msg)
@@ -436,33 +459,31 @@ def test_and_compare_accuracies(
         return x[(np.random.uniform(0, 1, n_samples) *
                   (len(x) - 1)).astype(int)]
 
-    # Dataset:
-    x, y = dataset.data, dataset.target
-
     # Estimator:
-    orig_est = Class[1](**Class[2])
+    orig_est = candidate.create()
+    x, y = dataset.data, dataset.target
     orig_est.fit(X=x, y=y)
+    est = Estimator(orig_est)
+
+    tmp_dir = fs_mkdir(
+        base_dir=tmp_root_dir,
+        test_name='test_and_compare_accuracies',
+        estimator_name=candidate.name,
+        dataset_name=dataset.name,
+        language_name=language,
+        template_name=template,
+    )
+    test_x = np.vstack((ds_uniform_x(x, 30), ds_generate_x(x, 30)))
+
     try:
-        # Porter:
-        est = Estimator(orig_est)
-        if est.support(language=language, template=template, method='predict'):
-            tmp_dir = fs_mkdir(
-                base_dir=tmp_root_dir,
-                test_name='test_and_compare_accuracies',
-                estimator_name=Class[0],
-                dataset_name=dataset.name,
-                language_name=language,
-                template_name=template,
-            )
-            test_x = np.vstack((ds_uniform_x(x, 10), ds_generate_x(x, 10)))
-            score = est.integrity_score(
-                test_x, language=language, template=template, directory=tmp_dir
-            )
-            assert score == 1.
-    except CodeTooLarge:
+        score = est.integrity_score(
+            test_x, language=language, template=template, directory=tmp_dir
+        )
+        assert score == 1.
+    except exception.CodeTooLarge:
         warn_msg = 'Code too large for the combination: ' \
                    'estimator: {}, language: {}, template: {}, dataset: {}' \
-                   ''.format(Class[0], language, template, dataset.name)
+                   ''.format(candidate.name, language, template, dataset.name)
         warnings.warn(warn_msg)
     except:
         pytest.fail('Unexpected exception ...')

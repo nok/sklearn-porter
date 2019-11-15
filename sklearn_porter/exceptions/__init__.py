@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from sklearn_porter.enums import Language, Method, Template
+from sklearn_porter import enums as enum
 
 
 class NotFittedEstimatorError(Exception):
@@ -36,7 +36,7 @@ class CodeTooLarge(CompilationFailed):
 
 class InvalidMethodError(Exception):
     def __init__(self, message: str):
-        opts = ', '.join(['`{}`'.format(m.value) for m in list(Method)])
+        opts = ', '.join(['`{}`'.format(m.value) for m in list(enum.Method)])
         self.message = 'The passed method `{}` is invalid. ' \
                        'Valid methods are: {}.'.format(message, opts)
         super().__init__(self.message)
@@ -44,7 +44,9 @@ class InvalidMethodError(Exception):
 
 class InvalidLanguageError(Exception):
     def __init__(self, message: str):
-        opts = ', '.join(['`{}`'.format(l.value.KEY) for l in list(Language)])
+        opts = ', '.join(
+            ['`{}`'.format(l.value.KEY) for l in list(enum.Language)]
+        )
         self.message = 'The passed language `{}` is invalid. ' \
                        'Valid languages are: {}.'.format(message, opts)
         super().__init__(self.message)
@@ -52,7 +54,7 @@ class InvalidLanguageError(Exception):
 
 class InvalidTemplateError(Exception):
     def __init__(self, message: str):
-        opts = ', '.join(['`{}`'.format(t.value) for t in list(Template)])
+        opts = ', '.join(['`{}`'.format(t.value) for t in list(enum.Template)])
         self.message = 'The passed template `{}` is invalid. ' \
                        'Valid templates are: {}.'.format(message, opts)
         super().__init__(self.message)

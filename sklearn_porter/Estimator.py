@@ -12,6 +12,7 @@ from sys import stdout
 from tempfile import mktemp
 from textwrap import dedent
 from typing import Callable, Dict, List, Optional, Tuple, Union
+from abc import ABCMeta
 
 import numpy as np
 from loguru import logger as L
@@ -24,11 +25,8 @@ from sklearn.metrics import accuracy_score
 
 # sklearn-porter
 from sklearn_porter import __version__
-from sklearn_porter.enums import Language, Method, Template
-from sklearn_porter.exceptions import (
-    CompilationFailed, InvalidLanguageError, InvalidMethodError,
-    InvalidTemplateError, NotFittedEstimatorError, CodeTooLarge
-)
+from sklearn_porter import enums as enum
+from sklearn_porter import exceptions as exception
 from sklearn_porter.utils import Options, get_qualname
 
 
@@ -103,17 +101,6 @@ class Estimator:
         if estimator:  # if valid
             self._estimator = self._load(estimator)
 
-    def support(self, language: str, template: str, method: str):
-        support = self._estimator.SUPPORT
-        language = self._convert_language(language)
-        if language in support.keys():
-            template = self._convert_template(template)
-            if template in support[language].keys():
-                method = self._convert_method(method)
-                if method in support[language][template]:
-                    return True
-        return False
-
     @staticmethod
     def _validate(estimator: BaseEstimator):
         """
@@ -158,11 +145,11 @@ class Estimator:
             try:
                 est.estimators_  # for sklearn > 0.19
             except AttributeError:
-                raise NotFittedEstimatorError(qualname)
+                raise exception.NotFittedEstimatorError(qualname)
             try:
                 est.estimators_[0]  # for sklearn <= 0.18
             except IndexError:
-                raise NotFittedEstimatorError(qualname)
+                raise exception.NotFittedEstimatorError(qualname)
 
         # Check GridSearchCV and RandomizedSearchCV:
         L.debug('Check whether the estimator is embedded in an optimizer.')
@@ -438,37 +425,10 @@ class Estimator:
 
         return None
 
-    @staticmethod
-    def _convert_method(method: Union[str, Method]) -> Method:
-        if method and isinstance(method, str):
-            try:
-                method = Method[method.upper()]
-            except KeyError:
-                raise InvalidMethodError(method)
-        return method
-
-    @staticmethod
-    def _convert_language(language: Union[str, Language]) -> Language:
-        if language and isinstance(language, str):
-            try:
-                language = Language[language.upper()]
-            except KeyError:
-                raise InvalidLanguageError(language)
-        return language
-
-    @staticmethod
-    def _convert_template(template: Union[str, Template]) -> Template:
-        if template and isinstance(template, str):
-            try:
-                template = Template[template.upper()]
-            except KeyError:
-                raise InvalidTemplateError(template)
-        return template
-
     def port(
         self,
-        language: Optional[Union[str, Language]] = None,
-        template: Optional[Union[str, Template]] = None,
+        language: Optional[Union[str, enum.Language]] = None,
+        template: Optional[Union[str, enum.Template]] = None,
         to_json: bool = False,
         **kwargs
     ) -> Union[str, Tuple[str]]:
@@ -488,8 +448,8 @@ class Estimator:
         -------
         The transpiled estimator in the target programming language.
         """
-        language = self._convert_language(language)
-        template = self._convert_template(template)
+        language = enum.Language.convert(language)
+        template = enum.Template.convert(template)
         kwargs = self._set_kwargs_defaults(kwargs)
         return self._estimator.port(
             language=language, template=template, to_json=to_json, **kwargs
@@ -497,8 +457,8 @@ class Estimator:
 
     def export(
         self,
-        language: Optional[Union[str, Language]] = None,
-        template: Optional[Union[str, Template]] = None,
+        language: Optional[Union[str, enum.Language]] = None,
+        template: Optional[Union[str, enum.Template]] = None,
         to_json: bool = False,
         **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -524,8 +484,8 @@ class Estimator:
 
     def dump(
         self,
-        language: Optional[Union[str, Language]] = None,
-        template: Optional[Union[str, Template]] = None,
+        language: Optional[Union[str, enum.Language]] = None,
+        template: Optional[Union[str, enum.Template]] = None,
         directory: Optional[Union[str, Path]] = None,
         to_json: bool = False,
         # fmt: off
@@ -549,8 +509,8 @@ class Estimator:
         -------
         The path(s) to the generated file(s).
         """
-        language = self._convert_language(language)
-        template = self._convert_template(template)
+        language = enum.Language.convert(language)
+        template = enum.Template.convert(template)
         kwargs = self._set_kwargs_defaults(kwargs)
         return self._estimator.dump(
             language=language,
@@ -563,8 +523,8 @@ class Estimator:
     def make(
         self,
         x: Union[List, np.ndarray],
-        language: Optional[Union[str, Language]],
-        template: Optional[Union[str, Template]] = None,
+        language: Optional[Union[str, enum.Language]],
+        template: Optional[Union[str, enum.Template]] = None,
         directory: Optional[Union[str, Path]] = None,
         n_jobs: Optional[Union[bool, int]] = True,
         final_deletion: Optional[bool] = False,
@@ -594,8 +554,8 @@ class Estimator:
         -------
         Return the predictions and probabilities.
         """
-        language = self._convert_language(language)
-        template = self._convert_template(template)
+        language = enum.Language.convert(language)
+        template = enum.Template.convert(template)
         if not directory:
             directory = mktemp()
         kwargs = self._set_kwargs_defaults(kwargs)
@@ -633,13 +593,15 @@ class Estimator:
         cmd = language.value.CMD_EXECUTE
         cmd_args = {}
 
-        if language in (Language.C, Language.GO):
+        if language in (enum.Language.C, enum.Language.GO):
             cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
-        elif language is Language.JAVA:
+        elif language is enum.Language.JAVA:
             if bool(class_paths):
                 cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
             cmd_args['dest_path'] = str(src_path.stem)
-        elif language in (Language.JS, Language.PHP, Language.RUBY):
+        elif language in (
+            enum.Language.JS, enum.Language.PHP, enum.Language.RUBY
+        ):
             cmd_args['src_path'] = str(src_path)
 
         cmd = cmd.format(**cmd_args)
@@ -692,8 +654,8 @@ class Estimator:
         src_path: Path,
         class_paths: List,
         created_files: List,
-        language: Language,
-        template: Optional[Template] = None,
+        language: enum.Language,
+        template: Optional[enum.Template] = None,
     ):
         cmd = language.value.CMD_COMPILE
 
@@ -702,19 +664,19 @@ class Estimator:
 
         cmd_args = {}
 
-        if language in (Language.C, Language.GO):
+        if language in (enum.Language.C, enum.Language.GO):
             cmd_args['src_path'] = str(src_path)
             cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
             created_files.append((src_path.parent / src_path.stem))
 
-        elif language is Language.JAVA:
+        elif language is enum.Language.JAVA:
             cmd_args['src_path'] = str(src_path)
             cmd_args['dest_dir'] = '-d {}'.format(str(src_path.parent))
             class_paths.append(str(src_path.parent))
             created_files.append((src_path.parent / (src_path.stem + '.class')))
 
             # Dependencies:
-            if template is Template.EXPORTED:
+            if template is enum.Template.EXPORTED:
                 is_test = (
                     'SKLEARN_PORTER_PYTEST' in environ
                     and 'SKLEARN_PORTER_PYTEST_GSON_PATH' in environ
@@ -743,15 +705,15 @@ class Estimator:
         except CalledProcessError as e:
             msg = 'Command "{}" return with error (code {}):\n\n{}'
             msg = msg.format(e.cmd, e.returncode, e.output)
-            if language is Language.JAVA and 'code too large' in e.output:
-                raise CodeTooLarge(msg)
-            raise CompilationFailed(msg)
+            if language is enum.Language.JAVA and 'code too large' in e.output:
+                raise exception.CodeTooLarge(msg)
+            raise exception.CompilationFailed(msg)
 
     def integrity_score(
         self,
         x,
-        language: Optional[Union[str, Language]] = None,
-        template: Optional[Union[str, Template]] = None,
+        language: Optional[Union[str, enum.Language]] = None,
+        template: Optional[Union[str, enum.Template]] = None,
         directory: Optional[Union[str, Path]] = None,
         n_jobs: Optional[Union[bool, int]] = True,
         final_deletion: Optional[bool] = False,
@@ -885,6 +847,69 @@ class Estimator:
             regressors += (MLPRegressor, )
 
         return regressors
+
+    @staticmethod
+    def can(
+        estimator: Union[BaseEstimator, ABCMeta],
+        language: Optional[Union[str, enum.Language]] = None,
+        template: Optional[Union[str, enum.Template]] = None,
+        method: Optional[Union[str, enum.Method]] = None
+    ) -> bool:
+        """
+        Check the support of the given arguments.
+
+        Parameters
+        ----------
+        estimator : BaseEstimator or abstract ABCMeta class.
+            Set a fitted base estimator of scikit-learn.
+        language : str
+            Set the target programming language.
+        template : str
+            Set the kind of desired template.
+        method : str
+            Set the kind of template.
+
+        Returns
+        -------
+        True by a supported combination.
+        """
+
+        if isinstance(estimator, BaseEstimator):
+            name = estimator.__class__.__name__
+        elif isinstance(estimator, ABCMeta):
+            name = estimator.__name__
+        else:
+            return False
+
+        cands = Estimator.classifiers() + Estimator.regressors()
+        cands = [c.__name__ for c in cands]
+
+        if name not in cands:
+            return False
+
+        if language or template or method:
+            pckg = 'sklearn_porter.estimator.{}'.format(name)
+            module = __import__(pckg, globals(), locals(), [name], 0)
+            clazz = getattr(module, name)
+            support = getattr(clazz, 'SUPPORT')
+        else:
+            return True
+
+        if language:
+            language = enum.Language.convert(language)
+            if language in support.keys():
+                if not template:
+                    return True
+                else:
+                    template = enum.Template.convert(template)
+                    if template in support[language].keys():
+                        if not method:
+                            return True
+                        else:
+                            method = enum.Method.convert(method)
+                            if method in support[language][template]:
+                                return True
+        return False
 
     def __repr__(self):
         python_version = '.'.join(map(str, version_info[:3]))
