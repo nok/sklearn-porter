@@ -465,6 +465,12 @@ def test_and_compare_accuracies(
     orig_est.fit(X=x, y=y)
     est = Estimator(orig_est)
 
+    # Samples:
+    n_uni = int(environ.get('SKLEARN_PORTER_PYTEST_N_UNI_REGRESSION_TESTS', 30))
+    n_gen = int(environ.get('SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 30))
+    test_x = np.vstack((ds_uniform_x(x, n_uni), ds_generate_x(x, n_gen)))
+
+    # Directory:
     tmp_dir = fs_mkdir(
         base_dir=tmp_root_dir,
         test_name='test_and_compare_accuracies',
@@ -473,7 +479,6 @@ def test_and_compare_accuracies(
         language_name=language,
         template_name=template,
     )
-    test_x = np.vstack((ds_uniform_x(x, 30), ds_generate_x(x, 30)))
 
     try:
         score = est.integrity_score(
