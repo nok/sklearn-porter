@@ -466,8 +466,8 @@ def test_and_compare_accuracies(
     est = Estimator(orig_est)
 
     # Samples:
-    n_uni = int(environ.get('SKLEARN_PORTER_PYTEST_N_UNI_REGRESSION_TESTS', 30))
-    n_gen = int(environ.get('SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 30))
+    n_uni = int(environ.get('SKLEARN_PORTER_PYTEST_N_UNI_REGRESSION_TESTS', 15))
+    n_gen = int(environ.get('SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 15))
     test_x = np.vstack((ds_uniform_x(x, n_uni), ds_generate_x(x, n_gen)))
 
     # Directory:
