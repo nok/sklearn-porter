@@ -808,7 +808,7 @@ For the regression tests we have to use specific compilers and interpreters. Tod
     <tr>
       <td>GCC</td>
       <td><a href="https://gcc.gnu.org">https://gcc.gnu.org</a></td>
-      <td>6.3.0</td>
+      <td>8.3.0</td>
     </tr>
     <tr>
       <td>Go</td>
@@ -818,7 +818,7 @@ For the regression tests we have to use specific compilers and interpreters. Tod
     <tr>
       <td>Java (OpenJDK)</td>
       <td><a href="https://openjdk.java.net">https://openjdk.java.net</a></td>
-      <td>1.8.0</td>
+      <td>1.8</td>
     </tr>
     <tr>
       <td>Node.js</td>
@@ -828,12 +828,12 @@ For the regression tests we have to use specific compilers and interpreters. Tod
     <tr>
       <td>PHP</td>
       <td><a href="https://www.php.net/">https://www.php.net</a></td>
-      <td>7.0.33</td>
+      <td>7.3</td>
     </tr>
     <tr>
       <td>Ruby</td>
       <td><a href="https://www.ruby-lang.org/en/">https://www.ruby-lang.org</a></td>
-      <td>2.3.3</td>
+      <td>2.5.1</td>
     </tr>
   </tbody>
 </table>

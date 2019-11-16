@@ -62,7 +62,7 @@ def main():
         install_requires=[
             'scikit-learn>=0.16',
             'Jinja2>=2.10.1',
-            'loguru=>0.3.2',
+            'loguru>=0.3.2',
         ],
         extras_require={
             'examples': ['jupyterlab>=0.33.12'],

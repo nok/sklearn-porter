@@ -11,21 +11,21 @@ ARG SCIKIT_LEARN_VER
 COPY . $HOME/app
 WORKDIR $HOME/app
 
-RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
-    apt-transport-https gfortran libopenblas-dev liblapack-dev \
-    curl \
-    make=4.1-9.1 \
-    g++=4:6.3.0-4 \
-    gcc=4:6.3.0-4                                                   `# gcc v6.3.0`      \
-    ruby=1:2.3.3                                                    `# ruby v2.3.3`     \
-    php7.0=7.0.33-0+deb9u3                                          `# php v7.0.33`     \
-    openjdk-8-jdk                                                   `# java v1.8.x`     \
-    && curl -sL https://deb.nodesource.com/setup_10.x | bash \
+RUN mkdir -p /usr/share/man/man1 && \
+    echo "deb http://deb.debian.org/debian/ sid main" >> /etc/apt/sources.list && \
+    apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
+    apt-transport-https apt-utils curl make libopenblas-dev liblapack-dev \
+    gfortran=4:8.3.0-1 \
+    cpp=4:8.3.0-1 \
+    g++=4:8.3.0-1 \
+    gcc=4:8.3.0-1                                                   `# gcc v8.3.0`      \
+    ruby=1:2.5.1                                                    `# ruby v2.5.1`     \
+    php=2:7.3+69                                                    `# php v7.3`        \
+    openjdk-8-jdk=8u232-b09-1                                       `# java v1.8.x`     \
     && apt-get install -y nodejs                                    `# node v10.x.x`    \
     && wget --quiet https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz \
     && tar -xf go1.12.4.linux-amd64.tar.gz                          `# go v1.12.4`      \
     && mv go /usr/bin \
-    && wget --quiet -O gson.jar http://central.maven.org/maven2/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar \
     && make clean \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 

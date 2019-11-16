@@ -6,7 +6,9 @@
 **/*.md
 
 /examples/experimental
+/examples/experiments
 /examples/estimator
+/tests/tmp
 
 /node_modules
 /package-lock.json
