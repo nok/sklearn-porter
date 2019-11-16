@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import os
+import stat
 import urllib.request
 from json import loads
 from multiprocessing import Pool, cpu_count
@@ -9,6 +11,7 @@ from subprocess import STDOUT, CalledProcessError, check_output
 from sys import platform as system_platform
 from sys import version_info
 from sys import stdout
+from time import sleep
 from tempfile import mktemp
 from textwrap import dedent
 from typing import Callable, Dict, List, Optional, Tuple, Union
@@ -582,8 +585,8 @@ class Estimator:
         if not isinstance(src_path, Path):
             src_path = Path(src_path)
         src_path = src_path.resolve()
-        created_files.append(src_path)
 
+        created_files.append(src_path)
         class_paths = []
 
         # Compilation:
@@ -623,14 +626,14 @@ class Estimator:
         if isinstance(n_jobs, int) and n_jobs <= 1:
             n_jobs = False
         if not n_jobs:
-            y = list(map(_multiprocessed_call, x))
+            y = list(map(_system_call, x))
         else:
             if isinstance(n_jobs, bool):
                 n_jobs = cpu_count()
             if not isinstance(n_jobs, int):
                 n_jobs = cpu_count()
             with Pool(n_jobs) as pool:
-                y = pool.map(_multiprocessed_call, x)
+                y = pool.map(_system_call, x)
         y = list(zip(*y))
         y = list(map(np.array, y))
 
@@ -699,7 +702,12 @@ class Estimator:
         cmd = cmd.format(**cmd_args)
         L.info('Compilation command: `{}`'.format(cmd))
 
-        subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
+        subp_args = dict(
+            shell=True,
+            universal_newlines=True,
+            stderr=STDOUT,
+            executable='/bin/bash'
+        )
         try:
             check_output(cmd, **subp_args)
         except CalledProcessError as e:
@@ -934,11 +942,21 @@ class Estimator:
         return dedent(report)
 
 
-def _multiprocessed_call(cmd: str):
-    subp_args = dict(shell=True, universal_newlines=True, stderr=STDOUT)
-    out = check_output(cmd, **subp_args)
-    out = str(out).strip()
-    out = loads(out, encoding='utf-8')
-    if 'predict_proba' in out.keys():
-        return [out.get('predict'), out.get('predict_proba')]
-    return [out.get('predict')]
+def _system_call(cmd: str):
+    subp_args = dict(
+        shell=True,
+        universal_newlines=True,
+        stderr=STDOUT,
+        executable='/bin/bash'
+    )
+    for idx in range(3):
+        try:
+            out = check_output(cmd, **subp_args)
+        except CalledProcessError as e:
+            sleep(0.01)
+        else:
+            out = str(out).strip()
+            out = loads(out, encoding='utf-8')
+            if 'predict_proba' in out.keys():
+                return [out.get('predict'), out.get('predict_proba')]
+            return [out.get('predict')]

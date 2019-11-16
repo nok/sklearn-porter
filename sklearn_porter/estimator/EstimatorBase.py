@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from json import dumps
-from os import environ, getcwd
+from os import environ, getcwd, chmod
 from pathlib import Path
 from time import sleep
 from typing import Dict, Optional, Set, Tuple, Union
