@@ -289,7 +289,8 @@ def test_invalid_params_on_dump_method(candidate: Candidate, params: Tuple):
 
 
 @pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 19), reason='requires scikit-learn >= v0.19'
+    SKLEARN_VERSION[:2] < (0, 19) or len(searchers) == 0,
+    reason='requires scikit-learn >= v0.19'
 )
 @pytest.mark.parametrize('candidate', searchers, ids=lambda x: x.name)
 def test_extraction_from_optimizer(candidate: Candidate):
