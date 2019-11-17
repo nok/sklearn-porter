@@ -3,7 +3,7 @@
 from os import environ, getcwd
 from pathlib import Path
 from time import sleep
-from typing import Dict, Optional, Set, Tuple, Union
+from typing import Dict, Optional, Set, Tuple, Union, Callable
 
 from jinja2 import DictLoader, Environment
 from loguru import logger as L
@@ -15,7 +15,6 @@ from sklearn.base import BaseEstimator
 # sklearn-porter
 from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter import enums as enum
-from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 
 
@@ -78,74 +77,13 @@ class EstimatorBase(EstimatorApiABC):
             dict(is_test='SKLEARN_PORTER_PYTEST' in environ)
         )
 
-    def check(
-        self,
-        method: Optional[enum.Method] = None,
-        language: Optional[enum.Language] = None,
-        template: Optional[enum.Template] = None,
-    ) -> Tuple[enum.Method, enum.Language, enum.Template]:
-        """
-        Check whether the passed values (kind of method, language
-        and template) are supported by the estimator or not.
-        """
-
-        # Check estimator defaults:
-        if not self.SUPPORT:
-            msg = (
-                'You have to update the support '
-                'matrix in the class of the estimator.'
-            )
-            raise NotImplementedError(msg)
-        if not self.DEFAULT_METHOD:
-            msg = (
-                'You have to set a default method '
-                'in the class of the estimator.'
-            )
-            raise NotImplementedError(msg)
-        if not self.DEFAULT_LANGUAGE:
-            msg = (
-                'You have to set a default language '
-                'in the class of the estimator.'
-            )
-            raise NotImplementedError(msg)
-        if not self.DEFAULT_TEMPLATE:
-            msg = (
-                'You have to set a default template '
-                'in the class of the estimator.'
-            )
-            raise NotImplementedError(msg)
-
-        # Check language support:
-        language = language or self.DEFAULT_LANGUAGE
-        if language not in self.SUPPORT.keys():
-            msg = 'Currently the language `{}` ' 'is not supported yet.'.format(
-                language.value
-            )
-            raise exception.NotSupportedYetError(msg)
-
-        # Check the template support:
-        template = template or self.DEFAULT_TEMPLATE
-        if template not in self.SUPPORT[language].keys():
-            msg = (
-                'Currently the template `{}` '
-                'is not implemented yet.'.format(template.value)
-            )
-            raise exception.NotSupportedYetError(msg)
-
-        # Check method support:
-        method = method or self.DEFAULT_METHOD
-        if method not in self.SUPPORT[language][template]:
-            msg = 'Currently only `predict` ' 'is a valid method type.'
-            raise exception.NotSupportedYetError(msg)
-
-        return method, language, template
-
     def port(
         self,
-        language: Optional[enum.Language] = None,
-        template: Optional[enum.Template] = None,
+        language: Optional[enum.Language],
+        template: Optional[enum.Template],
+        class_name: Optional[str],
+        converter: Optional[Callable[[object], str]],
         to_json: bool = False,
-        **kwargs
     ):
         """
         Port an estimator.
@@ -156,6 +94,13 @@ class EstimatorBase(EstimatorApiABC):
             The required language.
         template : Template
             The required template.
+        class_name : str
+            Change the default class name which will be used in the generated
+            output. By default the class name of the passed estimator will be
+            used, e.g. `DecisionTreeClassifier`.
+        converter : Callable
+            Change the default converter of all floating numbers from the model
+            data. By default a simple string cast `str(value)` will be used.
         to_json : bool (default: False)
             Return the result as JSON string.
 
@@ -171,11 +116,12 @@ class EstimatorBase(EstimatorApiABC):
 
     def save(
         self,
-        language: Optional[enum.Language] = None,
-        template: Optional[enum.Template] = None,
-        directory: Optional[Union[str, Path]] = None,
+        language: Optional[enum.Language],
+        template: Optional[enum.Template],
+        class_name: Optional[str],
+        converter: Optional[Callable[[object], str]],
+        directory: Optional[Union[str, Path]],
         to_json: bool = False,
-        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Dump an estimator to the filesystem.
@@ -186,11 +132,17 @@ class EstimatorBase(EstimatorApiABC):
             The required language.
         template : Template
             The required template
+        class_name : str
+            Change the default class name which will be used in the generated
+            output. By default the class name of the passed estimator will be
+            used, e.g. `DecisionTreeClassifier`.
+        converter : Callable
+            Change the default converter of all floating numbers from the model
+            data. By default a simple string cast `str(value)` will be used.
         directory : str or Path
             The destination directory.
         to_json : bool (default: False)
             Return the result as JSON string.
-        kwargs
 
         Returns
         -------
@@ -204,15 +156,13 @@ class EstimatorBase(EstimatorApiABC):
         if not directory.is_dir():
             directory = directory.parent
 
-        method, language, template = self.check(
-            language=language, template=template
-        )
-
-        class_name = kwargs.get('class_name')
-
         # Port/Transpile estimator:
         ported = self.port(
-            language=language, template=template, to_json=to_json, **kwargs
+            language=language,
+            template=template,
+            class_name=class_name,
+            converter=converter,
+            to_json=to_json
         )
         if not isinstance(ported, tuple):
             ported = (ported, )

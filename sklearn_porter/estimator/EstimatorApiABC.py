@@ -2,7 +2,7 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, Callable
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -17,10 +17,11 @@ class EstimatorApiABC(ABC):
     @abstractmethod
     def port(
         self,
-        language: Optional[enum.Language] = None,
-        template: Optional[enum.Template] = None,
+        language: Optional[enum.Language],
+        template: Optional[enum.Template],
+        class_name: Optional[str],
+        converter: Optional[Callable[[object], str]],
         to_json: bool = False,
-        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Port an estimator.
@@ -31,9 +32,15 @@ class EstimatorApiABC(ABC):
             The required language.
         template : Template
             The required template.
+        class_name : str
+            Change the default class name which will be used in the generated
+            output. By default the class name of the passed estimator will be
+            used, e.g. `DecisionTreeClassifier`.
+        converter : Callable
+            Change the default converter of all floating numbers from the model
+            data. By default a simple string cast `str(value)` will be used.
         to_json : bool (default: False)
             Return the result as JSON string.
-        kwargs
 
         Returns
         -------
@@ -42,11 +49,12 @@ class EstimatorApiABC(ABC):
     @abstractmethod
     def save(
         self,
-        language: Optional[enum.Language] = None,
-        template: Optional[enum.Template] = None,
-        directory: Optional[Union[str, Path]] = None,
+        language: Optional[enum.Language],
+        template: Optional[enum.Template],
+        class_name: Optional[str],
+        converter: Optional[Callable[[object], str]],
+        directory: Optional[Union[str, Path]],
         to_json: bool = False,
-        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Dump an estimator to the filesystem.
@@ -57,11 +65,17 @@ class EstimatorApiABC(ABC):
             The required language.
         template : Template
             The required template
+        class_name : str
+            Change the default class name which will be used in the generated
+            output. By default the class name of the passed estimator will be
+            used, e.g. `DecisionTreeClassifier`.
+        converter : Callable
+            Change the default converter of all floating numbers from the model
+            data. By default a simple string cast `str(value)` will be used.
         directory : str or Path
             The destination directory.
         to_json : bool (default: False)
             Return the result as JSON string.
-        kwargs
 
         Returns
         -------

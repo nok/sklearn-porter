@@ -23,7 +23,7 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port an AdaBoostClassifier classifier."""
 
-    DEFAULT_LANGUAGE = enum.Language.JAVA
+    DEFAULT_LANGUAGE = enum.Language.JS
     DEFAULT_TEMPLATE = enum.Template.COMBINED
     DEFAULT_METHOD = enum.Method.PREDICT
 
@@ -85,10 +85,11 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
         self,
-        language: Optional[enum.Language] = None,
-        template: Optional[enum.Template] = None,
+        language: Optional[enum.Language],
+        template: Optional[enum.Template],
+        class_name: Optional[str],
+        converter: Optional[Callable[[object], str]],
         to_json: bool = False,
-        **kwargs
     ) -> Union[str, Tuple[str, str]]:
         """
         Port an estimator.
@@ -99,37 +100,31 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             The required language.
         template : Template
             The required template.
+        class_name : str
+            Change the default class name which will be used in the generated
+            output. By default the class name of the passed estimator will be
+            used, e.g. `DecisionTreeClassifier`.
+        converter : Callable
+            Change the default converter of all floating numbers from the model
+            data. By default a simple string cast `str(value)` will be used.
         to_json : bool (default: False)
             Return the result as JSON string.
-        kwargs
 
         Returns
         -------
         out_class : str
             The ported estimator.
         """
-        method, language, template = self.check(
-            language=language, template=template
-        )
-
-        # Default arguments:
-        kwargs.setdefault('method_name', method.value)
-        converter = kwargs.get('converter')
-
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(
-            dict(
-                class_name=kwargs.get('class_name'),
-                method_name=kwargs.get('method_name'),
-                to_json=to_json,
-            )
-        )
+        plas.update(dict(
+            class_name=class_name,
+            to_json=to_json,
+        ))
         plas.update(self.meta_info)
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
-        converter = kwargs.get('converter')
         encoder.FLOAT_REPR = lambda o: converter(o)
 
         # Make 'exported' variant:

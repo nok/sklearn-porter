@@ -46,7 +46,7 @@ SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
 
 
-def get_candidates() -> List[Candidate]:
+def get_classifiers() -> List[Candidate]:
     _classifiers = [
         DecisionTreeClassifier,
         AdaBoostClassifier,
@@ -65,7 +65,11 @@ def get_candidates() -> List[Candidate]:
         pass
     else:
         _classifiers.append(MLPClassifier)
+    for e in _classifiers:
+        yield (Candidate(e.__name__, e, e))
 
+
+def get_regressors() -> List[Candidate]:
     _regressors = []
     try:
         from sklearn.neural_network.multilayer_perceptron import MLPRegressor
@@ -73,10 +77,7 @@ def get_candidates() -> List[Candidate]:
         pass
     else:
         _regressors.append(MLPRegressor)
-
-    _estimators = _classifiers + _regressors
-
-    for e in _estimators:
+    for e in _regressors:
         yield (Candidate(e.__name__, e, e))
 
 
@@ -104,8 +105,10 @@ def get_datasets() -> List[Dataset]:
     return _datasets
 
 
-candidates = list(get_candidates())
-datasets = list(get_datasets())
+test_classifiers = list(get_classifiers())
+test_regressors = list(get_regressors())
+test_candidates = test_classifiers + test_regressors
+test_datasets = list(get_datasets())
 
 
 @pytest.fixture(scope='session')
@@ -188,7 +191,7 @@ def test_list_of_classifiers():
         assert classifiers == result
 
 
-@pytest.mark.parametrize('candidate', candidates, ids=lambda x: x.name)
+@pytest.mark.parametrize('candidate', test_candidates, ids=lambda x: x.name)
 def test_unfitted_estimator(candidate: Candidate):
     """Test unfitted estimators."""
     with pytest.raises(exception.NotFittedEstimatorError):
@@ -227,7 +230,7 @@ def test_unfitted_estimator_in_pipeline():
         Estimator(pipeline)
 
 
-@pytest.mark.parametrize('candidate', candidates, ids=lambda x: x.name)
+@pytest.mark.parametrize('candidate', test_candidates, ids=lambda x: x.name)
 @pytest.mark.parametrize(
     'params',
     [
@@ -246,7 +249,7 @@ def test_invalid_params_on_port_method(candidate: Candidate, params: Tuple):
         Estimator(est).port(**params[1])
 
 
-@pytest.mark.parametrize('candidate', candidates, ids=lambda x: x.name)
+@pytest.mark.parametrize('candidate', test_candidates, ids=lambda x: x.name)
 @pytest.mark.parametrize(
     'params',
     [
@@ -413,9 +416,9 @@ def test_make_inputs_outputs(
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
-@pytest.mark.parametrize('dataset', datasets, ids=lambda x: x.name)
-@pytest.mark.parametrize('candidate', candidates, ids=lambda x: x.name)
-def test_and_compare_accuracies(
+@pytest.mark.parametrize('dataset', test_datasets, ids=lambda x: x.name)
+@pytest.mark.parametrize('candidate', test_classifiers, ids=lambda x: x.name)
+def test_regressions_of_classifiers(
     tmp_root_dir: Path,
     candidate: Candidate,
     dataset: Dataset,

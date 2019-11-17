@@ -40,8 +40,9 @@ class Estimator:
     def __init__(
         self,
         estimator: BaseEstimator,
+        language: Optional[Union[str, enum.Language]] = None,
+        template: Optional[Union[str, enum.Template]] = None,
         class_name: Optional[str] = None,
-        method_name: Optional[str] = None,
         converter: Optional[Callable[[object], str]] = None,
     ):
         """
@@ -55,10 +56,6 @@ class Estimator:
             Change the default class name which will be used in the generated
             output. By default the class name of the passed estimator will be
             used, e.g. `DecisionTreeClassifier`.
-        method_name : str
-            Change the default method name which will be used in the generated
-            output. By default the name of the method/approach will be used,
-            e.g. `predict`.
         converter : Callable
             Change the default converter of all floating numbers from the model
             data. By default a simple string cast `str(value)` will be used.
@@ -74,24 +71,16 @@ class Estimator:
         L.debug('Package: scikit-learn: v{}'.format(sklearn_version))
         L.debug('Package: sklearn-porter: v{}'.format(__version__))
 
-        # Set and load estimator:
-        self._estimator = None
         self.estimator = estimator  # see @estimator.setter
 
-        # Set default class name:
-        if class_name:
-            self.class_name = class_name
-        else:
-            self.class_name = self._estimator.estimator_name
+        def either_or(a, b):
+            return a if a else b
 
-        # Set default method name:
-        if method_name:
-            self.method_name = method_name
-        else:
-            self.method_name = None
-
-        # Set the default converter:
-        self.converter = converter if converter else lambda x: str(x)
+        # Set defaults:
+        self.language = either_or(language, self._estimator.DEFAULT_LANGUAGE)
+        self.template = either_or(template, self._estimator.DEFAULT_TEMPLATE)
+        self.class_name = either_or(class_name, self._estimator.estimator_name)
+        self.converter = either_or(converter, lambda x: str(x))
 
     @property
     def estimator(self):
@@ -99,12 +88,52 @@ class Estimator:
 
     @estimator.setter
     def estimator(self, estimator: BaseEstimator):
-        estimator = self._validate(estimator)
-        if estimator:  # if valid
-            self._estimator = self._load(estimator)
+        orig_est = estimator
+        orig_est = self._check_support(orig_est)
+        if orig_est:
+            self._estimator = self._load(orig_est)
+        else:
+            msg = 'The passed estimator is unknown'
+            raise exception.NotSupportedYetError(msg)
+
+    @property
+    def language(self) -> str:
+        return self._language.value.KEY
+
+    @language.setter
+    def language(self, language: Union[str, enum.Language]):
+        language = enum.Language.convert(language)
+        if self.can(self.estimator, language):
+            self._language = language
+
+    @property
+    def template(self) -> str:
+        return self._template.value
+
+    @template.setter
+    def template(self, name: Union[str, enum.Template]):
+        template = enum.Template.convert(name)
+        if self.can(self.estimator, self.language, template):
+            self._template = template
+
+    def _handle_default_kwargs(self, kwargs: Dict) -> Dict:
+        keys = kwargs.keys()
+        if 'language' in keys:
+            self.language = kwargs.get('language')
+        if 'template' in keys:
+            self.template = kwargs.get('template')
+        if 'class_name' in keys:
+            class_name = kwargs.get('class_name')
+            if isinstance(class_name, str):
+                self.class_name = kwargs.get('class_name')
+        if 'converter' in keys:
+            converter = kwargs.get('converter')
+            if isinstance(converter, Callable):
+                self.converter = converter
+        return kwargs
 
     @staticmethod
-    def _validate(estimator: BaseEstimator):
+    def _check_support(estimator: BaseEstimator) -> Optional[BaseEstimator]:
         """
         Validate the estimator.
 
@@ -428,22 +457,12 @@ class Estimator:
         return None
 
     @decorator.alias('export')
-    def port(
-        self,
-        language: Optional[Union[str, enum.Language]] = None,
-        template: Optional[Union[str, enum.Template]] = None,
-        to_json: bool = False,
-        **kwargs
-    ) -> Union[str, Tuple[str]]:
+    def port(self, to_json: bool = False, **kwargs) -> Union[str, Tuple[str]]:
         """
         Port or transpile a passed estimator to a target programming language.
 
         Parameters
         ----------
-        language : str (default: 'java')
-            Set the target programming language.
-        template : str (default: it depends on the used estimator)
-            Set the kind of desired template.
         to_json : bool (default: False)
             Return the result as JSON string.
 
@@ -451,33 +470,27 @@ class Estimator:
         -------
         The transpiled estimator in the target programming language.
         """
-        language = enum.Language.convert(language)
-        template = enum.Template.convert(template)
-        kwargs = self._set_kwargs_defaults(kwargs)
+        self._handle_default_kwargs(kwargs)
         return self._estimator.port(
-            language=language, template=template, to_json=to_json, **kwargs
+            language=self._language,
+            template=self._template,
+            class_name=self.class_name,
+            converter=self.converter,
+            to_json=to_json
         )
 
     @decorator.alias('dump')
     def save(
         self,
-        language: Optional[Union[str, enum.Language]] = None,
-        template: Optional[Union[str, enum.Template]] = None,
         directory: Optional[Union[str, Path]] = None,
         to_json: bool = False,
-        # fmt: off
         **kwargs
-        # fmt: on
     ) -> Union[str, Tuple[str, str]]:
         """
         Port a passed estimator to a target programming language and save them.
 
         Parameters
         ----------
-        language : str (default: 'java')
-            Set the target programming language.
-        template : str (default: 'embedding')
-            Set the kind of desired template.
         directory : Optional[Union[str, Path]] (default: current working dir)
             Set the directory where all generated files should be saved.
         to_json : bool (default: False)
@@ -486,25 +499,22 @@ class Estimator:
         -------
         The path(s) to the generated file(s).
         """
-        language = enum.Language.convert(language)
-        template = enum.Template.convert(template)
-        kwargs = self._set_kwargs_defaults(kwargs)
+        self._handle_default_kwargs(kwargs)
         return self._estimator.save(
-            language=language,
-            template=template,
+            language=self._language,
+            template=self._template,
+            class_name=self.class_name,
+            converter=self.converter,
             directory=directory,
             to_json=to_json,
-            **kwargs
         )
 
     @decorator.alias('predict')
     def make(
         self,
         x: Union[List, np.ndarray],
-        language: Optional[Union[str, enum.Language]],
-        template: Optional[Union[str, enum.Template]] = None,
-        directory: Optional[Union[str, Path]] = None,
         n_jobs: Optional[Union[bool, int]] = True,
+        directory: Optional[Union[str, Path]] = None,
         final_deletion: Optional[bool] = False,
         **kwargs
     ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray],
@@ -516,14 +526,10 @@ class Estimator:
         ----------
         x : Union[List, np.ndarray] of shape (n_samples, n_features) or (n_features)
             Input data.
-        language : str (default: 'java')
-            Set the target programming language.
-        template : str (default: 'embedding')
-            Set the kind of desired template.
-        directory : Optional[Union[str, Path]] (default: current working dir)
-            Set the directory where all generated files should be saved.
         n_jobs : Union[bool, int] (default: True, which uses `count_cpus()`)
             The number of processes to make the predictions.
+        directory : Optional[Union[str, Path]] (default: current working dir)
+            Set the directory where all generated files should be saved.
         final_deletion : bool (default: False)
             Whether to delete the generated files finally or not.
         kwargs
@@ -532,22 +538,13 @@ class Estimator:
         -------
         Return the predictions and probabilities.
         """
-        language = enum.Language.convert(language)
-        template = enum.Template.convert(template)
+        self._handle_default_kwargs(kwargs)
         if not directory:
             directory = mktemp()
-        kwargs = self._set_kwargs_defaults(kwargs)
-
         created_files = []  # for final deletion
 
         # Transpile model:
-        out = self.save(
-            language=language,
-            template=template,
-            directory=directory,
-            to_json=True,
-            **kwargs
-        )
+        out = self.save(directory=directory, to_json=True, **kwargs)
 
         if isinstance(out, tuple):  # indicator for Template.EXPORTED
             src_path, data_path = out[0], out[1]
@@ -563,6 +560,9 @@ class Estimator:
 
         created_files.append(src_path)
         class_paths = []
+
+        language = self._language
+        template = self._template
 
         # Compilation:
         self._compile(src_path, class_paths, created_files, language, template)
@@ -712,12 +712,11 @@ class Estimator:
     def test(
         self,
         x,
-        language: Optional[Union[str, enum.Language]] = None,
-        template: Optional[Union[str, enum.Template]] = None,
-        directory: Optional[Union[str, Path]] = None,
         n_jobs: Optional[Union[bool, int]] = True,
+        directory: Optional[Union[str, Path]] = None,
         final_deletion: Optional[bool] = False,
         normalize: bool = True,
+        **kwargs
     ):
         """
         Compute the accuracy of the ported classifier.
@@ -726,14 +725,10 @@ class Estimator:
         ----------
         x : numpy.ndarray, shape (n_samples, n_features)
             Input data.
-        language : str (default: 'java')
-            Set the target programming language.
-        template : str (default: 'embedding')
-            Set the kind of desired template.
-        directory : Optional[Union[str, Path]] (default: current working dir)
-            Set the directory where all generated files should be saved.
         n_jobs : Union[bool, int] (default: True, which uses `count_cpus()`)
             The number of processes to make the predictions.
+        directory : Optional[Union[str, Path]] (default: current working dir)
+            Set the directory where all generated files should be saved.
         final_deletion : bool (default: False)
             Whether to delete the generated files finally or not.
         normalize : bool, default: True
@@ -745,34 +740,18 @@ class Estimator:
             Return the relative and absolute number of correct
             classified samples.
         """
+        self._handle_default_kwargs(kwargs)
         y_true = self._estimator.estimator.predict(x)
         y_pred = self.make(
             x,
-            language=language,
-            template=template,
-            directory=directory,
+            language=self._language,
+            template=self._template,
             n_jobs=n_jobs,
+            directory=directory,
             final_deletion=final_deletion,
         )
         y_pred = y_pred[0]  # only predicts
         return accuracy_score(y_true, y_pred, normalize=normalize)
-
-    def _set_kwargs_defaults(self, kwargs: Dict) -> Dict:
-        """
-        Set default value for the methods `port` and `exports`.
-
-        Parameters
-        ----------
-        kwargs : Dict
-            The passed optional arguments.
-
-        Returns
-        -------
-        A dictionary with default values.
-        """
-        kwargs.setdefault('class_name', self.class_name)
-        kwargs.setdefault('converter', self.converter)
-        return kwargs
 
     @staticmethod
     def classifiers() -> Tuple:
