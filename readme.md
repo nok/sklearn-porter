@@ -695,69 +695,47 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
       <td><strong>3.7</strong></td>
     </tr>
     <tr align="center">
-      <td rowspan="18"><strong>scikit-learn</strong></td>
-      <td rowspan="3"><strong>0.16</strong></td>
-      <td>cython 0.27.3</td>
-      <td>cython 0.27.3</td>
-      <td>-</td>
-    </tr>
-    <tr align="center">
-      <td>numpy 1.8.1</td>
-      <td>numpy 1.8.1</td>
-      <td>-</td>
-    </tr>
-    <tr align="center">
-      <td>scipy 0.14.0</td>
-      <td>scipy 0.14.0</td>
-      <td>-</td>
-    </tr>
-    <tr align="center">
+      <td rowspan="15"><strong>scikit-learn</strong></td>
       <td rowspan="3"><strong>0.17</strong></td>
       <td>cython 0.27.3</td>
       <td>cython 0.27.3</td>
-      <td>-</td>
+      <td rowspan="3">not supported<br>by scikit-learn</td>
     </tr>
     <tr align="center">
       <td>numpy 1.9.3</td>
       <td>numpy 1.9.3</td>
-      <td>-</td>
     </tr>
     <tr align="center">
       <td>scipy 0.16.0</td>
       <td>scipy 0.16.0</td>
-      <td>-</td>
     </tr>
     <tr align="center">
       <td rowspan="3"><strong>0.18</strong></td>
       <td>cython 0.27.3</td>
       <td>cython 0.27.3</td>
-      <td>-</td>
+      <td rowspan="3">not supported<br>by scikit-learn</td>
     </tr>
     <tr align="center">
       <td>numpy 1.9.3</td>
       <td>numpy 1.9.3</td>
-      <td>-</td>
     </tr>
     <tr align="center">
       <td>scipy 0.16.0</td>
       <td>scipy 0.16.0</td>
-      <td>-</td>
     </tr>
     <tr align="center">
       <td rowspan="3"><strong>0.19</strong></td>
       <td>cython 0.27.3</td>
       <td>cython 0.27.3</td>
-      <td>-</td>
+      <td rowspan="3">not supported<br>by scikit-learn</td>
     </tr>
     <tr align="center">
       <td>numpy 1.14.5</td>
       <td>numpy 1.14.5</td>
-      <td>-</td>
     </tr>
     <tr align="center">
       <td>scipy 1.1.0</td>
       <td>scipy 1.1.0</td>
-      <td>-</td>
     </tr>
     <tr align="center">
       <td rowspan="3"><strong>0.20</strong></td>

@@ -22,13 +22,11 @@ env:
     - PYTHON_VER=python=3.6 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy==1.14.5 SCIPY_VER=scipy==1.1.0 SKLEARN_VER=scikit-learn==0.19
     - PYTHON_VER=python=3.6 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy==1.9.3 SCIPY_VER=scipy==0.16.0 SKLEARN_VER=scikit-learn==0.18
     - PYTHON_VER=python=3.6 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy==1.9.3 SCIPY_VER=scipy==0.16.0 SKLEARN_VER=scikit-learn==0.17
-    - PYTHON_VER=python=3.6 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy==1.8.1 SCIPY_VER=scipy==0.14.0 SKLEARN_VER=scikit-learn==0.16
     - PYTHON_VER=python=3.5 CYTHON_VER=cython NUMPY_VER=numpy SCIPY_VER=scipy SKLEARN_VER=scikit-learn==0.21
     - PYTHON_VER=python=3.5 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy SCIPY_VER=scipy SKLEARN_VER=scikit-learn==0.20
     - PYTHON_VER=python=3.5 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy==1.14.5 SCIPY_VER=scipy==1.1.0 SKLEARN_VER=scikit-learn==0.19
     - PYTHON_VER=python=3.5 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy==1.9.3 SCIPY_VER=scipy==0.16.0 SKLEARN_VER=scikit-learn==0.18
     - PYTHON_VER=python=3.5 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy==1.9.3 SCIPY_VER=scipy==0.16.0 SKLEARN_VER=scikit-learn==0.17
-    - PYTHON_VER=python=3.5 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy==1.8.1 SCIPY_VER=scipy==0.14.0 SKLEARN_VER=scikit-learn==0.16
 
 before_install:
   travis_wait 30 docker build
@@ -55,7 +53,7 @@ script:
   docker exec -it test
   bash -c '
     source activate sklearn-porter &&
-    pytest tests -v -x
+    pytest tests -v
       -p no:doctest
       --disable-warnings
       --numprocesses=auto

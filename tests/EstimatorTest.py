@@ -28,10 +28,6 @@ from sklearn_porter.language.Java import Java
 from sklearn_porter.Estimator import Estimator
 from sklearn_porter import exceptions as exception
 
-# List of named tuples:
-Dataset = namedtuple('Dataset', 'name data target')
-Candidate = namedtuple('candidate', 'name clazz create')
-
 # Force deterministic number generation:
 np.random.seed(0)
 rd.seed(0)
@@ -39,6 +35,10 @@ rd.seed(0)
 # Check python version:
 if PYTHON_VERSION[:2] < (3, 5):
     pytest.skip('tests requires python >= 3.5', allow_module_level=True)
+
+# List of named tuples:
+Dataset = namedtuple('Dataset', 'name data target')
+Candidate = namedtuple('Candidate', 'name clazz create')
 
 # Parse and prepare scikit-learn version:
 SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
@@ -80,30 +80,6 @@ def get_candidates() -> List[Candidate]:
         yield (Candidate(e.__name__, e, e))
 
 
-def get_searchers() -> List[Candidate]:
-    _searchers = []
-    try:
-        from sklearn.model_selection import GridSearchCV
-    except ImportError:
-        pass
-    else:
-        _searchers.append(
-            Candidate(GridSearchCV.__name__, GridSearchCV, GridSearchCV)
-        )
-    try:
-        from sklearn.model_selection import RandomizedSearchCV
-    except ImportError:
-        pass
-    else:
-        _searchers.append(
-            Candidate(
-                RandomizedSearchCV.__name__, RandomizedSearchCV,
-                RandomizedSearchCV
-            )
-        )
-    return _searchers
-
-
 def get_datasets() -> List[Dataset]:
     _datasets = [
         Dataset('digits',
@@ -129,7 +105,6 @@ def get_datasets() -> List[Dataset]:
 
 
 candidates = list(get_candidates())
-searchers = list(get_searchers())
 datasets = list(get_datasets())
 
 
@@ -233,6 +208,7 @@ def test_invalid_estimator(obj):
 def test_estimator_extraction_from_pipeline():
     """Test the extraction of an estimator from a pipeline."""
     from sklearn.pipeline import Pipeline
+
     pipeline = Pipeline([('SVM', SVC())])
     pipeline.fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
     est = Estimator(pipeline)
@@ -245,6 +221,7 @@ def test_estimator_extraction_from_pipeline():
 def test_unfitted_estimator_in_pipeline():
     """Test the extraction of an estimator from a pipeline."""
     from sklearn.pipeline import Pipeline
+
     pipeline = Pipeline([('SVM', SVC())])
     with pytest.raises(exception.NotFittedEstimatorError):
         Estimator(pipeline)
@@ -289,18 +266,46 @@ def test_invalid_params_on_dump_method(candidate: Candidate, params: Tuple):
 
 
 @pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 19) or len(searchers) == 0,
-    reason='requires scikit-learn >= v0.19'
+    SKLEARN_VERSION[:2] < (0, 19), reason='requires scikit-learn >= v0.19'
 )
-@pytest.mark.parametrize('candidate', searchers, ids=lambda x: x.name)
-def test_extraction_from_optimizer(candidate: Candidate):
+def test_extraction_from_grid_search_cv():
     """Test the extraction from an optimizer."""
+    from sklearn.model_selection import GridSearchCV
+
     params = {
         'kernel': ('linear', 'rbf'),
         'C': [1, 10, 100],
         'gamma': [0.001, 0.0001],
     }
-    search = candidate.create(SVC(), params, cv=2)
+    search = GridSearchCV(SVC(), params, cv=2)
+
+    # Test unfitted optimizer:
+    with pytest.raises(ValueError):
+        est = Estimator(search)
+        assert isinstance(est.estimator, SVC)
+
+    # Test fitted optimizer:
+    search.fit(
+        X=[[1, 1], [2, 2], [3, 3], [1, 1], [2, 2], [3, 3]],
+        y=[1, 2, 3, 1, 2, 3]
+    )
+    est = Estimator(search)
+    assert isinstance(est.estimator, SVC)
+
+
+@pytest.mark.skipif(
+    SKLEARN_VERSION[:2] < (0, 19), reason='requires scikit-learn >= v0.19'
+)
+def test_extraction_from_randomized_search_cv():
+    """Test the extraction from an optimizer."""
+    from sklearn.model_selection import RandomizedSearchCV
+
+    params = {
+        'kernel': ('linear', 'rbf'),
+        'C': [1, 10, 100],
+        'gamma': [0.001, 0.0001],
+    }
+    search = RandomizedSearchCV(SVC(), params, cv=2)
 
     # Test unfitted optimizer:
     with pytest.raises(ValueError):

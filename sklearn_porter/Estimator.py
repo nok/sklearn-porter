@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import os
-import stat
 import urllib.request
 from json import loads
 from multiprocessing import Pool, cpu_count
@@ -166,7 +164,7 @@ class Estimator:
                 'does not support optimizers in general.'
                 ''.format(sklearn_version)
             )
-            L.warn(msg)
+            L.warning(msg)
         else:
             if isinstance(est, BaseSearchCV):
                 L.info('Yes, the estimator is embedded in an optimizer.')
@@ -179,7 +177,7 @@ class Estimator:
                         'v{} does not support `GridSearchCV` or '
                         '`RandomizedSearchCV`.'.format(sklearn_version)
                     )
-                    L.warn(msg)
+                    L.warning(msg)
                 else:
                     optimizers = (GridSearchCV, RandomizedSearchCV)
                     if isinstance(est, optimizers):
@@ -223,7 +221,7 @@ class Estimator:
                 'Your installed version of scikit-learn '
                 'v{} does not support pipelines.'.format(sklearn_version)
             )
-            L.warn(msg)
+            L.warning(msg)
         else:
             if isinstance(est, Pipeline):
                 L.info('Yes, the estimator is embedded in a pipeline.')

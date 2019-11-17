@@ -60,7 +60,7 @@ def main():
         author=meta.get('author'),
         author_email=meta.get('author_email'),
         install_requires=[
-            'scikit-learn>=0.16',
+            'scikit-learn>=0.17',
             'Jinja2>=2.10.1',
             'loguru>=0.3.2',
         ],
