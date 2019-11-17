@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import urllib.request
+from abc import ABCMeta
 from json import loads
 from multiprocessing import Pool, cpu_count
 from os import environ, remove
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, check_output
 from sys import platform as system_platform
-from sys import version_info
-from sys import stdout
-from time import sleep
+from sys import stdout, version_info
 from tempfile import mktemp
 from textwrap import dedent
+from time import sleep
 from typing import Callable, Dict, List, Optional, Tuple, Union
-from abc import ABCMeta
 
 import numpy as np
 from loguru import logger as L
