@@ -57,4 +57,3 @@ class InvalidTemplateError(Exception):
         opts = ', '.join(['`{}`'.format(t.value) for t in list(enum.Template)])
         self.message = 'The passed template `{}` is invalid. ' \
                        'Valid templates are: {}.'.format(message, opts)
-        super().__init__(self.message)

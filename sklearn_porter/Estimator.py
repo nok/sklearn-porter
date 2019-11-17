@@ -26,10 +26,12 @@ from sklearn.metrics import accuracy_score
 # sklearn-porter
 from sklearn_porter import __version__
 from sklearn_porter import enums as enum
+from sklearn_porter import decorators as decorator
 from sklearn_porter import exceptions as exception
 from sklearn_porter.utils import Options, get_qualname
 
 
+@decorator.aliased
 class Estimator:
     """
     Main class which validates the passed estimator and
@@ -425,6 +427,7 @@ class Estimator:
 
         return None
 
+    @decorator.alias('export')
     def port(
         self,
         language: Optional[Union[str, enum.Language]] = None,
@@ -455,34 +458,8 @@ class Estimator:
             language=language, template=template, to_json=to_json, **kwargs
         )
 
-    def export(
-        self,
-        language: Optional[Union[str, enum.Language]] = None,
-        template: Optional[Union[str, enum.Template]] = None,
-        to_json: bool = False,
-        **kwargs
-    ) -> Union[str, Tuple[str, str]]:
-        """
-        Port or transpile a passed estimator to a target programming language.
-
-        Parameters
-        ----------
-        language : str (default: 'java')
-            Set the target programming language.
-        template : str (default: it depends on the used estimator)
-            Set the kind of desired template.
-        to_json : bool (default: False)
-            Return the result as JSON string.
-
-        Returns
-        -------
-        The transpiled estimator in the target programming language.
-        """
-        return self._estimator.port(
-            language=language, template=template, to_json=to_json, **kwargs
-        )
-
-    def dump(
+    @decorator.alias('dump')
+    def save(
         self,
         language: Optional[Union[str, enum.Language]] = None,
         template: Optional[Union[str, enum.Template]] = None,
@@ -512,7 +489,7 @@ class Estimator:
         language = enum.Language.convert(language)
         template = enum.Template.convert(template)
         kwargs = self._set_kwargs_defaults(kwargs)
-        return self._estimator.dump(
+        return self._estimator.save(
             language=language,
             template=template,
             directory=directory,
@@ -520,6 +497,7 @@ class Estimator:
             **kwargs
         )
 
+    @decorator.alias('predict')
     def make(
         self,
         x: Union[List, np.ndarray],
@@ -563,7 +541,7 @@ class Estimator:
         created_files = []  # for final deletion
 
         # Transpile model:
-        out = self.dump(
+        out = self.save(
             language=language,
             template=template,
             directory=directory,
@@ -657,6 +635,22 @@ class Estimator:
         language: enum.Language,
         template: Optional[enum.Template] = None,
     ):
+        """
+        Execute a compilation.
+
+        Parameters
+        ----------
+        src_path : Path
+            The absolute path to the source files.
+        class_paths : List
+            A list of necessary class paths.
+        created_files : List
+            A linked list to save the paths of created files.
+        language : Language
+            The requested programming language.
+        template
+            The requested template.
+        """
         cmd = language.value.CMD_COMPILE
 
         if not cmd:
@@ -714,7 +708,8 @@ class Estimator:
                 raise exception.CodeTooLarge(msg)
             raise exception.CompilationFailed(msg)
 
-    def integrity_score(
+    @decorator.alias('integrity_score')
+    def test(
         self,
         x,
         language: Optional[Union[str, enum.Language]] = None,
@@ -917,6 +912,14 @@ class Estimator:
         return False
 
     def __repr__(self):
+        """
+        Get the status and basic information about
+        the passed estimator and the local environment.
+
+        Returns
+        -------
+        An overview of basic information.
+        """
         python_version = '.'.join(map(str, version_info[:3]))
         report = '''\
             estimator
@@ -940,13 +943,25 @@ class Estimator:
 
 
 def _system_call(cmd: str):
+    """
+    Separate helper function for multi-processed system calls.
+
+    Parameters
+    ----------
+    cmd : str
+        The command for the system call.
+
+    Returns
+    -------
+    The output of subprocess.check_output.
+    """
     subp_args = dict(
         shell=True,
         universal_newlines=True,
         stderr=STDOUT,
         executable='/bin/bash'
     )
-    for idx in range(3):
+    for idx in range(3):  # Try three times, b/c of `file is busy` issues.
         try:
             out = check_output(cmd, **subp_args)
         except CalledProcessError as e:

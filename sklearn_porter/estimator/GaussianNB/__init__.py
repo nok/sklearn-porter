@@ -8,29 +8,29 @@ from loguru import logger as L
 
 # scikit-learn
 from sklearn.naive_bayes import GaussianNB as GaussianNBClass
-from sklearn_porter.enums import Language, Method, Template, ALL_METHODS
 
 # sklearn-porter
+from sklearn_porter import enums as enum
+from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.exceptions import NotFittedEstimatorError
 
 
 class GaussianNB(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a GaussianNB classifier."""
 
-    DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_TEMPLATE = Template.ATTACHED
-    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_LANGUAGE = enum.Language.JAVA
+    DEFAULT_TEMPLATE = enum.Template.ATTACHED
+    DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
-        Language.JAVA: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.EXPORTED: ALL_METHODS,
+        enum.Language.JAVA: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
         },
-        Language.JS: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.EXPORTED: ALL_METHODS,
+        enum.Language.JS: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
         },
     }
 
@@ -45,7 +45,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         try:
             est.sigma_
         except AttributeError:
-            raise NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(self.estimator_name)
 
         self.meta_info = dict(
             n_features=len(est.sigma_[0]),
@@ -64,8 +64,8 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
 
     def port(
         self,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
         to_json: bool = False,
         **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -109,7 +109,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         tpls = self._load_templates(language.value.KEY)
 
         # Make 'exported' variant:
-        if template == Template.EXPORTED:
+        if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
             converter = kwargs.get('converter')

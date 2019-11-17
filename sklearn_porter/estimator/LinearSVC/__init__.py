@@ -10,41 +10,41 @@ from loguru import logger as L
 from sklearn.svm.classes import LinearSVC as LinearSVCClass
 
 # sklearn-porter
-from sklearn_porter.enums import Language, Method, Template
+from sklearn_porter import enums as enum
+from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.exceptions import NotFittedEstimatorError
 
 
 class LinearSVC(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a LinearSVC classifier."""
 
-    DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_TEMPLATE = Template.ATTACHED
-    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_LANGUAGE = enum.Language.JAVA
+    DEFAULT_TEMPLATE = enum.Template.ATTACHED
+    DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
-        Language.C: {
-            Template.ATTACHED: {Method.PREDICT},
+        enum.Language.C: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
         },
-        Language.GO: {
-            Template.ATTACHED: {Method.PREDICT},
+        enum.Language.GO: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
         },
-        Language.JAVA: {
-            Template.ATTACHED: {Method.PREDICT},
-            Template.EXPORTED: {Method.PREDICT},
+        enum.Language.JAVA: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
         },
-        Language.JS: {
-            Template.ATTACHED: {Method.PREDICT},
-            Template.EXPORTED: {Method.PREDICT},
+        enum.Language.JS: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
         },
-        Language.PHP: {
-            Template.ATTACHED: {Method.PREDICT},
-            Template.EXPORTED: {Method.PREDICT},
+        enum.Language.PHP: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
         },
-        Language.RUBY: {
-            Template.ATTACHED: {Method.PREDICT},
-            Template.EXPORTED: {Method.PREDICT},
+        enum.Language.RUBY: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
         }
     }
 
@@ -59,7 +59,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         try:
             est.coef_
         except AttributeError:
-            raise NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(self.estimator_name)
 
         self.meta_info = dict(
             n_features=len(est.coef_[0]),
@@ -82,8 +82,8 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
 
     def port(
         self,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
         to_json: bool = False,
         **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -127,7 +127,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         tpls = self._load_templates(language.value.KEY)
 
         # Make 'exported' variant:
-        if template == Template.EXPORTED:
+        if template == enum.Template.EXPORTED:
             tpl_name = 'exported.class'
             tpl_class = tpls.get_template(tpl_name)
             out_class = tpl_class.render(**plas)

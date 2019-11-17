@@ -14,24 +14,24 @@ from sklearn.ensemble.weight_boosting import \
 from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
-from sklearn_porter.enums import Language, Method, Template, ALL_METHODS
+from sklearn_porter import enums as enum
+from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.exceptions import NotSupportedYetError
 
 
 class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port an AdaBoostClassifier classifier."""
 
-    DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_TEMPLATE = Template.COMBINED
-    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_LANGUAGE = enum.Language.JAVA
+    DEFAULT_TEMPLATE = enum.Template.COMBINED
+    DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
-        Language.JS: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.EXPORTED: ALL_METHODS,
-            Template.COMBINED: ALL_METHODS,
+        enum.Language.JS: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
         },
     }
 
@@ -46,13 +46,13 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         if est.algorithm != 'SAMME.R':
             msg = 'The used algorithm `{}` is not supported yet.'
             msg = msg.format(est.algorithm)
-            raise NotSupportedYetError(msg)
+            raise exception.NotSupportedYetError(msg)
 
         # Check type of base estimators:
         if not isinstance(est.base_estimator_, DecisionTreeClassifier):
             msg = 'The used base estimator `{}` is not supported yet.'
             msg = msg.format(est.base_estimator.__class__.__qualname__)
-            raise NotSupportedYetError(msg)
+            raise exception.NotSupportedYetError(msg)
 
         # Ignore estimators with zero weight:
         estimators = []
@@ -85,8 +85,8 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
         self,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
         to_json: bool = False,
         **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -133,7 +133,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         encoder.FLOAT_REPR = lambda o: converter(o)
 
         # Make 'exported' variant:
-        if template == Template.EXPORTED:
+        if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
             model_data = self.model_data.get('estimators')
@@ -141,7 +141,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             return out_class, model_data
 
         # Make 'attached' variant:
-        elif template == Template.ATTACHED:
+        elif template == enum.Template.ATTACHED:
             tpl_class = tpls.get_template('attached.class')
             tpl_init = tpls.get_template('init')
             model_data = self.model_data.get('estimators')
@@ -188,7 +188,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         plas_copy.update(dict(methods=out_fns, method_calls=out_calls))
         out_method = tpl_method.render(**plas_copy)
 
-        if language in (Language.JAVA, Language.JS):
+        if language in (enum.Language.JAVA, enum.Language.JS):
             n_indents = 1
             out_method = indent(out_method, n_indents * tpl_indent)
             out_method = out_method[(n_indents * len(tpl_indent)):]
@@ -290,7 +290,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
                 out += '\n'
 
             val_a = 'features[{}]'.format(features[node])
-            if language is Language.PHP:
+            if language is enum.Language.PHP:
                 val_a = '$' + val_a
             val_b = converter(threshold[node])
             tpl_if = tpls.get_template('if')
@@ -339,7 +339,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         else:
             clazzes = []
             tpl = 'classes[{0}] = {1}'
-            if language is Language.PHP:
+            if language is enum.Language.PHP:
                 tpl = '$' + tpl
             tpl = indent(tpl, depth * out_indent)
             for i, rate in enumerate(value[node]):

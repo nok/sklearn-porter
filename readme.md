@@ -537,7 +537,7 @@ The following table shows the most relevant high-level methods.
         <tr>
             <td>4</td>
             <td><code>test</code></td>
-            <td><code>check</code></td>
+            <td><code>integrity_score</code></td>
             <td>Make an integrity check by making regression tests between the original and transpiled estimator.</td>
         </tr>
     </tbody>

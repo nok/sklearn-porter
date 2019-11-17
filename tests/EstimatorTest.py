@@ -258,11 +258,11 @@ def test_invalid_params_on_port_method(candidate: Candidate, params: Tuple):
         'InvalidTemplateError',
     ],
 )
-def test_invalid_params_on_dump_method(candidate: Candidate, params: Tuple):
+def test_invalid_params_on_save_method(candidate: Candidate, params: Tuple):
     """Test initialization with valid base estimator."""
     est = candidate.create().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
     with pytest.raises(params[0]):
-        Estimator(est).dump(**params[1])
+        Estimator(est).save(**params[1])
 
 
 @pytest.mark.skipif(
@@ -487,7 +487,7 @@ def test_and_compare_accuracies(
     )
 
     try:
-        score = est.integrity_score(
+        score = est.test(
             test_x, language=language, template=template, directory=tmp_dir
         )
         assert score == 1.

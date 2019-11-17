@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Optional, Tuple, Union
 
 # sklearn-porter
-from sklearn_porter.enums import Language, Template
+from sklearn_porter import enums as enum
 
 
 class EstimatorApiABC(ABC):
@@ -17,8 +17,8 @@ class EstimatorApiABC(ABC):
     @abstractmethod
     def port(
         self,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
         to_json: bool = False,
         **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -40,10 +40,10 @@ class EstimatorApiABC(ABC):
         The ported estimator.
         """
     @abstractmethod
-    def dump(
+    def save(
         self,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
         directory: Optional[Union[str, Path]] = None,
         to_json: bool = False,
         **kwargs

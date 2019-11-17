@@ -3,8 +3,7 @@
 from enum import Enum
 
 from sklearn_porter.language import *
-
-import sklearn_porter.exceptions
+from sklearn_porter import exceptions as exception
 
 
 class Method(Enum):
@@ -17,14 +16,11 @@ class Method(Enum):
             try:
                 method = Method[method.upper()]
             except KeyError:
-                raise sklearn_porter.exceptions.InvalidMethodError(method)
+                raise exception.InvalidMethodError(method)
         return method
 
 
-ALL_METHODS = {
-    Method.PREDICT,
-    Method.PREDICT_PROBA,
-}
+ALL_METHODS = {Method.PREDICT, Method.PREDICT_PROBA}
 
 
 class Template(Enum):
@@ -38,15 +34,8 @@ class Template(Enum):
             try:
                 template = Template[template.upper()]
             except KeyError:
-                raise sklearn_porter.exceptions.InvalidTemplateError(template)
+                raise exception.InvalidTemplateError(template)
         return template
-
-
-ALL_TEMPLATES = {
-    Template.ATTACHED,
-    Template.COMBINED,
-    Template.EXPORTED,
-}
 
 
 class Language(Enum):
@@ -63,15 +52,5 @@ class Language(Enum):
             try:
                 language = Language[language.upper()]
             except KeyError:
-                raise sklearn_porter.exceptions.InvalidLanguageError(language)
+                raise exception.InvalidLanguageError(language)
         return language
-
-
-ALL_LANGUAGES = {
-    Language.C,
-    Language.GO,
-    Language.JAVA,
-    Language.JS,
-    Language.PHP,
-    Language.RUBY,
-}

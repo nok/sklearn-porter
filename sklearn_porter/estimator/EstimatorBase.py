@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from json import dumps
-from os import environ, getcwd, chmod
+from os import environ, getcwd
 from pathlib import Path
 from time import sleep
 from typing import Dict, Optional, Set, Tuple, Union
@@ -15,18 +14,18 @@ from sklearn.base import BaseEstimator
 
 # sklearn-porter
 from sklearn_porter import __version__ as sklearn_porter_version
-from sklearn_porter.enums import Language, Method, Template
+from sklearn_porter import enums as enum
+from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
-from sklearn_porter.exceptions import NotSupportedYetError
 
 
 class EstimatorBase(EstimatorApiABC):
 
-    DEFAULT_LANGUAGE = None  # type: Language
-    DEFAULT_METHOD = None  # type: Method
-    DEFAULT_TEMPLATE = None  # type: Template
+    DEFAULT_LANGUAGE = None  # type: enum.Language
+    DEFAULT_METHOD = None  # type: enum.Method
+    DEFAULT_TEMPLATE = None  # type: enum.Template
 
-    SUPPORT = None  # type: Dict[Language, Dict[Template, Set[Method]]]
+    SUPPORT = None  # type: Dict[enum.Language, Dict[enum.Template, Set[enum.Method]]]
 
     estimator = None  # type: BaseEstimator
     estimator_name = None  # type: str
@@ -81,10 +80,10 @@ class EstimatorBase(EstimatorApiABC):
 
     def check(
         self,
-        method: Optional[Method] = None,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
-    ) -> Tuple[Method, Language, Template]:
+        method: Optional[enum.Method] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
+    ) -> Tuple[enum.Method, enum.Language, enum.Template]:
         """
         Check whether the passed values (kind of method, language
         and template) are supported by the estimator or not.
@@ -122,7 +121,7 @@ class EstimatorBase(EstimatorApiABC):
             msg = 'Currently the language `{}` ' 'is not supported yet.'.format(
                 language.value
             )
-            raise NotSupportedYetError(msg)
+            raise exception.NotSupportedYetError(msg)
 
         # Check the template support:
         template = template or self.DEFAULT_TEMPLATE
@@ -131,20 +130,20 @@ class EstimatorBase(EstimatorApiABC):
                 'Currently the template `{}` '
                 'is not implemented yet.'.format(template.value)
             )
-            raise NotSupportedYetError(msg)
+            raise exception.NotSupportedYetError(msg)
 
         # Check method support:
         method = method or self.DEFAULT_METHOD
         if method not in self.SUPPORT[language][template]:
             msg = 'Currently only `predict` ' 'is a valid method type.'
-            raise NotSupportedYetError(msg)
+            raise exception.NotSupportedYetError(msg)
 
         return method, language, template
 
     def port(
         self,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
         to_json: bool = False,
         **kwargs
     ):
@@ -170,10 +169,10 @@ class EstimatorBase(EstimatorApiABC):
         )
         raise NotImplementedError(msg)
 
-    def dump(
+    def save(
         self,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
         directory: Optional[Union[str, Path]] = None,
         to_json: bool = False,
         **kwargs
@@ -228,7 +227,7 @@ class EstimatorBase(EstimatorApiABC):
         paths = str(filepath)
 
         # Dump model data:
-        if template == Template.EXPORTED and len(ported) == 2:
+        if template == enum.Template.EXPORTED and len(ported) == 2:
             json_path = directory / (class_name + '.json')
             json_path.write_text(ported[1], encoding='utf-8')
             while not json_path.exists():
@@ -237,7 +236,9 @@ class EstimatorBase(EstimatorApiABC):
 
         return paths
 
-    def _load_templates(self, language: Union[str, Language]) -> Environment:
+    def _load_templates(
+        self, language: Union[str, enum.Language]
+    ) -> Environment:
         """
         Load templates from static files and the global language files.
 
@@ -255,7 +256,7 @@ class EstimatorBase(EstimatorApiABC):
             An Jinja environment with all loaded templates.
         """
         language = (
-            Language[language.upper()].value
+            enum.Language[language.upper()].value
             if isinstance(language, str) else language
         )
 
@@ -302,10 +303,3 @@ class EstimatorBase(EstimatorApiABC):
             loader=DictLoader(tpls),
         )
         return environment
-
-    @staticmethod
-    def _dump_dict(
-        obj: Dict, sort_keys: bool = True, indent: Union[bool, int] = 2
-    ) -> str:
-        indent = indent if indent else None
-        return dumps(obj, sort_keys=sort_keys, indent=indent)

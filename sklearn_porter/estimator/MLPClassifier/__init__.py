@@ -12,29 +12,27 @@ from sklearn.neural_network.multilayer_perceptron import \
     MLPClassifier as MLPClassifierClass
 
 # sklearn-porter
-from sklearn_porter.enums import Language, Method, Template, ALL_METHODS
+from sklearn_porter import enums as enum
+from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.exceptions import (
-    NotFittedEstimatorError, NotSupportedYetError
-)
 
 
 class MLPClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a MLPClassifier classifier."""
 
-    DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_TEMPLATE = Template.ATTACHED
-    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_LANGUAGE = enum.Language.JAVA
+    DEFAULT_TEMPLATE = enum.Template.ATTACHED
+    DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
-        Language.JAVA: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.EXPORTED: ALL_METHODS,
+        enum.Language.JAVA: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
         },
-        Language.JS: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.EXPORTED: ALL_METHODS,
+        enum.Language.JS: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
         },
     }
 
@@ -51,21 +49,21 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         if act_fn not in supported_act_fns:
             msg = 'The passed activation function `{}` is not supported yet.'
             msg = msg.format(act_fn)
-            raise NotSupportedYetError(msg)
+            raise exception.NotSupportedYetError(msg)
 
         # Check output function:
         if self.estimator_name == 'MLPClassifier':
             try:
                 out_fn = est.out_activation_
             except AttributeError:
-                raise NotFittedEstimatorError(self.estimator_name)
+                raise exception.NotFittedEstimatorError(self.estimator_name)
             else:
                 supported_out_fns = ['softmax', 'logistic']
                 if out_fn not in supported_out_fns:
                     msg = 'The passed output function `{}`' \
                           ' is not supported yet.'
                     msg = msg.format(out_fn)
-                    raise NotSupportedYetError(msg)
+                    raise exception.NotSupportedYetError(msg)
 
         # Architecture:
         n_inputs = len(est.coefs_[0])
@@ -94,8 +92,8 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
         self,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
         to_json: bool = False,
         **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -139,7 +137,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         tpls = self._load_templates(language.value.KEY)
 
         # Make 'exported' variant:
-        if template == Template.EXPORTED:
+        if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
             converter = kwargs.get('converter')

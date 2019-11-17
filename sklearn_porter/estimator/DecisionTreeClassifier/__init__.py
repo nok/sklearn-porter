@@ -9,52 +9,51 @@ from jinja2 import Environment
 from loguru import logger as L
 
 # scikit-learn
-from sklearn.tree.tree import (
-    DecisionTreeClassifier as DecisionTreeClassifierClass,
-)
+from sklearn.tree.tree import \
+    DecisionTreeClassifier as DecisionTreeClassifierClass
 
 # sklearn-porter
-from sklearn_porter.enums import ALL_METHODS, Language, Method, Template
+from sklearn_porter import enums as enum
+from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.exceptions import NotFittedEstimatorError
 
 
 class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a DecisionTreeClassifier classifier."""
 
-    DEFAULT_LANGUAGE = Language.JAVA
-    DEFAULT_TEMPLATE = Template.ATTACHED
-    DEFAULT_METHOD = Method.PREDICT
+    DEFAULT_LANGUAGE = enum.Language.JAVA
+    DEFAULT_TEMPLATE = enum.Template.ATTACHED
+    DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
-        Language.C: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.COMBINED: ALL_METHODS,
+        enum.Language.C: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
         },
-        Language.GO: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.COMBINED: ALL_METHODS,
+        enum.Language.GO: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
         },
-        Language.JAVA: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.COMBINED: ALL_METHODS,
-            Template.EXPORTED: ALL_METHODS,
+        enum.Language.JAVA: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
         },
-        Language.JS: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.COMBINED: ALL_METHODS,
-            Template.EXPORTED: ALL_METHODS,
+        enum.Language.JS: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
         },
-        Language.PHP: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.COMBINED: ALL_METHODS,
-            Template.EXPORTED: ALL_METHODS,
+        enum.Language.PHP: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
         },
-        Language.RUBY: {
-            Template.ATTACHED: ALL_METHODS,
-            Template.COMBINED: ALL_METHODS,
-            Template.EXPORTED: ALL_METHODS,
+        enum.Language.RUBY: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
         },
     }
 
@@ -70,7 +69,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             getattr(est, 'n_features_')  # for sklearn >  0.19
             getattr(est.tree_, 'value')  # for sklearn <= 0.18
         except AttributeError:
-            raise NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(self.estimator_name)
 
         # Extract and save meta information:
         self.meta_info = dict(
@@ -93,8 +92,8 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
         self,
-        language: Optional[Language] = None,
-        template: Optional[Template] = None,
+        language: Optional[enum.Language] = None,
+        template: Optional[enum.Template] = None,
         to_json: bool = False,
         **kwargs
     ) -> Union[str, Tuple[str, str]]:
@@ -139,7 +138,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         tpls = self._load_templates(language.value.KEY)
 
         # Make 'exported' variant:
-        if template == Template.EXPORTED:
+        if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
             converter = kwargs.get('converter')
@@ -214,13 +213,13 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         )
 
         # Make 'attached' variant:
-        if template == Template.ATTACHED:
+        if template == enum.Template.ATTACHED:
             tpl_class = tpls.get_template('attached.class')
             out_class = tpl_class.render(**plas)
             return out_class
 
         # Make 'combined' variant:
-        if template == Template.COMBINED:
+        if template == enum.Template.COMBINED:
             tpl_class = tpls.get_template('combined.class')
             out_tree = self._create_tree(tpls, language, converter)
             plas.update(dict(tree=out_tree))
@@ -230,7 +229,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     def _create_tree(
         self,
         tpls: Environment,
-        language: Language,
+        language: enum.Language,
         converter: Callable[[object], str],
     ):
         """
@@ -251,7 +250,8 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         """
         n_indents = (
             1 if language in {
-                Language.JAVA, Language.JS, Language.PHP, Language.RUBY
+                enum.Language.JAVA, enum.Language.JS, enum.Language.PHP,
+                enum.Language.RUBY
             } else 0
         )
         return self._create_branch(
@@ -270,7 +270,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     def _create_branch(
         self,
         tpls: Environment,
-        language: Language,
+        language: enum.Language,
         converter: Callable[[object], str],
         left_nodes: list,
         right_nodes: list,
@@ -315,7 +315,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         if threshold[node] != -2.0:
             out += '\n'
             val_a = 'features[{}]'.format(features[node])
-            if language is Language.PHP:
+            if language is enum.Language.PHP:
                 val_a = '$' + val_a
             val_b = converter(threshold[node])
             tpl_if = tpls.get_template('if')
@@ -363,7 +363,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         else:
             clazzes = []
             tpl = 'classes[{0}] = {1}'
-            if language is Language.PHP:
+            if language is enum.Language.PHP:
                 tpl = '$' + tpl
             tpl = indent(tpl, depth * out_indent)
 
