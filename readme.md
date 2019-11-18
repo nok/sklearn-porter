@@ -818,6 +818,17 @@ For the regression tests we have to use specific compilers and interpreters. Tod
 
 Please notice that in general you can use older compilers and interpreters with the generated source code. For instance you can use Java 1.6 to compile and run models.
 
+### Logging
+
+You can activate logging by changing the option `logging.level`.
+
+```python
+from sklearn_porter import options
+
+from logging import DEBUG
+
+options['logging.level'] = DEBUG
+```
 
 ### Testing
 
