@@ -11,6 +11,8 @@ from sklearn_porter.estimator.SVC import SVC
 class NuSVC(SVC, EstimatorBase):
     """Extract model data and port a NuSVC classifier."""
 
+    SKLEARN_URL = 'sklearn.svm.NuSVC.html'
+
     estimator = None  # type: NuSVCClass
 
     def __init__(self, estimator: NuSVCClass):

@@ -20,6 +20,9 @@ from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 
 class EstimatorBase(EstimatorApiABC):
 
+    SKLEARN_BASE_URL = 'https://scikit-learn.org/stable/modules/generated/'
+    SKLEARN_URL = None  # type: str
+
     DEFAULT_LANGUAGE = None  # type: enum.Language
     DEFAULT_METHOD = None  # type: enum.Method
     DEFAULT_TEMPLATE = None  # type: enum.Template
@@ -37,32 +40,18 @@ class EstimatorBase(EstimatorApiABC):
 
     def __init__(self, estimator: BaseEstimator):
         self.estimator = estimator
+
+        # Set name:
         self.estimator_name = estimator.__class__.__qualname__
 
-        default_url = 'https://scikit-learn.org/stable/documentation.html'
-        self.estimator_url = default_url
-        urls = {
-            'AdaBoostClassifier': 'ensemble.AdaBoostClassifier',
-            'BernoulliNB': 'naive_bayes.BernoulliNB',
-            'DecisionTreeClassifier': 'tree.DecisionTreeClassifier',
-            'ExtraTreesClassifier': 'ensemble.ExtraTreesClassifier',
-            'GaussianNB': 'naive_bayes.GaussianNB',
-            'KNeighborsClassifier': 'neighbors.KNeighborsClassifier',
-            'LinearSVC': 'svm.LinearSVC',
-            'MLPClassifier': 'neural_network.MLPClassifier',
-            'MLPRegressor': 'neural_network.MLPRegressor',
-            'NuSVC': 'svm.NuSVC',
-            'RandomForestClassifier': 'ensemble.RandomForestClassifier',
-            'SVC': 'svm.SVC',
-        }
-        if self.estimator_name in urls:
-            base_url = (
-                'https://scikit-learn.org/stable/'
-                'modules/generated/sklearn.{}.html'
-            )
-            self.estimator_url = base_url.format(urls.get(self.estimator_name))
+        # Set URL:
+        if self.SKLEARN_URL:
+            url = self.SKLEARN_BASE_URL + self.SKLEARN_URL
+        else:
+            url = 'https://scikit-learn.org/stable/documentation.html'
+        self.estimator_url = url
 
-        # Add base information:
+        # Add basic information:
         self.placeholders.update(
             dict(
                 estimator_name=self.estimator_name,

@@ -20,6 +20,8 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a KNeighborsClassifier classifier."""
 
+    SKLEARN_URL = 'sklearn.neighbors.KNeighborsClassifier.html'
+
     DEFAULT_LANGUAGE = enum.Language.JAVA
     DEFAULT_TEMPLATE = enum.Template.ATTACHED
     DEFAULT_METHOD = enum.Method.PREDICT

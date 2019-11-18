@@ -19,6 +19,8 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 class BernoulliNB(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a BernoulliNB classifier."""
 
+    SKLEARN_URL = 'sklearn.naive_bayes.BernoulliNB.html'
+
     DEFAULT_LANGUAGE = enum.Language.JAVA
     DEFAULT_TEMPLATE = enum.Template.ATTACHED
     DEFAULT_METHOD = enum.Method.PREDICT

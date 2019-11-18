@@ -23,6 +23,8 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port an AdaBoostClassifier classifier."""
 
+    SKLEARN_URL = 'sklearn.ensemble.AdaBoostClassifier.html'
+
     DEFAULT_LANGUAGE = enum.Language.JS
     DEFAULT_TEMPLATE = enum.Template.COMBINED
     DEFAULT_METHOD = enum.Method.PREDICT

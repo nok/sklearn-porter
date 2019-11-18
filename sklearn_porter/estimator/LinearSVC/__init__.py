@@ -19,6 +19,8 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 class LinearSVC(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a LinearSVC classifier."""
 
+    SKLEARN_URL = 'sklearn.svm.LinearSVC.html'
+
     DEFAULT_LANGUAGE = enum.Language.JAVA
     DEFAULT_TEMPLATE = enum.Template.ATTACHED
     DEFAULT_METHOD = enum.Method.PREDICT

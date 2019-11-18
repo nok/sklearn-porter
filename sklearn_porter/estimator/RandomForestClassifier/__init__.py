@@ -23,6 +23,8 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a RandomForestClassifier classifier."""
 
+    SKLEARN_URL = 'sklearn.ensemble.RandomForestClassifier.html'
+
     DEFAULT_LANGUAGE = enum.Language.JAVA
     DEFAULT_TEMPLATE = enum.Template.COMBINED
     DEFAULT_METHOD = enum.Method.PREDICT

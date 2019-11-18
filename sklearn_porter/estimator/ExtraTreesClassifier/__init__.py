@@ -13,6 +13,8 @@ from sklearn_porter.estimator.RandomForestClassifier import (
 class ExtraTreesClassifier(RandomForestClassifier, EstimatorBase):
     """Extract model data and port an ExtraTreesClassifier classifier."""
 
+    SKLEARN_URL = 'sklearn.ensemble.ExtraTreesClassifier.html'
+
     estimator = None  # type: ExtraTreesClassifierClass
 
     def __init__(self, estimator: ExtraTreesClassifierClass):

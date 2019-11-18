@@ -14,6 +14,8 @@ from sklearn_porter.estimator.MLPClassifier import MLPClassifier
 class MLPRegressor(MLPClassifier, EstimatorBase):
     """Extract model data and port a MLPRegressor regressor."""
 
+    SKLEARN_URL = 'sklearn.neural_network.MLPRegressor.html'
+
     DEFAULT_LANGUAGE = enum.Language.JS
     DEFAULT_TEMPLATE = enum.Template.ATTACHED
     DEFAULT_METHOD = enum.Method.PREDICT

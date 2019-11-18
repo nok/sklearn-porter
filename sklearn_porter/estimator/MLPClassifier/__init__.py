@@ -21,6 +21,8 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 class MLPClassifier(EstimatorBase, EstimatorApiABC):
     """Extract model data and port a MLPClassifier classifier."""
 
+    SKLEARN_URL = 'sklearn.neural_network.MLPClassifier.html'
+
     DEFAULT_LANGUAGE = enum.Language.JAVA
     DEFAULT_TEMPLATE = enum.Template.ATTACHED
     DEFAULT_METHOD = enum.Method.PREDICT
