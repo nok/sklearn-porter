@@ -782,7 +782,7 @@ For the regression tests we have to use specific compilers and interpreters. Tod
   <tr>
     <td>Go</td>
     <td><a href="https://golang.org">https://golang.org</a></td>
-    <td>1.12.4</td>
+    <td>1.13.4</td>
   </tr>
   <tr>
     <td>Java (OpenJDK)</td>

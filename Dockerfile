@@ -42,7 +42,7 @@ RUN apt-get install -y --no-install-recommends \
 
 # Go:
 RUN mkdir -p /tmp/go && cd /tmp/go \
-    && curl --silent -o go.tar.gz https://dl.google.com/go/go1.12.4.linux-amd64.tar.gz \
+    && curl --silent -o go.tar.gz https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz \
     && tar -xf go.tar.gz \
     && mv go /usr/bin
 ENV PATH="/usr/bin/go/bin:${PATH}"
