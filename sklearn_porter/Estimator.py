@@ -178,7 +178,7 @@ class Estimator:
         A valid base estimator or None.
         """
         est = estimator  # shorter <3
-        qualname = get_qualname(est)
+        qualname = _get_qualname(est)
 
         L.debug(
             'Start validation of the passed '
@@ -242,7 +242,7 @@ class Estimator:
                         )
                         if is_fitted:
                             est = est.best_estimator_
-                            est_qualname = get_qualname(est)
+                            est_qualname = _get_qualname(est)
                             msg = (
                                 'Extract the embedded estimator of '
                                 'type `{}` from optimizer `{}`.'
@@ -285,7 +285,7 @@ class Estimator:
                 )
                 if has_est:
                     est = est._final_estimator
-                    est_qualname = get_qualname(est)
+                    est_qualname = _get_qualname(est)
                     msg = (
                         'Extract the embedded estimator of type '
                         '`{}` from the pipeline.'.format(est_qualname)
@@ -347,7 +347,7 @@ class Estimator:
         represents and includes the original base estimator.
         """
         est = estimator  # shorter <3
-        qualname = get_qualname(est)
+        qualname = _get_qualname(est)
         L.debug('Start loading the passed estimator: `{}`.'.format(qualname))
 
         name = est.__class__.__qualname__
@@ -970,7 +970,7 @@ class Estimator:
         return dedent(report)
 
 
-def get_qualname(obj: object):
+def _get_qualname(obj: object):
     return obj.__class__.__module__ + '.' + obj.__class__.__qualname__
 
 
