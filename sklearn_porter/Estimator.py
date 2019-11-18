@@ -15,6 +15,7 @@ from time import sleep
 from typing import Callable, Dict, List, Optional, Tuple, Union
 from functools import partial
 
+# Additional installed modules:
 import numpy as np
 from loguru import logger as L
 
@@ -29,7 +30,7 @@ from sklearn_porter import __version__
 from sklearn_porter import enums as enum
 from sklearn_porter import decorators as decorator
 from sklearn_porter import exceptions as exception
-from sklearn_porter.utils import Options, get_qualname
+from sklearn_porter.utils import options
 
 
 @decorator.aliased
@@ -61,9 +62,8 @@ class Estimator:
             Change the default converter of all floating numbers from the model
             data. By default a simple string cast `str(value)` will be used.
         """
-        # Log basic environment information:
-        L.remove()
-        logging_level = Options.get_option('logging.level')
+        L.remove()  # remove basic logger
+        logging_level = options.get('logging.level')
         L.add(stdout, level=logging_level)
 
         python_version = '.'.join(map(str, version_info[:3]))
@@ -177,9 +177,6 @@ class Estimator:
         -------
         A valid base estimator or None.
         """
-        # L.setLevel(Options.get_option('logging.level'))
-        # L.level = Options.get_option('logging.level')
-
         est = estimator  # shorter <3
         qualname = get_qualname(est)
 
@@ -224,7 +221,7 @@ class Estimator:
             L.warning(msg)
         else:
             if isinstance(est, BaseSearchCV):
-                L.info('Yes, the estimator is embedded in an optimizer.')
+                L.debug('└> Yes, the estimator is embedded in an optimizer.')
                 try:
                     from sklearn.model_selection import GridSearchCV
                     from sklearn.model_selection import RandomizedSearchCV
@@ -267,7 +264,7 @@ class Estimator:
                         L.error(msg)
                         raise ValueError(msg)
             else:
-                L.info('No, the estimator is not embedded in an optimizer.')
+                L.debug('└> No, the estimator is not embedded in an optimizer.')
 
         # Check Pipeline:
         L.debug('Check whether the estimator is embedded in a pipeline.')
@@ -281,7 +278,7 @@ class Estimator:
             L.warning(msg)
         else:
             if isinstance(est, Pipeline):
-                L.info('Yes, the estimator is embedded in a pipeline.')
+                L.debug('└> Yes, the estimator is embedded in a pipeline.')
                 # pylint: disable=protected-access
                 has_est = (
                     hasattr(est, '_final_estimator') and est._final_estimator
@@ -300,23 +297,29 @@ class Estimator:
                     L.error(msg)
                     raise ValueError(msg)
             else:
-                L.info('No, the estimator is not embedded in a pipeline.')
+                L.debug('└> No, the estimator is not embedded in a pipeline.')
 
         # Check ClassifierMixin:
-        L.debug('Check whether the estimator is a `ClassifierMixin`.')
+        L.debug(
+            'Check whether the estimator is inherited from `ClassifierMixin`.'
+        )
         is_classifier = isinstance(est, ClassifierMixin)
         if is_classifier:
-            L.debug('Yes, the estimator is type of `ClassifierMixin`.')
+            L.debug(
+                '└> Yes, the estimator is inherited from `ClassifierMixin`.'
+            )
             return est
-        L.debug('No, the estimator is not type of `ClassifierMixin`.')
+        L.debug('└> No, the estimator is not inherited from `ClassifierMixin`.')
 
         # Check RegressorMixin:
-        L.debug('Check whether the estimator is a `RegressorMixin`.')
+        L.debug(
+            'Check whether the estimator is inherited from `RegressorMixin`.'
+        )
         is_regressor = isinstance(est, RegressorMixin)
         if is_regressor:
-            L.debug('Yes, the estimator is type of `RegressorMixin`.')
+            L.debug('└> Yes, the estimator is inherited from `RegressorMixin`.')
             return est
-        L.debug('No, the estimator is not type of `RegressorMixin`.')
+        L.debug('└> No, the estimator is not inherited from `RegressorMixin`.')
 
         if not (is_classifier or is_regressor):
             msg = (
@@ -965,6 +968,10 @@ class Estimator:
             __version__,
         )
         return dedent(report)
+
+
+def get_qualname(obj: object):
+    return obj.__class__.__module__ + '.' + obj.__class__.__qualname__
 
 
 def _system_call(cmd: str, executable='/bin/bash'):

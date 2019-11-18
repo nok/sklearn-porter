@@ -6,14 +6,6 @@ from os.path import exists
 from os.path import join
 from json import load
 
-from logging import ERROR
-
-from sklearn_porter.utils import Options, set_option
-
-# Set default options:
-Options.add_option('logging.level')
-Options.set_option('logging.level', ERROR)
-
 
 def load_meta(path):
     """
@@ -59,4 +51,5 @@ __email__ = meta_.get('author_email')
 __license__ = meta_.get('license')
 __version__ = meta_.get('version', '1.0.0')
 
+from sklearn_porter.utils import options
 from sklearn_porter.Estimator import Estimator
