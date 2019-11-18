@@ -117,7 +117,35 @@ class Estimator:
         if self.can(self.estimator, self.language, template):
             self._template = template
 
-    def _handle_default_kwargs(self, kwargs: Dict) -> Dict:
+    @property
+    def class_name(self) -> str:
+        return self._class_name
+
+    @class_name.setter
+    def class_name(self, class_name: str):
+        self._class_name = class_name
+
+    @property
+    def converter(self) -> Callable[[object], str]:
+        return self._converter
+
+    @converter.setter
+    def converter(self, converter: Callable[[object], str]):
+        self._converter = converter
+
+    def _check_kwargs(self, kwargs: Dict) -> Dict:
+        """
+        Check and save optional kwargs arguments internally.
+
+        Parameters
+        ----------
+        kwargs : Dict
+            The additional passed arguments.
+
+        Returns
+        -------
+        The original passed arguments.
+        """
         keys = kwargs.keys()
         if 'language' in keys:
             self.language = kwargs.get('language')
@@ -125,12 +153,10 @@ class Estimator:
             self.template = kwargs.get('template')
         if 'class_name' in keys:
             class_name = kwargs.get('class_name')
-            if isinstance(class_name, str):
-                self.class_name = kwargs.get('class_name')
+            if isinstance(class_name, str) and len(class_name) > 0:
+                self.class_name = class_name
         if 'converter' in keys:
-            converter = kwargs.get('converter')
-            if isinstance(converter, Callable):
-                self.converter = converter
+            self.converter = kwargs.get('converter')
         return kwargs
 
     @staticmethod
@@ -471,7 +497,7 @@ class Estimator:
         -------
         The transpiled estimator in the target programming language.
         """
-        self._handle_default_kwargs(kwargs)
+        self._check_kwargs(kwargs)
         return self._estimator.port(
             language=self._language,
             template=self._template,
@@ -500,7 +526,7 @@ class Estimator:
         -------
         The path(s) to the generated file(s).
         """
-        self._handle_default_kwargs(kwargs)
+        self._check_kwargs(kwargs)
         return self._estimator.save(
             language=self._language,
             template=self._template,
@@ -545,7 +571,7 @@ class Estimator:
         -------
         Return the predictions and probabilities.
         """
-        self._handle_default_kwargs(kwargs)
+        self._check_kwargs(kwargs)
         if check_dependencies:
             self._check_dependencies(self._language)
 
@@ -760,7 +786,7 @@ class Estimator:
             Return the relative and absolute number of correct
             classified samples.
         """
-        self._handle_default_kwargs(kwargs)
+        self._check_kwargs(kwargs)
         y_true = self._estimator.estimator.predict(x)
         y_pred = self.make(
             x,
