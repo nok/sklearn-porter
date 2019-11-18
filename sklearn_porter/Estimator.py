@@ -7,8 +7,8 @@ from multiprocessing import Pool, cpu_count
 from os import environ, remove
 from pathlib import Path
 from subprocess import STDOUT, CalledProcessError, check_output
-from sys import platform as system_platform
-from sys import stdout, version_info
+from sys import platform, stdout, version_info
+from shutil import which
 from tempfile import mktemp
 from textwrap import dedent
 from time import sleep
@@ -66,7 +66,7 @@ class Estimator:
         L.add(stdout, level=logging_level)
 
         python_version = '.'.join(map(str, version_info[:3]))
-        L.debug('Platform: {}'.format(system_platform))
+        L.debug('Platform: {}'.format(platform))
         L.debug('Python: v{}'.format(python_version))
         L.debug('Package: scikit-learn: v{}'.format(sklearn_version))
         L.debug('Package: sklearn-porter: v{}'.format(__version__))
@@ -515,7 +515,8 @@ class Estimator:
         x: Union[List, np.ndarray],
         n_jobs: Optional[Union[bool, int]] = True,
         directory: Optional[Union[str, Path]] = None,
-        final_deletion: Optional[bool] = False,
+        delete_created_files: Optional[bool] = False,
+        check_dependencies: Optional[bool] = True,
         **kwargs
     ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray],
                Tuple[np.ndarray, None]]:
@@ -530,8 +531,10 @@ class Estimator:
             The number of processes to make the predictions.
         directory : Optional[Union[str, Path]] (default: current working dir)
             Set the directory where all generated files should be saved.
-        final_deletion : bool (default: False)
+        delete_created_files : bool (default: False)
             Whether to delete the generated files finally or not.
+        check_dependencies : bool (default: True)
+            Check whether all required applications are in the PATH or not.
         kwargs
 
         Returns
@@ -539,6 +542,9 @@ class Estimator:
         Return the predictions and probabilities.
         """
         self._handle_default_kwargs(kwargs)
+        if check_dependencies:
+            self._check_dependencies(self._language)
+
         if not directory:
             directory = mktemp()
         created_files = []  # for final deletion
@@ -613,7 +619,7 @@ class Estimator:
         y = list(map(np.array, y))
 
         # Delete generated files finally:
-        if final_deletion:
+        if delete_created_files:
             for path in created_files:
                 if path and path.exists():
                     remove(str(path))
@@ -626,6 +632,14 @@ class Estimator:
             if len(y[0]) == 1:  # predict, predict_proba
                 return y[0][0], y[1][0]
             return y[0], y[1]
+
+    @staticmethod
+    def _check_dependencies(language: enum.Language):
+        # is_windows = platform in ('cygwin', 'win32', 'win64')
+        for app in language.value.DEPENDENCIES:
+            if not which(app):
+                msg = 'Required dependency `{}` is missing.'.format(app)
+                raise RuntimeError(msg)
 
     @staticmethod
     def _compile(
@@ -913,7 +927,7 @@ class Estimator:
             sklearn-porter v{}\
         '''.format(
             self._estimator.estimator_name,
-            system_platform,
+            platform,
             python_version,
             sklearn_version,
             __version__,
