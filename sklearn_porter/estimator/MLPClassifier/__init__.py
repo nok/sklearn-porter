@@ -94,10 +94,10 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
     def port(
         self,
-        language: Optional[enum.Language],
-        template: Optional[enum.Template],
-        class_name: Optional[str],
-        converter: Optional[Callable[[object], str]],
+        language: enum.Language,
+        template: enum.Template,
+        class_name: str,
+        converter: Callable[[object], str],
         to_json: bool = False,
     ) -> Union[str, Tuple[str, str]]:
         """

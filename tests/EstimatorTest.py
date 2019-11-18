@@ -25,7 +25,7 @@ from sklearn.tree.tree import DecisionTreeClassifier
 
 # sklearn-porter
 from sklearn_porter.language.Java import Java
-from sklearn_porter.Estimator import Estimator
+from sklearn_porter.Estimator import Estimator, can
 from sklearn_porter import exceptions as exception
 
 # Force deterministic number generation:
@@ -359,11 +359,11 @@ def test_extraction_from_randomized_search_cv():
 )
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
-def test_make_inputs_outputs(
+def test_make_the_inputs_outputs(
     tmp_root_dir: Path, x, fitted_tree: DecisionTreeClassifier, template: str,
     language: str
 ):
-    if not Estimator.can(fitted_tree, language, template, 'predict'):
+    if not can(fitted_tree, language, template, 'predict'):
         pytest.skip('Skip unsupported estimator/language/template combination')
 
     def fs_mkdir(
@@ -384,7 +384,7 @@ def test_make_inputs_outputs(
 
     tmp_dir = fs_mkdir(
         base_dir=tmp_root_dir,
-        test_name='test_make_inputs_outputs',
+        test_name='test_make_the_inputs_outputs',
         estimator_name='DecisionTreeClassifier',
         language_name=language,
         template_name=template,
@@ -396,7 +396,8 @@ def test_make_inputs_outputs(
         language=language,
         template=template,
         directory=tmp_dir,
-        n_jobs=False
+        n_jobs=False,
+        delete_created_files=False
     )
 
     assert isinstance(out, tuple)
@@ -425,7 +426,7 @@ def test_regressions_of_classifiers(
     template: str,
     language: str,
 ):
-    if not Estimator.can(candidate.clazz, language, template, 'predict'):
+    if not can(candidate.clazz, language, template, 'predict'):
         pytest.skip('Skip unsupported estimator/language/template combination')
 
     def fs_mkdir(
@@ -482,7 +483,7 @@ def test_regressions_of_classifiers(
     # Directory:
     tmp_dir = fs_mkdir(
         base_dir=tmp_root_dir,
-        test_name='test_and_compare_accuracies',
+        test_name='test_regressions_of_classifiers',
         estimator_name=candidate.name,
         dataset_name=dataset.name,
         language_name=language,
@@ -491,13 +492,17 @@ def test_regressions_of_classifiers(
 
     try:
         score = est.test(
-            test_x, language=language, template=template, directory=tmp_dir
+            test_x,
+            language=language,
+            template=template,
+            directory=tmp_dir,
+            delete_created_files=False
         )
         assert score == 1.
     except exception.CodeTooLarge:
-        warn_msg = 'Code too large for the combination: ' \
-                   'estimator: {}, language: {}, template: {}, dataset: {}' \
-                   ''.format(candidate.name, language, template, dataset.name)
-        warnings.warn(warn_msg)
+        msg = 'Code too large for the combination: ' \
+              'estimator: {}, language: {}, template: {}, dataset: {}' \
+              ''.format(candidate.name, language, template, dataset.name)
+        warnings.warn(msg)
     except:
         pytest.fail('Unexpected exception ...')

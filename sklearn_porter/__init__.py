@@ -52,4 +52,4 @@ __license__ = meta_.get('license')
 __version__ = meta_.get('version', '1.0.0')
 
 from sklearn_porter.utils import options
-from sklearn_porter.Estimator import Estimator
+from sklearn_porter.Estimator import Estimator, port

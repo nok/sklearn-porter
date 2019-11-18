@@ -104,7 +104,7 @@ class Estimator:
     @language.setter
     def language(self, language: Union[str, enum.Language]):
         language = enum.Language.convert(language)
-        if self.can(self.estimator, language):
+        if can(self.estimator, language):
             self._language = language
 
     @property
@@ -114,7 +114,7 @@ class Estimator:
     @template.setter
     def template(self, name: Union[str, enum.Template]):
         template = enum.Template.convert(name)
-        if self.can(self.estimator, self.language, template):
+        if can(self.estimator, self.language, template):
             self._template = template
 
     @property
@@ -486,6 +486,16 @@ class Estimator:
 
         return None
 
+    def can(
+        self,
+        language: Optional[Union[str, enum.Language]] = None,
+        template: Optional[Union[str, enum.Template]] = None,
+        method: Optional[Union[str, enum.Method]] = None
+    ) -> bool:
+        return can(
+            self.estimator, language=language, template=template, method=method
+        )
+
     @decorator.alias('export')
     def port(self, to_json: bool = False, **kwargs) -> Union[str, Tuple[str]]:
         """
@@ -543,10 +553,10 @@ class Estimator:
     def make(
         self,
         x: Union[List, np.ndarray],
-        n_jobs: Optional[Union[bool, int]] = True,
+        n_jobs: Union[bool, int] = True,
         directory: Optional[Union[str, Path]] = None,
-        delete_created_files: Optional[bool] = False,
-        check_dependencies: Optional[bool] = True,
+        delete_created_files: bool = True,
+        check_dependencies: bool = True,
         shell_executable: str = '/bin/bash',
         **kwargs
     ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray],
@@ -562,7 +572,7 @@ class Estimator:
             The number of processes to make the predictions.
         directory : Optional[Union[str, Path]] (default: current working dir)
             Set the directory where all generated files should be saved.
-        delete_created_files : bool (default: False)
+        delete_created_files : bool (default: True)
             Whether to delete the generated files finally or not.
         check_dependencies : bool (default: True)
             Check whether all required applications are in the PATH or not.
@@ -678,11 +688,8 @@ class Estimator:
 
     @staticmethod
     def _compile(
-        src_path: Path,
-        class_paths: List,
-        created_files: List,
-        language: enum.Language,
-        template: Optional[enum.Template] = None,
+        src_path: Path, class_paths: List, created_files: List,
+        language: enum.Language, template: enum.Template
     ):
         """
         Execute a compilation.
@@ -761,12 +768,12 @@ class Estimator:
     def test(
         self,
         x,
-        n_jobs: Optional[Union[bool, int]] = True,
+        n_jobs: Union[bool, int] = True,
         directory: Optional[Union[str, Path]] = None,
-        final_deletion: Optional[bool] = False,
+        delete_created_files: bool = True,
         normalize: bool = True,
         **kwargs
-    ):
+    ) -> float:
         """
         Compute the accuracy of the ported classifier.
 
@@ -778,7 +785,7 @@ class Estimator:
             The number of processes to make the predictions.
         directory : Optional[Union[str, Path]] (default: current working dir)
             Set the directory where all generated files should be saved.
-        final_deletion : bool (default: False)
+        delete_created_files : bool (default: True)
             Whether to delete the generated files finally or not.
         normalize : bool, default: True
             Whether to normalize the result or not.
@@ -797,10 +804,10 @@ class Estimator:
             template=self._template,
             n_jobs=n_jobs,
             directory=directory,
-            final_deletion=final_deletion,
+            delete_created_files=delete_created_files,
         )
         y_pred = y_pred[0]  # only predicts
-        return accuracy_score(y_true, y_pred, normalize=normalize)
+        return float(accuracy_score(y_true, y_pred, normalize=normalize))
 
     @staticmethod
     def classifiers() -> Tuple:
@@ -876,69 +883,6 @@ class Estimator:
 
         return regressors
 
-    @staticmethod
-    def can(
-        estimator: Union[BaseEstimator, ABCMeta],
-        language: Optional[Union[str, enum.Language]] = None,
-        template: Optional[Union[str, enum.Template]] = None,
-        method: Optional[Union[str, enum.Method]] = None
-    ) -> bool:
-        """
-        Check the support of the given arguments.
-
-        Parameters
-        ----------
-        estimator : BaseEstimator or abstract ABCMeta class.
-            Set a fitted base estimator of scikit-learn.
-        language : str
-            Set the target programming language.
-        template : str
-            Set the kind of desired template.
-        method : str
-            Set the kind of template.
-
-        Returns
-        -------
-        True by a supported combination.
-        """
-
-        if isinstance(estimator, BaseEstimator):
-            name = estimator.__class__.__name__
-        elif isinstance(estimator, ABCMeta):
-            name = estimator.__name__
-        else:
-            return False
-
-        cands = Estimator.classifiers() + Estimator.regressors()
-        cands = [c.__name__ for c in cands]
-
-        if name not in cands:
-            return False
-
-        if language or template or method:
-            pckg = 'sklearn_porter.estimator.{}'.format(name)
-            module = __import__(pckg, globals(), locals(), [name], 0)
-            clazz = getattr(module, name)
-            support = getattr(clazz, 'SUPPORT')
-        else:
-            return True
-
-        if language:
-            language = enum.Language.convert(language)
-            if language in support.keys():
-                if not template:
-                    return True
-                else:
-                    template = enum.Template.convert(template)
-                    if template in support[language].keys():
-                        if not method:
-                            return True
-                        else:
-                            method = enum.Method.convert(method)
-                            if method in support[language][template]:
-                                return True
-        return False
-
     def __repr__(self):
         """
         Get the status and basic information about
@@ -1004,3 +948,158 @@ def _system_call(cmd: str, executable='/bin/bash'):
             if 'predict_proba' in out.keys():
                 return [out.get('predict'), out.get('predict_proba')]
             return [out.get('predict')]
+
+
+def can(
+    estimator: Union[BaseEstimator, ABCMeta],
+    language: Optional[Union[str, enum.Language]] = None,
+    template: Optional[Union[str, enum.Template]] = None,
+    method: Optional[Union[str, enum.Method]] = None
+) -> bool:
+    """
+    Check the support of the given arguments.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator or abstract ABCMeta class.
+        Set a fitted base estimator of scikit-learn.
+    language : str
+        Set the target programming language.
+    template : str
+        Set the kind of desired template.
+    method : str
+        Set the kind of template.
+
+    Returns
+    -------
+    True by a supported combination.
+    """
+
+    if isinstance(estimator, BaseEstimator):
+        name = estimator.__class__.__name__
+    elif isinstance(estimator, ABCMeta):
+        name = estimator.__name__
+    else:
+        return False
+
+    cands = Estimator.classifiers() + Estimator.regressors()
+    cands = [c.__name__ for c in cands]
+
+    if name not in cands:
+        return False
+
+    if language or template or method:
+        pckg = 'sklearn_porter.estimator.{}'.format(name)
+        module = __import__(pckg, globals(), locals(), [name], 0)
+        clazz = getattr(module, name)
+        support = getattr(clazz, 'SUPPORT')
+    else:
+        return True
+
+    if language:
+        language = enum.Language.convert(language)
+        if language in support.keys():
+            if not template:
+                return True
+            else:
+                template = enum.Template.convert(template)
+                if template in support[language].keys():
+                    if not method:
+                        return True
+                    else:
+                        method = enum.Method.convert(method)
+                        if method in support[language][template]:
+                            return True
+    return False
+
+
+def port(
+    estimator: BaseEstimator,
+    language: Optional[Union[str, enum.Language]] = None,
+    template: Optional[Union[str, enum.Template]] = None,
+    class_name: Optional[str] = None,
+    converter: Optional[Callable[[object], str]] = None,
+    to_json: bool = False
+) -> Union[str, Tuple[str]]:
+    return Estimator(
+        estimator,
+        language=language,
+        template=template,
+        class_name=class_name,
+        converter=converter
+    ).port(to_json)
+
+
+def save(
+    estimator: BaseEstimator,
+    language: Optional[Union[str, enum.Language]] = None,
+    template: Optional[Union[str, enum.Template]] = None,
+    class_name: Optional[str] = None,
+    converter: Optional[Callable[[object], str]] = None,
+    directory: Optional[Union[str, Path]] = None,
+    to_json: bool = False,
+) -> Union[str, Tuple[str, str]]:
+    return Estimator(
+        estimator,
+        language=language,
+        template=template,
+        class_name=class_name,
+        converter=converter
+    ).save(directory=directory, to_json=to_json)
+
+
+def make(
+    estimator: BaseEstimator,
+    x: Union[List, np.ndarray],
+    language: Optional[Union[str, enum.Language]] = None,
+    template: Optional[Union[str, enum.Template]] = None,
+    class_name: Optional[str] = None,
+    converter: Optional[Callable[[object], str]] = None,
+    n_jobs: Union[bool, int] = True,
+    directory: Optional[Union[str, Path]] = None,
+    delete_created_files: bool = True,
+    check_dependencies: bool = True,
+    shell_executable: str = '/bin/bash'
+) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray],
+           Tuple[np.ndarray, None]]:
+    return Estimator(
+        estimator,
+        language=language,
+        template=template,
+        class_name=class_name,
+        converter=converter
+    ).make(
+        x,
+        n_jobs=n_jobs,
+        directory=directory,
+        delete_created_files=delete_created_files,
+        check_dependencies=check_dependencies,
+        shell_executable=shell_executable
+    )
+
+
+def test(
+    estimator: BaseEstimator,
+    x: Union[List, np.ndarray],
+    language: Optional[Union[str, enum.Language]] = None,
+    template: Optional[Union[str, enum.Template]] = None,
+    class_name: Optional[str] = None,
+    converter: Optional[Callable[[object], str]] = None,
+    n_jobs: Union[bool, int] = True,
+    directory: Optional[Union[str, Path]] = None,
+    delete_created_files: bool = True,
+    normalize: bool = True
+) -> float:
+    return Estimator(
+        estimator,
+        language=language,
+        template=template,
+        class_name=class_name,
+        converter=converter
+    ).test(
+        x,
+        n_jobs=n_jobs,
+        directory=directory,
+        delete_created_files=delete_created_files,
+        normalize=normalize
+    )
