@@ -13,6 +13,7 @@ from tempfile import mktemp
 from textwrap import dedent
 from time import sleep
 from typing import Callable, Dict, List, Optional, Tuple, Union
+from functools import partial
 
 import numpy as np
 from loguru import logger as L
@@ -517,6 +518,7 @@ class Estimator:
         directory: Optional[Union[str, Path]] = None,
         delete_created_files: Optional[bool] = False,
         check_dependencies: Optional[bool] = True,
+        shell_executable: str = '/bin/bash',
         **kwargs
     ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray],
                Tuple[np.ndarray, None]]:
@@ -535,6 +537,8 @@ class Estimator:
             Whether to delete the generated files finally or not.
         check_dependencies : bool (default: True)
             Check whether all required applications are in the PATH or not.
+        shell_executable : str (default: '/bin/bash')
+            The shell which should be used for the Popen system calls.
         kwargs
 
         Returns
@@ -603,18 +607,20 @@ class Estimator:
 
         # Command:
         x = [cmd + json_path + ' '.join(list(map(str, e))) for e in x]
+        calls = partial(_system_call, executable=shell_executable)
 
         if isinstance(n_jobs, int) and n_jobs <= 1:
             n_jobs = False
+
         if not n_jobs:
-            y = list(map(_system_call, x))
+            y = list(map(calls, x))
         else:
             if isinstance(n_jobs, bool):
                 n_jobs = cpu_count()
             if not isinstance(n_jobs, int):
                 n_jobs = cpu_count()
             with Pool(n_jobs) as pool:
-                y = pool.map(_system_call, x)
+                y = pool.map(calls, x)
         y = list(zip(*y))
         y = list(map(np.array, y))
 
@@ -935,7 +941,7 @@ class Estimator:
         return dedent(report)
 
 
-def _system_call(cmd: str):
+def _system_call(cmd: str, executable='/bin/bash'):
     """
     Separate helper function for multi-processed system calls.
 
@@ -952,7 +958,7 @@ def _system_call(cmd: str):
         shell=True,
         universal_newlines=True,
         stderr=STDOUT,
-        executable='/bin/bash'
+        executable=executable
     )
     for idx in range(3):  # Try three times, b/c of `file is busy` issues.
         try:
