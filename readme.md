@@ -507,40 +507,36 @@ $ pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/maste
 The following table shows the most relevant high-level methods. 
 
 <table>
-    <thead>
-        <tr>
-            <td>Step</td>
-            <td>Method</td>
-            <td>Alias</td>
-            <td>Description</td>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>1</td>
-            <td><code>port</code></td>
-            <td><code>export</code></td>
-            <td>Transpile the passed estimator to the desired programming language and template.</td>
-        </tr>
-        <tr>
-            <td>2</td>
-            <td><code>save</code></td>
-            <td><code>dump</code></td>
-            <td>Save the previously generated source code locally.</td>
-        </tr>
-        <tr>
-            <td>3</td>
-            <td><code>make</code></td>
-            <td><code>predict</code></td>
-            <td>Compile the saved source files and make predictions.</td>
-        </tr>
-        <tr>
-            <td>4</td>
-            <td><code>test</code></td>
-            <td><code>integrity_score</code></td>
-            <td>Make an integrity check by making regression tests between the original and transpiled estimator.</td>
-        </tr>
-    </tbody>
+  <tr>
+    <th align="left">Step</th>
+    <th align="left">Method</th>
+    <th align="left">Alias</th>
+    <th align="left">Description</th>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td><code>port</code></td>
+    <td><code>export</code></td>
+    <td>Transpile the passed estimator to the desired programming language and template.</td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td><code>save</code></td>
+    <td><code>dump</code></td>
+    <td>Save the previously generated source code locally.</td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td><code>make</code></td>
+    <td><code>predict</code></td>
+    <td>Compile the saved source files and make predictions.</td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td><code>test</code></td>
+    <td><code>integrity_score</code></td>
+    <td>Make an integrity check by making regression tests between the original and transpiled estimator.</td>
+  </tr>
 </table>
 
 Each step executes the previous steps internally.
@@ -684,136 +680,130 @@ $ pip install --no-cache-dir -e .[development]
 All tests run against these combinations of [scikit-learn](https://github.com/scikit-learn/scikit-learn) and Python versions:
 
 <table border="0" width="100%">
-  <tbody>
-    <tr align="center">
-      <td colspan="2" rowspan="2"></td>
-      <td colspan="3"><strong>Python</strong></td>
-    </tr>
-    <tr align="center">
-      <td><strong>3.5</strong></td>
-      <td><strong>3.6</strong></td>
-      <td><strong>3.7</strong></td>
-    </tr>
-    <tr align="center">
-      <td rowspan="15"><strong>scikit-learn</strong></td>
-      <td rowspan="3"><strong>0.17</strong></td>
-      <td>cython 0.27.3</td>
-      <td>cython 0.27.3</td>
-      <td rowspan="3">not supported<br>by scikit-learn</td>
-    </tr>
-    <tr align="center">
-      <td>numpy 1.9.3</td>
-      <td>numpy 1.9.3</td>
-    </tr>
-    <tr align="center">
-      <td>scipy 0.16.0</td>
-      <td>scipy 0.16.0</td>
-    </tr>
-    <tr align="center">
-      <td rowspan="3"><strong>0.18</strong></td>
-      <td>cython 0.27.3</td>
-      <td>cython 0.27.3</td>
-      <td rowspan="3">not supported<br>by scikit-learn</td>
-    </tr>
-    <tr align="center">
-      <td>numpy 1.9.3</td>
-      <td>numpy 1.9.3</td>
-    </tr>
-    <tr align="center">
-      <td>scipy 0.16.0</td>
-      <td>scipy 0.16.0</td>
-    </tr>
-    <tr align="center">
-      <td rowspan="3"><strong>0.19</strong></td>
-      <td>cython 0.27.3</td>
-      <td>cython 0.27.3</td>
-      <td rowspan="3">not supported<br>by scikit-learn</td>
-    </tr>
-    <tr align="center">
-      <td>numpy 1.14.5</td>
-      <td>numpy 1.14.5</td>
-    </tr>
-    <tr align="center">
-      <td>scipy 1.1.0</td>
-      <td>scipy 1.1.0</td>
-    </tr>
-    <tr align="center">
-      <td rowspan="3"><strong>0.20</strong></td>
-      <td>cython 0.27.3</td>
-      <td>cython 0.27.3</td>
-      <td>cython 0.27.3</td>
-    </tr>
-    <tr align="center">
-      <td>numpy</td>
-      <td>numpy</td>
-      <td>numpy</td>
-    </tr>
-    <tr align="center">
-      <td>scipy</td>
-      <td>scipy</td>
-      <td>scipy</td>
-    </tr>
-    <tr align="center">
-      <td rowspan="3"><strong>0.21</strong></td>
-      <td>cython</td>
-      <td>cython</td>
-      <td>cython</td>
-    </tr>
-    <tr align="center">
-      <td>numpy</td>
-      <td>numpy</td>
-      <td>numpy</td>
-    </tr>
-    <tr align="center">
-      <td>scipy</td>
-      <td>scipy</td>
-      <td>scipy</td>
-    </tr>
-  </tbody>
+  <tr align="center">
+    <td colspan="2" rowspan="2"></td>
+    <td colspan="3"><strong>Python</strong></td>
+  </tr>
+  <tr align="center">
+    <td><strong>3.5</strong></td>
+    <td><strong>3.6</strong></td>
+    <td><strong>3.7</strong></td>
+  </tr>
+  <tr align="center">
+    <td rowspan="15"><strong>scikit-learn</strong></td>
+    <td rowspan="3"><strong>0.17</strong></td>
+    <td>cython 0.27.3</td>
+    <td>cython 0.27.3</td>
+    <td rowspan="3">not supported<br>by scikit-learn</td>
+  </tr>
+  <tr align="center">
+    <td>numpy 1.9.3</td>
+    <td>numpy 1.9.3</td>
+  </tr>
+  <tr align="center">
+    <td>scipy 0.16.0</td>
+    <td>scipy 0.16.0</td>
+  </tr>
+  <tr align="center">
+    <td rowspan="3"><strong>0.18</strong></td>
+    <td>cython 0.27.3</td>
+    <td>cython 0.27.3</td>
+    <td rowspan="3">not supported<br>by scikit-learn</td>
+  </tr>
+  <tr align="center">
+    <td>numpy 1.9.3</td>
+    <td>numpy 1.9.3</td>
+  </tr>
+  <tr align="center">
+    <td>scipy 0.16.0</td>
+    <td>scipy 0.16.0</td>
+  </tr>
+  <tr align="center">
+    <td rowspan="3"><strong>0.19</strong></td>
+    <td>cython 0.27.3</td>
+    <td>cython 0.27.3</td>
+    <td rowspan="3">not supported<br>by scikit-learn</td>
+  </tr>
+  <tr align="center">
+    <td>numpy 1.14.5</td>
+    <td>numpy 1.14.5</td>
+  </tr>
+  <tr align="center">
+    <td>scipy 1.1.0</td>
+    <td>scipy 1.1.0</td>
+  </tr>
+  <tr align="center">
+    <td rowspan="3"><strong>0.20</strong></td>
+    <td>cython 0.27.3</td>
+    <td>cython 0.27.3</td>
+    <td>cython 0.27.3</td>
+  </tr>
+  <tr align="center">
+    <td>numpy</td>
+    <td>numpy</td>
+    <td>numpy</td>
+  </tr>
+  <tr align="center">
+    <td>scipy</td>
+    <td>scipy</td>
+    <td>scipy</td>
+  </tr>
+  <tr align="center">
+    <td rowspan="3"><strong>0.21</strong></td>
+    <td>cython</td>
+    <td>cython</td>
+    <td>cython</td>
+  </tr>
+  <tr align="center">
+    <td>numpy</td>
+    <td>numpy</td>
+    <td>numpy</td>
+  </tr>
+  <tr align="center">
+    <td>scipy</td>
+    <td>scipy</td>
+    <td>scipy</td>
+  </tr>
 </table>
 
 For the regression tests we have to use specific compilers and interpreters. Today the following compilers and interpreters are used for these tests:
 
 <table>
-  <thead>
-    <tr>
-      <td><strong>Name</strong></td>
-      <td><strong>Source</strong></td>
-      <td><strong>Version</strong></td>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td>GCC</td>
-      <td><a href="https://gcc.gnu.org">https://gcc.gnu.org</a></td>
-      <td>8.3.0</td>
-    </tr>
-    <tr>
-      <td>Go</td>
-      <td><a href="https://golang.org">https://golang.org</a></td>
-      <td>1.12.4</td>
-    </tr>
-    <tr>
-      <td>Java (OpenJDK)</td>
-      <td><a href="https://openjdk.java.net">https://openjdk.java.net</a></td>
-      <td>1.8</td>
-    </tr>
-    <tr>
-      <td>Node.js</td>
-      <td><a href="https://nodejs.org/en/">https://nodejs.org</a></td>
-      <td>10.16.0</td>
-    </tr>
-    <tr>
-      <td>PHP</td>
-      <td><a href="https://www.php.net/">https://www.php.net</a></td>
-      <td>7.3</td>
-    </tr>
-    <tr>
-      <td>Ruby</td>
-      <td><a href="https://www.ruby-lang.org/en/">https://www.ruby-lang.org</a></td>
-      <td>2.5.1</td>
-    </tr>
-  </tbody>
+  <tr>
+    <th align="left">Name</th>
+    <th align="left">Source</th>
+    <th align="left">Version</th>
+  </tr>
+  <tr>
+    <td>GCC</td>
+    <td><a href="https://gcc.gnu.org">https://gcc.gnu.org</a></td>
+    <td>8.3.0</td>
+  </tr>
+  <tr>
+    <td>Go</td>
+    <td><a href="https://golang.org">https://golang.org</a></td>
+    <td>1.12.4</td>
+  </tr>
+  <tr>
+    <td>Java (OpenJDK)</td>
+    <td><a href="https://openjdk.java.net">https://openjdk.java.net</a></td>
+    <td>1.8</td>
+  </tr>
+  <tr>
+    <td>Node.js</td>
+    <td><a href="https://nodejs.org/en/">https://nodejs.org</a></td>
+    <td>10.16.0</td>
+  </tr>
+  <tr>
+    <td>PHP</td>
+    <td><a href="https://www.php.net/">https://www.php.net</a></td>
+    <td>7.3</td>
+  </tr>
+  <tr>
+    <td>Ruby</td>
+    <td><a href="https://www.ruby-lang.org/en/">https://www.ruby-lang.org</a></td>
+    <td>2.5.1</td>
+  </tr>
 </table>
 
 Please notice that in general you can use older compilers and interpreters with the generated source code. For instance you can use Java 1.6 to compile and run models.
