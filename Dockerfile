@@ -81,6 +81,5 @@ RUN conda run -n ${CONDA_ENV} python -m pip install ${NUMPY_VER:-numpy}
 RUN conda run -n ${CONDA_ENV} python -m pip install ${SCIPY_VER:-scipy}
 RUN conda run -n ${CONDA_ENV} python -m pip install ${SKLEARN_VER:-scikit-learn}
 RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir -e .[development,examples]
-RUN conda env export -n ${CONDA_ENV}
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
