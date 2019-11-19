@@ -7,5 +7,5 @@ if ! conda env list | grep sklearn-porter ; then
         -c defaults \
         python=3.5  # python 3.5 is the lowest supported python version
     conda run -n sklearn-porter \
-        pip install --upgrade pip
+        python -m pip install --upgrade pip
 fi
