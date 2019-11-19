@@ -85,6 +85,6 @@ RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir -e .[developm
 
 # Extend system path for the notebooks:
 RUN conda run -n ${CONDA_ENV} ipython profile create \
-    && echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(ipython locate)/profile_default/ipython_config.py
+    && echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(conda run -n ${CONDA_ENV} ipython locate)/profile_default/ipython_config.py
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
