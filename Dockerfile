@@ -74,6 +74,7 @@ WORKDIR ${HOME}
 
 USER ${NB_USER}
 
+# Install each dependency step by step:
 RUN conda create -y -n ${CONDA_ENV} ${PYTHON_VER:-python=3.5}
 RUN conda run -n ${CONDA_ENV} python -m pip install --upgrade pip
 RUN conda run -n ${CONDA_ENV} python -m pip install ${CYTHON_VER:-cython}
@@ -81,5 +82,9 @@ RUN conda run -n ${CONDA_ENV} python -m pip install ${NUMPY_VER:-numpy}
 RUN conda run -n ${CONDA_ENV} python -m pip install ${SCIPY_VER:-scipy}
 RUN conda run -n ${CONDA_ENV} python -m pip install ${SKLEARN_VER:-scikit-learn}
 RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir -e .[development,examples]
+
+# Extend system path for the notebooks:
+RUN conda run -n ${CONDA_ENV} ipython profile create \
+    && echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(ipython locate)/profile_default/ipython_config.py
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
