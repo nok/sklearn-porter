@@ -1,14 +1,23 @@
-FROM continuumio/miniconda3:latest
+FROM continuumio/miniconda3:4.6.14
 
 ARG DEBIAN_FRONTEND=noninteractive
 
-ARG CONDA_ENV=sklearn-porter
+ENV CONDA_ENV sklearn-porter
 
 ARG PYTHON_VER
 ARG CYTHON_VER
 ARG NUMPY_VER
 ARG SCIPY_VER
 ARG SKLEARN_VER
+
+ARG NB_USER=jovyan
+ARG NB_UID=1000
+
+ENV USER ${NB_USER}
+ENV NB_UID ${NB_UID}
+ENV HOME /home/${NB_USER}
+
+# ---------------------------------------------
 
 # Basics:
 RUN echo "deb http://deb.debian.org/debian/ sid main" >> /etc/apt/sources.list && \
@@ -18,27 +27,20 @@ RUN echo "deb http://deb.debian.org/debian/ sid main" >> /etc/apt/sources.list &
 # Java:
 RUN mkdir -p /usr/share/man/man1 && \
     apt-get install -y --no-install-recommends \
-    openjdk-8-jdk=8u232-b09-1
+    openjdk-8-jdk
 
 # GCC:
 RUN apt-get install -y --no-install-recommends \
-    libopenblas-dev liblapack-dev \
-    gfortran=4:8.3.0-1 \
-    cpp=4:8.3.0-1 \
-    g++=4:8.3.0-1 \
-    gcc=4:8.3.0-1
+    libopenblas-dev liblapack-dev gfortran cpp g++ gcc
 
 # Ruby:
-RUN apt-get install -y --no-install-recommends \
-    ruby=1:2.5.1
+RUN apt-get install -y --no-install-recommends ruby
 
 # PHP:
-RUN apt-get install -y --no-install-recommends \
-    php=2:7.3+69
+RUN apt-get install -y --no-install-recommends php
 
 # Node.js:
-RUN apt-get install -y --no-install-recommends \
-    nodejs
+RUN apt-get install -y --no-install-recommends nodejs
 
 # Go:
 RUN mkdir -p /tmp/go && cd /tmp/go \
@@ -47,17 +49,38 @@ RUN mkdir -p /tmp/go && cd /tmp/go \
     && mv go /usr/bin
 ENV PATH="/usr/bin/go/bin:${PATH}"
 
-RUN mkdir -p /app
-WORKDIR /app
-COPY . /app
+RUN java -version \
+    && gcc --version \
+    && ruby --version \
+    && php --version \
+    && python --version \
+    && node --version \
+    && go version
 
-RUN env | grep _VER \
-    && conda update -y -n base conda \
-    && conda create -y -n ${CONDA_ENV} ${PYTHON_VER:-python=3.5} \
-    && conda run -n ${CONDA_ENV} pip install --upgrade pip \
-    && conda run -n ${CONDA_ENV} pip install ${CYTHON_VER:-cython} \
-    && conda run -n ${CONDA_ENV} pip install ${NUMPY_VER:-numpy} \
-    && conda run -n ${CONDA_ENV} pip install ${SCIPY_VER:-scipy} \
-    && conda run -n ${CONDA_ENV} pip install ${SKLEARN_VER:-scikit-learn} \
-    && conda run -n ${CONDA_ENV} make install.requirements.development \
-    && conda env export -n ${CONDA_ENV}
+# ---------------------------------------------
+
+RUN adduser --disabled-password \
+    --gecos "default user" \
+    --shell /bin/bash \
+    --uid ${NB_UID} \
+    ${NB_USER}
+
+COPY . ${HOME}
+
+RUN chown -R ${NB_UID} ${HOME}
+RUN chmod 755 ${HOME}/docker-entrypoint.sh
+
+WORKDIR ${HOME}
+
+USER ${NB_USER}
+
+RUN conda create -y -n ${CONDA_ENV} ${PYTHON_VER:-python=3.5}
+RUN conda run -n ${CONDA_ENV} python -m pip install --upgrade pip
+RUN conda run -n ${CONDA_ENV} python -m pip install ${CYTHON_VER:-cython}
+RUN conda run -n ${CONDA_ENV} python -m pip install ${NUMPY_VER:-numpy}
+RUN conda run -n ${CONDA_ENV} python -m pip install ${SCIPY_VER:-scipy}
+RUN conda run -n ${CONDA_ENV} python -m pip install ${SKLEARN_VER:-scikit-learn}
+RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir -e .[development,examples]
+RUN conda env export -n ${CONDA_ENV}
+
+ENTRYPOINT ["./docker-entrypoint.sh"]
