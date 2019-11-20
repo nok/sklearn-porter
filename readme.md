@@ -829,16 +829,19 @@ options['logging.level'] = DEBUG
 
 ### Testing
 
-The tests cover module functions as well as matching predictions of transpiled estimators. Start all tests with:
+You can run the unit and regression tests on your local host or in a running Docker container.
+
+```bash
+$ pytest tests -v \
+    -p no:doctest \
+    --disable-warnings `# ignore future warnings of scikit-learn` \
+    --numprocesses=auto \
+    -o python_files="*Test.py" \
+    -o python_functions="test_*"
+```
 
 ```bash
 $ make tests
-```
-
-The test files have a specific pattern: `'[Algorithm][Language]Test.py'`:
-
-```bash
-$ make tests python_files="*JavaTest.py"
 ```
 
 
