@@ -19,11 +19,10 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
 
 <table>
   <tr>
-    <th></th>
+    <th rowspan="2"></th>
     <th colspan="18">Programming language</th>
   </tr>
   <tr align="center">
-    <th></th>
     <th colspan="3">C</th>
     <th colspan="3">Go</th>
     <th colspan="3">Java</th>
@@ -308,7 +307,7 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td></td>
   </tr>
   <tr align="center">
-    <td></td>
+    <td rowspan="2"></td>
     <td>ᴀ</td>
     <td>ᴇ</td>
     <td>ᴄ</td>
@@ -329,13 +328,12 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
     <td>ᴄ</td>
   </tr>
   <tr>
-    <th></th>
     <th colspan="18">Template</th>
   </tr>
 </table>
 
 ✓ = support of `predict`,　ᴾ = support of `predict_proba`,　× = not supported or feasible<br>
-ᴀ = attached model data,　ᴇ = exported model data (JSON),　ᴄ = combined model data (not recommended)
+ᴀ = attached model data,　ᴇ = exported model data (JSON),　ᴄ = combined model data
 
 ---
 
