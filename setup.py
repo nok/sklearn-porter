@@ -1,71 +1,63 @@
 # -*- coding: utf-8 -*-
 
-from setuptools import setup
-from setuptools import find_packages
+from os.path import abspath, dirname, exists, join
+from setuptools import find_packages, setup
+from sys import version_info
 
-from os.path import abspath
-from os.path import dirname
-from os.path import exists
-from os.path import join
-from json import load
+from sklearn_porter import __author__, __email__, __license__, __version__
 
 
-def load_meta(path):
+def _check_python_version():
+    """Check the used Python version."""
+    if version_info[:2] < (3, 5):
+        msg = 'The used Python version is not ' \
+              'supported, please use Python >= 3.5'
+        raise RuntimeError(msg)
+
+
+def _read_file(path):
     """
-    Load meta information from file setup.json.
-    :param path: The path to setup.json
-    :return: Dictionary of meta information.
+    Read the content from a text file.
+
+    Parameters
+    ----------
+    path : str
+        The path to the file.
+
+    Returns
+    -------
+    Return the content as string.
     """
-    with open(path, mode='r', encoding='utf-8') as f:
-        meta = load(f, encoding='utf-8')
-        meta = {
-            k: v.decode('utf-8') if isinstance(v, bytes) else v
-            for k, v in meta.items()
-        }
-
-        src_dir = abspath(dirname(path))
-
-        if 'requirements' in meta and \
-                str(meta['requirements']).startswith('file://'):
-            reqs_path = str(meta['requirements'])[7:]
-            reqs_path = join(src_dir, reqs_path)
-            if exists(reqs_path):
-                reqs = open(reqs_path, 'r', encoding='utf-8').read()
-                reqs = reqs.strip().split('\n')
-                reqs = [req.strip() for req in reqs if 'git+' not in req]
-                meta['requirements'] = reqs
-
-        if 'long_description' in meta and \
-                str(meta['long_description']).startswith('file://'):
-            readme_path = str(meta['long_description'])[7:]
-            readme_path = join(src_dir, readme_path)
-            if exists(readme_path):
-                readme = open(readme_path, 'r', encoding='utf-8').read()
-                readme = readme.strip()
-                meta['long_description'] = readme
-
-    return meta
+    content = ''
+    if exists(path):
+        content = open(path, 'r', encoding='utf-8').read().strip()
+    return content
 
 
 def main():
-    path = join(abspath(dirname(__file__)), 'sklearn_porter', 'setup.json')
-    meta = load_meta(path)
+    _check_python_version()
+
+    name = 'sklearn-porter'
+    desc = 'Transpile trained scikit-learn models ' \
+           'to C, Java, JavaScript and others.'
+
+    readme_path = join(abspath(dirname(__file__)), 'readme.md')
+    long_desc = _read_file(readme_path)
+
     setup(
-        name=meta.get('name'),
-        description=meta.get('description'),
-        long_description=meta.get('long_description'),
+        name=name,
+        description=desc,
+        long_description=long_desc,
         long_description_content_type='text/markdown',
-        keywords=meta.get('keywords'),
-        url=meta.get('url'),
-        author=meta.get('author'),
-        author_email=meta.get('author_email'),
+        keywords=['sklearn', 'scikit-learn'],
+        url='https://github.com/nok/sklearn-porter',
         install_requires=[
             'scikit-learn>=0.17',
             'Jinja2>=2.10.1',
             'loguru>=0.3.2',
         ],
         extras_require={
-            'examples': ['jupyterlab>=0.33.12'],
+            'examples': ['notebook==5.*'],
             'development': [
                 'twine>=1.12.1',
                 'pylint>=1.9.3',
@@ -90,8 +82,10 @@ def main():
             'Topic :: Software Development',
             'Topic :: Scientific/Engineering',
         ],
-        version=meta.get('version'),
-        license=meta.get('license'),
+        author=__author__,
+        author_email=__email__,
+        version=__version__,
+        license=__license__,
     )
 
 

@@ -26,7 +26,7 @@ from sklearn.ensemble import BaseEnsemble
 from sklearn.metrics import accuracy_score
 
 # sklearn-porter
-from sklearn_porter import __version__
+import sklearn_porter
 from sklearn_porter import enums as enum
 from sklearn_porter import decorators as decorator
 from sklearn_porter import exceptions as exception
@@ -66,11 +66,13 @@ class Estimator:
         logging_level = options.get('logging.level')
         L.add(stdout, level=logging_level)
 
-        python_version = '.'.join(map(str, version_info[:3]))
+        self.python_version = '.'.join(map(str, version_info[:3]))
+        self.porter_version = str(sklearn_porter.__version__)
+
         L.debug('Platform: {}'.format(platform))
-        L.debug('Python: v{}'.format(python_version))
+        L.debug('Python: v{}'.format(self.python_version))
         L.debug('Package: scikit-learn: v{}'.format(sklearn_version))
-        L.debug('Package: sklearn-porter: v{}'.format(__version__))
+        L.debug('Package: sklearn-porter: v{}'.format(self.porter_version))
 
         self.estimator = estimator  # see @estimator.setter
 
@@ -257,9 +259,9 @@ class Estimator:
                     else:
                         msg = (
                             'The used optimizer `{}` is not supported '
-                            'by sklearn-porter v{}. Try to extract the '
-                            'internal estimator manually and pass it.'
-                            ''.format(qualname, __version__)
+                            'by this version of sklearn-porter. Try to '
+                            'extract the internal estimator manually '
+                            'and pass it.'.format(qualname)
                         )
                         L.error(msg)
                         raise ValueError(msg)
@@ -892,7 +894,6 @@ class Estimator:
         -------
         An overview of basic information.
         """
-        python_version = '.'.join(map(str, version_info[:3]))
         report = '''\
             estimator
             ---------
@@ -907,9 +908,9 @@ class Estimator:
         '''.format(
             self._estimator.estimator_name,
             platform,
-            python_version,
+            self.python_version,
             sklearn_version,
-            __version__,
+            self.porter_version,
         )
         return dedent(report)
 
