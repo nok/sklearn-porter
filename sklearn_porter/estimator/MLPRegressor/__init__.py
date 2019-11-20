@@ -25,6 +25,9 @@ class MLPRegressor(MLPClassifier, EstimatorBase):
             enum.Template.ATTACHED: {
                 enum.Method.PREDICT,
             },
+            enum.Template.EXPORTED: {
+                enum.Method.PREDICT,
+            },
         },
     }
 
