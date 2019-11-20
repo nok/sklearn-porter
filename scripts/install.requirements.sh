@@ -2,7 +2,7 @@
 
 SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd -P)"
 
-pip freeze | grep --quiet scikit-learn
+python -m pip freeze | grep --quiet scikit-learn
 if [[ $? -eq 1 ]]; then
     cd ${SCRIPT_PATH}/..
     python -m pip install --no-cache-dir -e .
