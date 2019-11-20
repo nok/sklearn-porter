@@ -81,7 +81,7 @@ RUN conda run -n ${CONDA_ENV} python -m pip install ${CYTHON_VER:-cython}
 RUN conda run -n ${CONDA_ENV} python -m pip install ${NUMPY_VER:-numpy}
 RUN conda run -n ${CONDA_ENV} python -m pip install ${SCIPY_VER:-scipy}
 RUN conda run -n ${CONDA_ENV} python -m pip install ${SKLEARN_VER:-scikit-learn}
-RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir -e .[development,examples]
+RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir -e ".[development,examples]"
 
 # Extend system path for the notebooks:
 RUN conda run -n ${CONDA_ENV} ipython profile create \
