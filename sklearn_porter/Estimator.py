@@ -26,10 +26,10 @@ from sklearn.ensemble import BaseEnsemble
 from sklearn.metrics import accuracy_score
 
 # sklearn-porter
-import sklearn_porter
 from sklearn_porter import enums as enum
 from sklearn_porter import decorators as decorator
 from sklearn_porter import exceptions as exception
+from sklearn_porter import meta
 from sklearn_porter.utils import options
 
 
@@ -67,7 +67,7 @@ class Estimator:
         L.add(stdout, level=logging_level)
 
         self.python_version = '.'.join(map(str, version_info[:3]))
-        self.porter_version = str(sklearn_porter.__version__)
+        self.porter_version = str(meta.__version__)
 
         L.debug('Platform: {}'.format(platform))
         L.debug('Python: v{}'.format(self.python_version))

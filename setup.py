@@ -4,8 +4,6 @@ from os.path import abspath, dirname, exists, join
 from setuptools import find_packages, setup
 from sys import version_info
 
-from sklearn_porter import __author__, __email__, __license__, __version__
-
 
 def _check_python_version():
     """Check the used Python version."""
@@ -15,7 +13,7 @@ def _check_python_version():
         raise RuntimeError(msg)
 
 
-def _read_file(path):
+def _read_text(path):
     """
     Read the content from a text file.
 
@@ -41,8 +39,15 @@ def main():
     desc = 'Transpile trained scikit-learn models ' \
            'to C, Java, JavaScript and others.'
 
-    readme_path = join(abspath(dirname(__file__)), 'readme.md')
-    long_desc = _read_file(readme_path)
+    file_dir = abspath(dirname(__file__))
+
+    # Read readme.md
+    path_readme = join(file_dir, 'readme.md')
+    long_desc = _read_text(path_readme)
+
+    # Read __version__.txt
+    path_version = join(file_dir, 'sklearn_porter', '__version__.txt')
+    version = _read_text(path_version)
 
     setup(
         name=name,
@@ -82,10 +87,10 @@ def main():
             'Topic :: Software Development',
             'Topic :: Scientific/Engineering',
         ],
-        author=__author__,
-        author_email=__email__,
-        version=__version__,
-        license=__license__,
+        author='Darius Morawiec',
+        author_email='nok@users.noreply.github.com',
+        license='MIT',
+        version=version,
     )
 
 
