@@ -6,6 +6,7 @@ import sys
 try:
     from shutil import which as _which
 except ImportError:
+
     def _which(cmd, mode=os.F_OK | os.X_OK, path=None):
         """Given a command, mode, and a PATH string, return the path which
         conforms to the given mode on the PATH, or None if there is no such
@@ -23,6 +24,7 @@ except ImportError:
         def _access_check(fn, mode):
             return os.path.exists(fn) and os.access(fn, mode) \
                    and not os.path.isdir(fn)
+
         if os.path.dirname(cmd):
             if _access_check(cmd, mode):
                 return cmd
@@ -56,7 +58,6 @@ except ImportError:
 
 class Environment:
     """Get information from the system and local environment."""
-
     @staticmethod
     def read_python_version():
         """Return the local Python version."""

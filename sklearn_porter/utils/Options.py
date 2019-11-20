@@ -9,10 +9,7 @@ class Options:
 
     class Option:
         def __init__(
-                self,
-                name: str,
-                value,
-                callback: Optional[Callable] = None
+            self, name: str, value, callback: Optional[Callable] = None
         ):
             self.name = name
             self.value = value
