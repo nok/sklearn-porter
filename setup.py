@@ -67,6 +67,7 @@ def main():
                 'twine>=1.12.1',
                 'pylint>=1.9.3',
                 'pytest>=3.9.2',
+                'pytest-cov>=2.7.1',
                 'pytest-xdist>=1.29.0',
                 'jupytext>=0.8.3',
             ],
