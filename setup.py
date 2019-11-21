@@ -64,6 +64,7 @@ def main():
         extras_require={
             'examples': ['notebook==5.*'],
             'development': [
+                'codecov>=2.0.15',
                 'twine>=1.12.1',
                 'pylint>=1.9.3',
                 'pytest>=3.9.2',
