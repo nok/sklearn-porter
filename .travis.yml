@@ -53,8 +53,14 @@ script:
       -o python_functions="test_*"
 
 after_success:
-  - docker exec -it test ./docker-entrypoint.sh
-    codecov
-      --token ${CODECOV_TOKEN}
-      --name "${TRAVIS_BUILD_ID} ${TRAVIS_BUILD_NUMBER}"
-      --env ${PYTHON_VER} ${CYTHON_VER} ${NUMPY_VER} ${SCIPY_VER} ${SKLEARN_VER}
+  - test
+      ${PYTHON_VER} = "python=3.7" &&
+      ${CYTHON_VER} = "cython" &&
+      ${NUMPY_VER} = "numpy" &&
+      ${SCIPY_VER} = "scipy" &&
+      ${SKLEARN_VER} = "scikit-learn==0.21" &&
+    docker exec -it test ./docker-entrypoint.sh
+      codecov
+        --token ${CODECOV_TOKEN}
+        --name "${TRAVIS_COMMIT}"
+        --env ${PYTHON_VER} ${CYTHON_VER} ${NUMPY_VER} ${SCIPY_VER} ${SKLEARN_VER}
