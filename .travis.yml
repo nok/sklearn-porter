@@ -56,5 +56,5 @@ after_success:
   - docker exec -it test ./docker-entrypoint.sh
     codecov
       --token ${CODECOV_TOKEN}
-      --name ${PYTHON_VER}_${CYTHON_VER}_${NUMPY_VER}_${SCIPY_VER}_${SKLEARN_VER}
+      --name "${TRAVIS_BUILD_ID} ${TRAVIS_BUILD_NUMBER}"
       --env ${PYTHON_VER} ${CYTHON_VER} ${NUMPY_VER} ${SCIPY_VER} ${SKLEARN_VER}
