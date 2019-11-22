@@ -53,12 +53,11 @@ script:
       -o python_functions="test_*"
 
 after_success:
-  - test
-      ${PYTHON_VER} = "python=3.7" &&
-      ${CYTHON_VER} = "cython" &&
-      ${NUMPY_VER} = "numpy" &&
-      ${SCIPY_VER} = "scipy" &&
-      ${SKLEARN_VER} = "scikit-learn==0.21" &&
+  - test ${PYTHON_VER} = "python=3.7" &&
+    test ${CYTHON_VER} = "cython" &&
+    test ${NUMPY_VER} = "numpy" &&
+    test ${SCIPY_VER} = "scipy" &&
+    test ${SKLEARN_VER} = "scikit-learn==0.21" &&
     docker exec -it test ./docker-entrypoint.sh
       codecov
         --token ${CODECOV_TOKEN}
