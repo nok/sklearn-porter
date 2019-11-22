@@ -41,13 +41,14 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
         enum.Language.JS: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.COMBINED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
-            enum.Template.ATTACHED: enum.ALL_METHODS,
         },
-        # Language.PHP: {
-        #     Template.COMBINED: {},
-        # },
+        enum.Language.PHP: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         # Language.RUBY: {
         #     Template.COMBINED: {},
         # },
@@ -158,9 +159,13 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             tpl_init = tpls.get_template('init')
             model_data = self.model_data.get('estimators')
             model_data = dumps(model_data, separators=(',', ':'))
+
+            if language is enum.Language.PHP:
+                model_data = "json_decode('" + model_data + "', true)"
+
             plas['model'] = tpl_init.render(name='model', value=model_data)
             out_class = tpl_class.render(**plas)
-            return out_class, model_data
+            return out_class
 
         # Make 'combined' variant:
         # Pick templates:
