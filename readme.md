@@ -832,7 +832,7 @@ You can run the unit and regression tests either on your local machine (host) or
 ```bash
 $ pytest tests -v \
     --cov=. \
-    --disable-warnings `# ignore future warnings of scikit-learn` \
+    --disable-warnings \
     --numprocesses=auto \
     -p no:doctest \
     -o python_files="*Test.py" \
@@ -841,25 +841,27 @@ $ pytest tests -v \
 
 ```bash
 $ docker build \
-	-t sklearn-porter \
-	--build-arg PYTHON_VER=python=3.5 .
+    -t sklearn-porter \
+    --build-arg PYTHON_VER=python=3.5 .
 
 $ docker run \
-	-v $(pwd):/home/abc/repo \
-	--detach \
-	--entrypoint=/bin/bash \
-	--name test \
-	-t sklearn-porter
+    -v $(pwd):/home/abc/repo \
+    --detach \
+    --entrypoint=/bin/bash \
+    --name test \
+    -t sklearn-porter
 
 $ docker exec \
-	-it test ./docker-entrypoint.sh \
-		pytest tests -v \
-			--cov=. \
-			--disable-warnings \
-			--numprocesses=auto \
-			-p no:doctest \
-			-o python_files="EstimatorTest.py" \
-			-o python_functions="test_*"
+    -it test ./docker-entrypoint.sh \
+        pytest tests -v \
+            --cov=. \
+            --disable-warnings \
+            --numprocesses=auto \
+            -p no:doctest \
+            -o python_files="EstimatorTest.py" \
+            -o python_functions="test_*"
+
+$ docker stop $(docker ps -a -q --filter="name=test")
 ```
 
 
