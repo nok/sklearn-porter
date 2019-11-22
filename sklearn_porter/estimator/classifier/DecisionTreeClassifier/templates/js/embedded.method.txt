@@ -1,6 +1,0 @@
-this.{method_name} = function(features) {{
-    var classes = new Array({n_classes});
-    {branches}
-
-    return findMax(classes);
-}};

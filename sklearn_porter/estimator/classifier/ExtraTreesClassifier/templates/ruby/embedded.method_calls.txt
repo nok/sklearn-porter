@@ -1,1 +1,0 @@
-idx = {class_name}.{method_name}(features); classes[idx] = classes[idx] + 1
