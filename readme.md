@@ -827,19 +827,39 @@ options['logging.level'] = DEBUG
 
 ### Testing
 
-You can run the unit and regression tests on your local host or in a running Docker container.
+You can run the unit and regression tests either on your local machine (host) or in a separate running Docker container. For active development we recommend to use a separate container.
 
 ```bash
 $ pytest tests -v \
-    -p no:doctest \
+    --cov=. \
     --disable-warnings `# ignore future warnings of scikit-learn` \
     --numprocesses=auto \
+    -p no:doctest \
     -o python_files="*Test.py" \
     -o python_functions="test_*"
 ```
 
 ```bash
-$ make tests
+$ docker build \
+	-t sklearn-porter \
+	--build-arg PYTHON_VER=python=3.5 .
+
+$ docker run \
+	-v $(pwd):/home/abc/repo \
+	--detach \
+	--entrypoint=/bin/bash \
+	--name test \
+	-t sklearn-porter
+
+$ docker exec \
+	-it test ./docker-entrypoint.sh \
+		pytest tests -v \
+			--cov=. \
+			--disable-warnings \
+			--numprocesses=auto \
+			-p no:doctest \
+			-o python_files="EstimatorTest.py" \
+			-o python_functions="test_*"
 ```
 
 

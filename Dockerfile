@@ -65,12 +65,11 @@ RUN adduser --disabled-password \
     --uid ${NB_UID} \
     ${NB_USER}
 
-COPY . ${HOME}
-
+RUN mkdir -p ${HOME}/repo
+COPY . ${HOME}/repo
 RUN chown -R ${NB_UID} ${HOME}
-RUN chmod 755 ${HOME}/docker-entrypoint.sh
-
-WORKDIR ${HOME}
+RUN chmod 755 ${HOME}/repo/docker-entrypoint.sh
+WORKDIR ${HOME}/repo
 
 USER ${NB_USER}
 
