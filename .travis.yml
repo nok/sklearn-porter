@@ -54,4 +54,4 @@ script:
 
 after_success:
   - docker exec -it test ./docker-entrypoint.sh
-    codecov
+    codecov --token ${CODECOV_TOKEN}
