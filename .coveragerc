@@ -1,6 +1,2 @@
 [run]
 source = sklearn_porter
-omit =
-    setup.py
-    .conda/*
-    tests/*
