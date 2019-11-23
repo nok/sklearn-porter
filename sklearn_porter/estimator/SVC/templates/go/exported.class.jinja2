@@ -1,0 +1,184 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+  "io/ioutil"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type {{ class_name }} struct {
+	Vectors [][]float64 `json:"vectors"`
+	Coeffs [][]float64 `json:"coeffs"`
+	Inters []float64 `json:"inters"`
+	Weights []int `json:"weights"`
+	Kernel string `json:"kernel"`
+	Gamma float64 `json:"gamma"`
+	Coef0 float64 `json:"coef0"`
+	Degree float64 `json:"degree"`
+}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict int `json:"predict"`
+}
+
+{% endif %}
+func (svc {{ class_name }}) Predict(features []float64) int {
+	kernels := make([]float64, int(len(svc.Vectors)))
+
+	switch strings.ToUpper(svc.Kernel) {
+	case "LINEAR":
+		for i := range svc.Vectors {
+			var kernel float64 = 0
+			for j := range svc.Vectors[i] {
+				kernel += svc.Vectors[i][j] * features[j]
+			}
+			kernels[i] = kernel
+		}
+	case "POLY":
+		for i := range svc.Vectors {
+			var kernel float64 = 0
+			for j := range svc.Vectors[i] {
+				kernel += svc.Vectors[i][j] * features[j]
+			}
+			kernels[i] = math.Pow((svc.Gamma * kernel) + svc.Coef0, svc.Degree)
+		}
+	case "RBF":
+		for i := range svc.Vectors {
+			var kernel float64 = 0
+			for j := range svc.Vectors[i] {
+				kernel += math.Pow(svc.Vectors[i][j] - features[j], 2)
+			}
+			kernels[i] = math.Exp(-svc.Gamma * kernel)
+		}
+	case "SIGMOID":
+		for i := range svc.Vectors {
+			var kernel float64 = 0
+			for j := range svc.Vectors[i] {
+				kernel += svc.Vectors[i][j] * features[j]
+			}
+			kernels[i] = math.Tanh((svc.Gamma * kernel) + svc.Coef0)
+		}
+	}
+
+	starts := make([]int, int(len(svc.Weights)))
+	for i := range svc.Weights {
+		if i != 0 {
+			var start = 0
+			for j := 0; j < i; j++ {
+				start += svc.Weights[j]
+			}
+			starts[i] = start
+		} else {
+			starts[0] = 0
+		}
+	}
+
+	ends := make([]int, int(len(svc.Weights)))
+	for i := range svc.Weights {
+		ends[i] = svc.Weights[i] + starts[i]
+	}
+
+	if len(svc.Weights) == 2 {
+		for i := range kernels {
+			kernels[i] = -kernels[i]
+		}
+		var decision float64 = 0
+		for k := starts[1]; k < ends[1]; k++ {
+			decision += kernels[k] * svc.Coeffs[0][k]
+		}
+		for k:= starts[0]; k < ends[0]; k++ {
+			decision += kernels[k] * svc.Coeffs[0][k]
+		}
+		decision += svc.Inters[0]
+		if decision > 0 {
+			return 0
+		}
+		return 1
+	}
+
+	decisions := make([]float64, int(len(svc.Inters)))
+	for i, d, l := 0, 0, len(svc.Weights); i < l; i++ {
+		for j := i + 1; j < l; j++ {
+			var temp float64 = 0
+			for k := starts[j]; k < ends[j]; k++ {
+				temp += svc.Coeffs[i][k] * kernels[k]
+			}
+			for k := starts[i]; k < ends[i]; k++ {
+				temp += svc.Coeffs[j - 1][k] * kernels[k]
+			}
+			decisions[d] = temp + svc.Inters[d]
+			d += 1
+		}
+	}
+
+	votes := make([]int, int(len(svc.Inters)))
+	for i, d, l := 0, 0, len(svc.Weights); i < l; i++ {
+		for j := i + 1; j < l; j++ {
+			if decisions[d] > 0 {
+				votes[d] = i
+			} else {
+				votes[d] = j
+			}
+			d+= 1
+		}
+	}
+
+	amounts := make([]int, int(len(svc.Weights)))
+	for i := range votes {
+		amounts[votes[i]] += 1
+	}
+
+	classVal, classIdx := -1, 0
+	for i := range amounts {
+		if amounts[i] > classVal {
+			classVal = amounts[i]
+			classIdx = i
+		}
+	}
+
+	return classIdx
+}
+
+func main() {
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[2:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	// Model data:
+	jsonFile, err := os.Open(os.Args[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	// Estimator:
+	var clf {{ class_name }}
+	json.Unmarshal(byteValue, &clf)
+
+	{% if is_test or to_json %}
+	// Get JSON:
+	prediction := clf.Predict(features)
+	res, _ := json.Marshal(&Response{Predict: prediction})
+	fmt.Println(string(res))
+	{% else %}
+	// Get class prediction:
+	prediction := clf.Predict(features)
+	fmt.Printf("Predicted class: #%d\n", prediction)
+	{% endif %}
+
+}
+{% endblock %}
