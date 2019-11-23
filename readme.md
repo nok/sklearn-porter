@@ -512,6 +512,28 @@ $ porter estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
 
 ## Development
 
+### Branches
+
+<table>
+  <tr>
+    <th align="left">Purpose</th>
+    <th align="left">Branch</th>
+    <th align="left">Build</th>
+    <th align="left">Command</th>
+  </tr>
+  <tr>
+    <td>Production</td>
+    <td><a href="https://github.com/nok/sklearn-porter/tree/stable">stable</a></td>
+    <td><img src="https://img.shields.io/travis/nok/sklearn-porter/stable.svg"></td>
+    <td><code>pip install sklearn-porter</code></td>
+  </tr>
+  <tr>
+    <td>Development</td>
+    <td><a href="https://github.com/nok/sklearn-porter/tree/master">master</a></td>
+    <td><img src="https://img.shields.io/travis/nok/sklearn-porter/master.svg"></td>
+    <td><code>pip install https://github.com/nok/sklearn-porter/zipball/master</code></td>
+  </tr>
+</table>
 
 ### Dependencies
 
