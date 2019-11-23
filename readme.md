@@ -15,6 +15,8 @@ Navigation: [Estimators](#estimators) • [Installation](#installation) • [U
 
 ## Estimators
 
+This table gives an overview over all supported combinations of estimators, programming languages and templates.
+
 <table>
   <tr>
     <th rowspan="2"></th>
