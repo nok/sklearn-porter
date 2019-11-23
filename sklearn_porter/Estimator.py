@@ -108,6 +108,12 @@ class Estimator:
         language = enum.Language.convert(language)
         if can(self.estimator, language):
             self._language = language
+        else:
+            name = self._estimator.estimator_name
+            msg = 'The passed language `{}` is not ' \
+                  'supported for the estimator `{}`.'
+            msg = msg.format(language.value.KEY, name)
+            raise exception.NotSupportedYetError(msg)
 
     @property
     def template(self) -> str:
@@ -118,6 +124,14 @@ class Estimator:
         template = enum.Template.convert(name)
         if can(self.estimator, self.language, template):
             self._template = template
+        else:
+            name = self._estimator.estimator_name
+            language = enum.Language.convert(self.language)
+            msg = 'The passed template `{}` is not ' \
+                  'supported for the estimator `{}` ' \
+                  'and language `{}`.'
+            msg = msg.format(template.value, name, language.value.KEY)
+            raise exception.NotSupportedYetError(msg)
 
     @property
     def class_name(self) -> str:
