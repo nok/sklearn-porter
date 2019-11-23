@@ -1,20 +1,14 @@
 
 # sklearn-porter
 
-
 [![Build Status stable branch](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter)
 [![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg?color=blue)](https://pypi.python.org/pypi/sklearn-porter)
-[![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg?color=blue)](https://pypi.python.org/pypi/sklearn-porter)
+[![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
 [![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
 [![codecov](https://codecov.io/gh/nok/sklearn-porter/branch/stable/graph/badge.svg)](https://codecov.io/gh/nok/sklearn-porter)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/feature/oop-api-refactoring?filepath=examples)
 
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
-
-
-## Important
-
-We're hard working on the [first major release](https://github.com/nok/sklearn-porter/tree/release/1.0.0) of sklearn-porter. <br>Until that we will just release bugfixes to the stable version.
 
 
 ## Estimators
