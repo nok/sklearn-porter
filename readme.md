@@ -362,7 +362,7 @@ Navigation: [Estimators](#estimators) • [Installation](#installation) • [U
 
 ### Binder
 
-Try it out yourself by starting an interactive notebook with Binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples)
+Try it out yourself by starting an interactive notebook with Binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples)
 
 ### Basics
 
