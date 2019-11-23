@@ -372,24 +372,24 @@ from sklearn.tree import DecisionTreeClassifier
 
 from sklearn_porter import port, save, make, test
 
-# Load data and train a dummy classifier:
+# 1. Load data and train a dummy classifier:
 X, y = load_iris(return_X_y=True)
 clf = DecisionTreeClassifier()
 clf.fit(X, y)
 
-# Port or transpile an estimator:
+# 2. Port or transpile an estimator:
 output = port(clf, language='js', template='attached')
 print(output)
 
-# Save the ported estimator:
+# 3. Save the ported estimator:
 src_path, json_path = save(clf, language='js', template='exported', directory='/tmp')
 print(src_path, json_path)
 
-# Make predictions with the ported estimator:
+# 4. Make predictions with the ported estimator:
 y_classes, y_probas = make(clf, X[:10], language='js', template='exported')
 print(y_classes, y_probas)
 
-# Test always the ported estimator by making an integrity check:
+# 5. Test always the ported estimator by making an integrity check:
 score = test(clf, X[:10], language='js', template='exported')
 print(score)
 ```
@@ -402,27 +402,26 @@ from sklearn.tree import DecisionTreeClassifier
 
 from sklearn_porter import Estimator
 
-# Load data and train a dummy classifier:
+# 1. Load data and train a dummy classifier:
 X, y = load_iris(return_X_y=True)
 clf = DecisionTreeClassifier()
 clf.fit(X, y)
 
+# 2. Port or transpile an estimator:
 est = Estimator(clf, language='js', template='attached')
-
-# Port or transpile an estimator:
 output = est.port()
 print(output)
 
-# Save the ported estimator:
+# 3. Save the ported estimator:
 est.template = 'exported'
 src_path, json_path = est.save(directory='/tmp')
 print(src_path, json_path)
 
-# Make predictions with the ported estimator:
+# 4. Make predictions with the ported estimator:
 y_classes, y_probas = est.make(X[:10])
 print(y_classes, y_probas)
 
-# Test always the ported estimator by making an integrity check:
+# 5. Test always the ported estimator by making an integrity check:
 score = est.test(X[:10])
 print(score)
 ```
