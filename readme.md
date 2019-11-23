@@ -11,6 +11,16 @@
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
 
+## Table of Contents
+
+- [Estimators](#estimators)
+- [Installation](#installation)
+- [Usage](#usage)
+- [Development](#development)
+- [Citation](#citation)
+- [License](#license)
+
+
 ## Estimators
 
 <table>
