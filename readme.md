@@ -1,11 +1,13 @@
 
 # sklearn-porter
 
-[![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
+
+[![Build Status stable branch](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter)
+[![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
+[![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/feature/oop-api-refactoring?filepath=examples)
-[![Stack Overflow](https://img.shields.io/badge/stack%20overflow-ask%20questions-blue.svg)](https://stackoverflow.com/questions/tagged/sklearn-porter)
-[![Join the chat at https://gitter.im/nok/sklearn-porter](https://badges.gitter.im/nok/sklearn-porter.svg)](https://gitter.im/nok/sklearn-porter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Twitter](https://img.shields.io/twitter/follow/darius_morawiec.svg?label=follow&style=popout)](https://twitter.com/darius_morawiec)
+[![codecov](https://codecov.io/gh/nok/sklearn-porter/branch/stable/graph/badge.svg)](https://codecov.io/gh/nok/sklearn-porter)
+[![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
 
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
@@ -338,13 +340,26 @@ We're hard working on the [first major release](https://github.com/nok/sklearn-p
 
 ## Installation
 
-[![Build Status stable branch](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter)
-[![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
-[![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
-
-```bash
-$ pip install sklearn-porter
-```
+<table>
+  <tr>
+    <th align="left">Purpose</th>
+    <th align="left">Branch</th>
+    <th align="left">Build</th>
+    <th align="left">Command</th>
+  </tr>
+  <tr>
+    <td>Production</td>
+    <td><a href="https://github.com/nok/sklearn-porter/tree/stable">stable</a></td>
+    <td><a href="https://travis-ci.org/nok/sklearn-porter"><img src="https://img.shields.io/travis/nok/sklearn-porter/stable.svg"></a></td>
+    <td><code>pip install sklearn-porter</code></td>
+  </tr>
+  <tr>
+    <td>Development</td>
+    <td><a href="https://github.com/nok/sklearn-porter/tree/master">master</a></td>
+    <td><a href="https://travis-ci.org/nok/sklearn-porter"><img src="https://img.shields.io/travis/nok/sklearn-porter/master.svg"></a></td>
+    <td><code>pip install https://github.com/nok/sklearn-porter/zipball/master</code></td>
+  </tr>
+</table>
 
 
 ## Usage
@@ -511,29 +526,6 @@ $ porter estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
 
 
 ## Development
-
-### Branches
-
-<table>
-  <tr>
-    <th align="left">Purpose</th>
-    <th align="left">Branch</th>
-    <th align="left">Build</th>
-    <th align="left">Command</th>
-  </tr>
-  <tr>
-    <td>Production</td>
-    <td><a href="https://github.com/nok/sklearn-porter/tree/stable">stable</a></td>
-    <td><img src="https://img.shields.io/travis/nok/sklearn-porter/stable.svg"></td>
-    <td><code>pip install sklearn-porter</code></td>
-  </tr>
-  <tr>
-    <td>Development</td>
-    <td><a href="https://github.com/nok/sklearn-porter/tree/master">master</a></td>
-    <td><img src="https://img.shields.io/travis/nok/sklearn-porter/master.svg"></td>
-    <td><code>pip install https://github.com/nok/sklearn-porter/zipball/master</code></td>
-  </tr>
-</table>
 
 ### Dependencies
 
