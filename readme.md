@@ -357,6 +357,8 @@ Navigation: [Estimators](#estimators) • [Installation](#installation) • [U
   </tr>
 </table>
 
+In both environments the only prerequisite is `scikit-learn>=0.17`.
+
 
 ## Usage
 
