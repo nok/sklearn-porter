@@ -6,7 +6,7 @@
 [![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
 [![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
 [![codecov](https://codecov.io/gh/nok/sklearn-porter/branch/stable/graph/badge.svg)](https://codecov.io/gh/nok/sklearn-porter)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/feature/oop-api-refactoring?filepath=examples)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples)
 
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
@@ -368,118 +368,74 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
 
 ## Usage
 
-### API
-
-The following table shows the most relevant high-level methods. 
-
-<table>
-  <tr>
-    <th align="left">Step</th>
-    <th align="left">Method</th>
-    <th align="left">Alias</th>
-    <th align="left">Description</th>
-  </tr>
-  <tr>
-    <td>1</td>
-    <td><code>port</code></td>
-    <td><code>export</code></td>
-    <td>Transpile the passed estimator to the desired programming language and template.</td>
-  </tr>
-  <tr>
-    <td>2</td>
-    <td><code>save</code></td>
-    <td><code>dump</code></td>
-    <td>Save the previously generated source code locally.</td>
-  </tr>
-  <tr>
-    <td>3</td>
-    <td><code>make</code></td>
-    <td><code>predict</code></td>
-    <td>Compile the saved source files and make predictions.</td>
-  </tr>
-  <tr>
-    <td>4</td>
-    <td><code>test</code></td>
-    <td><code>integrity_score</code></td>
-    <td>Make an integrity check by making regression tests between the original and transpiled estimator.</td>
-  </tr>
-</table>
-
-Each step executes the previous steps internally.
-
-
-### Examples
-
 ### Binder
 
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/feature/oop-api-refactoring?filepath=examples)
+Try it out yourself by starting an interactive notebook with Binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples)
 
-Start Binder to run interactive examples.
-
-#### Export
-
-The following example demonstrates how you can transpile a [decision tree estimator](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
+### Basics
 
 ```python
 from sklearn.datasets import load_iris
-from sklearn.tree import tree
-from sklearn_porter import Porter
+from sklearn.tree import DecisionTreeClassifier
 
-# Load data and train the classifier:
-samples = load_iris()
-X, y = samples.data, samples.target
-clf = tree.DecisionTreeClassifier()
+from sklearn_porter import port, save, make, test
+
+# Load data and train a dummy classifier:
+X, y = load_iris(return_X_y=True)
+clf = DecisionTreeClassifier()
 clf.fit(X, y)
 
-# Export:
-porter = Porter(clf, language='java')
-output = porter.export(embed_data=True)
+# Port or transpile an estimator:
+output = port(clf, language='js', template='attached')
 print(output)
+
+# Save the ported estimator:
+src_path, json_path = save(clf, language='js', template='exported', directory='/tmp')
+print(src_path, json_path)
+
+# Make predictions with the ported estimator:
+y_classes, y_probas = make(clf, X[:10], language='js', template='exported')
+print(y_classes, y_probas)
+
+# Test always the ported estimator by making an integrity check:
+score = test(clf, X[:10], language='js', template='exported')
+print(score)
 ```
 
-The exported [result](examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.pct.py#L60-L110) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
-
-
-#### Integrity
-
-You should always check and compute the integrity between the original and the transpiled estimator:
+### OOP
 
 ```python
-# ...
-porter = Porter(clf, language='java')
+from sklearn.datasets import load_iris
+from sklearn.tree import DecisionTreeClassifier
 
-# Compute integrity score:
-integrity = porter.integrity_score(X)
-print(integrity)  # 1.0
+from sklearn_porter import Estimator
+
+# Load data and train a dummy classifier:
+X, y = load_iris(return_X_y=True)
+clf = DecisionTreeClassifier()
+clf.fit(X, y)
+
+est = Estimator(clf, language='js', template='attached')
+
+# Port or transpile an estimator:
+output = est.port()
+print(output)
+
+# Save the ported estimator:
+est.template = 'exported'
+src_path, json_path = est.save(directory='/tmp')
+print(src_path, json_path)
+
+# Make predictions with the ported estimator:
+y_classes, y_probas = est.make(X[:10])
+print(y_classes, y_probas)
+
+# Test always the ported estimator by making an integrity check:
+score = est.test(X[:10])
+print(score)
 ```
 
-
-#### Prediction
-
-You can compute the prediction(s) in the target programming language:
-
-```python
-# ...
-porter = Porter(clf, language='java')
-
-# Prediction(s):
-Y_java = porter.predict(X)
-y_java = porter.predict(X[0])
-y_java = porter.predict([1., 2., 3., 4.])
-```
-
-
-## Notebooks
-
-You can run and test all notebooks by starting a Jupyter notebook server locally:
-
-```bash
-$ make open.examples
-$ make stop.examples
-```
-
-
-## CLI
+### CLI
 
 In general you can use the porter on the command line:
 
