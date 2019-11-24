@@ -682,21 +682,12 @@ $ docker stop $(docker ps -a -q --filter="name=test")
 ```
 
 
-### Quality
-
-It's highly recommended to ensure the code quality. For that [Pylint](https://github.com/PyCQA/pylint/) is used. Start the linter with:
-
-```bash
-$ make lint
-```
-
-
 ## Citation
 
 If you use this implementation in you work, please add a reference/citation to the paper. You can use the following BibTeX entry:
 
 ```bibtex
-@unpublished{skpodamo,
+@unpublished{sklearn_porter,
   author = {Darius Morawiec},
   title = {sklearn-porter},
   note = {Transpile trained scikit-learn estimators to C, Java, JavaScript and others},
@@ -708,8 +699,3 @@ If you use this implementation in you work, please add a reference/citation to t
 ## License
 
 The module is Open Source Software released under the [MIT](license.txt) license.
-
-
-## Questions?
-
-Don't be shy and feel free to contact me on [Twitter](https://twitter.com/darius_morawiec) or [Gitter](https://gitter.im/nok/sklearn-porter).
