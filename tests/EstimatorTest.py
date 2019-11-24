@@ -3,12 +3,12 @@
 import random as rd
 import shutil
 import urllib.request
+import warnings
+from collections import namedtuple
 from os import environ
 from pathlib import Path
 from sys import version_info as PYTHON_VERSION
-from typing import Tuple, List
-from collections import namedtuple
-import warnings
+from typing import List, Tuple
 
 import numpy as np
 import pytest
@@ -24,9 +24,10 @@ from sklearn.svm.classes import SVC, LinearSVC, NuSVC
 from sklearn.tree.tree import DecisionTreeClassifier
 
 # sklearn-porter
-from sklearn_porter.language.Java import Java
-from sklearn_porter.Estimator import Estimator, can
 from sklearn_porter import exceptions as exception
+from sklearn_porter.cli.__main__ import parse_args
+from sklearn_porter.Estimator import Estimator, can
+from sklearn_porter.language.Java import Java
 
 # Force deterministic number generation:
 np.random.seed(0)
@@ -44,6 +45,9 @@ Candidate = namedtuple('Candidate', 'name clazz create')
 SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
+
+FILE_DIR = Path(__file__).parent
+SERIALIZED_MODEL = FILE_DIR / '..' / 'examples' / 'recipes' / 'dump_estimator_to_pickle_file' / 'estimator.pkl'
 
 
 def get_classifiers() -> List[Candidate]:
@@ -506,3 +510,14 @@ def test_regressions_of_classifiers(
         warnings.warn(msg)
     except:
         pytest.fail('Unexpected exception ...')
+
+
+@pytest.mark.parametrize(
+    'args',
+    [['show'], ['port', str(SERIALIZED_MODEL), '--skip-warnings']],
+    ids=['show', 'port']
+)
+def test_cli_subcommand(args: List):
+    parsed = parse_args(args)
+    cmd = args[0]
+    assert (parsed.cmd == cmd)

@@ -432,51 +432,35 @@ print(score)
 
 ### CLI
 
-In general you can use the porter on the command line:
+In addition you can use the sklearn-porter on the command line. The command calls `porter` and is available after the installation.
 
 ```
-$ porter <pickle_file> [--to <directory>]
-         [--class_name <class_name>] [--method_name <method_name>]
-         [--export] [--checksum] [--data] [--pipe]
-         [--c] [--java] [--js] [--go] [--php] [--ruby]
-         [--version] [--help]
+$ porter {show,part} [-h] [-v]
+$ porter port <pickeld_estimator>
+              [-l {c,go,java,js,php,ruby}]
+              [-t {attached,combined,exported}]
+              [--skip-warnings] [-h] 
+$ porter show [-h]
 ```
 
-The following example shows how you can save a trained estimator to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
+You can serialize an estimator and save it locally. For more details you can read the instructions to  [model persistence](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example).  
 
 ```python
-# ...
+from joblib import dump
 
-# Extract estimator:
-joblib.dump(clf, 'estimator.pkl', compress=0)
+dump(clf, 'estimator.joblib', compress=0)
 ```
 
-After that the estimator can be transpiled to JavaScript by using the following command:
+After that the estimator can be transpiled by using the subcommand `port`:
 
 ```bash
-$ porter estimator.pkl --js
+$ porter port estimator.joblib -l js -t attached > estimator.js
 ```
 
-The target programming language is changeable on the fly:
+For further processing you can pass the result to another applications, e.g. [UglifyJS](https://github.com/mishoo/UglifyJS2).
 
 ```bash
-$ porter estimator.pkl --c
-$ porter estimator.pkl --java
-$ porter estimator.pkl --php
-$ porter estimator.pkl --java
-$ porter estimator.pkl --ruby
-```
-
-For further processing the argument `--pipe` can be used to pass the result:
-
-```bash
-$ porter estimator.pkl --js --pipe > estimator.js
-```
-
-For instance the result can be minified by using [UglifyJS](https://github.com/mishoo/UglifyJS2):
-
-```bash
-$ porter estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
+$ porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estimator.min.js
 ```
 
 
