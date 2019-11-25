@@ -20,7 +20,7 @@ from sklearn.ensemble.forest import ExtraTreesClassifier, RandomForestClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.neighbors.classification import KNeighborsClassifier
-from sklearn.svm.classes import SVC, LinearSVC, NuSVC
+from sklearn.svm import SVC, LinearSVC, NuSVC
 from sklearn.tree.tree import DecisionTreeClassifier
 
 # sklearn-porter
@@ -430,7 +430,7 @@ def test_regressions_of_classifiers(
     template: str,
     language: str,
 ):
-    if not can(candidate.clazz, language, template, 'predict'):
+    if not can(candidate.clazz(), language, template, 'predict'):
         pytest.skip('Skip unsupported estimator/language/template combination')
 
     def fs_mkdir(
