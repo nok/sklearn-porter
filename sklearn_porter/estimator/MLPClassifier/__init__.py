@@ -45,27 +45,11 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         L.info('Create specific estimator `%s`.', self.estimator_name)
         est = self.estimator  # alias
 
-        # Check activation function:
-        act_fn = est.activation
-        supported_act_fns = ['relu', 'identity', 'tanh', 'logistic']
-        if act_fn not in supported_act_fns:
-            msg = 'The passed activation function `{}` is not supported yet.'
-            msg = msg.format(act_fn)
-            raise exception.NotSupportedYetError(msg)
-
         # Check output function:
-        if self.estimator_name == 'MLPClassifier':
-            try:
-                out_fn = est.out_activation_
-            except AttributeError:
-                raise exception.NotFittedEstimatorError(self.estimator_name)
-            else:
-                supported_out_fns = ['softmax', 'logistic']
-                if out_fn not in supported_out_fns:
-                    msg = 'The passed output function `{}`' \
-                          ' is not supported yet.'
-                    msg = msg.format(out_fn)
-                    raise exception.NotSupportedYetError(msg)
+        try:
+            est.out_activation_
+        except AttributeError:
+            raise exception.NotFittedEstimatorError(self.estimator_name)
 
         # Architecture:
         n_inputs = len(est.coefs_[0])
