@@ -478,7 +478,7 @@ $ conda activate sklearn-porter  # or `source activate sklearn-porter` for older
 After that you have to install all required packages:
 
 ```bash
-$ pip install --no-cache-dir -e .[development]
+$ pip install --no-cache-dir -e ".[development,examples]"
 ```
 
 ### Environment
