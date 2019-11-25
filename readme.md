@@ -655,7 +655,7 @@ $ docker run \
 $ docker exec \
     -it test ./docker-entrypoint.sh \
         pytest tests -v \
-            --cov=. \
+            --cov=sklearn_porter \
             --disable-warnings \
             --numprocesses=auto \
             -p no:doctest \
