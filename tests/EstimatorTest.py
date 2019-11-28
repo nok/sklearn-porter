@@ -8,7 +8,7 @@ from collections import namedtuple
 from os import environ
 from pathlib import Path
 from sys import version_info as PYTHON_VERSION
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 import pytest
@@ -28,6 +28,7 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter.cli.__main__ import parse_args
 from sklearn_porter.Estimator import Estimator, can
 from sklearn_porter.language.Java import Java
+from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 # Force deterministic number generation:
 np.random.seed(0)
@@ -370,30 +371,17 @@ def test_make_the_inputs_outputs(
     if not can(fitted_tree, language, template, 'predict'):
         pytest.skip('Skip unsupported estimator/language/template combination')
 
-    def fs_mkdir(
-        base_dir: Path,
-        test_name: str,
-        estimator_name: str,
-        language_name: str,
-        template_name: str,
-    ) -> Path:
-        """Helper function to create a directory for tests."""
-        base_dir = (
-            base_dir / ('test__' + test_name) /
-            ('estimator__' + estimator_name) / ('language__' + language_name) /
-            ('template__' + template_name)
-        )
-        base_dir.mkdir(parents=True, exist_ok=True)
-        return base_dir
-
+    # Directory:
     tmp_dir = fs_mkdir(
-        base_dir=tmp_root_dir,
-        test_name='test_make_the_inputs_outputs',
-        estimator_name='DecisionTreeClassifier',
-        language_name=language,
-        template_name=template,
+        tmp_root_dir, [
+            ('test', 'test_make_the_inputs_outputs'),
+            ('estimator', 'DecisionTreeClassifier'),
+            ('language', language),
+            ('template', template),
+        ]
     )
 
+    # Estimator:
     est = Estimator(fitted_tree)
     out = est.make(
         x,
@@ -433,46 +421,6 @@ def test_regressions_of_classifiers(
     if not can(candidate.clazz(), language, template, 'predict'):
         pytest.skip('Skip unsupported estimator/language/template combination')
 
-    def fs_mkdir(
-        base_dir: Path,
-        test_name: str,
-        estimator_name: str,
-        dataset_name: str,
-        language_name: str,
-        template_name: str,
-    ) -> Path:
-        """
-        Helper function to create a separate
-        directory for generated source files.
-        """
-        base_dir = (
-            base_dir / ('test__' + test_name) /
-            ('estimator__' + estimator_name) / ('dataset__' + dataset_name) /
-            ('language__' + language_name) / ('template__' + template_name)
-        )
-        base_dir.mkdir(parents=True, exist_ok=True)
-        return base_dir
-
-    def ds_generate_x(x: np.ndarray, n_samples: int) -> np.ndarray:
-        """Helper function to create uniform test samples."""
-        if not isinstance(x, np.ndarray) or x.ndim != 2:
-            msg = 'Two dimensional numpy array is required.'
-            raise AssertionError(msg)
-        return np.random.uniform(
-            low=np.amin(x, axis=0),
-            high=np.amax(x, axis=0),
-            size=(n_samples, len(x[0])),
-        )
-
-    def ds_uniform_x(x: np.ndarray, n_samples: int) -> np.ndarray:
-        """Helper function to pick random test samples."""
-        if not isinstance(x, np.ndarray) or x.ndim != 2:
-            msg = 'Two dimensional numpy array is required.'
-            raise AssertionError(msg)
-        n_samples = min(n_samples, len(x))
-        return x[(np.random.uniform(0, 1, n_samples) *
-                  (len(x) - 1)).astype(int)]
-
     # Estimator:
     orig_est = candidate.create()
     x, y = dataset.data, dataset.target
@@ -480,18 +428,17 @@ def test_regressions_of_classifiers(
     est = Estimator(orig_est)
 
     # Samples:
-    n_uni = int(environ.get('SKLEARN_PORTER_PYTEST_N_UNI_REGRESSION_TESTS', 15))
-    n_gen = int(environ.get('SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 15))
-    test_x = np.vstack((ds_uniform_x(x, n_uni), ds_generate_x(x, n_gen)))
+    test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
 
     # Directory:
     tmp_dir = fs_mkdir(
-        base_dir=tmp_root_dir,
-        test_name='test_regressions_of_classifiers',
-        estimator_name=candidate.name,
-        dataset_name=dataset.name,
-        language_name=language,
-        template_name=template,
+        tmp_root_dir, [
+            ('test', 'test_regressions_of_classifiers'),
+            ('estimator', candidate.name),
+            ('dataset', dataset.name),
+            ('language', language),
+            ('template', template),
+        ]
     )
 
     try:
@@ -521,3 +468,81 @@ def test_cli_subcommand(args: List):
     parsed = parse_args(args)
     cmd = args[0]
     assert (parsed.cmd == cmd)
+
+
+@pytest.mark.skipif(
+    SKLEARN_VERSION[:2] < (0, 18), reason='requires scikit-learn >= v0.18'
+)
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('activation', ['relu', 'identity', 'tanh', 'logistic'])
+@pytest.mark.parametrize(
+    'hidden_layer_sizes', [15, [15, 5], [15, 10, 5]],
+    ids=['15', '15_5', '15_10_5']
+)
+@pytest.mark.parametrize('dataset', test_datasets, ids=lambda x: x.name)
+def test_mlp_classifier(
+    tmp_root_dir: Path,
+    dataset: Dataset,
+    template: str,
+    language: str,
+    activation: str,
+    hidden_layer_sizes: Union[int, List[int]],
+):
+    """Test and compare different MLP classifiers."""
+    try:
+        from sklearn.neural_network.multilayer_perceptron import MLPClassifier
+    except ImportError:
+        pass
+    else:
+        orig_est = MLPClassifier(
+            activation=activation,
+            hidden_layer_sizes=hidden_layer_sizes,
+            learning_rate_init=.1,
+            random_state=1,
+            max_iter=10,
+        )
+
+        if not can(orig_est, language, template, 'predict'):
+            pytest.skip(
+                'Skip unsupported estimator/'
+                'language/template combination'
+            )
+
+        # Estimator:
+        x, y = dataset.data, dataset.target
+        orig_est.fit(X=x, y=y)
+        est = Estimator(orig_est)
+
+        # Samples:
+        test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
+
+        # Directory:
+        hls = hidden_layer_sizes  # alias
+        hls = '_'.join(
+            [str(hls)] if isinstance(hls, int) else list(map(str, hls))
+        )
+        tmp_dir = fs_mkdir(
+            tmp_root_dir, [
+                ('test', 'test_mlp_classifier'), ('dataset', dataset.name),
+                ('language', language), ('template', template),
+                ('activation', activation), ('hidden_layer_sizes', hls)
+            ]
+        )
+
+        try:
+            score = est.test(
+                test_x,
+                language=language,
+                template=template,
+                directory=tmp_dir,
+                delete_created_files=False
+            )
+            assert score == 1.
+        except exception.CodeTooLarge:
+            msg = 'Code too large for the combination: ' \
+                  'language: {}, template: {}, dataset: {}' \
+                  ''.format(language, template, dataset.name)
+            warnings.warn(msg)
+        except:
+            pytest.fail('Unexpected exception ...')
