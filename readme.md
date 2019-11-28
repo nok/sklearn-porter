@@ -436,11 +436,13 @@ In addition you can use the sklearn-porter on the command line. The command call
 
 ```
 $ porter {show,part} [-h] [-v]
+
+$ porter show [-h]
+
 $ porter port <pickeld_estimator>
               [-l {c,go,java,js,php,ruby}]
               [-t {attached,combined,exported}]
               [--skip-warnings] [-h] 
-$ porter show [-h]
 ```
 
 You can serialize an estimator and save it locally. For more details you can read the instructions to  [model persistence](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example).  
@@ -632,7 +634,7 @@ You can run the unit and regression tests either on your local machine (host) or
 
 ```bash
 $ pytest tests -v \
-    --cov=. \
+    --cov=sklearn_porter \
     --disable-warnings \
     --numprocesses=auto \
     -p no:doctest \
