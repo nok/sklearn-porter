@@ -4,18 +4,16 @@ import random as rd
 import shutil
 import urllib.request
 import warnings
-from collections import namedtuple
 from os import environ
 from pathlib import Path
-from sys import version_info as PYTHON_VERSION
-from typing import List, Tuple, Union
+from sys import version_info
+from typing import List, Tuple
 
 import numpy as np
 import pytest
 
 # scikit-learn
-import sklearn
-from sklearn.datasets import load_digits, load_iris
+from sklearn.datasets import load_iris
 from sklearn.ensemble.forest import ExtraTreesClassifier, RandomForestClassifier
 from sklearn.ensemble.weight_boosting import AdaBoostClassifier
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
@@ -28,6 +26,10 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter.cli.__main__ import parse_args
 from sklearn_porter.Estimator import Estimator, can
 from sklearn_porter.language.Java import Java
+from tests.commons import (
+    CANDIDATES, CLASSIFIERS, DATASETS, SKLEARN_VERSION, TESTS_DIR, Candidate,
+    Dataset
+)
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 # Force deterministic number generation:
@@ -35,85 +37,12 @@ np.random.seed(0)
 rd.seed(0)
 
 # Check python version:
-if PYTHON_VERSION[:2] < (3, 5):
+if version_info[:2] < (3, 5):
     pytest.skip('tests requires python >= 3.5', allow_module_level=True)
-
-# List of named tuples:
-Dataset = namedtuple('Dataset', 'name data target')
-Candidate = namedtuple('Candidate', 'name clazz create')
-
-# Parse and prepare scikit-learn version:
-SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
 
-FILE_DIR = Path(__file__).parent
-SERIALIZED_MODEL = FILE_DIR / '..' / 'examples' / 'recipes' / 'dump_estimator_to_pickle_file' / 'estimator.pkl'
-
-
-def get_classifiers() -> List[Candidate]:
-    _classifiers = [
-        DecisionTreeClassifier,
-        AdaBoostClassifier,
-        RandomForestClassifier,
-        ExtraTreesClassifier,
-        LinearSVC,
-        SVC,
-        NuSVC,
-        KNeighborsClassifier,
-        GaussianNB,
-        BernoulliNB,
-    ]
-    try:
-        from sklearn.neural_network.multilayer_perceptron import MLPClassifier
-    except ImportError:
-        pass
-    else:
-        _classifiers.append(MLPClassifier)
-    for e in _classifiers:
-        yield (Candidate(e.__name__, e, e))
-
-
-def get_regressors() -> List[Candidate]:
-    _regressors = []
-    try:
-        from sklearn.neural_network.multilayer_perceptron import MLPRegressor
-    except ImportError:
-        pass
-    else:
-        _regressors.append(MLPRegressor)
-    for e in _regressors:
-        yield (Candidate(e.__name__, e, e))
-
-
-def get_datasets() -> List[Dataset]:
-    _datasets = [
-        Dataset('digits',
-                load_digits().data,
-                load_digits().target),
-        Dataset('iris',
-                load_iris().data,
-                load_iris().target),
-    ]
-    try:  # for sklearn < 0.16
-        from sklearn.datasets import load_breast_cancer
-    except ImportError:
-        pass
-    else:
-        _datasets.append(
-            Dataset(
-                'breast_cancer',
-                load_breast_cancer().data,
-                load_breast_cancer().target
-            )
-        )
-    return _datasets
-
-
-test_classifiers = list(get_classifiers())
-test_regressors = list(get_regressors())
-test_candidates = test_classifiers + test_regressors
-test_datasets = list(get_datasets())
+SERIALIZED_MODEL = TESTS_DIR / '..' / 'examples' / 'recipes' / 'dump_estimator_to_pickle_file' / 'estimator.pkl'
 
 
 @pytest.fixture(scope='session')
@@ -121,13 +50,13 @@ def tmp_root_dir(worker_id) -> Path:
     """Fixture to get the path to the temporary directory."""
 
     # Delete previous generated temporary directory:
-    tmp_dir = Path(__file__).parent / 'tmp'
+    tmp_dir = TESTS_DIR / 'tmp'
     if worker_id is 'master':
         if tmp_dir.exists():
             shutil.rmtree(str(tmp_dir.resolve()), ignore_errors=True)
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    src_dir = (Path(__file__).parent / '..').resolve()
+    src_dir = (TESTS_DIR / '..').resolve()
     gson_fname = 'gson.jar'
     src_gson_path = src_dir / gson_fname
     tmp_gson_path = tmp_dir / gson_fname
@@ -196,7 +125,7 @@ def test_list_of_classifiers():
         assert classifiers == result
 
 
-@pytest.mark.parametrize('candidate', test_candidates, ids=lambda x: x.name)
+@pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
 def test_unfitted_estimator(candidate: Candidate):
     """Test unfitted estimators."""
     with pytest.raises(exception.NotFittedEstimatorError):
@@ -235,7 +164,7 @@ def test_unfitted_estimator_in_pipeline():
         Estimator(pipeline)
 
 
-@pytest.mark.parametrize('candidate', test_candidates, ids=lambda x: x.name)
+@pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
 @pytest.mark.parametrize(
     'params',
     [
@@ -254,7 +183,7 @@ def test_invalid_params_on_port_method(candidate: Candidate, params: Tuple):
         Estimator(est).port(**params[1])
 
 
-@pytest.mark.parametrize('candidate', test_candidates, ids=lambda x: x.name)
+@pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
 @pytest.mark.parametrize(
     'params',
     [
@@ -374,7 +303,7 @@ def test_make_the_inputs_outputs(
     # Directory:
     tmp_dir = fs_mkdir(
         tmp_root_dir, [
-            ('test', 'test_make_the_inputs_outputs'),
+            ('test', 'make_the_inputs_outputs'),
             ('estimator', 'DecisionTreeClassifier'),
             ('language', language),
             ('template', template),
@@ -409,8 +338,8 @@ def test_make_the_inputs_outputs(
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
-@pytest.mark.parametrize('dataset', test_datasets, ids=lambda x: x.name)
-@pytest.mark.parametrize('candidate', test_classifiers, ids=lambda x: x.name)
+@pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
+@pytest.mark.parametrize('candidate', CLASSIFIERS, ids=lambda x: x.name)
 def test_regressions_of_classifiers(
     tmp_root_dir: Path,
     candidate: Candidate,
@@ -433,7 +362,7 @@ def test_regressions_of_classifiers(
     # Directory:
     tmp_dir = fs_mkdir(
         tmp_root_dir, [
-            ('test', 'test_regressions_of_classifiers'),
+            ('test', 'regressions_of_classifiers'),
             ('estimator', candidate.name),
             ('dataset', dataset.name),
             ('language', language),
@@ -468,81 +397,3 @@ def test_cli_subcommand(args: List):
     parsed = parse_args(args)
     cmd = args[0]
     assert (parsed.cmd == cmd)
-
-
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 18), reason='requires scikit-learn >= v0.18'
-)
-@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
-@pytest.mark.parametrize('activation', ['relu', 'identity', 'tanh', 'logistic'])
-@pytest.mark.parametrize(
-    'hidden_layer_sizes', [15, [15, 5], [15, 10, 5]],
-    ids=['15', '15_5', '15_10_5']
-)
-@pytest.mark.parametrize('dataset', test_datasets, ids=lambda x: x.name)
-def test_mlp_classifier(
-    tmp_root_dir: Path,
-    dataset: Dataset,
-    template: str,
-    language: str,
-    activation: str,
-    hidden_layer_sizes: Union[int, List[int]],
-):
-    """Test and compare different MLP classifiers."""
-    try:
-        from sklearn.neural_network.multilayer_perceptron import MLPClassifier
-    except ImportError:
-        pass
-    else:
-        orig_est = MLPClassifier(
-            activation=activation,
-            hidden_layer_sizes=hidden_layer_sizes,
-            learning_rate_init=.1,
-            random_state=1,
-            max_iter=10,
-        )
-
-        if not can(orig_est, language, template, 'predict'):
-            pytest.skip(
-                'Skip unsupported estimator/'
-                'language/template combination'
-            )
-
-        # Estimator:
-        x, y = dataset.data, dataset.target
-        orig_est.fit(X=x, y=y)
-        est = Estimator(orig_est)
-
-        # Samples:
-        test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
-
-        # Directory:
-        hls = hidden_layer_sizes  # alias
-        hls = '_'.join(
-            [str(hls)] if isinstance(hls, int) else list(map(str, hls))
-        )
-        tmp_dir = fs_mkdir(
-            tmp_root_dir, [
-                ('test', 'test_mlp_classifier'), ('dataset', dataset.name),
-                ('language', language), ('template', template),
-                ('activation', activation), ('hidden_layer_sizes', hls)
-            ]
-        )
-
-        try:
-            score = est.test(
-                test_x,
-                language=language,
-                template=template,
-                directory=tmp_dir,
-                delete_created_files=False
-            )
-            assert score == 1.
-        except exception.CodeTooLarge:
-            msg = 'Code too large for the combination: ' \
-                  'language: {}, template: {}, dataset: {}' \
-                  ''.format(language, template, dataset.name)
-            warnings.warn(msg)
-        except:
-            pytest.fail('Unexpected exception ...')
