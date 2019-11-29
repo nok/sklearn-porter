@@ -42,7 +42,7 @@ if version_info[:2] < (3, 5):
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
 
-SERIALIZED_MODEL = TESTS_DIR / '..' / 'examples' / 'recipes' / 'dump_estimator_to_pickle_file' / 'estimator.pkl'
+SERIALIZED_MODEL = TESTS_DIR / 'resources' / 'estimator_0_19.pkl'
 
 
 @pytest.fixture(scope='session')
