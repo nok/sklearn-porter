@@ -6,7 +6,6 @@
 
 pylint.txt
 
-examples/experimental
 examples/experiments
 examples/estimator/**/*.json
 
