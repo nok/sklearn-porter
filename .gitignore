@@ -1,6 +1,5 @@
 ### Application ###
 
-*.pkl
 *.egg-info
 *.iml
 
