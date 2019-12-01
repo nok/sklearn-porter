@@ -32,7 +32,7 @@ open.examples: install.requirements.examples examples.pid
 
 examples.pid:
 	$(info Start [examples.pid] ...)
-	jupyter-lab --notebook-dir='examples' > /dev/null 2>&1 & echo $$! > $@;
+	jupyter notebook --notebook-dir='examples' --ip='0.0.0.0' --port=8888 > /dev/null 2>&1 & echo $$! > $@;
 
 stop.examples: examples.pid
 	kill `cat $<` && rm $<
@@ -43,33 +43,29 @@ stop.examples: examples.pid
 # Development
 #
 
-all: clean lint serve tests jupytext clean
+all: clean lint tests examples clean
 
 lint: install.requirements.development
 	$(info Start [lint] ...)
 	$(eval FILES=$(shell find ./sklearn_porter -name '*.py' -type f | tr '\n' ' '))
 	pylint --rcfile=.pylintrc --output-format=text $(FILES) 2>&1 | tee pylint.txt | sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p'
 
-serve:
-	$(info Start [serve] ...)
-	$(BASH) scripts/run.server.sh
+tests: tests.local
 
-tests: local.tests
+tests.local: install.requirements.development clean
+	$(info Start [test.local] ...)
+	$(BASH) scripts/run.tests.local.sh
 
-local.tests: install.requirements.development clean serve
-	$(info Start [test] ...)
-	$(BASH) scripts/run.tests.system.sh $(python_files)  # `python_files` is a regex for pytest, e.g. "*JavaTest.py"
-
-docker.tests: clean
+tests.docker: clean
 	$(info Start [docker.tests] ...)
 	$(BASH) scripts/run.tests.docker.sh
 
-jupytext: install.requirements.development
+examples: install.requirements.development
 	$(info Start [jupytext] ...)
 	$(BASH) scripts/run.jupytext.sh
 
 deploy: install.requirements.development clean
-	$(info Start [deploy.test] ...)
+	$(info Start [deploy] ...)
 	$(BASH) scripts/run.deployment.sh
 
 #

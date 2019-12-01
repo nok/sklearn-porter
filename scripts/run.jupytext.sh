@@ -18,7 +18,7 @@ do
         --output $(basename -- "$ipynp_file")
 done
 
-for json_file in $(find . -type f -name 'data.json')
+for json_file in $(find . -type f -name '*.json')
 do
     echo "$json_file"
     rm -f "$json_file"

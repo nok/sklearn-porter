@@ -673,6 +673,38 @@ $ docker exec \
 $ docker stop $(docker ps -a -q --filter="name=test")
 ```
 
+### Helpers
+
+The following commands are useful time savers in the daily development: 
+
+```bash
+# Install a Python environment with `conda`:
+make install.environment
+make source.environment
+
+# Install dependencies with `pip`:
+make install.requirements
+make install.requirements.examples
+make install.requirements.development
+
+# Start and stop a Jupyter notebook:
+make open.examples
+make stop.examples
+
+# Start unit tests on the host or in a separate docker container:
+make test.local
+make test.docker
+
+# Lint the source code with `pylint`:
+make lint
+
+# Generate notebooks with `jupytext`:
+make examples
+
+# Deploy a new version with `twine`:
+make deploy
+```
+
 
 ## Citation
 

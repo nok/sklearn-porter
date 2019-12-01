@@ -37,10 +37,11 @@ before_install:
     --build-arg SCIPY_VER=${SCIPY_VER}
     --build-arg SKLEARN_VER=${SKLEARN_VER}
     --no-cache .
-  - docker run --detach
-    --entrypoint=/bin/bash
-    --name test
+  - docker run
     -t sklearn-porter
+    --entrypoint=/bin/bash
+    --detach
+    --name test
 
 script:
   - docker exec -it test ./docker-entrypoint.sh
@@ -58,8 +59,12 @@ after_success:
     test ${NUMPY_VER} = "numpy" &&
     test ${SCIPY_VER} = "scipy" &&
     test ${SKLEARN_VER} = "scikit-learn==0.21" &&
-    docker exec -it test ./docker-entrypoint.sh
-      codecov
-        --token ${CODECOV_TOKEN}
-        --name "${TRAVIS_COMMIT}"
-        --env ${PYTHON_VER} ${CYTHON_VER} ${NUMPY_VER} ${SCIPY_VER} ${SKLEARN_VER}
+      docker exec -it test ./docker-entrypoint.sh
+        codecov
+          --token ${CODECOV_TOKEN}
+          --name "${TRAVIS_COMMIT}"
+          --env ${PYTHON_VER}
+                ${CYTHON_VER}
+                ${NUMPY_VER}
+                ${SCIPY_VER}
+                ${SKLEARN_VER}

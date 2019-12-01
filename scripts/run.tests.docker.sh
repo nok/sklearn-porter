@@ -3,19 +3,29 @@
 SCRIPT_PATH="$(cd "$(dirname "$0")"; pwd -P)"
 cd ${SCRIPT_PATH}/..
 
-docker rmi -f sklearn-porter
-docker build -t sklearn-porter --no-cache --force-rm .
+docker build \
+    -t sklearn-porter \
+    --build-arg PYTHON_VER=${PYTHON_VER:-python=3.5} \
+    --build-arg CYTHON_VER=${CYTHON_VER:-cython} \
+    --build-arg NUMPY_VER=${NUMPY_VER:-numpy} \
+    --build-arg SCIPY_VER=${SCIPY_VER:-scipy} \
+    --build-arg SKLEARN_VER=${SKLEARN_VER:-scikit-learn} \
+    .
 
-docker rm -f $(docker ps --filter name=test -q)
-docker run -d -t --name test sklearn-porter
-docker exec -it test \
-    make clean && conda run -n sklearn-porter \
-        pytest tests -v -x -p no:doctest \
-            -o python_files="*Test.py" \
+docker run \
+    -t sklearn-porter \
+    --volume $(pwd):/home/abc/repo \
+    --name test \
+        pytest tests -v \
+            --cov=sklearn_porter \
+            --disable-warnings \
+            --numprocesses=auto \
+            -p no:doctest \
+            -o python_files="EstimatorTest.py" \
             -o python_functions="test_*"
 
 success=$?
 
-docker rm -f $(docker ps --filter name=test -q)
+docker rm -f $(docker ps --all --filter name=test -q)
 
 exit ${success}
