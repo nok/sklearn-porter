@@ -63,7 +63,7 @@ def main():
             'joblib',
         ],
         extras_require={
-            'examples': ['notebook==5.*'],
+            'examples': ['notebook==5.*', 'Pygments==2.3.1'],
             'development': [
                 'codecov>=2.0.15',
                 'twine>=1.12.1',
