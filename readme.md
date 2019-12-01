@@ -692,8 +692,8 @@ make start.examples
 make stop.examples
 
 # Start unit tests on the host or in a separate docker container:
-make test.local
-make test.docker
+make tests
+make tests.docker
 
 # Lint the source code with `pylint`:
 make lint
