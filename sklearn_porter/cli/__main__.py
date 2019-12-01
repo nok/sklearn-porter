@@ -6,7 +6,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 from textwrap import dedent
 
 from sklearn_porter import __version__ as porter_version
-from sklearn_porter.cli.command import port, show
+from sklearn_porter.cli.command import port, save, show
 from sklearn_porter.cli.common import arg_help, arg_version
 
 
@@ -16,7 +16,8 @@ def parse_args(args):
         """
         Examples:
           `porter show`
-          `porter port model.pkl --language js --template attached`
+          `porter port model --language js --template attached`
+          `porter save model --directory /tmp --skip-warnings`
         
         Manuals:
           https://github.com/nok/sklearn-porter
@@ -40,6 +41,7 @@ def parse_args(args):
 
     show.config(sp)
     port.config(sp)
+    save.config(sp)
 
     arg_version(parser)
     arg_help(parser)

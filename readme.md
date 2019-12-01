@@ -435,14 +435,20 @@ print(score)
 In addition you can use the sklearn-porter on the command line. The command calls `porter` and is available after the installation.
 
 ```
-$ porter {show,part} [-h] [-v]
+$ porter {show,port,save} [-h] [-v]
 
 $ porter show [-h]
 
-$ porter port <pickeld_estimator>
+$ porter port <estimator>
               [-l {c,go,java,js,php,ruby}]
               [-t {attached,combined,exported}]
-              [--skip-warnings] [-h] 
+              [--skip-warnings] [-h]
+
+$ porter save <estimator>
+              [-l {c,go,java,js,php,ruby}]
+              [-t {attached,combined,exported}]
+              [--directory DIRECTORY]
+              [--skip-warnings] [-h]
 ```
 
 You can serialize an estimator and save it locally. For more details you can read the instructions to  [model persistence](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example).  

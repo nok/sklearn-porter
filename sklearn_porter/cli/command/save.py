@@ -16,20 +16,22 @@ from sklearn_porter.language import LANGUAGE_KEYS
 
 def config(sub_parser: _SubParsersAction):
 
-    header = 'The subcommand `port` transpiles a trained ' \
-             'estimator to a specific programming language.'
+    header = 'The subcommand `save` transpiles a trained ' \
+             'estimator to a specific programming language ' \
+             'and saves the result.'
     footer = dedent(
         """
         Examples:
-          `porter port model.pkl --language js --template attached`
-          `porter port model.pkl --skip-warnings`
+          `porter save model.pkl --language js --template attached`
+          `porter save model.pkl --directory /tmp --skip-warnings`
+          `porter save model.pkl -l js -t exported --directory /tmp --skip-warnings`
     """
     )
 
     parser = sub_parser.add_parser(
-        'port',
+        'save',
         description=header,
-        help='Port a trained estimator to a programming language.',
+        help='Port a trained estimator and save the result.',
         epilog=footer,
         formatter_class=RawTextHelpFormatter,
         add_help=False,
@@ -56,6 +58,12 @@ def config(sub_parser: _SubParsersAction):
         choices=['attached', 'combined', 'exported'],
         help='The name of the template.'
     )
+    parser.add_argument(
+        '--directory',
+        type=str,
+        required=False,
+        help='The directory where the generated files will be saved.'
+    )
 
     for fn in (arg_skip_warnings, arg_debug, arg_help):
         fn(parser)
@@ -77,5 +85,16 @@ def main(args: Dict):
     if args.get('template'):
         est.template = args.get('template')
 
-    print(est.port())
+    directory = args.get('directory')
+    if not directory:
+        directory = Path.cwd()
+    paths = est.save(directory=directory)
+
+    if not isinstance(paths, tuple):
+        paths = (paths, )
+
+    print('Saved files:')
+    for p in paths:
+        print('  ' + str(p))
+
     sys.exit(0)
