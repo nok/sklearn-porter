@@ -2,7 +2,7 @@
 
 import urllib.request
 from abc import ABCMeta
-from json import loads
+from json import loads, JSONDecodeError
 from multiprocessing import Pool, cpu_count
 from os import environ, remove
 from pathlib import Path
@@ -952,14 +952,15 @@ def _system_call(cmd: str, executable='/bin/bash'):
         stderr=STDOUT,
         executable=executable
     )
-    for idx in range(3):  # Try three times, b/c of `file is busy` issues.
+    for idx in range(5):  # Try three times, b/c of `file is busy` issues.
         try:
             out = check_output(cmd, **subp_args)
-        except CalledProcessError as e:
+            out = loads(out, encoding='utf-8')
+        except CalledProcessError:
+            sleep(0.01)
+        except JSONDecodeError:
             sleep(0.01)
         else:
-            out = str(out).strip()
-            out = loads(out, encoding='utf-8')
             if 'predict_proba' in out.keys():
                 return [out.get('predict'), out.get('predict_proba')]
             return [out.get('predict')]
