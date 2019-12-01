@@ -28,11 +28,11 @@ install.requirements.development: install.requirements.examples
 # Examples
 #
 
-open.examples: install.requirements.examples examples.pid
+start.examples: install.requirements.examples examples.pid
 
 examples.pid:
 	$(info Start [examples.pid] ...)
-	jupyter notebook --notebook-dir='examples' --ip='0.0.0.0' --port=8888 > /dev/null 2>&1 & echo $$! > $@;
+	jupyter notebook --notebook-dir='examples/basics' --ip='0.0.0.0' --port=8888 > /dev/null 2>&1 & echo $$! > $@;
 
 stop.examples: examples.pid
 	kill `cat $<` && rm $<

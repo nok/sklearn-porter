@@ -3,7 +3,7 @@
 
 [![Build Status stable branch](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter)
 [![codecov](https://codecov.io/gh/nok/sklearn-porter/branch/stable/graph/badge.svg)](https://codecov.io/gh/nok/sklearn-porter)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples/basics/index.pct.ipynb)
 [![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg?color=blue)](https://pypi.python.org/pypi/sklearn-porter)
 [![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
 [![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
@@ -366,7 +366,7 @@ In both environments the only prerequisite is `scikit-learn>=0.17`.
 
 ### Binder
 
-Try it out yourself by starting an interactive notebook with Binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples)
+Try it out yourself by starting an interactive notebook with Binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples/basics/index.pct.ipynb)
 
 ### Basics
 
@@ -688,7 +688,7 @@ make install.requirements.examples
 make install.requirements.development
 
 # Start and stop a Jupyter notebook:
-make open.examples
+make start.examples
 make stop.examples
 
 # Start unit tests on the host or in a separate docker container:
