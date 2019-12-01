@@ -680,7 +680,7 @@ The following commands are useful time savers in the daily development:
 ```bash
 # Install a Python environment with `conda`:
 make install.environment
-make source.environment
+make activate.environment
 
 # Install dependencies with `pip`:
 make install.requirements

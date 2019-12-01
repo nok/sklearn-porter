@@ -8,9 +8,9 @@ install.environment:
 	$(info Start [install.environment] ...)
 	$(BASH) scripts/install.environment.sh
 
-source.environment: install.environment
+activate.environment: install.environment
 	$(info Start [source.environment] ...)
-	$(BASH) scripts/source.environment.sh
+	$(BASH) scripts/activate.environment.sh
 
 install.requirements:
 	$(info Start [install.requirements] ...)
