@@ -38,10 +38,10 @@ before_install:
     --build-arg SKLEARN_VER=${SKLEARN_VER}
     --no-cache .
   - docker run
-    -t sklearn-porter
-    --entrypoint=/bin/bash
     --detach
+    --entrypoint=/bin/bash
     --name test
+    -t sklearn-porter
 
 script:
   - docker exec -it test ./docker-entrypoint.sh
