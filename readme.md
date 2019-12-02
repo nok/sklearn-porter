@@ -679,30 +679,30 @@ The following commands are useful time savers in the daily development:
 
 ```bash
 # Install a Python environment with `conda`:
-make install.environment
-make activate.environment
+$ make install.environment
+$ make activate.environment
 
 # Install dependencies with `pip`:
-make install.requirements
-make install.requirements.examples
-make install.requirements.development
+$ make install.requirements
+$ make install.requirements.examples
+$ make install.requirements.development
 
 # Start and stop a Jupyter notebook:
-make start.examples
-make stop.examples
+$ make start.examples
+$ make stop.examples
 
 # Start unit tests on the host or in a separate docker container:
-make tests
-make tests.docker
+$ make tests
+$ make tests.docker
 
 # Lint the source code with `pylint`:
-make lint
+$ make lint
 
 # Generate notebooks with `jupytext`:
-make examples
+$ make examples
 
 # Deploy a new version with `twine`:
-make deploy
+$ make deploy
 ```
 
 
