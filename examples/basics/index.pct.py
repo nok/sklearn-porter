@@ -33,10 +33,10 @@ src_path, json_path = save(
 print(src_path, json_path)
 
 # %% [shell]
-# ls /tmp
+# cat /tmp/DecisionTreeClassifier.js | pygmentize -l javascript
 
 # %% [shell]
-# cat /tmp/DecisionTreeClassifier.js | pygmentize -l javascript
+# cat /tmp/DecisionTreeClassifier.json | pygmentize -l json
 
 # %% [markdown]
 # 4. Make predictions with the ported estimator:
