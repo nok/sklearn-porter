@@ -359,7 +359,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
 </table>
 
-In both environments the only prerequisite is `scikit-learn >= 0.17, <= 0.22`.
+In both environments the only prerequisite is `scikit-learn >= 0.17, <= 0.21`.
 
 
 ## Usage
@@ -504,7 +504,7 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
     <td><strong>3.7</strong></td>
   </tr>
   <tr align="center">
-    <td rowspan="18"><strong>scikit-learn</strong></td>
+    <td rowspan="15"><strong>scikit-learn</strong></td>
     <td rowspan="3"><strong>0.17</strong></td>
     <td>cython 0.27.3</td>
     <td>cython 0.27.3</td>
@@ -564,22 +564,6 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
   </tr>
   <tr align="center">
     <td rowspan="3"><strong>0.21</strong></td>
-    <td>cython</td>
-    <td>cython</td>
-    <td>cython</td>
-  </tr>
-  <tr align="center">
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-  </tr>
-  <tr align="center">
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.22</strong></td>
     <td>cython</td>
     <td>cython</td>
     <td>cython</td>
