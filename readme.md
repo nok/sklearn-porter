@@ -359,7 +359,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
 </table>
 
-In both environments the only prerequisite is `scikit-learn>=0.17`.
+In both environments the only prerequisite is `scikit-learn >= 0.17, <= 0.22`.
 
 
 ## Usage
