@@ -30,58 +30,52 @@ def test_estimator_linear_svc(
     loss: str,
 ):
     """Test and compare different linear support vector classifiers."""
+    orig_est = LinearSVC(
+        loss=loss,
+        random_state=1,
+        max_iter=10,
+    )
+
+    if not can(orig_est, language, template, 'predict'):
+        pytest.skip(
+            'Skip unsupported estimator/'
+            'language/template combination'
+        )
+
+    # Estimator:
+    x, y = dataset.data, dataset.target
+    orig_est.fit(X=x, y=y)
+    est = Estimator(orig_est)
+
+    # Samples:
+    test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
+
+    # Directory:
+    tmp_dir = fs_mkdir(
+        tmp_root_dir, [
+            ('test', 'estimator_svc'), ('dataset', dataset.name),
+            ('language', language), ('template', template), ('loss', loss)
+        ]
+    )
+
     try:
-        from sklearn.neural_network.multilayer_perceptron import MLPClassifier
-    except ImportError:
-        pass
+        score = est.test(
+            test_x,
+            language=language,
+            template=template,
+            directory=tmp_dir,
+            delete_created_files=False
+        )
+    except exception.NotSupportedYetError as e:
+        if 'template' == 'precomputed':
+            msg = 'The passed kernel `precomputed` is not supported.'
+            assert msg in str(e)
+    except exception.CodeTooLarge:
+        msg = 'Code too large for the combination: ' \
+              'language: {}, template: {}, dataset: {}' \
+              ''.format(language, template, dataset.name)
+        warnings.warn(msg)
+    except:
+        pytest.fail('Unexpected exception ...')
     else:
-
-        orig_est = LinearSVC(
-            loss=loss,
-            random_state=1,
-            max_iter=10,
-        )
-
-        if not can(orig_est, language, template, 'predict'):
-            pytest.skip(
-                'Skip unsupported estimator/'
-                'language/template combination'
-            )
-
-        # Estimator:
-        x, y = dataset.data, dataset.target
-        orig_est.fit(X=x, y=y)
-        est = Estimator(orig_est)
-
-        # Samples:
-        test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
-
-        # Directory:
-        tmp_dir = fs_mkdir(
-            tmp_root_dir, [
-                ('test', 'estimator_svc'), ('dataset', dataset.name),
-                ('language', language), ('template', template), ('loss', loss)
-            ]
-        )
-
-        try:
-            score = est.test(
-                test_x,
-                language=language,
-                template=template,
-                directory=tmp_dir,
-                delete_created_files=False
-            )
-        except exception.NotSupportedYetError as e:
-            if 'template' == 'precomputed':
-                msg = 'The passed kernel `precomputed` is not supported.'
-                assert msg in str(e)
-        except exception.CodeTooLarge:
-            msg = 'Code too large for the combination: ' \
-                  'language: {}, template: {}, dataset: {}' \
-                  ''.format(language, template, dataset.name)
-            warnings.warn(msg)
-        except:
-            pytest.fail('Unexpected exception ...')
-        else:
-            assert score == 1.
+        assert score == 1.
