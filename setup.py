@@ -10,7 +10,7 @@ def _check_python_version():
     if version_info[:2] < (3, 5):
         msg = 'The used Python version is not ' \
               'supported, please use Python >= 3.5'
-        raise RuntimeError(msg)
+        raise EnvironmentError(msg)
 
 
 def _read_text(path):
