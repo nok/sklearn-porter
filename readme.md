@@ -555,7 +555,7 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
     <td>scipy 1.1.0</td>
   </tr>
   <tr align="center">
-    <td rowspan="3"><strong>0.20 / 0.20.1</strong></td>
+    <td rowspan="3"><strong>0.20</strong></td>
     <td>cython 0.27.3</td>
     <td>cython 0.27.3</td>
     <td>cython 0.27.3</td>
