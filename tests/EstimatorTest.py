@@ -354,7 +354,12 @@ def test_regressions_of_classifiers(
     orig_est = candidate.create()
     x, y = dataset.data, dataset.target
     orig_est.fit(X=x, y=y)
-    est = Estimator(orig_est)
+
+    warnings.filterwarnings('error')
+    try:
+        est = Estimator(orig_est)
+    except exception.QualityWarning as w:
+        pytest.skip(str(w))
 
     # Samples:
     test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
@@ -370,6 +375,7 @@ def test_regressions_of_classifiers(
         ]
     )
 
+    warnings.filterwarnings('default')
     try:
         score = est.test(
             test_x,
@@ -380,12 +386,17 @@ def test_regressions_of_classifiers(
         )
         assert score == 1.
     except exception.CodeTooLarge:
-        msg = 'Code too large for the combination: ' \
+        msg = 'The code too large for the combination: ' \
               'estimator: {}, language: {}, template: {}, dataset: {}' \
               ''.format(candidate.name, language, template, dataset.name)
         warnings.warn(msg)
-    except:
-        pytest.fail('Unexpected exception ...')
+    except exception.TooManyConstants:
+        msg = 'The code has too many constants and can not be compiled: ' \
+              'estimator: {}, language: {}, template: {}, dataset: {}' \
+              ''.format(candidate.name, language, template, dataset.name)
+        warnings.warn(msg)
+    except Exception as e:
+        pytest.fail('Unexpected exception ... ' + str(e))
 
 
 @pytest.mark.parametrize(

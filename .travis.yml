@@ -15,6 +15,10 @@ notifications:
 
 env:
   matrix:
+    - PYTHON_VER=python=3.8 CYTHON_VER=cython NUMPY_VER=numpy SCIPY_VER=scipy SKLEARN_VER=scikit-learn==0.22
+    - PYTHON_VER=python=3.8 CYTHON_VER=cython NUMPY_VER=numpy SCIPY_VER=scipy SKLEARN_VER=scikit-learn==0.21
+    - PYTHON_VER=python=3.8 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy SCIPY_VER=scipy SKLEARN_VER=scikit-learn==0.20
+    - PYTHON_VER=python=3.7 CYTHON_VER=cython NUMPY_VER=numpy SCIPY_VER=scipy SKLEARN_VER=scikit-learn==0.22
     - PYTHON_VER=python=3.7 CYTHON_VER=cython NUMPY_VER=numpy SCIPY_VER=scipy SKLEARN_VER=scikit-learn==0.21
     - PYTHON_VER=python=3.7 CYTHON_VER=cython==0.27.3 NUMPY_VER=numpy SCIPY_VER=scipy SKLEARN_VER=scikit-learn==0.20
     - PYTHON_VER=python=3.6 CYTHON_VER=cython NUMPY_VER=numpy SCIPY_VER=scipy SKLEARN_VER=scikit-learn==0.21

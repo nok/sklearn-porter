@@ -57,7 +57,7 @@ def main():
         keywords=['sklearn', 'scikit-learn'],
         url='https://github.com/nok/sklearn-porter',
         install_requires=[
-            'scikit-learn>=0.17,<=0.21a0',
+            'scikit-learn>=0.17,<=0.22a0',
             'Jinja2>=2.10.1',
             'loguru>=0.3.2',
             'joblib',
@@ -87,6 +87,7 @@ def main():
             'Programming Language :: Python :: 3.5',
             'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
+            'Programming Language :: Python :: 3.8',
             'Topic :: Software Development',
             'Topic :: Scientific/Engineering',
         ],

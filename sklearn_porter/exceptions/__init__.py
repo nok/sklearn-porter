@@ -3,6 +3,10 @@
 from sklearn_porter import enums as enum
 
 
+class QualityWarning(Warning):
+    pass
+
+
 class NotFittedEstimatorError(Exception):
     def __init__(self, message: str):
         self.message = 'The passed estimator of kind `{}` ' \
@@ -26,6 +30,15 @@ class CompilationFailed(RuntimeError):
 
 
 class CodeTooLarge(CompilationFailed):
+    def __init__(self, message: str):
+        hint = 'Please try to save the model data separately ' \
+               'by changing the template type to `exported`: ' \
+               '`template=\'exported\'`.'
+        self.message = 'Compilation failed:\n\n{}\n\n{}'.format(message, hint)
+        super().__init__(self.message)
+
+
+class TooManyConstants(CompilationFailed):
     def __init__(self, message: str):
         hint = 'Please try to save the model data separately ' \
                'by changing the template type to `exported`: ' \

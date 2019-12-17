@@ -776,8 +776,11 @@ class Estimator:
         except CalledProcessError as e:
             msg = 'Command "{}" return with error (code {}):\n\n{}'
             msg = msg.format(e.cmd, e.returncode, e.output)
-            if language is enum.Language.JAVA and 'code too large' in e.output:
-                raise exception.CodeTooLarge(msg)
+            if language is enum.Language.JAVA:
+                if 'code too large' in e.output:
+                    raise exception.CodeTooLarge(msg)
+                elif 'too many constants' in e.output:
+                    raise exception.TooManyConstants(msg)
             raise exception.CompilationFailed(msg)
 
     @decorator.alias('integrity_score')

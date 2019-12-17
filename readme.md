@@ -10,7 +10,7 @@
 
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
-Navigation: [Estimators](#estimators) • [Installation](#installation) • [Usage](#usage) • [Development](#development) • [Citation](#citation) • [License](#license)
+Navigation: [Estimators](#estimators) • [Installation](#installation) • [Usage](#usage) • [Known Issues](#known-issues) • [Development](#development) • [Citation](#citation) • [License](#license)
 
 
 ## Estimators
@@ -359,7 +359,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
 </table>
 
-In both environments the only prerequisite is `scikit-learn >= 0.17, <= 0.21`.
+In both environments the only prerequisite is `scikit-learn >= 0.17, <= 0.22`.
 
 
 ## Usage
@@ -471,6 +471,10 @@ For further processing you can pass the result to another applications, e.g. [Ug
 $ porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estimator.min.js
 ```
 
+## Known Issues
+
+- In some rare cases the regression tests of the support vector machine, [SVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), fail since `scikit-learn>=0.22`. Because of that a `QualityWarning` will be raised which should reminds you to evaluate the result by using the `test` method. 
+
 
 ## Development
 
@@ -496,19 +500,21 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
 <table border="0" width="100%">
   <tr align="center">
     <td colspan="2" rowspan="2"></td>
-    <td colspan="3"><strong>Python</strong></td>
+    <td colspan="4"><strong>Python</strong></td>
   </tr>
   <tr align="center">
     <td><strong>3.5</strong></td>
     <td><strong>3.6</strong></td>
     <td><strong>3.7</strong></td>
+    <td><strong>3.8</strong></td>
   </tr>
   <tr align="center">
-    <td rowspan="15"><strong>scikit-learn</strong></td>
+    <td rowspan="18"><strong>scikit-learn</strong></td>
     <td rowspan="3"><strong>0.17</strong></td>
     <td>cython 0.27.3</td>
     <td>cython 0.27.3</td>
     <td rowspan="3">not supported<br>by scikit-learn</td>
+    <td rowspan="3">no support<br>by scikit-learn</td>
   </tr>
   <tr align="center">
     <td>numpy 1.9.3</td>
@@ -522,6 +528,7 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
     <td rowspan="3"><strong>0.18</strong></td>
     <td>cython 0.27.3</td>
     <td>cython 0.27.3</td>
+    <td rowspan="3">not supported<br>by scikit-learn</td>
     <td rowspan="3">not supported<br>by scikit-learn</td>
   </tr>
   <tr align="center">
@@ -537,6 +544,7 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
     <td>cython 0.27.3</td>
     <td>cython 0.27.3</td>
     <td rowspan="3">not supported<br>by scikit-learn</td>
+    <td rowspan="3">not supported<br>by scikit-learn</td>
   </tr>
   <tr align="center">
     <td>numpy 1.14.5</td>
@@ -551,29 +559,54 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
     <td>cython 0.27.3</td>
     <td>cython 0.27.3</td>
     <td>cython 0.27.3</td>
+    <td>cython 0.27.3</td>
   </tr>
   <tr align="center">
     <td>numpy</td>
     <td>numpy</td>
     <td>numpy</td>
+    <td>numpy</td>
   </tr>
   <tr align="center">
     <td>scipy</td>
     <td>scipy</td>
     <td>scipy</td>
+<td>scipy</td>
   </tr>
   <tr align="center">
     <td rowspan="3"><strong>0.21</strong></td>
     <td>cython</td>
     <td>cython</td>
     <td>cython</td>
+    <td>cython</td>
   </tr>
   <tr align="center">
     <td>numpy</td>
     <td>numpy</td>
     <td>numpy</td>
+    <td>numpy</td>
   </tr>
   <tr align="center">
+    <td>scipy</td>
+    <td>scipy</td>
+    <td>scipy</td>
+    <td>scipy</td>
+  </tr>
+  <tr align="center">
+    <td rowspan="3"><strong>0.22</strong></td>
+    <td>cython</td>
+    <td>cython</td>
+    <td>cython</td>
+    <td>cython</td>
+  </tr>
+  <tr align="center">
+    <td>numpy</td>
+    <td>numpy</td>
+    <td>numpy</td>
+    <td>numpy</td>
+  </tr>
+  <tr align="center">
+    <td>scipy</td>
     <td>scipy</td>
     <td>scipy</td>
     <td>scipy</td>
