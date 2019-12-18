@@ -3,8 +3,11 @@
 import os
 import sys
 import types
+import subprocess
 
 import numpy as np
+
+from joblib import Parallel, delayed, cpu_count
 
 from sklearn.metrics import accuracy_score
 from sklearn.tree.tree import DecisionTreeClassifier
@@ -375,11 +378,14 @@ class Porter(object):
 
         # Multiple feature sets:
         if exec_cmd is not None and len(X.shape) > 1:
-            pred_y = np.empty(X.shape[0], dtype=int)
-            for idx, features in enumerate(X):
-                full_exec_cmd = exec_cmd + [str(f).strip() for f in features]
-                pred = Shell.check_output(full_exec_cmd, cwd=tnp_dir)
-                pred_y[idx] = int(pred)
+            tnp_dir = './' + tnp_dir
+            exec_cmd = [os.path.join(os.path.abspath(tnp_dir), exec_cmd[0])]
+            cmds = [exec_cmd + [str(f).strip() for f in feat] for feat in X]
+            max_threads = cpu_count()
+            # using threading will increase speed n-fold, depending on CPUs
+            preds = Parallel(n_jobs=max_threads, backend='threading') \
+                (delayed(subprocess.check_output)(cmd, cwd=tnp_dir) for cmd in cmds)
+            pred_y = np.array([int(pred) for pred in preds], dtype=int)
 
         # Cleanup:
         if not keep_tmp_dir:
