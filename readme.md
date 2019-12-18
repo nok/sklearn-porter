@@ -437,7 +437,7 @@ In addition you can use the sklearn-porter on the command line. The command call
 ```
 $ porter {show,port,save} [-h] [-v]
 
-$ porter show [-h]
+$ porter show [-l {c,go,java,js,php,ruby}] [-h]
 
 $ porter port <estimator>
               [-l {c,go,java,js,php,ruby}]
