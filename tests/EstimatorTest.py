@@ -401,10 +401,11 @@ def test_regressions_of_classifiers(
 
 @pytest.mark.parametrize(
     'args', [
-        ['show'], ['port', str(SERIALIZED_MODEL), '--skip-warnings'],
+        ['show'], ['show', '-l', 'java'], ['show', '-l', 'js'],
+        ['port', str(SERIALIZED_MODEL), '--skip-warnings'],
         ['save', str(SERIALIZED_MODEL), '--skip-warnings']
     ],
-    ids=['show', 'port', 'save']
+    ids=['show', 'show_java', 'show_js', 'port', 'save']
 )
 def test_cli_subcommand(args: List):
     parsed = parse_args(args)

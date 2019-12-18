@@ -6,8 +6,9 @@ from textwrap import dedent
 from typing import Dict
 
 # sklearn-porter
-from sklearn_porter import Estimator, options
+from sklearn_porter import options, show
 from sklearn_porter.cli.common import arg_debug, arg_help
+from sklearn_porter.language import LANGUAGES
 
 
 def config(sub_parser: _SubParsersAction):
@@ -28,22 +29,21 @@ def config(sub_parser: _SubParsersAction):
     )
     for group in parser._action_groups:
         group.title = str(group.title).capitalize()
-
+    parser.add_argument(
+        '-l',
+        '--language',
+        type=str,
+        required=False,
+        choices=LANGUAGES.keys(),
+        help='The name of the programming language.'
+    )
     for fn in (arg_debug, arg_help):
         fn(parser)
 
     parser.set_defaults(func=main)
 
 
-def _get_qualname(obj: object):
-    return obj.__class__.__module__ + '.' + obj.__class__.__qualname__
-
-
 def main(args: Dict):
     if args.get('debug'):
         options['logging.level'] = DEBUG
-
-    estimators = Estimator.classifiers() + Estimator.regressors()
-
-    for e in estimators:
-        print(e.__name__)
+    print(show(args.get('language')))

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from sklearn_porter.Estimator import Estimator, make, port, save, test
+from sklearn_porter.Estimator import Estimator, make, port, save, show, test
 from sklearn_porter import meta
 from sklearn_porter.utils import options
 

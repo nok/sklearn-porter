@@ -60,6 +60,7 @@ def main():
             'scikit-learn>=0.17,<=0.22a0',
             'Jinja2>=2.10.1',
             'loguru>=0.3.2',
+            'tabulate>=0.8.6',
             'joblib',
         ],
         extras_require={

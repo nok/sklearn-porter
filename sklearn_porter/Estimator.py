@@ -2,22 +2,24 @@
 
 import urllib.request
 from abc import ABCMeta
-from json import loads, JSONDecodeError
+from collections import OrderedDict
+from functools import partial
+from json import JSONDecodeError, loads
 from multiprocessing import Pool, cpu_count
 from os import environ, remove
 from pathlib import Path
+from shutil import which
 from subprocess import STDOUT, CalledProcessError, check_output
 from sys import platform, stdout, version_info
-from shutil import which
 from tempfile import mktemp
 from textwrap import dedent
 from time import sleep
 from typing import Callable, Dict, List, Optional, Tuple, Union
-from functools import partial
 
 # Additional installed modules:
 import numpy as np
 from loguru import logger as L
+from tabulate import tabulate
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -26,8 +28,8 @@ from sklearn.ensemble import BaseEnsemble
 from sklearn.metrics import accuracy_score
 
 # sklearn-porter
-from sklearn_porter import enums as enum
 from sklearn_porter import decorators as decorator
+from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter import meta
 from sklearn_porter.utils import options
@@ -967,6 +969,59 @@ def _system_call(cmd: str, executable='/bin/bash'):
             if 'predict_proba' in out.keys():
                 return [out.get('predict'), out.get('predict_proba')]
             return [out.get('predict')]
+
+
+def show(language: Optional[Union[str, enum.Language]] = None):
+    """
+    Show the supported estimators, programming languages
+    and templates in a compact table.
+
+    Parameters
+    ----------
+    language : Language
+        The requested programming language.
+
+    Returns
+    -------
+    Show the table.
+    """
+    languages = enum.LANGUAGES
+    if language:
+        language = enum.Language.convert(language)
+        languages = {language.value.KEY: language.value}
+    headers = ['Estimator'] + [l.LABEL for l in languages.values()]
+    clazzes = Estimator.classifiers() + Estimator.regressors()
+    clazzes = {_get_qualname(c()): c() for c in clazzes}
+    clazzes = OrderedDict(sorted(clazzes.items()))
+    table = []
+    templates = dict(attached='ᴀ', combined='ᴄ', exported='ᴇ')
+    for name, est in clazzes.items():
+        tr = [name]
+        for lang in languages.keys():
+            td = []
+            for tpl in templates.keys():
+                if can(
+                    estimator=est,
+                    language=lang,
+                    template=tpl,
+                    method='predict_proba'
+                ):
+                    out = '✓{}ᴾ'.format(templates.get(tpl))
+                elif can(estimator=est, language=lang, template=tpl):
+                    out = '✓{} '.format(templates.get(tpl))
+                else:
+                    out = '···'
+                td.append(out)
+            td = ' | '.join(td)
+            tr.append(td)
+        table.append(tr)
+    return tabulate(
+        table,
+        headers=headers,
+        tablefmt='presto',
+        disable_numparse=True,
+        colalign=['left'] + ['center'] * len(languages)
+    )
 
 
 def can(
