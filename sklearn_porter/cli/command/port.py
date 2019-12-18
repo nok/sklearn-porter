@@ -11,7 +11,7 @@ from typing import Dict
 from sklearn_porter import Estimator, options
 from sklearn_porter.cli.common import arg_debug, arg_help, arg_skip_warnings
 from sklearn_porter.cli.utils import load_model
-from sklearn_porter.language import LANGUAGE_KEYS
+from sklearn_porter.language import LANGUAGES
 
 
 def config(sub_parser: _SubParsersAction):
@@ -45,7 +45,7 @@ def config(sub_parser: _SubParsersAction):
         '--language',
         type=str,
         required=False,
-        choices=LANGUAGE_KEYS,
+        choices=LANGUAGES.keys(),
         help='The name of the programming language.'
     )
     parser.add_argument(
