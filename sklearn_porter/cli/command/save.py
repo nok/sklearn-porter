@@ -71,7 +71,7 @@ def config(sub_parser: _SubParsersAction):
     parser.set_defaults(func=main)
 
 
-def main(args: Dict):
+def main(args: Dict, silent: bool = False):
     if args.get('debug'):
         options['logging.level'] = DEBUG
 
@@ -93,8 +93,12 @@ def main(args: Dict):
     if not isinstance(paths, tuple):
         paths = (paths, )
 
-    print('Saved files:')
+    out = ['Saved files:']
     for p in paths:
-        print('  ' + str(p))
+        out.append('  ' + str(p))
+    out = '\n'.join(out)
 
-    sys.exit(0)
+    if not silent:
+        print(out)
+
+    return out

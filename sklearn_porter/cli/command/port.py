@@ -63,7 +63,7 @@ def config(sub_parser: _SubParsersAction):
     parser.set_defaults(func=main)
 
 
-def main(args: Dict):
+def main(args: Dict, silent: bool = False):
     if args.get('debug'):
         options['logging.level'] = DEBUG
 
@@ -77,5 +77,9 @@ def main(args: Dict):
     if args.get('template'):
         est.template = args.get('template')
 
-    print(est.port())
-    sys.exit(0)
+    out = est.port()
+
+    if not silent:
+        print(out)
+
+    return out

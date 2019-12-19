@@ -43,7 +43,13 @@ def config(sub_parser: _SubParsersAction):
     parser.set_defaults(func=main)
 
 
-def main(args: Dict):
+def main(args: Dict, silent: bool = False) -> str:
     if args.get('debug'):
         options['logging.level'] = DEBUG
-    print(show(args.get('language')))
+
+    out = show(args.get('language'))
+
+    if not silent:
+        print(out)
+
+    return out
