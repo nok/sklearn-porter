@@ -93,13 +93,8 @@ class Estimator:
 
     @estimator.setter
     def estimator(self, estimator: BaseEstimator):
-        orig_est = estimator
-        orig_est = self._check_support(orig_est)
-        if orig_est:
-            self._estimator = self._load(orig_est)
-        else:
-            msg = 'The passed estimator is unknown'
-            raise exception.NotSupportedYetError(msg)
+        orig_est = self._extract_est(estimator)
+        self._estimator = self._load_est(orig_est)
 
     @property
     def language(self) -> str:
@@ -178,9 +173,9 @@ class Estimator:
         return kwargs
 
     @staticmethod
-    def _check_support(estimator: BaseEstimator) -> Optional[BaseEstimator]:
+    def _extract_est(estimator: BaseEstimator) -> Optional[BaseEstimator]:
         """
-        Validate the estimator.
+        Extract the original estimator.
 
         Check if the estimator is a valid base estimator of scikit-learn.
         Check if the estimator is embedded in an optimizer or pipeline.
@@ -341,16 +336,16 @@ class Estimator:
 
         if not (is_classifier or is_regressor):
             msg = (
-                'The passed estimator is neither '
+                'The passed object of type `{}` is neither '
                 'a classifier nor a regressor.'
-            )
+            ).format(qualname)
             L.error(msg)
             raise ValueError(msg)
 
         return None
 
     @staticmethod
-    def _load(estimator):
+    def _load_est(estimator):
         """
         Load the right subclass to read the passed estimator.
 
@@ -502,7 +497,8 @@ class Estimator:
 
                     return MLPRegressor(est)
 
-        return None
+        msg = 'The passed estimator `{}` is not supported.'.format(name)
+        raise exception.NotSupportedYetError(msg)
 
     def can(
         self,
