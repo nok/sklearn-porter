@@ -8,7 +8,6 @@ class Ruby(LanguageABC):
     LABEL = 'Ruby'
 
     DEPENDENCIES = ['ruby']
-    TEMP_DIR = 'ruby'
     SUFFIX = 'rb'
 
     CMD_COMPILE = None

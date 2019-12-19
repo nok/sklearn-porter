@@ -8,7 +8,6 @@ class Java(LanguageABC):
     LABEL = 'Java'
 
     DEPENDENCIES = ['java', 'javac']
-    TEMP_DIR = 'java'
     SUFFIX = 'java'
 
     # javac {class_path} tmp/Estimator.java

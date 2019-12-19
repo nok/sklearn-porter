@@ -8,7 +8,6 @@ class JavaScript(LanguageABC):
     LABEL = 'JavaScript'
 
     DEPENDENCIES = ['node']
-    TEMP_DIR = 'js'
     SUFFIX = 'js'
 
     CMD_COMPILE = None

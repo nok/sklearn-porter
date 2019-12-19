@@ -8,7 +8,6 @@ class C(LanguageABC):
     LABEL = 'C'
 
     DEPENDENCIES = ['gcc']
-    TEMP_DIR = 'c'
     SUFFIX = 'c'
 
     # gcc tmp/estimator.c -std=c99 -lm -o tmp/estimator

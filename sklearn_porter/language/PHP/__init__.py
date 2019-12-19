@@ -8,7 +8,6 @@ class PHP(LanguageABC):
     LABEL = 'PHP'
 
     DEPENDENCIES = ['php']
-    TEMP_DIR = 'php'
     SUFFIX = 'php'
 
     CMD_COMPILE = None

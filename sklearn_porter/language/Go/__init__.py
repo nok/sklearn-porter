@@ -8,7 +8,6 @@ class Go(LanguageABC):
     LABEL = 'Go'
 
     DEPENDENCIES = ['go']
-    TEMP_DIR = 'go'
     SUFFIX = 'go'
 
     # go build -o tmp/estimator tmp/estimator.go
