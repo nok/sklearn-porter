@@ -612,8 +612,7 @@ def test_cli_subcommand_save(tmp_root_dir: Path, joblib_model_path: Path):
 
 
 @pytest.mark.skipif(
-    SKLEARN_VERSION[:2] <= (0, 19) or SKLEARN_VERSION[:2] >= (0, 23),
-    reason='requires scikit-learn >= v0.20, <= v0.22'
+    SKLEARN_VERSION[:2] <= (0, 20), reason='requires scikit-learn >= v0.20'
 )
 def test_cli_subcommand_port_old_serialization():
     with pytest.raises(DeprecationWarning):
