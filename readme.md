@@ -451,7 +451,7 @@ $ porter save <estimator>
               [--skip-warnings] [-h]
 ```
 
-You can serialize an estimator and save it locally. For more details you can read the instructions to  [model persistence](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example).  
+You can serialize an estimator and save it locally. For more details you can read the instructions to  [model persistence](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example).
 
 ```python
 from joblib import dump
@@ -473,7 +473,7 @@ $ porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estima
 
 ## Known Issues
 
-- In some rare cases the regression tests of the support vector machine, [SVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), fail since `scikit-learn>=0.22`. Because of that a `QualityWarning` will be raised which should reminds you to evaluate the result by using the `test` method. 
+- In some rare cases the regression tests of the support vector machine, [SVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), fail since `scikit-learn>=0.22`. Because of that a `QualityWarning` will be raised which should reminds you to evaluate the result by using the `test` method.
 
 
 ## Development
@@ -692,7 +692,7 @@ $ docker run \
     -t sklearn-porter
 
 $ docker exec \
-    -it test ./docker-entrypoint.sh \
+    -it test ./entrypoint.sh \
         pytest tests -v \
             --cov=sklearn_porter \
             --disable-warnings \
@@ -706,7 +706,7 @@ $ docker stop $(docker ps -a -q --filter="name=test")
 
 ### Helpers
 
-The following commands are useful time savers in the daily development: 
+The following commands are useful time savers in the daily development:
 
 ```bash
 # Install a Python environment with `conda`:

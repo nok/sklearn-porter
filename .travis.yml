@@ -47,7 +47,7 @@ before_install:
     -t sklearn-porter
 
 script:
-  - docker exec -it test ./docker-entrypoint.sh
+  - docker exec -it test ./entrypoint.sh
     pytest tests -v
       --cov=sklearn_porter
       --disable-warnings
@@ -62,7 +62,7 @@ after_success:
     test ${NUMPY_VER} = "numpy" &&
     test ${SCIPY_VER} = "scipy" &&
     test ${SKLEARN_VER} = "scikit-learn==0.21" &&
-      docker exec -it test ./docker-entrypoint.sh
+      docker exec -it test ./entrypoint.sh
         codecov
           --token ${CODECOV_TOKEN}
           --name "${TRAVIS_COMMIT}"

@@ -68,7 +68,7 @@ RUN adduser --disabled-password \
 RUN mkdir -p ${HOME}/repo
 COPY . ${HOME}/repo
 RUN chown -R ${NB_UID} ${HOME}
-RUN chmod 755 ${HOME}/repo/docker-entrypoint.sh
+RUN chmod 755 ${HOME}/repo/entrypoint.sh
 WORKDIR ${HOME}/repo
 
 USER ${NB_USER}
@@ -86,4 +86,4 @@ RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir -e ".[develop
 RUN conda run -n ${CONDA_ENV} ipython profile create \
     && echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(conda run -n ${CONDA_ENV} ipython locate)/profile_default/ipython_config.py
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
+ENTRYPOINT ["./entrypoint.sh"]
