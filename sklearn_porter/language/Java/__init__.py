@@ -45,6 +45,6 @@ class Java(LanguageABC):
     # yapf: enable
 
     GSON_DOWNLOAD_URI = (
-        'http://central.maven.org/maven2/'
+        'https://repo1.maven.org/maven2/'
         'com/google/code/gson/gson/2.8.6/gson-2.8.6.jar'
     )
