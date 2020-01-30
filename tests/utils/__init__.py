@@ -6,12 +6,8 @@ from typing import List, Optional, Tuple
 
 import numpy as np
 
-
-PORTER_N_UNI_REGRESSION_TESTS = environ.get(
-    'SKLEARN_PORTER_PYTEST_N_UNI_REGRESSION_TESTS', 15
-)
-PORTER_N_GEN_REGRESSION_TESTS = environ.get(
-    'SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 15
+from tests.commons import (
+    PORTER_N_UNI_REGRESSION_TESTS, PORTER_N_GEN_REGRESSION_TESTS
 )
 
 

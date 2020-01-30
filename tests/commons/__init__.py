@@ -17,6 +17,13 @@ from sklearn.datasets import load_digits, load_iris
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
 
+PORTER_N_UNI_REGRESSION_TESTS = environ.get(
+    'SKLEARN_PORTER_PYTEST_N_UNI_REGRESSION_TESTS', 15
+)
+PORTER_N_GEN_REGRESSION_TESTS = environ.get(
+    'SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 15
+)
+
 TESTS_DIR = (Path(__file__).parent / '..').resolve()
 
 # Parse and prepare scikit-learn version:
