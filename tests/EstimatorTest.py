@@ -30,7 +30,7 @@ from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn_porter import exceptions as exception
 from sklearn_porter.cli.__main__ import parse_args
 from sklearn_porter.Estimator import Estimator, can, show
-from sklearn_porter.language.Java import Java
+from sklearn_porter.language.java import Java
 from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.cli.command.show import main as show_main
