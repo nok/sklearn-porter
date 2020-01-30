@@ -29,11 +29,12 @@ TESTS_DIR = (Path(__file__).parent / '..').resolve()
 # Parse and prepare scikit-learn version:
 SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))
 
-Dataset = namedtuple('Dataset', 'name data target')
 Candidate = namedtuple('Candidate', 'name clazz create')
+Dataset = namedtuple('Dataset', 'name data target')
 
 
 def get_classifiers() -> List[Candidate]:
+    """Get a list of available classifiers."""
     _classifiers = [
         DecisionTreeClassifier,
         AdaBoostClassifier,
@@ -53,10 +54,11 @@ def get_classifiers() -> List[Candidate]:
     else:
         _classifiers.append(MLPClassifier)
     for e in _classifiers:
-        yield (Candidate(e.__name__, e, e))
+        yield Candidate(name=e.__name__, clazz=e, create=e)
 
 
 def get_regressors() -> List[Candidate]:
+    """Get a list of available regressors."""
     _regressors = []
     try:
         from sklearn.neural_network.multilayer_perceptron import MLPRegressor
@@ -65,31 +67,27 @@ def get_regressors() -> List[Candidate]:
     else:
         _regressors.append(MLPRegressor)
     for e in _regressors:
-        yield (Candidate(e.__name__, e, e))
+        yield Candidate(name=e.__name__, clazz=e, create=e)
 
 
 def get_datasets() -> List[Dataset]:
-    _datasets = [
-        Dataset('digits',
-                load_digits().data,
-                load_digits().target),
-        Dataset('iris',
-                load_iris().data,
-                load_iris().target),
-    ]
+    """Get a list of available toy datasets."""
+
+    digits_ds = load_digits()
+    yield Dataset(name='digits', data=digits_ds.data, target=digits_ds.target)
+
+    iris_ds = load_iris()
+    yield Dataset(name='iris', data=iris_ds.data, target=iris_ds.target)
+
     try:  # for sklearn < 0.16
         from sklearn.datasets import load_breast_cancer
     except ImportError:
         pass
     else:
-        _datasets.append(
-            Dataset(
-                'breast_cancer',
-                load_breast_cancer().data,
-                load_breast_cancer().target
-            )
+        cancer_ds = load_breast_cancer()
+        yield Dataset(
+            name='breast_cancer', data=cancer_ds.data, target=cancer_ds.target
         )
-    return _datasets
 
 
 CLASSIFIERS = list(get_classifiers())
