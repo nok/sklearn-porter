@@ -47,10 +47,10 @@ var {{ class_name }} = function(jsonFile) {
 
     this.predictProba = function(features) {
         var classProbas = new Array(this.data.n).fill(0);
-        var classIdx = 0, i, dist;
-
+        var i, dist;
         if (this.data.nNeighbors === 1) {
-            var minDist = Number.POSITIVE_INFINITY;
+            var classIdx = 0,
+                minDist = Number.POSITIVE_INFINITY;
             for (i = 0; i < this.data.size; i++) {
                 dist = _compute(this.data.X[i], features, this.data.power);
                 if (dist <= minDist) {

@@ -1,0 +1,115 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    public function __construct($X, $y, $k, $n, $power) {
+        $this->X = $X;
+        $this->y = $y;
+        $this->k = $k;
+        $this->n = $n;
+        $this->power = $power;
+    }
+
+    private function findMax($nums) {
+        $i = 0; $l = count($nums); $idx = 0;
+        for (; $i < $l; $i++) {
+            $idx = $nums[$i] > $nums[$idx] ? $i : $idx;
+        }
+        return $idx;
+    }
+
+    private function compute($temp, $cand, $q) {
+        $dist = 0;
+        for ($i = 0; $i < count($temp); $i++) {
+            $diff = abs($temp[$i] - $cand[$i]);
+            if ($q == 1) {
+                $dist += $diff;
+            } else if ($q == 2) {
+                $dist += $diff * $diff;
+            } else if ($q == INF) {
+                if ($diff > $dist) {
+                    $dist = $diff;
+                }
+            } else {
+                $dist += pow($diff, $q);
+            }
+        }
+        if ($q == 1 || $q == INF) {
+            return $dist;
+        } else if ($q == 2) {
+            return sqrt($dist);
+        } else {
+            return pow($dist, 1. / $q);
+        }
+    }
+
+    public function predict($features) {
+        $classProbas = $this->predictProba($features);
+        return $this->findMax($classProbas);
+    }
+
+    public function predictProba($features) {
+        $classProbas = array_fill(0, $this->n, 0);
+        if ($this->k == 1) {
+            $classIdx = 0;
+            $minDist = INF;
+            for ($i = 0; $i < count($this->y); $i++) {
+                $dist = $this->compute($this->X[$i], $features, $this->power);
+                if ($dist <= $minDist) {
+                    $minDist = $dist;
+                    $classIdx = $this->y[$i];
+                }
+            }
+            $classProbas[$classIdx] = 1;
+        } else {
+            $dists = array();
+            for ($i = 0; $i < count($this->y); $i++) {
+                $dist = $this->compute($this->X[$i], $features, $this->power);
+                $dists[] = array($this->y[$i], $dist);
+            }
+            usort($dists, function ($a, $b) { return $a[1] < $b[1] ? -1 : 1; } );
+            for ($i = 0; $i < $this->k; $i++) {
+                $classProbas[$dists[$i][0]] += 1;
+            }
+            for ($i = 0; $i < $this->n; $i++) {
+                $classProbas[$i] /= $this->k;
+            }
+        }
+        return $classProbas;
+    }
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = $argv;
+
+    // Model data:
+    {{ X }}
+    {{ y }}
+
+    // Estimator:
+    $clf = new {{ class_name }}($X, $y, {{ k }}, {{ n }}, {{ power }});
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $clf->predict($features);
+    $probabilities = $clf->predictProba($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
+    {% else %}
+    // Get class prediction:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+
+    // Get class probabilities:
+    $probabilities = $clf->predictProba($features);
+    for ($i = 0; $i < count($probabilities); $i++) {
+        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+    }
+    {% endif %}
+
+}
+{% endblock %}

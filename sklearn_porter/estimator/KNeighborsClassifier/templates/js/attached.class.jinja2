@@ -53,9 +53,11 @@ var {{ class_name }} = function(X, y, k, n, power) {
     };
 
     this.predictProba = function(features) {
-        var classIdx = 0, classProbas = new Array(this.n).fill(0), dist, i;
+        var classProbas = new Array(this.n).fill(0);
+        var i, dist;
         if (this.k === 1) {
-            var minDist = Number.POSITIVE_INFINITY;
+            var classIdx = 0,
+                minDist = Number.POSITIVE_INFINITY;
             for (i = 0; i < this.y.length; i++) {
                 dist = compute(this.X[i], features, this.power);
                 if (dist <= minDist) {
