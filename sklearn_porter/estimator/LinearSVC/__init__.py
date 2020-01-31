@@ -31,6 +31,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         },
         enum.Language.GO: {
             enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
         },
         enum.Language.JAVA: {
             enum.Template.ATTACHED: {enum.Method.PREDICT},

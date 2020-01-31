@@ -1,4 +1,4 @@
-{% extends 'base.attached.class' %}
+{% extends 'base.exported.class' %}
 
 {% block content %}
 package main
@@ -9,13 +9,14 @@ import (
 	"encoding/json"
 	{% endif %}
 	"fmt"
+  "io/ioutil"
 	"os"
 	"strconv"
 )
 
 type {{ class_name }} struct {
-	Coeffs []float64
-	Inters float64
+	Coeffs []float64 `json:"coeffs"`
+	Inters float64 `json:"inters"`
 }
 {% else %}
 import (
@@ -23,14 +24,15 @@ import (
 	"encoding/json"
 	{% endif %}
 	"fmt"
+	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
 )
 
 type {{ class_name }} struct {
-	Coeffs [][]float64
-	Inters []float64
+	Coeffs [][]float64 `json:"coeffs"`
+	Inters []float64 `json:"inters"`
 }
 {% endif %}
 
@@ -74,18 +76,23 @@ func main() {
 
 	// Features:
 	var features []float64
-	for _, arg := range os.Args[1:] {
+	for _, arg := range os.Args[2:] {
 		if n, err := strconv.ParseFloat(arg, 64); err == nil {
 			features = append(features, n)
 		}
 	}
 
 	// Model data:
-	{{ coeffs }}
-	{{ inters }}
+	jsonFile, err := os.Open(os.Args[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
+	byteValue, _ := ioutil.ReadAll(jsonFile)
 
 	// Estimator:
-	clf := {{ class_name }}{coeffs, inters}
+	var clf {{ class_name }}
+	json.Unmarshal(byteValue, &clf)
 
 	{% if is_test or to_json %}
 	// Get JSON:

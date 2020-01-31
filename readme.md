@@ -84,7 +84,7 @@ This table gives an overview over all supported combinations of estimators, prog
     <td></td>
     <td>×</td>
     <td>✓</td>
-    <td></td>
+    <td>✓</td>
     <td>×</td>
     <td>✓</td>
     <td>✓</td>
