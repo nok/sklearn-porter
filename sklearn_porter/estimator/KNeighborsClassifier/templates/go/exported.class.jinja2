@@ -1,0 +1,148 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io/ioutil"
+	"math"
+	"os"
+	"strconv"
+	"sort"
+)
+
+type {{ class_name }} struct {
+	X [][]float64 `json:"X"`
+	Y []int `json:"y"`
+	K int `json:"k"`
+	N int `json:"n"`
+	Power float64 `json:"power"`
+}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict int `json:"predict"`
+	PredictProba []float64 `json:"predict_proba"`
+}
+
+{% endif %}
+type Distance struct {
+	Y int
+	Value float64
+}
+
+func findMax(nums []float64) int {
+	var idx = 0
+	for i := 0; i < len(nums); i++ {
+		if nums[i] > nums[idx] {
+			idx = i
+		}
+	}
+	return idx
+}
+
+func compute(temp []float64, cand []float64, power float64) float64 {
+	var dist float64 = 0
+	var diff float64
+	for i := 0; i < len(temp); i++ {
+		diff = math.Abs(temp[i] - cand[i])
+		if power == 1 {
+			dist += diff
+		} else if power == 2 {
+			dist += diff * diff
+		} else if power == math.Inf(0) {
+			if diff > dist {
+				dist = diff
+			}
+		} else {
+			dist += math.Pow(diff, power)
+		}
+	}
+	if power == 1 || power == math.Inf(0) {
+		return dist
+	} else if power == 2 {
+		return math.Sqrt(dist)
+	} else {
+		return math.Pow(dist, 1.0 / power)
+	}
+}
+
+func (knn KNeighborsClassifier) Predict(features []float64) int {
+	return findMax(knn.PredictProba(features))
+}
+
+func (knn KNeighborsClassifier) PredictProba(features []float64) []float64 {
+	var classProbas = make([]float64, knn.N)
+	if knn.K == 1 {
+		classIdx := 0
+		minDist := math.Inf(0)
+		for i := 0; i < len(knn.Y); i++ {
+			dist := compute(knn.X[i], features, knn.Power)
+			if dist <= minDist {
+				minDist = dist
+				classIdx = knn.Y[i]
+			}
+		}
+		classProbas[classIdx] = 1
+	} else {
+		dists := []Distance{}
+		for i := 0; i < len(knn.Y); i++ {
+			dist := compute(knn.X[i], features, knn.Power)
+			d := Distance{knn.Y[i], dist}
+			dists = append(dists, d)
+		}
+		sort.Slice(dists, func(i, j int) bool {
+			return dists[i].Value < dists[j].Value
+		})
+		for i := 0; i < knn.K; i++ {
+			classProbas[dists[i].Y] += 1
+		}
+		for i := 0; i < knn.N; i++ {
+			classProbas[i] = classProbas[i] / float64(knn.K)
+		}
+	}
+	return classProbas
+}
+
+func main() {
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[2:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	// Model data:
+	jsonFile, err := os.Open(os.Args[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	// Estimator:
+	var clf {{ class_name }}
+	json.Unmarshal(byteValue, &clf)
+
+	{% if is_test or to_json %}
+	// Get JSON:
+	prediction := clf.Predict(features)
+	probabilities := clf.PredictProba(features)
+	res, _ := json.Marshal(&Response{Predict: prediction, PredictProba: probabilities})
+	fmt.Println(string(res))
+	{% else %}
+	// Get class prediction:
+	prediction := clf.Predict(features)
+	fmt.Printf("Predicted class: #%d\n", prediction)
+	probabilities := clf.PredictProba(features)
+	for i, probability := range probabilities {
+		fmt.Printf("Probability of class #%d : %f\n", i, probability)
+	}
+	{% endif %}
+
+}
+{% endblock %}
