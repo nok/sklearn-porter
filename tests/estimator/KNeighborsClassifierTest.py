@@ -70,7 +70,7 @@ def test_estimator_k_neighbors_classifier(
               'language: {}, template: {}, dataset: {}' \
               ''.format(language, template, dataset.name)
         warnings.warn(msg)
-    except:
-        pytest.fail('Unexpected exception ...')
+    except Exception as e:
+        pytest.fail('Unexpected exception ... ' + str(e))
     else:
         assert score == 1.

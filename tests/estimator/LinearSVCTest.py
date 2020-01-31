@@ -17,9 +17,12 @@ from tests.commons import Dataset, DATASETS
 from tests.utils import dataset_uniform_x, dataset_generate_x, fs_mkdir
 from tests.EstimatorTest import tmp_root_dir  # fixture
 
+# @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+# @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 
-@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+
+@pytest.mark.parametrize('template', ['attached', 'exported'])
+@pytest.mark.parametrize('language', ['go'])
 @pytest.mark.parametrize('loss', ['hinge', 'squared_hinge'])
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 def test_estimator_linear_svc(
@@ -75,7 +78,7 @@ def test_estimator_linear_svc(
               'language: {}, template: {}, dataset: {}' \
               ''.format(language, template, dataset.name)
         warnings.warn(msg)
-    except:
-        pytest.fail('Unexpected exception ...')
+    except Exception as e:
+        pytest.fail('Unexpected exception ... ' + str(e))
     else:
         assert score == 1.
