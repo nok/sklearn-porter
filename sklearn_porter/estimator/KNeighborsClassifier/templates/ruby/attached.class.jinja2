@@ -1,0 +1,123 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+
+{% endif %}
+class {{ class_name }}
+
+	INF = +1.0/0.0
+
+	def initialize (x, y, k, n, power)
+		@x = x
+		@y = y
+		@k = k
+		@n = n
+		@power = power
+	end
+
+	def _find_max (nums)
+		idx = 0
+		for i in 0 ... nums.length
+			idx = nums[i] > nums[idx] ? i : idx
+		end
+		idx
+	end
+
+	def _compute (temp, cand, q)
+        dist = 0.0
+        for i in 0 ... temp.length
+            diff = (temp[i] - cand[i]).abs
+            if q == 1
+                dist += diff
+            elsif q == 2
+                dist += diff * diff
+            elsif q == INF
+                if diff > dist
+                    dist = diff
+                end
+            else
+                dist += dist ** q
+            end
+        end
+        if q == 1 || q == INF
+            dist
+        elsif q == 2
+            Math.sqrt dist
+        else
+            dist ** (1.0 / q)
+        end
+	end
+
+	def predict (features)
+        probas = predict_proba features
+        _find_max probas
+	end
+
+	def predict_proba (features)
+        class_probas = Array.new(@n, 0.0)
+        if @k == 1
+            class_idx = 0
+            min_dist = INF
+            for i in 0 ... @y.length
+                dist = _compute @x[i], features, @power
+                if dist <= min_dist
+                    min_dist = dist
+                    class_idx = @y[i]
+                end
+            end
+            class_probas[class_idx] = 1
+        else
+            dists = []
+            for i in 0 ... @y.length
+                dist = _compute @x[i], features, @power
+                dists.push [@y[i], dist]
+            end
+            dists.sort! { |a, b| a[1] <=> b[1] }
+            for i in 0 ... @k
+                class_probas[dists[i][0]] += 1
+            end
+            for i in 0 ... @n
+                class_probas[i] /= @k
+            end
+        end
+        class_probas
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ X }}
+	{{ y }}
+
+	# Estimator:
+	clf = {{ class_name }}.new X, y, {{ k }}, {{ n }}, {{ power }}
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = clf.predict features
+	probabilities = clf.predict_proba features
+	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+	{% else %}
+	# Get class prediction:
+	prediction = clf.predict features
+	puts "Predicted class: ##{prediction}"
+
+	# Get class probabilities:
+	probabilities = clf.predict_proba features
+	for i in 0 ... probabilities.length
+		puts "Probability of class ##{i} : #{probabilities[i]}"
+	end
+	{% endif %}
+end
+{% endblock %}

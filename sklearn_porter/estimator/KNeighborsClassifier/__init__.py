@@ -23,7 +23,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
     SKLEARN_URL = 'sklearn.neighbors.KNeighborsClassifier.html'
 
     DEFAULT_LANGUAGE = enum.Language.JAVA
-    DEFAULT_TEMPLATE = enum.Template.ATTACHED
+    DEFAULT_TEMPLATE = enum.Template.EXPORTED
     DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
@@ -36,6 +36,10 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
         enum.Language.PHP: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
+        enum.Language.RUBY: {
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
