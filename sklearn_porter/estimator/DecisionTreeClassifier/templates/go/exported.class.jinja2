@@ -1,31 +1,31 @@
-{% extends 'base.attached.class' %}
+{% extends 'base.exported.class' %}
 
 {% block content %}
 package main
 
 import (
-  {% if is_test or to_json %}
 	"encoding/json"
-	{% endif %}
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strconv"
 )
+
+type {{ class_name }} struct {
+	Lefts []int `json:"lefts"`
+	Rights []int `json:"rights"`
+	Thresholds []float64 `json:"thresholds"`
+	Indices []int `json:"indices"`
+	Classes [][]int `json:"classes"`
+}
+
 {% if is_test or to_json %}
-type response struct {
+type Response struct {
 	Predict int `json:"predict"`
 	PredictProba []float64 `json:"predict_proba"`
 }
+
 {% endif %}
-
-type {{ class_name }} struct {
-	Lefts []int
-	Rights []int
-	Thresholds []float64
-	Indices []int
-	Classes [][]int
-}
-
 func findMax(nums []int) int {
 	var idx = 0
 	for i := 0; i < len(nums); i++ {
@@ -89,37 +89,37 @@ func main() {
 
 	// Features:
 	var features []float64
-	for _, arg := range os.Args[1:] {
+	for _, arg := range os.Args[2:] {
 		if n, err := strconv.ParseFloat(arg, 64); err == nil {
 			features = append(features, n)
 		}
 	}
 
 	// Model data:
-	{{ lefts }}
-	{{ rights }}
-	{{ thresholds }}
-	{{ indices }}
-	{{ classes }}
+	jsonFile, err := os.Open(os.Args[1])
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer jsonFile.Close()
+	byteValue, _ := ioutil.ReadAll(jsonFile)
 
 	// Estimator:
-	clf := {{ class_name }}{lefts, rights, thresholds, indices, classes}
+	var clf {{ class_name }}
+	json.Unmarshal(byteValue, &clf)
 
 	{% if is_test or to_json %}
 	// Get JSON:
 	prediction := clf.Predict(features)
 	probabilities := clf.PredictProba(features)
-	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: probabilities})
+	res, _ := json.Marshal(&Response{Predict: prediction, PredictProba: probabilities})
 	fmt.Println(string(res))
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
 	fmt.Printf("Predicted class: #%d\n", prediction)
-
-	// Get class probabilities:
 	probabilities := clf.PredictProba(features)
-	for i := 0; i < len(probabilities); i++ {
-		fmt.Printf("Probability of class #%d : %.f\n", i, probabilities[i])
+	for i, probability := range probabilities {
+		fmt.Printf("Probability of class #%d : %f\n", i, probability)
 	}
 	{% endif %}
 
