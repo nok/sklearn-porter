@@ -69,11 +69,11 @@ func compute(temp []float64, cand []float64, power float64) float64 {
 	}
 }
 
-func (knn KNeighborsClassifier) Predict(features []float64) int {
+func (knn {{ class_name }}) Predict(features []float64) int {
 	return findMax(knn.PredictProba(features))
 }
 
-func (knn KNeighborsClassifier) PredictProba(features []float64) []float64 {
+func (knn {{ class_name }}) PredictProba(features []float64) []float64 {
 	var classProbas = make([]float64, knn.N)
 	if knn.K == 1 {
 		classIdx := 0
