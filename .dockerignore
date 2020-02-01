@@ -4,12 +4,8 @@
 **/pylint.txt
 **/*.md
 
-/examples/experimental
 /examples/experiments
-/tests/tmp
-
-/node_modules
-/package-lock.json
+/tmp
 
 /.idea
 /out
@@ -17,7 +13,6 @@
 
 **/*.class
 **/*.log
-**/*.jar
 **/.DS_Store
 
 **/__pycache__
