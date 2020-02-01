@@ -3,7 +3,7 @@
 from copy import deepcopy
 from json import dumps, encoder
 from textwrap import indent
-from typing import Callable, Dict, Optional, Tuple, Union
+from typing import Callable, Dict, Tuple, Union
 
 from loguru import logger as L
 
@@ -30,12 +30,9 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
     DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
-        # Language.C: {
-        #     Template.COMBINED: {},
-        # },
-        # Language.GO: {
-        #     Template.COMBINED: {},
-        # },
+        enum.Language.GO: {
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         enum.Language.JAVA: {
             enum.Template.COMBINED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
@@ -49,9 +46,6 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
-        # Language.RUBY: {
-        #     Template.COMBINED: {},
-        # },
     }
 
     estimator = None  # type: RandomForestClassifierClass
