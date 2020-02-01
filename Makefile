@@ -72,11 +72,11 @@ deploy: install.requirements.development clean
 # Cleanup
 #
 
-clean: clean.build clean.pycache
+clean: clean.build clean.cache
 
-clean.pycache:
-	$(info Start [clean.pycache] ...)
-	$(BASH) scripts/clean.pycache.sh
+clean.cache:
+	$(info Start [clean.cache] ...)
+	$(BASH) scripts/clean.cache.sh
 
 clean.build:
 	$(info Start [clean.build] ...)
