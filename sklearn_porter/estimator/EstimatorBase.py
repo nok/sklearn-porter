@@ -211,7 +211,7 @@ class EstimatorBase(EstimatorApiABC):
 
         # 2. Load base language templates (e.g. `base.attached.class`):
         root_dir = Path(__file__).parent.parent
-        tpls_dir = root_dir / 'language' / language.LABEL / 'templates'
+        tpls_dir = root_dir / 'language' / language.KEY / 'templates'
         if tpls_dir.exists():
             tpls_paths = set(tpls_dir.glob('*.jinja2'))
             tpls.update({path.stem: path.read_text() for path in tpls_paths})
