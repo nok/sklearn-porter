@@ -3,7 +3,6 @@
 import os
 import random as rd
 import shutil
-import urllib.request
 import warnings
 from os import environ
 from pathlib import Path
@@ -30,14 +29,13 @@ from sklearn.tree.tree import DecisionTreeClassifier
 from sklearn_porter import exceptions as exception
 from sklearn_porter.cli.__main__ import parse_args
 from sklearn_porter.Estimator import Estimator, can, show
-from sklearn_porter.language.java import Java
 from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.cli.command.show import main as show_main
 
 from tests.commons import (
-    CANDIDATES, CLASSIFIERS, DATASETS, SKLEARN_VERSION, TESTS_DIR, Candidate,
-    Dataset
+    SKLEARN_VERSION, CANDIDATES, CLASSIFIERS, DATASETS, Candidate, Dataset,
+    ROOT_DIR, RESOURCES_DIR
 )
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
@@ -61,7 +59,7 @@ def joblib_model_path() -> Path:
 
     version = '_'.join(list(map(str, SKLEARN_VERSION[:2])))
     fname = 'estimator_{}.joblib'.format(version)
-    fpath = TESTS_DIR / 'resources' / fname
+    fpath = RESOURCES_DIR / 'estimators' / fname
     dump(tree, str(fpath), compress=0)
     return fpath
 
@@ -70,25 +68,17 @@ def joblib_model_path() -> Path:
 def tmp_root_dir(worker_id) -> Path:
     """Fixture to get the path to the temporary directory."""
 
-    # Delete previous generated temporary directory:
-    tmp_dir = TESTS_DIR / 'tmp'
+    # Delete the previous generated temporary directory:
+    tmp_dir = ROOT_DIR / 'tmp'
     if worker_id is 'master':
         if tmp_dir.exists():
             shutil.rmtree(str(tmp_dir.resolve()), ignore_errors=True)
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
-    src_dir = (TESTS_DIR / '..').resolve()
-    gson_fname = 'gson.jar'
-    src_gson_path = src_dir / gson_fname
-    tmp_gson_path = tmp_dir / gson_fname
-
-    # Download missing dependencies:
-    if not src_gson_path.exists():
-        url = Java.GSON_DOWNLOAD_URI
-        urllib.request.urlretrieve(url, str(src_gson_path))
-
-    shutil.copy(str(src_gson_path), str(tmp_gson_path))
-    environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(tmp_gson_path)
+    # Add Java dependencies:
+    gson_fname = 'gson-2.8.6.jar'
+    gson_path = RESOURCES_DIR / 'dependencies' / gson_fname
+    environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(gson_path.resolve())
 
     return tmp_dir
 
@@ -616,5 +606,5 @@ def test_cli_subcommand_save(tmp_root_dir: Path, joblib_model_path: Path):
 )
 def test_cli_subcommand_port_old_serialization():
     with pytest.raises(DeprecationWarning):
-        pickle_model_path = TESTS_DIR / 'resources' / 'estimator_0_19.pkl'
+        pickle_model_path = RESOURCES_DIR / 'estimators' / 'estimator_0_19.pkl'
         port_main(dict(model=str(pickle_model_path)), silent=True)

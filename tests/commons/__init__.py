@@ -24,7 +24,9 @@ PORTER_N_GEN_REGRESSION_TESTS = environ.get(
     'SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 15
 )
 
-TESTS_DIR = (Path(__file__).parent / '..').resolve()
+ROOT_DIR = (Path(__file__).parent / '..' / '..').resolve()
+TESTS_DIR = ROOT_DIR / 'tests'
+RESOURCES_DIR = ROOT_DIR / 'resources'
 
 # Parse and prepare scikit-learn version:
 SKLEARN_VERSION = tuple(map(int, str(sklearn.__version__).split('.')))

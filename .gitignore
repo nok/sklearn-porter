@@ -5,17 +5,10 @@
 
 pylint.txt
 
+# Ignore folders:
 examples/experiments
-examples/estimator/**/*.json
-
-.temp/
-temp/
 tmp
-tmp.*
-Tmp.*
 
-node_modules
-package-lock.json
 
 # Created by https://www.gitignore.io/api/node,java,macos,linux,python,windows,intellij+all
 
