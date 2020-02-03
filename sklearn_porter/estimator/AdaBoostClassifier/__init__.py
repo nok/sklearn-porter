@@ -26,10 +26,13 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
     SKLEARN_URL = 'sklearn.ensemble.AdaBoostClassifier.html'
 
     DEFAULT_LANGUAGE = enum.Language.JS
-    DEFAULT_TEMPLATE = enum.Template.COMBINED
+    DEFAULT_TEMPLATE = enum.Template.EXPORTED
     DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
+        enum.Language.JAVA: {
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         enum.Language.JS: {
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
