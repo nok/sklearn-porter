@@ -57,10 +57,40 @@ class Porter(object):
 
         # Determine the local version of sklearn:
         from sklearn import __version__ as sklearn_ver
+
+        ## Suffix lists for minor, patch version in sklearn
+        MINOR_VERSION_SUFFIX_LIST = ["rc3", "rc2", "rc1", "b1", "a1"]
+        PATCH_VERSION_SUFFIX_LIST = ["post1", "0b1", "0b2"]
+
         sklearn_ver = str(sklearn_ver).split('.')
-        sklearn_ver = [int(v) for v in sklearn_ver]
-        major, minor = sklearn_ver[0], sklearn_ver[1]
-        patch = sklearn_ver[2] if len(sklearn_ver) >= 3 else 0
+
+        major_cand_str = sklearn_ver[0]
+        minor_cand_str = sklearn_ver[1]
+        patch_cand_str = sklearn_ver[2] if len(sklearn_ver) >= 3 else '0'
+
+        ## Convert version str to integer
+        major = int(major_cand_str)
+
+        try:
+            minor = int(minor_cand_str)
+
+        except ValueError as ve:
+            for check_key in MINOR_VERSION_SUFFIX_LIST:
+                    if check_key in minor_cand_str:
+                        minor_cand_str.replace(check_key, '')
+                        break
+                    minor = int(minor_cand_str)        
+        
+        try:
+            patch = int(patch_cand_str)
+
+        except ValueError as ve:
+            for check_key in PATCH_VERSION_SUFFIX_LIST:
+                    if check_key in patch_cand_str:
+                        patch_cand_str.replace(check_key, '0')
+                        break
+                    patch = int(patch_cand_str)
+
         self.sklearn_ver = (major, minor, patch)
 
         # Extract estimator from 'Pipeline':
