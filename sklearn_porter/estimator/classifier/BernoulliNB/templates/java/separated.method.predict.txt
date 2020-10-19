@@ -6,7 +6,7 @@ public int {method_name}(double[] features) {{
     for (int i = 0; i < nClasses; i++) {{
         double sum = 0.;
         for (int j = 0; j < nFeatures; j++) {{
-            sum += features[i] * this.delProbs[j][i];
+            sum += features[j] * this.delProbs[j][i];
         }}
         jll[i] = sum;
     }}

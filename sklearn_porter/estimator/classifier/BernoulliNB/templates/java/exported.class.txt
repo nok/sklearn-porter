@@ -27,7 +27,7 @@ class {class_name} {{
         for (int i = 0; i < nClasses; i++) {{
             double sum = 0.;
             for (int j = 0; j < nFeatures; j++) {{
-                sum += features[i] * this.clf.delProbs[j][i];
+                sum += features[j] * this.clf.delProbs[j][i];
             }}
             jll[i] = sum;
         }}
