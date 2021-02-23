@@ -54,21 +54,32 @@ def main():
         description=desc,
         long_description=long_desc,
         long_description_content_type='text/markdown',
-        keywords=['sklearn', 'scikit-learn'],
+        keywords=[
+            'scikit-learn',
+            'sklearn',
+        ],
         url='https://github.com/nok/sklearn-porter',
         install_requires=[
             'scikit-learn>=0.17,<=0.22a0',
-            'Jinja2>=2.10.1',
-            'loguru>=0.3.2',
-            'tabulate>=0.8.6',
-            'joblib',
+            'jinja2>=2.11',
+            'joblib>=1',
+            'loguru>=0.5',
+            'tabulate>=0.8',
         ],
         extras_require={
-            'examples': ['notebook==5.*', 'Pygments==2.3.1'],
             'development': [
-                'codecov>=2.0.15', 'twine>=1.12.1', 'pylint>=1.9.3',
-                'pytest>=3.9.2', 'pytest-cov>=2.7.1', 'pytest-xdist>=1.29.0',
-                'jupytext>=0.8.3', 'yapf>=0.29.0'
+                'codecov>=2.1',
+                'jupytext>=1.10',
+                'pylint>=2.7',
+                'pytest-cov>=2.11',
+                'pytest-xdist>=2.2',
+                'pytest>=6.2',
+                'twine>=3.3',
+                'yapf>=0.30',
+            ],
+            'examples': [
+                'notebook==5.*',
+                'Pygments>=2.8'
             ],
         },
         packages=find_packages(exclude=['tests.*', 'tests']),
