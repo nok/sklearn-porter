@@ -7,10 +7,11 @@ from sys import version_info
 
 def _check_python_version():
     """Check the used Python version."""
-    if version_info[:2] < (3, 5):
-        msg = 'The used Python version is not ' \
-              'supported, please use Python >= 3.5'
-        raise EnvironmentError(msg)
+    if version_info[:2] < (3, 6):
+        from logging import warning
+        msg = 'The used Python version is not supported' \
+              ' and tested, please upgrade Python >= 3.6'
+        warning(msg)
 
 
 def _read_text(path):
