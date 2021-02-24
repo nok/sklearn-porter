@@ -435,20 +435,18 @@ print(score)
 In addition you can use the sklearn-porter on the command line. The command calls `porter` and is available after the installation.
 
 ```
-$ porter {show,port,save} [-h] [-v]
+porter {show,port,save} [-h] [-v]
 
-$ porter show [-l {c,go,java,js,php,ruby}] [-h]
+porter show [-l {c,go,java,js,php,ruby}] [-h]
 
-$ porter port <estimator>
-              [-l {c,go,java,js,php,ruby}]
-              [-t {attached,combined,exported}]
-              [--skip-warnings] [-h]
+porter port <estimator> [-l {c,go,java,js,php,ruby}]
+                        [-t {attached,combined,exported}]
+                        [--skip-warnings] [-h]
 
-$ porter save <estimator>
-              [-l {c,go,java,js,php,ruby}]
-              [-t {attached,combined,exported}]
-              [--directory DIRECTORY]
-              [--skip-warnings] [-h]
+porter save <estimator> [-l {c,go,java,js,php,ruby}]
+                        [-t {attached,combined,exported}]
+                        [--directory DIRECTORY]
+                        [--skip-warnings] [-h]
 ```
 
 You can serialize an estimator and save it locally. For more details you can read the instructions to  [model persistence](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example).
@@ -462,13 +460,13 @@ dump(clf, 'estimator.joblib', compress=0)
 After that the estimator can be transpiled by using the subcommand `port`:
 
 ```bash
-$ porter port estimator.joblib -l js -t attached > estimator.js
+porter port estimator.joblib -l js -t attached > estimator.js
 ```
 
 For further processing you can pass the result to another applications, e.g. [UglifyJS](https://github.com/mishoo/UglifyJS2).
 
 ```bash
-$ porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estimator.min.js
+porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estimator.min.js
 ```
 
 ## Known Issues
@@ -505,17 +503,17 @@ make deploy
 
 ### Dependencies
 
-The prerequisite is Python 3.5 which you can install with [conda](https://docs.conda.io/en/latest/miniconda.html):
+The prerequisite is Python 3.6 which you can install with [conda](https://docs.conda.io/en/latest/miniconda.html):
 
 ```bash
-$ conda env create -n sklearn-porter -c defaults python=3.5
-$ conda activate sklearn-porter  # or `source activate sklearn-porter` for older versions
+conda env create -n sklearn-porter_3.6 python=3.6
+conda activate sklearn-porter_3.6
 ```
 
 After that you have to install all required packages:
 
 ```bash
-$ pip install --no-cache-dir -e ".[development,examples]"
+pip install --no-cache-dir -e ".[development,examples]"
 ```
 
 ### Environment
@@ -692,73 +690,42 @@ options['logging.level'] = DEBUG
 
 ### Testing
 
-You can run the unit and regression tests either on your local machine (host) or in a separate running Docker container. For active development we recommend to use a separate container.
+You can run the unit and regression tests either on your local machine (host) or in a separate running Docker container.
 
 ```bash
-$ pytest tests -v \
+pytest tests -v \
+  --cov=sklearn_porter \
+  --disable-warnings \
+  --numprocesses=auto \
+  -p no:doctest \
+  -o python_files="EstimatorTest.py" \
+  -o python_functions="test_*"
+```
+
+```bash
+docker build \
+  -t sklearn-porter \
+  --build-arg PYTHON_VER=${PYTHON_VER:-python=3.6} \
+  --build-arg SKLEARN_VER=${SKLEARN_VER:-scikit-learn=0.21} \
+  .
+
+docker run \
+  -v $(pwd):/home/abc/repo \
+  --detach \
+  --entrypoint=/bin/bash \
+  --name test \
+  -t sklearn-porter
+
+docker exec -it test ./entrypoint.sh \
+  pytest tests -v \
     --cov=sklearn_porter \
     --disable-warnings \
     --numprocesses=auto \
     -p no:doctest \
-    -o python_files="*Test.py" \
+    -o python_files="EstimatorTest.py" \
     -o python_functions="test_*"
-```
 
-```bash
-$ docker build \
-    -t sklearn-porter \
-    --build-arg PYTHON_VER=python=3.5 .
-
-$ docker run \
-    -v $(pwd):/home/abc/repo \
-    --detach \
-    --entrypoint=/bin/bash \
-    --name test \
-    -t sklearn-porter
-
-$ docker exec \
-    -it test ./entrypoint.sh \
-        pytest tests -v \
-            --cov=sklearn_porter \
-            --disable-warnings \
-            --numprocesses=auto \
-            -p no:doctest \
-            -o python_files="EstimatorTest.py" \
-            -o python_functions="test_*"
-
-$ docker stop $(docker ps -a -q --filter="name=test")
-```
-
-### Helpers
-
-The following commands are useful time savers in the daily development:
-
-```bash
-# Install a Python environment with `conda`:
-$ make install.environment
-$ make activate.environment
-
-# Install dependencies with `pip`:
-$ make install.requirements
-$ make install.requirements.examples
-$ make install.requirements.development
-
-# Start and stop a Jupyter notebook:
-$ make start.examples
-$ make stop.examples
-
-# Start unit tests on the host or in a separate docker container:
-$ make tests
-$ make tests.docker
-
-# Lint the source code with `pylint`:
-$ make lint
-
-# Generate notebooks with `jupytext`:
-$ make examples
-
-# Deploy a new version with `twine`:
-$ make deploy
+docker rm -f $(docker ps --all --filter name=test -q)
 ```
 
 
