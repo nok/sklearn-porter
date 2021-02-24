@@ -1,83 +1,38 @@
-BASH := /bin/bash
+SHELL := /bin/bash
 
-#
-# Requirements
-#
+export PYTHONPATH=$(shell pwd)
 
-install.environment:
-	$(info Start [install.environment] ...)
-	$(BASH) scripts/install.environment.sh
+export CONDA_ENV_NAME=sklearn-porter
+export PYTHON_VERSION=3.6
 
-activate.environment: install.environment
-	$(info Start [source.environment] ...)
-	$(BASH) scripts/activate.environment.sh
+ACTIVATE_CONDA_ENV := source activate $(CONDA_ENV_NAME)_$(PYTHON_VERSION) > /dev/null 2>&1;
 
-install.requirements:
-	$(info Start [install.requirements] ...)
-	$(BASH) scripts/install.requirements.sh
+clean:
+	resources/scripts/make_clean.sh
 
-install.requirements.examples: install.requirements
-	$(info Start [install.requirements.examples] ...)
-	$(BASH) scripts/install.requirements.examples.sh
+setup: clean
+	resources/scripts/make_setup.sh ${CONDA_ENV_NAME} ${PYTHON_VERSION}
 
-install.requirements.development: install.requirements.examples
-	$(info Start [install.requirements.development] ...)
-	$(BASH) scripts/install.requirements.development.sh
+test: tests
 
-#
-# Examples
-#
+tests:: setup
+	$(ACTIVATE_CONDA_ENV) resources/scripts/make_tests.sh
 
-start.examples: install.requirements.examples examples.pid
+test-docker: tests-docker
 
-examples.pid:
-	$(info Start [examples.pid] ...)
-	jupyter notebook --notebook-dir='examples/basics' --ip='0.0.0.0' --port=8888 > /dev/null 2>&1 & echo $$! > $@;
+tests-docker:
+	resources/scripts/make_tests_docker.sh
 
-stop.examples: examples.pid
-	kill `cat $<` && rm $<
+lint: setup
+	$(ACTIVATE_CONDA_ENV) resources/scripts/make_lint.sh
 
-.PHONY: open.examples stop.examples
+deploy: setup
+	$(ACTIVATE_CONDA_ENV) resources/scripts/make_deploy.sh
 
-#
-# Development
-#
+examples: setup
+	$(ACTIVATE_CONDA_ENV) resources/scripts/make_examples.sh
 
-all: clean lint tests examples clean
+book: notebook
 
-lint: install.requirements.development
-	$(info Start [lint] ...)
-	$(eval FILES=$(shell find ./sklearn_porter -name '*.py' -type f | tr '\n' ' '))
-	pylint --rcfile=.pylintrc --output-format=text $(FILES) 2>&1 | tee pylint.txt | sed -n 's/^Your code has been rated at \([-0-9.]*\)\/.*/\1/p'
-
-tests: tests.local
-
-tests.local: install.requirements.development clean
-	$(info Start [test.local] ...)
-	$(BASH) scripts/run.tests.local.sh
-
-tests.docker: clean
-	$(info Start [docker.tests] ...)
-	$(BASH) scripts/run.tests.docker.sh
-
-examples: install.requirements.development
-	$(info Start [jupytext] ...)
-	$(BASH) scripts/run.jupytext.sh
-
-deploy: install.requirements.development clean
-	$(info Start [deploy] ...)
-	$(BASH) scripts/run.deployment.sh
-
-#
-# Cleanup
-#
-
-clean: clean.build clean.cache
-
-clean.cache:
-	$(info Start [clean.cache] ...)
-	$(BASH) scripts/clean.cache.sh
-
-clean.build:
-	$(info Start [clean.build] ...)
-	$(BASH) scripts/clean.build.sh
+notebook: setup
+	$(ACTIVATE_CONDA_ENV) resources/scripts/make_notebook.sh

@@ -478,6 +478,31 @@ $ porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estima
 
 ## Development
 
+### Aliases
+
+The following commands are useful time savers in the daily development:
+
+```bash
+# Install a Python environment with `conda`:
+make setup
+
+# Start a Jupyter notebook with examples:
+make notebook
+
+# Start tests on the host or in a separate docker container:
+make tests
+make tests-docker
+
+# Lint the source code with `pylint`:
+make lint
+
+# Generate notebooks with `jupytext`:
+make examples
+
+# Deploy a new version with `twine`:
+make deploy
+```
+
 ### Dependencies
 
 The prerequisite is Python 3.5 which you can install with [conda](https://docs.conda.io/en/latest/miniconda.html):
