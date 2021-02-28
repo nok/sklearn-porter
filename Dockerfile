@@ -38,23 +38,27 @@ COPY . ${HOME}/repo
 WORKDIR ${HOME}/repo
 
 ARG PYTHON_VER
-ARG CYTHON_VER
-ARG NUMPY_VER
-ARG SCIPY_VER
 ARG SKLEARN_VER
+ARG EXTRAS
 
 RUN conda config --set auto_activate_base true && \
-    conda install -y -n base ${PYTHON_VER:-python=3.6} && \
-    conda run -n base python -m pip install --no-cache-dir -U pip && \
-    conda run -n base --no-capture-output python -m pip install --no-cache-dir ${CYTHON_VER:-cython} && \
-    conda run -n base --no-capture-output python -m pip install --no-cache-dir ${NUMPY_VER:-numpy} && \
-    conda run -n base --no-capture-output python -m pip install --no-cache-dir ${SCIPY_VER:-scipy} && \
-    conda run -n base --no-capture-output python -m pip install --no-cache-dir ${SKLEARN_VER:-scikit-learn} && \
-    conda run -n base --no-capture-output python -m pip install --no-cache-dir -e ".[development,examples]" && \
+    conda install -y -n base \
+        ${PYTHON_VER:-python=3.6} \
+        nomkl \
+        cython numpy scipy \
+        ${SKLEARN_VER:-scikit-learn} && \
+    conda run -n base --no-capture-output python -m \
+        pip install --no-cache-dir -U pip && \
+    conda run -n base --no-capture-output python -m \
+        pip install --no-cache-dir -e ".[${EXTRAS:-development,examples}]" && \
     conda clean --all -y && \
-    conda run -n base --no-capture-output python -m pip freeze | grep -i -E 'cython|numpy|scipy|scikit-learn'
+    conda run -n base --no-capture-output python -m \
+        pip freeze | grep -i -E 'cython|numpy|scipy|scikit-learn'
 
-RUN conda run --no-capture-output -n base ipython profile create \
-    && echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(conda run -n base ipython locate)/profile_default/ipython_config.py
+RUN if [ -e /opt/conda/bin/ipython ] ; then \
+        conda run --no-capture-output -n base \
+            ipython profile create && \
+        echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(conda run -n base ipython locate)/profile_default/ipython_config.py \
+    ; fi
 
 ENTRYPOINT ["./docker-entrypoint.sh"]

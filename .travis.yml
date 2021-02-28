@@ -15,34 +15,35 @@ notifications:
 
 env:
   matrix:
-    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.22.0
-    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.21.0
-    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.20.0
-    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.19.0
-    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.18.0
-    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.17.0
-    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.22.0
-    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.21.0
-    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.20.0
-    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.19.0
-    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.18.0
-    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.17.0
-    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.22.0
-    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.21.0
-    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.20.0
-    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.19.0
-    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.18.0
-    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.17.0
-    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.22.0
-    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.21.0
-    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.20.0
-    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.19.0
-    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.18.0
-    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.17.0
+    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.22.0 EXTRAS=development
+    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.21.0 EXTRAS=development
+    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.20.0 EXTRAS=development
+    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.19.0 EXTRAS=development
+    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.18.0 EXTRAS=development
+    - PYTHON_VER=python=3.8 SKLEARN_VER=scikit-learn~=0.17.0 EXTRAS=development
+    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.22.0 EXTRAS=development
+    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.21.0 EXTRAS=development
+    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.20.0 EXTRAS=development
+    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.19.0 EXTRAS=development
+    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.18.0 EXTRAS=development
+    - PYTHON_VER=python=3.7 SKLEARN_VER=scikit-learn~=0.17.0 EXTRAS=development
+    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.22.0 EXTRAS=development
+    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.21.0 EXTRAS=development
+    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.20.0 EXTRAS=development
+    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.19.0 EXTRAS=development
+    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.18.0 EXTRAS=development
+    - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.17.0 EXTRAS=development
+    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.22.0 EXTRAS=development
+    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.21.0 EXTRAS=development
+    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.20.0 EXTRAS=development
+    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.19.0 EXTRAS=development
+    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.18.0 EXTRAS=development
+    - PYTHON_VER=python=3.5 SKLEARN_VER=scikit-learn~=0.17.0 EXTRAS=development
 
 before_install:
   - travis_wait 30 docker build
     -t sklearn-porter
+    --build-arg EXTRAS=${EXTRAS}
     --build-arg PYTHON_VER=${PYTHON_VER}
     --build-arg SKLEARN_VER=${SKLEARN_VER} .
   - docker run
