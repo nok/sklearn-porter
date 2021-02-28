@@ -52,7 +52,8 @@ RUN conda config --set auto_activate_base true && \
         ${SCIPY_VER:-scipy} \
         ${SKLEARN_VER:-scikit-learn} && \
     conda run -n base --no-capture-output python -m pip install --no-cache-dir -e ".[development,examples]" && \
-    conda clean --all -y
+    conda clean --all -y && \
+    conda run -n base --no-capture-output python -m pip freeze | grep -i -E 'cython|numpy|scipy|scikit-learn'
 
 RUN conda run --no-capture-output -n base ipython profile create \
     && echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(conda run -n base ipython locate)/profile_default/ipython_config.py
