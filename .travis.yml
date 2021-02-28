@@ -38,8 +38,7 @@ before_install:
     --build-arg CYTHON_VER=${CYTHON_VER}
     --build-arg NUMPY_VER=${NUMPY_VER}
     --build-arg SCIPY_VER=${SCIPY_VER}
-    --build-arg SKLEARN_VER=${SKLEARN_VER}
-    --no-cache .
+    --build-arg SKLEARN_VER=${SKLEARN_VER} .
   - docker run
     --detach
     --entrypoint=/bin/bash
