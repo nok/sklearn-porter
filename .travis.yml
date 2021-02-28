@@ -44,9 +44,6 @@ before_install:
   - travis_wait 30 docker build
     -t sklearn-porter
     --build-arg PYTHON_VER=${PYTHON_VER}
-    --build-arg CYTHON_VER=${CYTHON_VER}
-    --build-arg NUMPY_VER=${NUMPY_VER}
-    --build-arg SCIPY_VER=${SCIPY_VER}
     --build-arg SKLEARN_VER=${SKLEARN_VER} .
   - docker run
     --detach
@@ -66,16 +63,10 @@ script:
 
 after_success:
   - test ${PYTHON_VER} = "python=3.7" &&
-    test ${CYTHON_VER} = "cython" &&
-    test ${NUMPY_VER} = "numpy" &&
-    test ${SCIPY_VER} = "scipy" &&
-    test ${SKLEARN_VER} = "scikit-learn==0.21" &&
+    test ${SKLEARN_VER} = "scikit-learn~=0.21.0" &&
       docker exec -it test ./docker-entrypoint.sh
         codecov
           --token ${CODECOV_TOKEN}
           --name "${TRAVIS_COMMIT}"
           --env ${PYTHON_VER}
-                ${CYTHON_VER}
-                ${NUMPY_VER}
-                ${SCIPY_VER}
                 ${SKLEARN_VER}
