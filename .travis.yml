@@ -57,4 +57,3 @@ after_success:
           --name "${TRAVIS_COMMIT}"
           --env ${PYTHON_VER}
                 ${SKLEARN_VER}
-Llanfairpwllgwyngyllgogerychwyrndrobwllllantysiliogogogoch
