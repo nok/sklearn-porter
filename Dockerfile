@@ -38,14 +38,18 @@ COPY . ${HOME}/repo
 WORKDIR ${HOME}/repo
 
 ARG PYTHON_VER
+ARG CYTHON_VER
+ARG NUMPY_VER
+ARG SCIPY_VER
 ARG SKLEARN_VER
 
 RUN conda config --set auto_activate_base true && \
     conda install -y -n base ${PYTHON_VER:-python=3.6} && \
     conda run -n base python -m pip install --no-cache-dir -U pip && \
-    conda run -n base --no-capture-output python -m pip install --no-cache-dir \
-        cython numpy scipy \
-        ${SKLEARN_VER:-scikit-learn} && \
+    conda run -n base --no-capture-output python -m pip install --no-cache-dir ${CYTHON_VER:-cython} && \
+    conda run -n base --no-capture-output python -m pip install --no-cache-dir ${NUMPY_VER:-numpy} && \
+    conda run -n base --no-capture-output python -m pip install --no-cache-dir ${SCIPY_VER:-scipy} && \
+    conda run -n base --no-capture-output python -m pip install --no-cache-dir ${SKLEARN_VER:-scikit-learn} && \
     conda run -n base --no-capture-output python -m pip install --no-cache-dir -e ".[development,examples]" && \
     conda clean --all -y && \
     conda run -n base --no-capture-output python -m pip freeze | grep -i -E 'cython|numpy|scipy|scikit-learn'
