@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-source activate ${CONDA_ENV}
+source activate base
 
 exec "$@"
 

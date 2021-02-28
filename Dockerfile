@@ -1,8 +1,41 @@
-FROM continuumio/miniconda3:4.6.14
+FROM continuumio/miniconda3:4.9.2
 
-ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        apt-transport-https \
+        apt-utils \
+        ca-certificates \
+        software-properties-common \
+        gnupg \
+        make \
+        sudo \
+        wget && \
+    wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | sudo apt-key add - && \
+    add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ && \
+    apt-get update && \
+    mkdir -p /usr/share/man/man1/ && \
+    apt-get install -y --no-install-recommends \
+        adoptopenjdk-8-hotspot \
+        libopenblas-dev liblapack-dev gfortran cpp g++ gcc \
+        ruby \
+        php \
+        nodejs \
+        golang && \
+    rm -rf /var/lib/apt/lists/*
 
-ENV CONDA_ENV sklearn-porter
+RUN echo "\n\nJava version:\n" && java -version && \
+    echo "\n\nGCC version:\n" && gcc --version && \
+    echo "\n\nRuby version:\n" && ruby --version && \
+    echo "\n\nPHP version:\n" && php --version && \
+    echo "\n\nPython version:\n" && python --version && \
+    echo "\n\nNode version:\n" && node --version && \
+    echo "\n\nGo version:\n" && go version
+
+ENV USER me
+ENV HOME /home/${USER}
+RUN mkdir -p ${HOME}/repo
+COPY . ${HOME}/repo
+WORKDIR ${HOME}/repo
 
 ARG PYTHON_VER
 ARG CYTHON_VER
@@ -10,80 +43,18 @@ ARG NUMPY_VER
 ARG SCIPY_VER
 ARG SKLEARN_VER
 
-ARG NB_USER=abc
-ARG NB_UID=1000
+RUN conda config --set auto_activate_base true && \
+    conda install -y -n base ${PYTHON_VER:-python=3.6} && \
+    conda run -n base python -m pip install --no-cache-dir -U pip && \
+    conda run -n base --no-capture-output python -m pip install --no-cache-dir \
+        ${CYTHON_VER:-cython} \
+        ${NUMPY_VER:-numpy} \
+        ${SCIPY_VER:-scipy} \
+        ${SKLEARN_VER:-scikit-learn} && \
+    conda run -n base --no-capture-output python -m pip install --no-cache-dir -e ".[development,examples]" && \
+    conda clean --all -y
 
-ENV USER ${NB_USER}
-ENV NB_UID ${NB_UID}
-ENV HOME /home/${NB_USER}
+RUN conda run --no-capture-output -n base ipython profile create \
+    && echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(conda run -n base ipython locate)/profile_default/ipython_config.py
 
-# ---------------------------------------------
-
-# Basics:
-RUN echo "deb http://deb.debian.org/debian/ sid main" >> /etc/apt/sources.list && \
-    apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
-    apt-transport-https apt-utils curl make
-
-# Java:
-RUN mkdir -p /usr/share/man/man1 && \
-    apt-get install -y --no-install-recommends \
-    openjdk-8-jdk
-
-# GCC:
-RUN apt-get install -y --no-install-recommends \
-    libopenblas-dev liblapack-dev gfortran cpp g++ gcc
-
-# Ruby:
-RUN apt-get install -y --no-install-recommends ruby
-
-# PHP:
-RUN apt-get install -y --no-install-recommends php
-
-# Node.js:
-RUN apt-get install -y --no-install-recommends nodejs
-
-# Go:
-RUN mkdir -p /tmp/go && cd /tmp/go \
-    && curl --silent -o go.tar.gz https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz \
-    && tar -xf go.tar.gz \
-    && mv go /usr/bin
-ENV PATH="/usr/bin/go/bin:${PATH}"
-
-RUN java -version \
-    && gcc --version \
-    && ruby --version \
-    && php --version \
-    && python --version \
-    && node --version \
-    && go version
-
-# ---------------------------------------------
-
-RUN adduser --disabled-password \
-    --gecos "default user" \
-    --shell /bin/bash \
-    --uid ${NB_UID} \
-    ${NB_USER}
-
-RUN mkdir -p ${HOME}/repo
-COPY . ${HOME}/repo
-RUN chown -R ${NB_UID} ${HOME}
-RUN chmod 755 ${HOME}/repo/entrypoint.sh
-WORKDIR ${HOME}/repo
-
-USER ${NB_USER}
-
-# Install each dependency step by step:
-RUN conda create -y -n ${CONDA_ENV} ${PYTHON_VER:-python=3.5}
-RUN conda run -n ${CONDA_ENV} python -m pip install --upgrade pip
-RUN conda run -n ${CONDA_ENV} python -m pip install ${CYTHON_VER:-cython}
-RUN conda run -n ${CONDA_ENV} python -m pip install ${NUMPY_VER:-numpy}
-RUN conda run -n ${CONDA_ENV} python -m pip install ${SCIPY_VER:-scipy}
-RUN conda run -n ${CONDA_ENV} python -m pip install ${SKLEARN_VER:-scikit-learn}
-RUN conda run -n ${CONDA_ENV} python -m pip install --no-cache-dir -e ".[development,examples]"
-
-# Extend system path for the notebooks:
-RUN conda run -n ${CONDA_ENV} ipython profile create \
-    && echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(conda run -n ${CONDA_ENV} ipython locate)/profile_default/ipython_config.py
-
-ENTRYPOINT ["./entrypoint.sh"]
+ENTRYPOINT ["./docker-entrypoint.sh"]

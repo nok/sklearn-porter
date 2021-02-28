@@ -3,12 +3,12 @@
 source "$(cd "$(dirname "$0")"; pwd -P)"/source_me.sh
 
 docker build \
-  -t sklearn-porter \
+  -t sklearn-porter:1.0.0 \
   --build-arg PYTHON_VER=${PYTHON_VER:-python=3.6} \
   --build-arg CYTHON_VER=${CYTHON_VER:-cython} \
   --build-arg NUMPY_VER=${NUMPY_VER:-numpy} \
   --build-arg SCIPY_VER=${SCIPY_VER:-scipy} \
-  --build-arg SKLEARN_VER=${SKLEARN_VER:-scikit-learn=0.21} \
+  --build-arg SKLEARN_VER=${SKLEARN_VER:-scikit-learn==0.21} \
   .
 
 docker run \
@@ -18,7 +18,7 @@ docker run \
   --name test \
   -t sklearn-porter
 
-docker exec -it test ./entrypoint.sh \
+docker exec -it test ./docker-entrypoint.sh \
   pytest tests -v \
     --cov=sklearn_porter \
     --disable-warnings \

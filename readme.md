@@ -716,7 +716,7 @@ docker run \
   --name test \
   -t sklearn-porter
 
-docker exec -it test ./entrypoint.sh \
+docker exec -it test ./docker-entrypoint.sh \
   pytest tests -v \
     --cov=sklearn_porter \
     --disable-warnings \
