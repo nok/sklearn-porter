@@ -27,7 +27,7 @@ env:
     - PYTHON_VER=python=3.6 SKLEARN_VER=scikit-learn~=0.19.0 EXTRAS=development
 
 before_install:
-  - travis_wait 30 docker build
+  - docker build
     -t sklearn-porter
     --build-arg EXTRAS=${EXTRAS}
     --build-arg PYTHON_VER=${PYTHON_VER}
