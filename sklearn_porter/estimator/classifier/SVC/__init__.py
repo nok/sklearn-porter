@@ -182,6 +182,8 @@ class SVC(Classifier):
         self.gamma = self.params['gamma']
         if self.gamma == 'auto':
             self.gamma = 1. / self.n_features
+        elif self.gamma == 'scale':
+            self.gamma = est._gamma  # computed value of 1 / (n_features * X.var())
         self.gamma = self.repr(self.gamma)
 
         # Coefficient and degree:
