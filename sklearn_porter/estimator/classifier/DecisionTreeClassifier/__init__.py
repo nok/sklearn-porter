@@ -188,6 +188,19 @@ class DecisionTreeClassifier(Classifier):
         classes = ', '.join([temp_arr_scope.format(v) for v in classes])
         classes = temp_arr__.format(type='int', name='classes', values=classes,
                                     n=n, m=m)
+        
+        # transfer dt to c language and is multilabel task
+        if self.target_language in ['c'] and self.estimator.tree_.value.ndim == 3:
+            import numpy as np
+            classes = np.argmax(self.estimator.tree_.value, axis=2).tolist()
+            n = len(classes)
+            m = len(classes[0])
+            classes = [', '.join([str(int(x)) for x in e]) for e in classes]
+            classes = ', '.join([temp_arr_scope.format(v) for v in classes])
+            classes = temp_arr__.format(type='int', name='classes', values=classes,
+                                    n=n, m=m)
+            self.n_outputs_ = self.estimator.n_outputs_
+
         self.classes = classes
 
         if self.target_method == 'predict':
@@ -254,6 +267,9 @@ class DecisionTreeClassifier(Classifier):
 
         if temp_type == 'separated':
             separated_temp = self.temp('separated.class')
+            # transfer dt to c language and is multilabel task
+            if self.target_language in ['c'] and self.estimator.tree_.value.ndim == 3:
+                separated_temp = self.temp('separated.multilabels.class')
             return separated_temp.format(**self.__dict__)
 
         if temp_type == 'embedded':

@@ -1,0 +1,41 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define N_FEATURES {n_features}
+#define N_OUTPUTS {n_outputs_}
+
+{left_childs}
+{right_childs}
+{thresholds}
+{indices}
+{classes}
+
+
+int* {method_name}(double features[N_FEATURES]) {{
+    int node = 0; //root node id is 0
+    while (thresholds[node] != -2) {{
+        if (features[indices[node]] <= thresholds[node]) {{
+            node = lChilds[node];
+        }} else {{
+            node = rChilds[node];
+        }}
+    }}
+    return classes[node];
+}}
+
+int main(int argc, const char * argv[]) {{
+
+    /* Features: */
+    double features[argc-1];
+    int i;
+    for (i = 1; i < argc; i++) {{
+        features[i-1] = atof(argv[i]);
+    }}
+
+    /* Prediction: */
+    int* output = {method_name}(features);
+    for(int i=0;i<N_OUTPUTS;i++)
+        printf("%d\n", output[i]);
+    return 0;
+}}
