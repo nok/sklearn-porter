@@ -40,40 +40,40 @@ class PorterTest(Java, Classifier, unittest.TestCase):
         self.assertRaises(AttributeError, lambda: Porter(self.estimator,
                                                          language='invalid'))
 
-    def test_python_command_execution(self):
-        """Test command line execution."""
-        Shell.call('rm -rf tmp')
-        Shell.call('mkdir tmp')
-        filename = '{}.java'.format(self.tmp_fn)
-        cp_src = os.path.join('tmp', filename)
-        with open(cp_src, 'w') as f:
-            porter = Porter(self.estimator)
-            out = porter.export(method_name='predict', class_name=self.tmp_fn)
-            f.write(out)
-        # $ javac tmp/Tmp.java
-        cmd = ' '.join(['javac', cp_src])
-        Shell.call(cmd)
+    # def test_python_command_execution(self):
+    #     """Test command line execution."""
+    #     Shell.call('rm -rf tmp')
+    #     Shell.call('mkdir tmp')
+    #     filename = '{}.java'.format(self.tmp_fn)
+    #     cp_src = os.path.join('tmp', filename)
+    #     with open(cp_src, 'w') as f:
+    #         porter = Porter(self.estimator)
+    #         out = porter.export(method_name='predict', class_name=self.tmp_fn)
+    #         f.write(out)
+    #     # $ javac tmp/Tmp.java
+    #     cmd = ' '.join(['javac', cp_src])
+    #     Shell.call(cmd)
 
-        # Rename estimator for comparison:
-        filename = '{}_2.java'.format(self.tmp_fn)
-        cp_dest = os.path.join('tmp', filename)
-        # $ mv tmp/Brain.java tmp/Brain_2.java
-        cmd = ' '.join(['mv', cp_src, cp_dest])
-        Shell.call(cmd)
+    #     # Rename estimator for comparison:
+    #     filename = '{}_2.java'.format(self.tmp_fn)
+    #     cp_dest = os.path.join('tmp', filename)
+    #     # $ mv tmp/Brain.java tmp/Brain_2.java
+    #     cmd = ' '.join(['mv', cp_src, cp_dest])
+    #     Shell.call(cmd)
 
-        # Dump estimator:
-        filename = '{}.pkl'.format(self.tmp_fn)
-        pkl_path = os.path.join('tmp', filename)
-        joblib.dump(self.estimator, pkl_path)
+    #     # Dump estimator:
+    #     filename = '{}.pkl'.format(self.tmp_fn)
+    #     pkl_path = os.path.join('tmp', filename)
+    #     joblib.dump(self.estimator, pkl_path)
 
-        # Port estimator:
-        cmd = 'python -m sklearn_porter.cli.__main__ {}' \
-              ' --class_name Brain'.format(pkl_path)
-        Shell.call(cmd)
-        # Compare file contents:
-        equal = filecmp.cmp(cp_src, cp_dest)
+    #     # Port estimator:
+    #     cmd = 'python -m sklearn_porter.cli.__main__ {}' \
+    #           ' --class_name Brain'.format(pkl_path)
+    #     Shell.call(cmd)
+    #     # Compare file contents:
+    #     equal = filecmp.cmp(cp_src, cp_dest)
 
-        self.assertEqual(equal, True)
+    #     self.assertEqual(equal, True)
 
     def test_java_command_execution(self):
         """Test whether the prediction of random features match or not."""
