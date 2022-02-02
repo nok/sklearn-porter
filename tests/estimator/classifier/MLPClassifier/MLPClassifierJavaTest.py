@@ -4,7 +4,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from sklearn.neural_network.multilayer_perceptron import MLPClassifier
+from sklearn.neural_network import MLPClassifier
 
 from tests.estimator.classifier.Classifier import Classifier
 from tests.estimator.classifier.ExportedData import ExportedData

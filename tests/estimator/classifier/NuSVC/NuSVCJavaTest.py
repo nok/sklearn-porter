@@ -3,7 +3,7 @@
 import unittest
 from unittest import TestCase
 
-from sklearn.svm.classes import NuSVC
+from sklearn.svm import NuSVC
 
 from tests.estimator.classifier.Classifier import Classifier
 from tests.estimator.classifier.ExportedData import ExportedData

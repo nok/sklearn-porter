@@ -3,7 +3,7 @@
 from unittest import TestCase
 import numpy as np
 
-from sklearn.neural_network.multilayer_perceptron import MLPRegressor
+from sklearn.neural_network import MLPRegressor
 
 from tests.estimator.regressor.Regressor import Regressor
 from tests.language.JavaScript import JavaScript

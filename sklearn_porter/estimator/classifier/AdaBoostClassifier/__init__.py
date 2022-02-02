@@ -5,7 +5,7 @@ import os
 from json import encoder
 from json import dumps
 
-from sklearn.tree.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
@@ -127,7 +127,7 @@ class AdaBoostClassifier(Classifier):
             if est.estimator_weights_[idx] > 0:
                 self.estimators.append(est.estimators_[idx])
         self.n_classes = est.n_classes_
-        self.n_features = est.estimators_[0].n_features_
+        self.n_features = est.estimators_[0].n_features_in_
         self.n_estimators = len(self.estimator)
 
         if self.target_method == 'predict':
@@ -271,7 +271,7 @@ class AdaBoostClassifier(Classifier):
         """
         feature_indices = []
         for i in estimator.tree_.feature:
-            n_features = estimator.n_features_
+            n_features = estimator.n_features_in_
             if self.n_features > 1 or (self.n_features == 1 and i >= 0):
                 feature_indices.append([str(j) for j in range(n_features)][i])
 

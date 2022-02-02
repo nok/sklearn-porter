@@ -8,7 +8,7 @@ from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
-from sklearn.svm.classes import LinearSVC
+from sklearn.svm import LinearSVC
 
 from sklearn_porter import Porter
 

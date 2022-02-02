@@ -4,8 +4,8 @@ from unittest import TestCase
 
 import numpy as np
 
-from sklearn.svm.classes import SVC
-from sklearn.datasets import samples_generator
+from sklearn.svm import SVC
+from sklearn.datasets import make_classification
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_regression
 from sklearn.pipeline import Pipeline
@@ -72,7 +72,7 @@ class SVCJSTest(JavaScript, Classifier, TestCase):
         self.assertListEqual(preds, ground_truth)
 
     def test_pipeline_estimator(self):
-        self.X, self.y = samples_generator.make_classification(
+        self.X, self.y = make_classification(
             n_informative=5, n_redundant=0, random_state=42)
         anova_filter = SelectKBest(f_regression, k=5)
         self.estimator = Pipeline([('anova', anova_filter), ('svc', SVC(kernel='linear'))])

@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 
-from sklearn.svm.classes import NuSVC
+from sklearn.svm import NuSVC
 
 from tests.estimator.classifier.Classifier import Classifier
 from tests.language.Ruby import Ruby

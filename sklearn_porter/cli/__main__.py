@@ -11,7 +11,7 @@ from os import sep
 from os.path import isdir
 from os.path import isfile
 
-from sklearn.externals import joblib
+import joblib
 
 from sklearn_porter import Porter
 from sklearn_porter import meta
