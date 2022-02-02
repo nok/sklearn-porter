@@ -149,7 +149,7 @@ class DecisionTreeClassifier(Classifier):
         # Estimator:
         est = self.estimator
 
-        self.n_features = est.n_features_
+        self.n_features = est.n_features_in_
         self.n_classes = len(self.estimator.tree_.value.tolist()[0][0])
 
         temp_arr_scope = self.temp('arr_scope')

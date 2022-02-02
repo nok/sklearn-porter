@@ -5,7 +5,7 @@ import os
 from json import encoder
 from json import dumps
 
-from sklearn.tree.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn_porter.estimator.classifier.Classifier import Classifier
 
 
@@ -138,7 +138,7 @@ class RandomForestClassifier(Classifier):
         self.estimators = [est.estimators_[idx] for idx
                            in range(est.n_estimators)]
         self.n_estimators = len(self.estimators)
-        self.n_features = est.estimators_[0].n_features_
+        self.n_features = est.estimators_[0].n_features_in_
         self.n_classes = est.n_classes_
 
         if self.target_method == 'predict':
