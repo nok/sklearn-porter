@@ -2,7 +2,7 @@
 
 from sklearn.tree import tree
 from sklearn.datasets import load_iris
-from sklearn.externals import joblib
+import joblib
 
 
 iris_data = load_iris()

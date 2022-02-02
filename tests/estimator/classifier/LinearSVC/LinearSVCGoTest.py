@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 
-from sklearn.svm.classes import LinearSVC
+from sklearn.svm import LinearSVC
 
 from tests.estimator.classifier.Classifier import Classifier
 from tests.language.Go import Go

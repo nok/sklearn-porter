@@ -7,7 +7,7 @@ import os
 
 import numpy as np
 
-from sklearn.externals import joblib
+import joblib
 from sklearn.svm import LinearSVC
 
 from sklearn_porter.Porter import Porter

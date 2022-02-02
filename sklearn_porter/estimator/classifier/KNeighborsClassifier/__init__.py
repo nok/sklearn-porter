@@ -107,8 +107,8 @@ class KNeighborsClassifier(Classifier):
         self.power_param = est.p
 
         if self.algorithm != 'brute':
-            from sklearn.neighbors.kd_tree import KDTree  # pylint: disable-msg=E0611
-            from sklearn.neighbors.ball_tree import BallTree  # pylint: disable-msg=E0611
+            from sklearn.neighbors import KDTree  # pylint: disable-msg=E0611
+            from sklearn.neighbors import BallTree  # pylint: disable-msg=E0611
             tree = est._tree  # pylint: disable=W0212
             if isinstance(tree, (KDTree, BallTree)):
                 self.tree = tree

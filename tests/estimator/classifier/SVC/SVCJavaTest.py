@@ -5,7 +5,7 @@ from unittest import TestCase
 
 import numpy as np
 
-from sklearn.svm.classes import SVC
+from sklearn.svm import SVC
 
 from tests.estimator.classifier.Classifier import Classifier
 from tests.estimator.classifier.ExportedData import ExportedData
