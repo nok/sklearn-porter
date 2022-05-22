@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "$(cd "$(dirname "$0")"; pwd -P)"/source_me.sh
+source "$(dirname "$(realpath "$0")")"/source_me.sh
 
 FILES=$(find ./sklearn_porter -name '*.py' -type f | tr '\n' ' ')
 

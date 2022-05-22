@@ -1,4 +1,4 @@
-FROM continuumio/miniconda3:4.9.2
+FROM continuumio/miniconda3:4.11.0
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -31,8 +31,12 @@ RUN echo "\n\nJava version:\n" && java -version && \
     echo "\n\nNode version:\n" && node --version && \
     echo "\n\nGo version:\n" && go version
 
-ENV USER me
+ENV USER user
 ENV HOME /home/${USER}
+ENV CONDA_AUTO_ACTIVATE_BASE true
+ENV CONDA_ALWAYS_YES true
+ENV CONDA_AUTO_UPDATE_CONDA false
+
 RUN mkdir -p ${HOME}/repo
 COPY . ${HOME}/repo
 WORKDIR ${HOME}/repo
@@ -41,22 +45,20 @@ ARG PYTHON_VER
 ARG SKLEARN_VER
 ARG EXTRAS
 
-RUN conda config --set auto_activate_base true && \
-    conda install -y -n base \
-        ${PYTHON_VER:-python=3.6} \
-        nomkl \
-        cython numpy scipy \
-        ${SKLEARN_VER:-scikit-learn} && \
-    conda run -n base --no-capture-output python -m \
+RUN conda create -n sklearn-porter ${PYTHON_VER:-python=3.6} && \
+    conda run -n sklearn-porter --no-capture-output python -m \
         pip install --no-cache-dir -U pip && \
-    conda run -n base --no-capture-output python -m \
-        pip install --no-cache-dir -e ".[${EXTRAS:-development,examples}]" && \
-    conda clean --all -y && \
-    conda run -n base --no-capture-output python -m \
+    conda run -n sklearn-porter --no-capture-output python -m \
+        pip install --no-cache-dir \
+            -e ".[${EXTRAS:-development,examples}]" \
+            "${SKLEARN_VER:-scikit-learn}" \
+            cython numpy scipy && \
+    conda clean --all && \
+    conda run -n sklearn-porter --no-capture-output python -m \
         pip freeze | grep -i -E 'cython|numpy|scipy|scikit-learn'
 
 RUN if [ -e /opt/conda/bin/ipython ] ; then \
-        conda run --no-capture-output -n base \
+        conda run --no-capture-output -n sklearn-porter \
             ipython profile create && \
         echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(conda run -n base ipython locate)/profile_default/ipython_config.py \
     ; fi

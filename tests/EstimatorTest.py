@@ -42,8 +42,8 @@ np.random.seed(0)
 rd.seed(0)
 
 # Check python version:
-if version_info[:2] < (3, 5):
-    pytest.skip('tests requires python >= 3.5', allow_module_level=True)
+if version_info[:2] < (3, 6):
+    pytest.skip('tests requires python >= 3.6', allow_module_level=True)
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
 
@@ -74,7 +74,7 @@ def tmp_root_dir(worker_id) -> Path:
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
     # Add Java dependencies:
-    gson_fname = 'gson-2.8.6.jar'
+    gson_fname = 'gson.jar'
     gson_path = RESOURCES_DIR / 'dependencies' / gson_fname
     environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(gson_path.resolve())
 

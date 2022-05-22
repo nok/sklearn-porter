@@ -643,6 +643,21 @@ class Estimator:
         ):
             cmd_args['src_path'] = str(src_path)
 
+        paths_to_check = []
+        if 'src_path' in cmd_args.keys():
+            paths_to_check.append(cmd_args.get('src_path'))
+        if 'dest_path' in cmd_args.keys():
+            paths_to_check.append(cmd_args.get('dest_path'))
+        for path_to_check in paths_to_check:
+            for _ in range(10):
+                try:
+                    fp = open(path_to_check)
+                except IOError:
+                    sleep(0.1)
+                else:
+                    fp.close()
+                    break
+
         cmd = cmd.format(**cmd_args)
         L.info('Execution command: `{}`'.format(cmd))
 
@@ -951,18 +966,23 @@ def _system_call(cmd: str, executable='/bin/bash'):
         stderr=STDOUT,
         executable=executable
     )
-    for idx in range(5):  # Try three times, b/c of `file is busy` issues.
+    for _ in range(10):
         try:
             out = check_output(cmd, **subp_args)
-            out = loads(out, encoding='utf-8')
         except CalledProcessError:
-            sleep(0.01)
-        except JSONDecodeError:
-            sleep(0.01)
+            sleep(0.1)
         else:
-            if 'predict_proba' in out.keys():
-                return [out.get('predict'), out.get('predict_proba')]
-            return [out.get('predict')]
+            try:
+                out = loads(out, encoding='utf-8')
+            except JSONDecodeError as e:
+                L.error(e)
+            else:
+                result = []
+                if 'predict' in out.keys():
+                    result.append(out.get('predict'))
+                    if 'predict_proba' in out.keys():
+                        result.append(out.get('predict_proba'))
+                return result
 
 
 def show(language: Optional[Union[str, enum.Language]] = None):
