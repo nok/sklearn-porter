@@ -44,8 +44,8 @@ np.random.seed(0)
 rd.seed(0)
 
 # Check python version:
-if version_info[:2] < (3, 5):
-    pytest.skip('tests requires python >= 3.5', allow_module_level=True)
+if version_info[:2] < (3, 6):
+    pytest.skip('tests requires python >= 3.6', allow_module_level=True)
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
 
