@@ -76,7 +76,7 @@ def tmp_root_dir(worker_id) -> Path:
     tmp_dir.mkdir(parents=True, exist_ok=True)
 
     # Add Java dependencies:
-    gson_fname = 'gson-2.8.6.jar'
+    gson_fname = 'gson.jar'
     gson_path = RESOURCES_DIR / 'dependencies' / gson_fname
     environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(gson_path.resolve())
 
