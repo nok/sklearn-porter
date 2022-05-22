@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import sys
 from os import environ
 from argparse import ArgumentParser, RawTextHelpFormatter

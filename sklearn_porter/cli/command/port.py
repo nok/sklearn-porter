@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-
-import sys
-from argparse import RawTextHelpFormatter, _SubParsersAction
+from argparse import RawTextHelpFormatter
 from logging import DEBUG
 from pathlib import Path
 from textwrap import dedent
@@ -14,7 +11,7 @@ from sklearn_porter.cli.utils import load_model
 from sklearn_porter.language import LANGUAGES
 
 
-def config(sub_parser: _SubParsersAction):
+def config(sub_parser):
 
     header = 'The subcommand `port` transpiles a trained ' \
              'estimator to a specific programming language.'

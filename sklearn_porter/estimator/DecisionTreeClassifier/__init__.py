@@ -1,9 +1,7 @@
-# -*- coding: utf-8 -*-
-
 from copy import deepcopy
 from json import dumps, encoder
 from textwrap import indent
-from typing import Callable, Optional, Tuple, Union
+from typing import Callable, Tuple, Union
 
 from jinja2 import Environment
 from loguru import logger as L

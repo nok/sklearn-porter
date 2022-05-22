@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # scikit-learn
 from sklearn.ensemble import ExtraTreesClassifier as ExtraTreesClassifierClass
 

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from os import environ, sep
 from pathlib import Path
 from typing import List, Optional, Tuple

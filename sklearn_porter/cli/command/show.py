@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from argparse import RawTextHelpFormatter, _SubParsersAction
+from argparse import RawTextHelpFormatter
 from logging import DEBUG
 from textwrap import dedent
 from typing import Dict
@@ -11,7 +9,7 @@ from sklearn_porter.cli.common import arg_debug, arg_help
 from sklearn_porter.language import LANGUAGES
 
 
-def config(sub_parser: _SubParsersAction):
+def config(sub_parser):
     header = 'The subcommand `show` lists all supported ' \
              'estimators and programming languages.'
     footer = dedent("""

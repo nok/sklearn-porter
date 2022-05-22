@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from os import environ, getcwd
 from pathlib import Path
 from time import sleep

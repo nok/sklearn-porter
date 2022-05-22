@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import random as rd
 import shutil

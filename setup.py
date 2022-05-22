@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from os.path import abspath, dirname, exists, join
 from setuptools import find_packages, setup
 from sys import version_info

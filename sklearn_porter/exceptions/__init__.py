@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from sklearn_porter import enums as enum
 
 

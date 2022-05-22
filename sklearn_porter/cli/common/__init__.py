@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-
-from argparse import SUPPRESS, ArgumentParser, _HelpAction
+from argparse import SUPPRESS, ArgumentParser
 
 from sklearn_porter import __version__ as porter_version
 
@@ -9,7 +7,6 @@ def arg_help(p: ArgumentParser):
     p.add_argument(
         '-h',
         '--help',
-        action=_HelpAction,
         help="Show this help message and exit."
     )
 

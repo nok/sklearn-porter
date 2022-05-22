@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import warnings
 from pathlib import Path
 from typing import List, Union

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # scikit-learn
 from sklearn.neural_network.multilayer_perceptron import \
     MLPRegressor as MLPRegressorClass
