@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import urllib.request
 from abc import ABCMeta
 from collections import OrderedDict

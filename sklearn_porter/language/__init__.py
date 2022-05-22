@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from collections import OrderedDict
 
 from sklearn_porter.language.c import C

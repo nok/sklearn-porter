@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from pathlib import Path
 
 __author__ = 'Darius Morawiec'

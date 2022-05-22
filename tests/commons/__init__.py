@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from collections import namedtuple
 from os import environ
 from pathlib import Path

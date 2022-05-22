@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # scikit-learn
 from sklearn.svm.classes import NuSVC as NuSVCClass
 

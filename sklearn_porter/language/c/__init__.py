@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from sklearn_porter.language.LanguageABC import LanguageABC
 
 

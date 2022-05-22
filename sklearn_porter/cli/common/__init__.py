@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from argparse import SUPPRESS, ArgumentParser, _HelpAction
 
 from sklearn_porter import __version__ as porter_version

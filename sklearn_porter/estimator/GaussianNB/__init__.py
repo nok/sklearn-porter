@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-
 from copy import deepcopy
 from json import dumps, encoder
-from typing import Optional, Tuple, Union, Callable
+from typing import Tuple, Union, Callable
 
 from loguru import logger as L
 

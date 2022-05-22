@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import sys
 from argparse import RawTextHelpFormatter, _SubParsersAction
 from logging import DEBUG
 from pathlib import Path

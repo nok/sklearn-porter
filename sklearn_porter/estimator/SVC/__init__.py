@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import warnings
 from copy import deepcopy
 from json import dumps, encoder
