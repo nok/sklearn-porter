@@ -748,4 +748,4 @@ If you use this implementation in you work, please add a reference/citation to t
 
 ## License
 
-The package is Open Source Software released under the [MIT](LICENSE) license.
+The package is Open Source Software released under the [BSD 3-Clause](LICENSE) license.
