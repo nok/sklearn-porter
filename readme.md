@@ -6,7 +6,7 @@
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples/basics/index.pct.ipynb)
 [![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg?color=blue)](https://pypi.python.org/pypi/sklearn-porter)
 [![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
-[![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
+[![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://raw.githubusercontent.com/nok/sklearn-porter/main/LICENSE)
 
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
@@ -748,4 +748,4 @@ If you use this implementation in you work, please add a reference/citation to t
 
 ## License
 
-The package is Open Source Software released under the [MIT](license.txt) license.
+The package is Open Source Software released under the [MIT](LICENSE) license.
