@@ -637,7 +637,7 @@ All tests run against these combinations of [scikit-learn](https://github.com/sc
   </tr>
 </table>
 
-For the regression tests we have to use specific compilers and interpreters. On 19th November 2019 the following compilers and interpreters are used for these tests:
+For the regression tests we have to use specific compilers and interpreters:
 
 <table>
   <tr>
@@ -648,12 +648,12 @@ For the regression tests we have to use specific compilers and interpreters. On 
   <tr>
     <td>GCC</td>
     <td><a href="https://gcc.gnu.org">https://gcc.gnu.org</a></td>
-    <td>9.2.1</td>
+    <td>10.2.1</td>
   </tr>
   <tr>
     <td>Go</td>
     <td><a href="https://golang.org">https://golang.org</a></td>
-    <td>1.13.4</td>
+    <td>1.15.15</td>
   </tr>
   <tr>
     <td>Java (OpenJDK)</td>
@@ -663,17 +663,17 @@ For the regression tests we have to use specific compilers and interpreters. On 
   <tr>
     <td>Node.js</td>
     <td><a href="https://nodejs.org/en/">https://nodejs.org</a></td>
-    <td>10.17.0</td>
+    <td>12.22.5</td>
   </tr>
   <tr>
     <td>PHP</td>
     <td><a href="https://www.php.net/">https://www.php.net</a></td>
-    <td>7.3.11</td>
+    <td>7.4.28</td>
   </tr>
   <tr>
     <td>Ruby</td>
     <td><a href="https://www.ruby-lang.org/en/">https://www.ruby-lang.org</a></td>
-    <td>2.5.7</td>
+    <td>2.7.4</td>
   </tr>
 </table>
 
