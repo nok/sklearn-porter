@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-source "$(cd "$(dirname "$0")"; pwd -P)"/source_me.sh
+source "$(dirname "$(realpath "$0")")"/source_me.sh
 
 NAME=sklearn-porter
 VERSION=`python -c "from sklearn_porter import __version__ as ver; print(ver);"`
