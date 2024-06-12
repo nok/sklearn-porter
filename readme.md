@@ -677,7 +677,7 @@ For the regression tests we have to use specific compilers and interpreters:
   </tr>
 </table>
 
-Please notice that in general you can use older compilers and interpreters with the generated source code. For instance you can use Java 1.6 to compile and run models.
+Please note that, in general, you can use older compilers and interpreters with the generated source code. For instance, you can use Java 1.6 to compile and run models.
 
 ### Logging
 
