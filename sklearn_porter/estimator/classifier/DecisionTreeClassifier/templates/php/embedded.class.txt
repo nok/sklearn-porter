@@ -1,0 +1,13 @@
+<?php
+
+class {class_name} {{
+
+    {method}
+
+}}
+
+if ($argc > 1) {{
+    array_shift($argv);
+    $prediction = {class_name}::{method_name}($argv);
+    fwrite(STDOUT, $prediction);
+}}

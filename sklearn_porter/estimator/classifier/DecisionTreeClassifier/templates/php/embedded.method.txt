@@ -1,0 +1,17 @@
+public static function {method_name}($atts) {{
+    if (sizeof($atts) != {n_features}) {{ return -1; }}
+
+    $classes = array_fill(0, {n_classes}, 0);
+    {branches}
+
+    $class_idx = 0;
+    $class_val = $classes[0];
+
+    for ($i = 1; $i < {n_classes}; $i++) {{
+        if ($classes[$i] > $class_val) {{
+            $class_idx = $i;
+            $class_val = $classes[$i];
+        }}
+    }}
+    return $class_idx;
+}}

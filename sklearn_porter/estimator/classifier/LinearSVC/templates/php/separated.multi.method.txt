@@ -1,0 +1,15 @@
+public function {method_name}($features) {{
+    $classIdx = -1;
+    $classVal = null;
+    for ($i = 0, $il = count($this->intercepts); $i < $il; $i++) {{
+        $prob = 0.;
+        for ($j = 0, $jl = count($this->coefficients[0]); $j < $jl; $j++) {{
+            $prob += $this->coefficients[$i][$j] * $features[$j];
+        }}
+        if (is_null($classVal) || $prob + $this->intercepts[$i] > $classVal) {{
+            $classVal = $prob + $this->intercepts[$i];
+            $classIdx = $i;
+        }}
+    }}
+    return $classIdx;
+}}

@@ -1,0 +1,28 @@
+var {class_name} = function(priors, negProbs, delProbs) {{
+
+    this.priors = priors;
+    this.negProbs = negProbs;
+    this.delProbs = delProbs;
+
+    {method}
+
+}};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
+    if (process.argv.length - 2 === {n_features}) {{
+
+        // Features:
+        var features = process.argv.slice(2);
+
+        // Parameters:
+        {priors}
+        {neg_probs}
+        {del_probs}
+
+        // Estimator:
+        var clf = new {class_name}(priors, negProbs, delProbs);
+        var prediction = clf.{method_name}(features);
+        console.log(prediction);
+
+    }}
+}}

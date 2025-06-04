@@ -1,0 +1,26 @@
+package main
+
+{class_head}
+
+{method}
+
+func main() {{
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[1:] {{
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {{
+			features = append(features, n)
+		}}
+	}}
+
+	// Parameters:
+	{coefficients}
+	{intercepts}
+
+	// Prediction:
+	clf := {class_name}{{coefficients, intercepts}}
+	estimation := clf.{method_name}(features)
+	fmt.Printf("%d\n", estimation)
+
+}}

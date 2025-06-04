@@ -1,0 +1,36 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define N_FEATURES {n_features}
+#define N_CLASSES {n_classes}
+#define N_VECTORS {n_vectors}
+#define N_ROWS {n_svs_rows}
+#define N_COEFFICIENTS {n_coefficients}
+#define N_INTERCEPTS {n_intercepts}
+#define KERNEL_TYPE '{kernel}'
+#define KERNEL_GAMMA {gamma}
+#define KERNEL_COEF {coef0}
+#define KERNEL_DEGREE {degree}
+
+{vectors}
+{coefficients}
+{intercepts}
+{weights}
+
+{method}
+
+int main(int argc, const char * argv[]) {{
+
+    /* Features: */
+    double features[argc-1];
+    int i;
+    for (i = 1; i < argc; i++) {{
+        features[i-1] = atof(argv[i]);
+    }}
+
+    /* Prediction: */
+    printf("%d", {method_name}(features));
+    return 0;
+
+}}

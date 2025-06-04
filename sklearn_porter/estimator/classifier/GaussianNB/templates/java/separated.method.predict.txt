@@ -1,0 +1,23 @@
+public int {method_name}(double[] features) {{
+    double[] likelihoods = new double[this.sigmas.length];
+
+    for (int i = 0, il = this.sigmas.length; i < il; i++) {{
+        double sum = 0.;
+        for (int j = 0, jl = this.sigmas[0].length; j < jl; j++) {{
+            sum += Math.log(2. * Math.PI * this.sigmas[i][j]);
+        }}
+        double nij = -0.5 * sum;
+        sum = 0.;
+        for (int j = 0, jl = this.sigmas[0].length; j < jl; j++) {{
+            sum += Math.pow(features[j] - this.thetas[i][j], 2.) / this.sigmas[i][j];
+        }}
+        nij -= 0.5 * sum;
+        likelihoods[i] = Math.log(this.priors[i]) + nij;
+    }}
+
+    int classIdx = 0;
+    for (int i = 0, l = likelihoods.length; i < l; i++) {{
+        classIdx = likelihoods[i] > likelihoods[classIdx] ? i : classIdx;
+    }}
+    return classIdx;
+}}

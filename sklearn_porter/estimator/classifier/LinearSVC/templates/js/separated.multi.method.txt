@@ -1,0 +1,16 @@
+this.{method_name} = function(features) {{
+    var classIdx = 0,
+        classVal = Number.NEGATIVE_INFINITY,
+        prob = 0.;
+    for (var i = 0, il = this.intercepts.length; i < il; i++) {{
+        prob = 0.;
+        for (var j = 0, jl = this.coefficients[0].length; j < jl; j++) {{
+            prob += this.coefficients[i][j] * features[j];
+        }}
+        if (prob + this.intercepts[i] > classVal) {{
+            classVal = prob + this.intercepts[i];
+            classIdx = i;
+        }}
+    }}
+    return classIdx;
+}};

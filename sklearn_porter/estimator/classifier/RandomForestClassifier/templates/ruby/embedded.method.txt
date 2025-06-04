@@ -1,0 +1,7 @@
+{methods}
+def self.{method_name} (features)
+    classes = Array.new({n_classes}, 0)
+    {method_calls}
+    pos_max = classes.each_with_index.select {{|e, i| e==classes.max}}.map &:last
+	return pos_max.min
+end

@@ -1,0 +1,37 @@
+var {class_name} = function(nNeighbors, nClasses, power, X, y) {{
+
+    this.nNeighbors = nNeighbors;
+    this.nTemplates = y.length;
+    this.nClasses = nClasses;
+    this.power = power;
+    this.X = X;
+    this.y = y;
+
+    var Neighbor = function(clazz, dist) {{
+        this.clazz = clazz;
+        this.dist = dist;
+    }};
+
+    {method}
+
+}};
+
+if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {{
+    if (process.argv.length - 2 === {n_features}) {{
+
+        // Features:
+        var features = process.argv.slice(2);
+
+        // Parameters:
+        {X}
+        {y}
+
+        // Estimator:
+        var clf = new {class_name}({n_neighbors}, {n_classes}, {power}, X, y);
+
+        // Prediction:
+        var prediction = clf.{method_name}(features);
+        console.log(prediction);
+
+    }}
+}}
