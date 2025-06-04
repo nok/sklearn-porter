@@ -1,734 +1,385 @@
 
 # sklearn-porter
 
-[![Build Status stable branch](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter)
-[![codecov](https://codecov.io/gh/nok/sklearn-porter/branch/stable/graph/badge.svg)](https://codecov.io/gh/nok/sklearn-porter)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples/basics/index.pct.ipynb)
-[![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg?color=blue)](https://pypi.python.org/pypi/sklearn-porter)
-[![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
-[![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://raw.githubusercontent.com/nok/sklearn-porter/main/LICENSE)
+[![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg)](https://raw.githubusercontent.com/nok/sklearn-porter/master/license.txt)
+[![Stack Overflow](https://img.shields.io/badge/stack%20overflow-ask%20questions-blue.svg)](https://stackoverflow.com/questions/tagged/sklearn-porter)
+[![Join the chat at https://gitter.im/nok/sklearn-porter](https://badges.gitter.im/nok/sklearn-porter.svg)](https://gitter.im/nok/sklearn-porter?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Twitter](https://img.shields.io/twitter/follow/darius_morawiec.svg?label=follow&style=popout)](https://twitter.com/darius_morawiec)
 
 Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
 
-Navigation: [Estimators](#estimators) • [Installation](#installation) • [Usage](#usage) • [Known Issues](#known-issues) • [Development](#development) • [Citation](#citation) • [License](#license)
+
+## Important
+
+We're hard working on the [first major release](https://github.com/nok/sklearn-porter/tree/release/1.0.0) of sklearn-porter. <br>Until that we will just release bugfixes to the stable version.
 
 
 ## Estimators
 
-This table gives an overview over all supported combinations of estimators, programming languages and templates.
-
 <table>
-  <tr>
-    <th rowspan="2"></th>
-    <th colspan="18">Programming language</th>
-  </tr>
-  <tr align="center">
-    <th colspan="3">C</th>
-    <th colspan="3">Go</th>
-    <th colspan="3">Java</th>
-    <th colspan="3">JS</th>
-    <th colspan="3">PHP</th>
-    <th colspan="3">Ruby</th>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a>
-    </td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a>
-    </td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a>
-    </td>
-    <td>✓</td>
-    <td></td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
-    </td>
-    <td>✓ᴾ</td>
-    <td></td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">ensemble.RandomForestClassifier</a>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">ensemble.ExtraTreesClassifier</a>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">ensemble.AdaBoostClassifier</a>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">neighbors.KNeighborsClassifier</a>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">naive_bayes.BernoulliNB</a>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">naive_bayes.GaussianNB</a>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html">neural_network.MLPClassifier</a>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">neural_network.MLPRegressor</a>
-    </td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
-  </tr>
-  <tr align="center">
-    <td rowspan="2"></td>
-    <td>ᴀ</td>
-    <td>ᴇ</td>
-    <td>ᴄ</td>
-    <td>ᴀ</td>
-    <td>ᴇ</td>
-    <td>ᴄ</td>
-    <td>ᴀ</td>
-    <td>ᴇ</td>
-    <td>ᴄ</td>
-    <td>ᴀ</td>
-    <td>ᴇ</td>
-    <td>ᴄ</td>
-    <td>ᴀ</td>
-    <td>ᴇ</td>
-    <td>ᴄ</td>
-    <td>ᴀ</td>
-    <td>ᴇ</td>
-    <td>ᴄ</td>
-  </tr>
-  <tr>
-    <th colspan="18">Template</th>
-  </tr>
+    <tbody>
+        <tr>
+            <td align="center" width="32%"><strong>Estimator</strong></td>
+            <td align="center" colspan="6" width="68%"><strong>Programming language</strong></td>
+        </tr>
+        <tr>
+            <td align="left" width="32%">Classifier</td>
+            <td align="center" width="13%">Java *</td>
+            <td align="center" width="11%">JS</td>
+            <td align="center" width="11%">C</td>
+            <td align="center" width="11%">Go</td>
+            <td align="center" width="11%">PHP</td>
+            <td align="center" width="11%">Ruby</td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a></td>
+            <td align="center"><a href="examples/estimator/classifier/SVC/java/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/SVC/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/SVC/js/basics.pct.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/SVC/c/basics.pct.ipynb">✓</a></td>
+            <td align="center"></td>
+            <td align="center"><a href="examples/estimator/classifier/SVC/php/basics.pct.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/SVC/ruby/basics.pct.ipynb">✓</a></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a></td>
+            <td align="center"><a href="examples/estimator/classifier/NuSVC/java/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/NuSVC/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/NuSVC/js/basics.pct.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/NuSVC/c/basics.pct.ipynb">✓</a></td>
+            <td align="center"></td>
+            <td align="center"><a href="examples/estimator/classifier/NuSVC/php/basics.pct.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/NuSVC/ruby/basics.pct.ipynb">✓</a></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a></td>
+            <td align="center"><a href="examples/estimator/classifier/LinearSVC/java/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/LinearSVC/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/LinearSVC/js/basics.pct.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/LinearSVC/c/basics.pct.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/LinearSVC/go/basics.pct.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/LinearSVC/php/basics.pct.ipynb">✓</a></td>
+            <td align="center"><a href="examples/estimator/classifier/LinearSVC/ruby/basics.pct.ipynb">✓</a></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.pct.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/js/basics_embedded.pct.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/c/basics_embedded.pct.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/go/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/go/basics_embedded.pct.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/php/basics.pct.ipynb">✓</a>,  <a href="examples/estimator/classifier/DecisionTreeClassifier/php/basics_embedded.pct.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/DecisionTreeClassifier/ruby/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/DecisionTreeClassifier/ruby/basics_embedded.pct.ipynb">✓ ᴱ</a></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">ensemble.RandomForestClassifier</a></td>
+            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/java/basics_embedded.pct.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/RandomForestClassifier/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/js/basics_embedded.pct.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/RandomForestClassifier/c/basics_embedded.pct.ipynb">✓ ᴱ</a></td>
+            <td align="center">✓ ᴱ</td>
+            <td align="center">✓ ᴱ</td>
+            <td align="center">✓ ᴱ</td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">ensemble.ExtraTreesClassifier</a></td>
+            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/java/basics_embedded.pct.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/ExtraTreesClassifier/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/js/basics.pct.ipynb">✓ ᴱ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/ExtraTreesClassifier/c/basics.pct.ipynb">✓ ᴱ</a></td>
+            <td align="center"></td>
+            <td align="center">✓ ᴱ</td>
+            <td align="center">✓ ᴱ</td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">ensemble.AdaBoostClassifier</a></td>
+            <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/java/basics_embedded.pct.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/AdaBoostClassifier/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/js/basics_embedded.pct.ipynb">✓ ᴱ</a>, <a href="examples/estimator/classifier/AdaBoostClassifier/js/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/AdaBoostClassifier/c/basics_embedded.pct.ipynb">✓ ᴱ</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">neighbors.KNeighborsClassifier</a></td>
+            <td align="center"><a href="examples/estimator/classifier/KNeighborsClassifier/java/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/KNeighborsClassifier/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/KNeighborsClassifier/js/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/KNeighborsClassifier/js/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">naive_bayes.GaussianNB</a></td>
+            <td align="center"><a href="examples/estimator/classifier/GaussianNB/java/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/GaussianNB/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/GaussianNB/js/basics.pct.ipynb">✓</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">naive_bayes.BernoulliNB</a></td>
+            <td align="center"><a href="examples/estimator/classifier/BernoulliNB/java/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/BernoulliNB/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/BernoulliNB/js/basics.pct.ipynb">✓</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html">neural_network.MLPClassifier</a></td>
+            <td align="center"><a href="examples/estimator/classifier/MLPClassifier/java/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/MLPClassifier/java/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"><a href="examples/estimator/classifier/MLPClassifier/js/basics.pct.ipynb">✓</a>, <a href="examples/estimator/classifier/MLPClassifier/js/basics_imported.pct.ipynb">✓ ᴵ</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
+        <tr>
+            <td align="left" width="32%">Regressor</td>
+            <td align="center" width="13%">Java *</td>
+            <td align="center" width="11%">JS</td>
+            <td align="center" width="11%">C</td>
+            <td align="center" width="11%">Go</td>
+            <td align="center" width="11%">PHP</td>
+            <td align="center" width="11%">Ruby</td>
+        </tr>
+        <tr>
+            <td><a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">neural_network.MLPRegressor</a></td>
+            <td align="center"></td>
+            <td align="center"><a href="examples/estimator/regressor/MLPRegressor/js/basics.pct.ipynb">✓</a></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+            <td align="center"></td>
+        </tr>
+    </tbody>
 </table>
 
-✓ = support of `predict`,　ᴾ = support of `predict_proba`,　× = not supported or feasible<br>
-ᴀ = attached model data,　ᴇ = exported model data (JSON),　ᴄ = combined model data
+✓ = is full-featured,　ᴱ = with embedded model data,　ᴵ = with imported model data,　* = default language
 
 
 ## Installation
 
-<table>
-  <tr>
-    <th align="left">Purpose</th>
-    <th align="left">Version</th>
-    <th align="left">Branch</th>
-    <th align="left">Build</th>
-    <th align="left">Command</th>
-  </tr>
-  <tr>
-    <td>Production</td>
-    <td>v0.7.4</td>
-    <td><a href="https://github.com/nok/sklearn-porter/tree/stable">stable</a></td>
-    <td><a href="https://travis-ci.org/nok/sklearn-porter"><img src="https://img.shields.io/travis/nok/sklearn-porter/stable.svg"></a></td>
-    <td><code>pip install sklearn-porter</code></td>
-  </tr>
-  <tr>
-    <td>Development</td>
-    <td>v1.0.0</td>
-    <td><a href="https://github.com/nok/sklearn-porter/tree/main">main</a></td>
-    <td><a href="https://travis-ci.org/nok/sklearn-porter"><img src="https://img.shields.io/travis/nok/sklearn-porter/main.svg"></a></td>
-    <td><code>pip install https://github.com/nok/sklearn-porter/zipball/main</code></td>
-  </tr>
-</table>
+### Stable
 
-In both environments the only prerequisite is `scikit-learn >= 0.17, <= 0.22`.
+[![Build Status stable branch](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter)
+[![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
+[![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
+
+```bash
+$ pip install sklearn-porter
+```
+
+### Development
+
+[![Build Status master branch](https://img.shields.io/travis/nok/sklearn-porter/master.svg)](https://travis-ci.org/nok/sklearn-porter)
+
+If you want the [latest changes](https://github.com/nok/sklearn-porter/blob/master/changelog.md#unreleased), you can install this package from the [master](https://github.com/nok/sklearn-porter/tree/master) branch:
+
+```bash
+$ pip uninstall -y sklearn-porter
+$ pip install --no-cache-dir https://github.com/nok/sklearn-porter/zipball/master
+```
 
 
 ## Usage
 
-### Binder
 
-Try it out yourself by starting an interactive notebook with Binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples/basics/index.pct.ipynb)
+### Export
 
-### Basics
-
-```python
-from sklearn.datasets import load_iris
-from sklearn.tree import DecisionTreeClassifier
-
-from sklearn_porter import port, save, make, test
-
-# 1. Load data and train a dummy classifier:
-X, y = load_iris(return_X_y=True)
-clf = DecisionTreeClassifier()
-clf.fit(X, y)
-
-# 2. Port or transpile an estimator:
-output = port(clf, language='js', template='attached')
-print(output)
-
-# 3. Save the ported estimator:
-src_path, json_path = save(clf, language='js', template='exported', directory='/tmp')
-print(src_path, json_path)
-
-# 4. Make predictions with the ported estimator:
-y_classes, y_probas = make(clf, X[:10], language='js', template='exported')
-print(y_classes, y_probas)
-
-# 5. Test always the ported estimator by making an integrity check:
-score = test(clf, X[:10], language='js', template='exported')
-print(score)
-```
-
-### OOP
+The following example demonstrates how you can transpile a [decision tree estimator](http://scikit-learn.org/stable/modules/tree.html#classification) to Java:
 
 ```python
 from sklearn.datasets import load_iris
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import tree
+from sklearn_porter import Porter
 
-from sklearn_porter import Estimator
-
-# 1. Load data and train a dummy classifier:
-X, y = load_iris(return_X_y=True)
-clf = DecisionTreeClassifier()
+# Load data and train the classifier:
+samples = load_iris()
+X, y = samples.data, samples.target
+clf = tree.DecisionTreeClassifier()
 clf.fit(X, y)
 
-# 2. Port or transpile an estimator:
-est = Estimator(clf, language='js', template='attached')
-output = est.port()
+# Export:
+porter = Porter(clf, language='java')
+output = porter.export(embed_data=True)
 print(output)
-
-# 3. Save the ported estimator:
-est.template = 'exported'
-src_path, json_path = est.save(directory='/tmp')
-print(src_path, json_path)
-
-# 4. Make predictions with the ported estimator:
-y_classes, y_probas = est.make(X[:10])
-print(y_classes, y_probas)
-
-# 5. Test always the ported estimator by making an integrity check:
-score = est.test(X[:10])
-print(score)
 ```
 
-### CLI
+The exported [result](examples/estimator/classifier/DecisionTreeClassifier/java/basics_embedded.pct.py#L60-L110) matches the [official human-readable version](http://scikit-learn.org/stable/_images/iris.svg) of the decision tree.
 
-In addition you can use the sklearn-porter on the command line. The command calls `porter` and is available after the installation.
 
-```
-porter {show,port,save} [-h] [-v]
+### Integrity
 
-porter show [-l {c,go,java,js,php,ruby}] [-h]
-
-porter port <estimator> [-l {c,go,java,js,php,ruby}]
-                        [-t {attached,combined,exported}]
-                        [--skip-warnings] [-h]
-
-porter save <estimator> [-l {c,go,java,js,php,ruby}]
-                        [-t {attached,combined,exported}]
-                        [--directory DIRECTORY]
-                        [--skip-warnings] [-h]
-```
-
-You can serialize an estimator and save it locally. For more details you can read the instructions to  [model persistence](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example).
+You should always check and compute the integrity between the original and the transpiled estimator:
 
 ```python
-from joblib import dump
+# ...
+porter = Porter(clf, language='java')
 
-dump(clf, 'estimator.joblib', compress=0)
+# Compute integrity score:
+integrity = porter.integrity_score(X)
+print(integrity)  # 1.0
 ```
 
-After that the estimator can be transpiled by using the subcommand `port`:
+
+### Prediction
+
+You can compute the prediction(s) in the target programming language:
+
+```python
+# ...
+porter = Porter(clf, language='java')
+
+# Prediction(s):
+Y_java = porter.predict(X)
+y_java = porter.predict(X[0])
+y_java = porter.predict([1., 2., 3., 4.])
+```
+
+
+## Notebooks
+
+You can run and test all notebooks by starting a Jupyter notebook server locally:
 
 ```bash
-porter port estimator.joblib -l js -t attached > estimator.js
+$ make open.examples
+$ make stop.examples
 ```
 
-For further processing you can pass the result to another applications, e.g. [UglifyJS](https://github.com/mishoo/UglifyJS2).
+
+## CLI
+
+In general you can use the porter on the command line:
+
+```
+$ porter <pickle_file> [--to <directory>]
+         [--class_name <class_name>] [--method_name <method_name>]
+         [--export] [--checksum] [--data] [--pipe]
+         [--c] [--java] [--js] [--go] [--php] [--ruby]
+         [--version] [--help]
+```
+
+The following example shows how you can save a trained estimator to the [pickle format](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example):
+
+```python
+# ...
+
+# Extract estimator:
+joblib.dump(clf, 'estimator.pkl', compress=0)
+```
+
+After that the estimator can be transpiled to JavaScript by using the following command:
 
 ```bash
-porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estimator.min.js
+$ porter estimator.pkl --js
 ```
 
-## Known Issues
+The target programming language is changeable on the fly:
 
-- In some rare cases the regression tests of the support vector machine, [SVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), fail since `scikit-learn>=0.22`. Because of that a `QualityWarning` will be raised which should reminds you to evaluate the result by using the `test` method.
+```bash
+$ porter estimator.pkl --c
+$ porter estimator.pkl --java
+$ porter estimator.pkl --php
+$ porter estimator.pkl --java
+$ porter estimator.pkl --ruby
+```
+
+For further processing the argument `--pipe` can be used to pass the result:
+
+```bash
+$ porter estimator.pkl --js --pipe > estimator.js
+```
+
+For instance the result can be minified by using [UglifyJS](https://github.com/mishoo/UglifyJS2):
+
+```bash
+$ porter estimator.pkl --js --pipe | uglifyjs --compress -o estimator.min.js
+```
 
 
 ## Development
 
-### Aliases
-
-The following commands are useful time savers in the daily development:
-
-```bash
-# Install a Python environment with `conda`:
-make setup
-
-# Start a Jupyter notebook with examples:
-make notebook
-
-# Start tests on the host or in a separate docker container:
-make tests
-make tests-docker
-
-# Lint the source code with `pylint`:
-make lint
-
-# Generate notebooks with `jupytext`:
-make examples
-
-# Deploy a new version with `twine`:
-make deploy
-```
-
-### Dependencies
-
-The prerequisite is Python 3.6 which you can install with [conda](https://docs.conda.io/en/latest/miniconda.html):
-
-```bash
-conda env create -n sklearn-porter_3.6 python=3.6
-conda activate sklearn-porter_3.6
-```
-
-After that you have to install all required packages:
-
-```bash
-pip install --no-cache-dir -e ".[development,examples]"
-```
 
 ### Environment
 
-All tests run against these combinations of [scikit-learn](https://github.com/scikit-learn/scikit-learn) and Python versions:
+You have to install required modules for broader development:
 
-<table border="0" width="100%">
-  <tr align="center">
-    <td colspan="2" rowspan="2"></td>
-    <td colspan="4"><strong>Python</strong></td>
-  </tr>
-  <tr align="center">
-    <td><strong>3.5</strong></td>
-    <td><strong>3.6</strong></td>
-    <td><strong>3.7</strong></td>
-    <td><strong>3.8</strong></td>
-  </tr>
-  <tr align="center">
-    <td rowspan="18"><strong>scikit-learn</strong></td>
-    <td rowspan="3"><strong>0.17</strong></td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-    <td rowspan="3">no support<br>by scikit-learn</td>
-  </tr>
-  <tr align="center">
-    <td>numpy 1.9.3</td>
-    <td>numpy 1.9.3</td>
-  </tr>
-  <tr align="center">
-    <td>scipy 0.16.0</td>
-    <td>scipy 0.16.0</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.18</strong></td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-  </tr>
-  <tr align="center">
-    <td>numpy 1.9.3</td>
-    <td>numpy 1.9.3</td>
-  </tr>
-  <tr align="center">
-    <td>scipy 0.16.0</td>
-    <td>scipy 0.16.0</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.19</strong></td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-  </tr>
-  <tr align="center">
-    <td>numpy 1.14.5</td>
-    <td>numpy 1.14.5</td>
-  </tr>
-  <tr align="center">
-    <td>scipy 1.1.0</td>
-    <td>scipy 1.1.0</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.20</strong></td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td rowspan="3">not supported<br>by joblib</td>
-  </tr>
-  <tr align="center">
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-  </tr>
-  <tr align="center">
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.21</strong></td>
-    <td>cython</td>
-    <td>cython</td>
-    <td>cython</td>
-    <td>cython</td>
-  </tr>
-  <tr align="center">
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-  </tr>
-  <tr align="center">
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.22</strong></td>
-    <td>cython</td>
-    <td>cython</td>
-    <td>cython</td>
-    <td>cython</td>
-  </tr>
-  <tr align="center">
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-  </tr>
-  <tr align="center">
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-  </tr>
-</table>
+```bash
+$ make install.environment  # conda environment (optional)
+$ make install.requirements.development  # pip requirements
+```
 
-For the regression tests we have to use specific compilers and interpreters:
+Independently, the following compilers and intepreters are required to cover all tests:
 
 <table>
-  <tr>
-    <th align="left">Name</th>
-    <th align="left">Source</th>
-    <th align="left">Version</th>
-  </tr>
-  <tr>
-    <td>GCC</td>
-    <td><a href="https://gcc.gnu.org">https://gcc.gnu.org</a></td>
-    <td>10.2.1</td>
-  </tr>
-  <tr>
-    <td>Go</td>
-    <td><a href="https://golang.org">https://golang.org</a></td>
-    <td>1.15.15</td>
-  </tr>
-  <tr>
-    <td>Java (OpenJDK)</td>
-    <td><a href="https://openjdk.java.net">https://openjdk.java.net</a></td>
-    <td>1.8.0</td>
-  </tr>
-  <tr>
-    <td>Node.js</td>
-    <td><a href="https://nodejs.org/en/">https://nodejs.org</a></td>
-    <td>12.22.5</td>
-  </tr>
-  <tr>
-    <td>PHP</td>
-    <td><a href="https://www.php.net/">https://www.php.net</a></td>
-    <td>7.4.28</td>
-  </tr>
-  <tr>
-    <td>Ruby</td>
-    <td><a href="https://www.ruby-lang.org/en/">https://www.ruby-lang.org</a></td>
-    <td>2.7.4</td>
-  </tr>
+    <thead>
+        <tr>
+            <td width="33%"><strong>Name</strong></td>
+            <td width="33%"><strong>Version</strong></td>
+            <td width="33%"><strong>Command</strong></td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><a href="https://gcc.gnu.org">GCC</a></td>
+            <td><code>>=4.2</code></td>
+            <td><code>gcc --version</code></td>
+        </tr>
+        <tr>
+            <td><a href="https://java.com">Java</a></td>
+            <td><code>>=1.6</code></td>
+            <td><code>java -version</code></td>
+        </tr>
+        <tr>
+            <td><a href="http://www.php.net">PHP</a></td>
+            <td><code>>=5.6</code></td>
+            <td><code>php --version</code></td>
+        </tr>
+        <tr>
+            <td><a href="https://www.ruby-lang.org">Ruby</a></td>
+            <td><code>>=2.4.1</code></td>
+            <td><code>ruby --version</code></td>
+        </tr>
+        <tr>
+            <td><a href="https://golang.org">Go</a></td>
+            <td><code>>=1.7.4</code></td>
+            <td><code>go version</code></td>
+        </tr>
+        <tr>
+            <td><a href="https://nodejs.org">Node.js</a></td>
+            <td><code>>=6</code></td>
+            <td><code>node --version</code></td>
+        </tr>
+    </tbody>
 </table>
 
-Please notice that in general you can use older compilers and interpreters with the generated source code. For instance you can use Java 1.6 to compile and run models.
-
-### Logging
-
-You can activate logging by changing the option `logging.level`.
-
-```python
-from sklearn_porter import options
-
-from logging import DEBUG
-
-options['logging.level'] = DEBUG
-```
 
 ### Testing
 
-You can run the unit and regression tests either on your local machine (host) or in a separate running Docker container.
+The tests cover module functions as well as matching predictions of transpiled estimators. Start all tests with:
 
 ```bash
-pytest tests -v \
-  --cov=sklearn_porter \
-  --disable-warnings \
-  --numprocesses=auto \
-  -p no:doctest \
-  -o python_files="EstimatorTest.py" \
-  -o python_functions="test_*"
+$ make test
 ```
 
+The test files have a specific pattern: `'[Algorithm][Language]Test.py'`:
+
 ```bash
-docker build \
-  -t sklearn-porter \
-  --build-arg PYTHON_VER=${PYTHON_VER:-python=3.6} \
-  --build-arg SKLEARN_VER=${SKLEARN_VER:-scikit-learn=0.21} \
-  .
+$ pytest tests -v -o python_files='RandomForest*Test.py'
+$ pytest tests -v -o python_files='*JavaTest.py'
+```
 
-docker run \
-  -v $(pwd):/home/abc/repo \
-  --detach \
-  --entrypoint=/bin/bash \
-  --name test \
-  -t sklearn-porter
+While you are developing new features or fixes, you can reduce the test duration by changing the number of tests:
 
-docker exec -it test ./docker-entrypoint.sh \
-  pytest tests -v \
-    --cov=sklearn_porter \
-    --disable-warnings \
-    --numprocesses=auto \
-    -p no:doctest \
-    -o python_files="EstimatorTest.py" \
-    -o python_functions="test_*"
+```bash
+$ N_RANDOM_FEATURE_SETS=5 N_EXISTING_FEATURE_SETS=10 \
+  pytest tests -v -o python_files='*JavaTest.py'
+```
 
-docker rm -f $(docker ps --all --filter name=test -q)
+
+### Quality
+
+It's highly recommended to ensure the code quality. For that [Pylint](https://github.com/PyCQA/pylint/) is used. Start the linter with:
+
+```bash
+$ make lint
 ```
 
 
@@ -736,8 +387,8 @@ docker rm -f $(docker ps --all --filter name=test -q)
 
 If you use this implementation in you work, please add a reference/citation to the paper. You can use the following BibTeX entry:
 
-```bibtex
-@unpublished{sklearn_porter,
+```
+@unpublished{skpodamo,
   author = {Darius Morawiec},
   title = {sklearn-porter},
   note = {Transpile trained scikit-learn estimators to C, Java, JavaScript and others},
@@ -748,4 +399,9 @@ If you use this implementation in you work, please add a reference/citation to t
 
 ## License
 
-The package is Open Source Software released under the [BSD 3-Clause](LICENSE) license.
+The module is Open Source Software released under the [MIT](license.txt) license.
+
+
+## Questions?
+
+Don't be shy and feel free to contact me on [Twitter](https://twitter.com/darius_morawiec) or [Gitter](https://gitter.im/nok/sklearn-porter).
