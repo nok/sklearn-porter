@@ -21,7 +21,7 @@ clf.fit(X, y)
 # **Step 2**: Port or transpile an estimator:
 
 # %%
-from sklearn_porter import port, save, make, test
+from sklearn_porter import make, port, save, test
 
 output = port(clf, language='js', template='attached')
 
@@ -31,7 +31,9 @@ print(output)
 # **Step 3**: Save the ported estimator:
 
 # %%
-src_path, json_path = save(clf, language='js', template='exported', directory='/tmp')
+src_path, json_path = save(
+    clf, language='js', template='exported', directory='/tmp'
+)
 
 print(src_path, json_path)
 

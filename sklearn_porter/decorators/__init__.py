@@ -1,4 +1,4 @@
-class alias(object):
+class alias:
     """
     Alias class that can be used as a decorator for making methods callable
     through other names (or "aliases").
@@ -12,6 +12,7 @@ class alias(object):
 
     Source: http://code.activestate.com/recipes/577659-decorators-for-adding-aliases-to-methods-in-a-clas/
     """
+
     def __init__(self, *aliases):
         """Constructor."""
         self.aliases = set(aliases)
@@ -52,7 +53,7 @@ def aliased(aliased_class):
     Source: http://code.activestate.com/recipes/577659-decorators-for-adding-aliases-to-methods-in-a-clas/
     """
     original_methods = aliased_class.__dict__.copy()
-    for name, method in original_methods.items():
+    for method in original_methods.values():
         if hasattr(method, '_aliases'):
             # Add the aliases for 'method', but don't override any
             # previously-defined attribute of 'aliased_class'

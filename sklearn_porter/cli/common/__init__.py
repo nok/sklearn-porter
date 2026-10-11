@@ -4,11 +4,7 @@ from sklearn_porter import __version__ as porter_version
 
 
 def arg_help(p: ArgumentParser):
-    p.add_argument(
-        '-h',
-        '--help',
-        help="Show this help message and exit."
-    )
+    p.add_argument('-h', '--help', help='Show this help message and exit.')
 
 
 def arg_version(p: ArgumentParser):
@@ -17,7 +13,7 @@ def arg_version(p: ArgumentParser):
         '--version',
         action='version',
         version=str(porter_version),
-        help='Show the version number and exit.'
+        help='Show the version number and exit.',
     )
 
 
@@ -26,7 +22,7 @@ def arg_skip_warnings(p: ArgumentParser):
         '--skip-warnings',
         action='store_true',
         default=False,
-        help='Ignore and skip raised warnings.'
+        help='Ignore and skip raised warnings.',
     )
 
 
@@ -40,5 +36,5 @@ def arg_json(p: ArgumentParser):
         required=False,
         default=False,
         action='store_true',
-        help='Return result in JSON format.'
+        help='Return result in JSON format.',
     )

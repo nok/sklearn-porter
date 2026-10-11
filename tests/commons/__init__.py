@@ -1,7 +1,6 @@
 from collections import namedtuple
 from os import environ
 from pathlib import Path
-from typing import List
 
 from sklearn.datasets import load_breast_cancer, load_digits, load_iris
 from sklearn.ensemble import (
@@ -32,7 +31,7 @@ Candidate = namedtuple('Candidate', 'name clazz create')
 Dataset = namedtuple('Dataset', 'name data target')
 
 
-def get_classifiers() -> List[Candidate]:
+def get_classifiers() -> list[Candidate]:
     """Get a list of available classifiers."""
     _classifiers = [
         DecisionTreeClassifier,
@@ -51,14 +50,14 @@ def get_classifiers() -> List[Candidate]:
         yield Candidate(name=e.__name__, clazz=e, create=e)
 
 
-def get_regressors() -> List[Candidate]:
+def get_regressors() -> list[Candidate]:
     """Get a list of available regressors."""
     _regressors = [MLPRegressor]
     for e in _regressors:
         yield Candidate(name=e.__name__, clazz=e, create=e)
 
 
-def get_datasets() -> List[Dataset]:
+def get_datasets() -> list[Dataset]:
     """Get a list of available toy datasets."""
 
     digits_ds = load_digits()

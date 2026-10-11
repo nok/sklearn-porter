@@ -1,15 +1,15 @@
-from os import environ, sep
+from os import sep
 from pathlib import Path
-from typing import List, Optional, Tuple
 
 import numpy as np
 
 from tests.commons import (
-    PORTER_N_UNI_REGRESSION_TESTS, PORTER_N_GEN_REGRESSION_TESTS
+    PORTER_N_GEN_REGRESSION_TESTS,
+    PORTER_N_UNI_REGRESSION_TESTS,
 )
 
 
-def fs_mkdir(base_dir: Path, dirs: List[Tuple[str, str]]) -> Path:
+def fs_mkdir(base_dir: Path, dirs: list[tuple[str, str]]) -> Path:
     sub_dirs = sep.join(['__'.join(kv) for kv in dirs])
     dir_ = base_dir / sub_dirs
     dir_.mkdir(parents=True, exist_ok=True)
@@ -17,7 +17,7 @@ def fs_mkdir(base_dir: Path, dirs: List[Tuple[str, str]]) -> Path:
 
 
 def dataset_generate_x(
-    x: np.ndarray, n_samples: Optional[int] = None
+    x: np.ndarray, n_samples: int | None = None
 ) -> np.ndarray:
     """Helper function to create uniform test samples."""
     if not isinstance(x, np.ndarray) or x.ndim != 2:
@@ -33,7 +33,7 @@ def dataset_generate_x(
 
 
 def dataset_uniform_x(
-    x: np.ndarray, n_samples: Optional[int] = None
+    x: np.ndarray, n_samples: int | None = None
 ) -> np.ndarray:
     """Helper function to pick random test samples."""
     if not isinstance(x, np.ndarray) or x.ndim != 2:

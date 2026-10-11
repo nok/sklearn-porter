@@ -1,13 +1,12 @@
+from collections.abc import Callable
 from copy import deepcopy
 from json import dumps, encoder
-from typing import Tuple, Union, Callable
 
 import numpy as np
 from loguru import logger as L
 
 # scikit-learn
-from sklearn.neural_network import \
-    MLPClassifier as MLPClassifierClass
+from sklearn.neural_network import MLPClassifier as MLPClassifierClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -47,7 +46,9 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         try:
             est.out_activation_
         except AttributeError:
-            raise exception.NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(
+                self.estimator_name
+            ) from None
 
         # Architecture:
         n_inputs = len(est.coefs_[0])
@@ -58,9 +59,11 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         n_hidden_layers = list(n_hidden_layers)
         layers = [n_inputs] + n_hidden_layers + [n_outputs]
 
-        self.meta_info = dict(n_features=n_inputs, )
-        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
+        self.meta_info = dict(
+            n_features=n_inputs,
+        )
+        L.info(f'Meta info (keys): {self.meta_info.keys()}')
+        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         self.model_data = dict(
             layers=list(map(int, layers[1:])),
@@ -71,8 +74,8 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         if self.estimator_name == 'MLPClassifier':
             self.model_data['output_activation'] = est.out_activation_
 
-        L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
+        L.info(f'Model data (keys): {self.model_data.keys()}')
+        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
     def port(
         self,
@@ -81,7 +84,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         class_name: str,
         converter: Callable[[object], str],
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Port an estimator.
 
@@ -107,10 +110,12 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         """
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=class_name,
-            to_json=to_json,
-        ))
+        plas.update(
+            dict(
+                class_name=class_name,
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -139,7 +144,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             type=tpl_int,
             name='layers',
             values=', '.join(list(map(str, layers_val))),
-            n=len(layers_val)
+            n=len(layers_val),
         )
 
         # Convert weights:
@@ -149,8 +154,9 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             layer_weights = ', '.join(
                 [
                     tpl_in_brackets.render(
-                        value=', '.join(list(map(converter, l)))
-                    ) for l in layer
+                        value=', '.join(list(map(converter, neuron)))
+                    )
+                    for neuron in layer
                 ]
             )
             weights_str.append(tpl_in_brackets.render(value=layer_weights))
@@ -172,11 +178,12 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
                 list(
                     tpl_in_brackets.render(
                         value=', '.join(list(map(converter, v)))
-                    ) for v in bias_val
+                    )
+                    for v in bias_val
                 )
             ),
             n=len(bias_val),
-            m=len(bias_val[0])
+            m=len(bias_val[0]),
         )
 
         plas.update(

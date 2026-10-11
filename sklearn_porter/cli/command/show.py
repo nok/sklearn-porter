@@ -1,7 +1,6 @@
 from argparse import RawTextHelpFormatter
 from logging import DEBUG
 from textwrap import dedent
-from typing import Dict
 
 # sklearn-porter
 from sklearn_porter import options, show
@@ -10,8 +9,10 @@ from sklearn_porter.language import LANGUAGES
 
 
 def config(sub_parser):
-    header = 'The subcommand `show` lists all supported ' \
-             'estimators and programming languages.'
+    header = (
+        'The subcommand `show` lists all supported '
+        'estimators and programming languages.'
+    )
     footer = dedent("""
         Examples:
           `porter show`
@@ -33,7 +34,7 @@ def config(sub_parser):
         type=str,
         required=False,
         choices=LANGUAGES.keys(),
-        help='The name of the programming language.'
+        help='The name of the programming language.',
     )
     for fn in (arg_debug, arg_help):
         fn(parser)
@@ -41,7 +42,7 @@ def config(sub_parser):
     parser.set_defaults(func=main)
 
 
-def main(args: Dict, silent: bool = False) -> str:
+def main(args: dict, silent: bool = False) -> str:
     if args.get('debug'):
         options['logging.level'] = DEBUG
 

@@ -1,7 +1,7 @@
 import os
 import warnings
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Tuple
 
 import numpy as np
 import pytest
@@ -27,14 +27,11 @@ from sklearn.tree import DecisionTreeClassifier
 # sklearn-porter
 from sklearn_porter import exceptions as exception
 from sklearn_porter.cli.__main__ import parse_args
-from sklearn_porter.Estimator import Estimator, can, show
 from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.cli.command.show import main as show_main
-
-from tests.commons import (
-    CANDIDATES, CLASSIFIERS, DATASETS, Candidate, Dataset
-)
+from sklearn_porter.Estimator import Estimator, can, show
+from tests.commons import CANDIDATES, CLASSIFIERS, DATASETS, Candidate, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 
@@ -48,7 +45,7 @@ def test_unsupported_estimator():
 
 
 def test_unsupported_objects():
-    x = [[1., -1., 2.], [2., 0., 0.], [0., 1., -1.]]
+    x = [[1.0, -1.0, 2.0], [2.0, 0.0, 0.0], [0.0, 1.0, -1.0]]
     binarizer = preprocessing.Binarizer().fit(x)
     with pytest.raises(ValueError):
         Estimator(binarizer)
@@ -87,9 +84,7 @@ def test_show_output():
 
 def test_optional_kwargs(fitted_tree):
     est = Estimator(
-        fitted_tree,
-        class_name='Estimator',
-        converter=lambda x: '{:.3f}'.format(x)
+        fitted_tree, class_name='Estimator', converter=lambda x: f'{x:.3f}'
     )
     assert est.class_name == 'Estimator'
     assert est.converter(0.11111) == '0.111'
@@ -106,8 +101,7 @@ def test_common_properties(fitted_tree):
 
 @pytest.mark.regression
 def test_and_compare_multiprocessed_results(fitted_tree):
-    dataset = load_iris()
-    x, y = dataset.data, dataset.target
+    x = load_iris().data
     est = Estimator(fitted_tree)
     res_a = est.make(x[:3], n_jobs=False)
     res_b = est.make(x[:3], n_jobs=True)
@@ -118,28 +112,28 @@ def test_and_compare_multiprocessed_results(fitted_tree):
 
 @pytest.mark.regression
 def test_file_handling(fitted_tree, tmp_root_dir):
-    dataset = load_iris()
-    x, y = dataset.data, dataset.target
+    x = load_iris().data
     est = Estimator(fitted_tree, language='java')
 
     # Delete generated files:
     tmp_dir_delete = fs_mkdir(
-        tmp_root_dir, [
+        tmp_root_dir,
+        [
             ('test', 'file_handling_delete'),
-        ]
+        ],
     )
     est.make(
-        x[:3],
-        n_jobs=False,
-        directory=tmp_dir_delete,
-        delete_created_files=True
+        x[:3], n_jobs=False, directory=tmp_dir_delete, delete_created_files=True
     )
     assert len(os.listdir(str(tmp_dir_delete))) == 0
 
     # Keep generated files:
-    tmp_dir_keep = fs_mkdir(tmp_root_dir, [
-        ('test', 'file_handling_keep'),
-    ])
+    tmp_dir_keep = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'file_handling_keep'),
+        ],
+    )
     est.make(
         x[:3], n_jobs=False, directory=tmp_dir_keep, delete_created_files=False
     )
@@ -214,7 +208,7 @@ def test_unfitted_estimator_in_pipeline():
         'InvalidTemplateError',
     ],
 )
-def test_invalid_params_on_port_method(candidate: Candidate, params: Tuple):
+def test_invalid_params_on_port_method(candidate: Candidate, params: tuple):
     """Test initialization with valid base estimator."""
     est = candidate.create().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
     with pytest.raises(params[0]):
@@ -233,7 +227,7 @@ def test_invalid_params_on_port_method(candidate: Candidate, params: Tuple):
         'InvalidTemplateError',
     ],
 )
-def test_invalid_params_on_save_method(candidate: Candidate, params: Tuple):
+def test_invalid_params_on_save_method(candidate: Candidate, params: tuple):
     """Test initialization with valid base estimator."""
     est = candidate.create().fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
     with pytest.raises(params[0]):
@@ -257,8 +251,7 @@ def test_extraction_from_grid_search_cv():
 
     # Test fitted optimizer:
     search.fit(
-        X=[[1, 1], [2, 2], [3, 3], [1, 1], [2, 2], [3, 3]],
-        y=[1, 2, 3, 1, 2, 3]
+        X=[[1, 1], [2, 2], [3, 3], [1, 1], [2, 2], [3, 3]], y=[1, 2, 3, 1, 2, 3]
     )
     est = Estimator(search)
     assert isinstance(est.estimator, SVC)
@@ -281,8 +274,7 @@ def test_extraction_from_randomized_search_cv():
 
     # Test fitted optimizer:
     search.fit(
-        X=[[1, 1], [2, 2], [3, 3], [1, 1], [2, 2], [3, 3]],
-        y=[1, 2, 3, 1, 2, 3]
+        X=[[1, 1], [2, 2], [3, 3], [1, 1], [2, 2], [3, 3]], y=[1, 2, 3, 1, 2, 3]
     )
     est = Estimator(search)
     assert isinstance(est.estimator, SVC)
@@ -296,49 +288,37 @@ def test_extraction_from_randomized_search_cv():
         np.array([5.1, 3.5, 1.4, 0.2]),
         [[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]],
         np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]]),
-        [np.array([5.1, 3.5, 1.4, 0.2]),
-         np.array([5.1, 3.5, 1.4, 0.2])],
+        [np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])],
     ],
     ids=[  # fmt: off
-        '{}_{}'.format(
-            type([5.1, 3.5, 1.4, 0.2]).__qualname__,
-            type([5.1, 3.5, 1.4, 0.2][0]).__qualname__,
-        ),
-        '{}_{}'.format(
-            type(np.array([5.1, 3.5, 1.4, 0.2])).__qualname__,
-            type(np.array([5.1, 3.5, 1.4, 0.2])[0]).__qualname__,
-        ),
-        '{}_{}'.format(
-            type([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]]).__qualname__,
-            type([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]][0]).__qualname__,
-        ),
-        '{}_{}'.format(
-            type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])).__qualname__,
-            type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])[0]).__qualname__,
-        ),
-        '{}_{}'.format(
-            type([np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])]).__qualname__,
-            type([np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])][0]).__qualname__,
-        ),
+        f'{type([5.1, 3.5, 1.4, 0.2]).__qualname__}_{type([5.1, 3.5, 1.4, 0.2][0]).__qualname__}',
+        f'{type(np.array([5.1, 3.5, 1.4, 0.2])).__qualname__}_{type(np.array([5.1, 3.5, 1.4, 0.2])[0]).__qualname__}',
+        f'{type([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]]).__qualname__}_{type([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]][0]).__qualname__}',
+        f'{type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])).__qualname__}_{type(np.array([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])[0]).__qualname__}',
+        f'{type([np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])]).__qualname__}_{type([np.array([5.1, 3.5, 1.4, 0.2]), np.array([5.1, 3.5, 1.4, 0.2])][0]).__qualname__}',
     ],  # fmt: on
 )
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 def test_make_the_inputs_outputs(
-    tmp_root_dir: Path, x, fitted_tree: DecisionTreeClassifier, template: str,
-    language: str
+    tmp_root_dir: Path,
+    x,
+    fitted_tree: DecisionTreeClassifier,
+    template: str,
+    language: str,
 ):
     if not can(fitted_tree, language, template, 'predict'):
         pytest.skip('Skip unsupported estimator/language/template combination')
 
     # Directory:
     tmp_dir = fs_mkdir(
-        tmp_root_dir, [
+        tmp_root_dir,
+        [
             ('test', 'make_the_inputs_outputs'),
             ('estimator', 'DecisionTreeClassifier'),
             ('language', language),
             ('template', template),
-        ]
+        ],
     )
 
     # Estimator:
@@ -349,7 +329,7 @@ def test_make_the_inputs_outputs(
         template=template,
         directory=tmp_dir,
         n_jobs=False,
-        delete_created_files=False
+        delete_created_files=False,
     )
 
     assert isinstance(out, tuple)
@@ -398,13 +378,14 @@ def test_regressions_of_classifiers(
 
     # Directory:
     tmp_dir = fs_mkdir(
-        tmp_root_dir, [
+        tmp_root_dir,
+        [
             ('test', 'regressions_of_classifiers'),
             ('estimator', candidate.name),
             ('dataset', dataset.name),
             ('language', language),
             ('template', template),
-        ]
+        ],
     )
 
     warnings.filterwarnings('default')
@@ -414,19 +395,21 @@ def test_regressions_of_classifiers(
             language=language,
             template=template,
             directory=tmp_dir,
-            delete_created_files=False
+            delete_created_files=False,
         )
-        assert score == 1.
+        assert score == 1.0
     except exception.CodeTooLarge:
-        msg = 'The code too large for the combination: ' \
-              'estimator: {}, language: {}, template: {}, dataset: {}' \
-              ''.format(candidate.name, language, template, dataset.name)
-        warnings.warn(msg)
+        msg = (
+            'The code too large for the combination: '
+            f'estimator: {candidate.name}, language: {language}, template: {template}, dataset: {dataset.name}'
+        )
+        warnings.warn(msg, stacklevel=2)
     except exception.TooManyConstants:
-        msg = 'The code has too many constants and can not be compiled: ' \
-              'estimator: {}, language: {}, template: {}, dataset: {}' \
-              ''.format(candidate.name, language, template, dataset.name)
-        warnings.warn(msg)
+        msg = (
+            'The code has too many constants and can not be compiled: '
+            f'estimator: {candidate.name}, language: {language}, template: {template}, dataset: {dataset.name}'
+        )
+        warnings.warn(msg, stacklevel=2)
     except Exception as e:
         pytest.fail('Unexpected exception ... ' + str(e))
 
@@ -438,7 +421,7 @@ def test_cli_subcommand(subcommand: str, joblib_model_path: Path):
         args += [str(joblib_model_path), '--skip-warnings']
     parsed = parse_args(args)
     cmd = args[0]
-    assert (parsed.cmd == cmd)
+    assert parsed.cmd == cmd
 
 
 def test_cli_subcommand_show():
@@ -467,41 +450,43 @@ def test_cli_subcommand_port(joblib_model_path: Path):
             model=str(joblib_model_path),
             langauge='java',
             template='combined',
-            skip_warnings=True
+            skip_warnings=True,
         ),
-        silent=True
+        silent=True,
     )
     assert 'This file is generated by' in out
 
     out = port_main(
         dict(language='js', model=str(joblib_model_path), skip_warnings=True),
-        silent=True
+        silent=True,
     )
     assert 'node' in out and 'require.main === module' in out
 
 
 def test_cli_subcommand_save(tmp_root_dir: Path, joblib_model_path: Path):
     tmp_dir = fs_mkdir(
-        tmp_root_dir, [
+        tmp_root_dir,
+        [
             ('test', 'cli_subcommand_save'),
             ('case', 'a'),
-        ]
+        ],
     )
     out = save_main(
         dict(
             model=str(joblib_model_path),
             directory=str(tmp_dir),
-            skip_warnings=True
+            skip_warnings=True,
         ),
-        silent=True
+        silent=True,
     )
     assert 'Saved files' in out
 
     tmp_dir = fs_mkdir(
-        tmp_root_dir, [
+        tmp_root_dir,
+        [
             ('test', 'cli_subcommand_save'),
             ('case', 'b'),
-        ]
+        ],
     )
     out = save_main(
         dict(
@@ -509,8 +494,8 @@ def test_cli_subcommand_save(tmp_root_dir: Path, joblib_model_path: Path):
             langauge='java',
             template='combined',
             directory=str(tmp_dir),
-            skip_warnings=True
+            skip_warnings=True,
         ),
-        silent=True
+        silent=True,
     )
     assert 'Saved files' in out

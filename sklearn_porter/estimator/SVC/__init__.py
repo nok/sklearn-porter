@@ -1,7 +1,7 @@
 import warnings
+from collections.abc import Callable
 from copy import deepcopy
 from json import dumps, encoder
-from typing import Tuple, Union, Callable
 
 from loguru import logger as L
 
@@ -62,7 +62,9 @@ class SVC(EstimatorBase, EstimatorApiABC):
         try:
             est.support_vectors_
         except AttributeError:
-            raise exception.NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(
+                self.estimator_name
+            ) from None
 
         # Check kernel type:
         supported_kernels = ['linear', 'rbf', 'poly', 'sigmoid']
@@ -71,11 +73,13 @@ class SVC(EstimatorBase, EstimatorApiABC):
             msg = msg.format(params['kernel'])
             raise exception.NotSupportedYetError(msg)
 
-        msg = 'In some rare cases the regression tests of ported support ' \
-              'vector machines failed significantly. Because of that we ' \
-              'recommend to evaluate the ported estimator by using the ' \
-              '`test` method.'
-        warnings.warn(msg, exception.QualityWarning)
+        msg = (
+            'In some rare cases the regression tests of ported support '
+            'vector machines failed significantly. Because of that we '
+            'recommend to evaluate the ported estimator by using the '
+            '`test` method.'
+        )
+        warnings.warn(msg, exception.QualityWarning, stacklevel=2)
 
         # Use the computed gamma value (e.g. of 'scale' or 'auto'):
         gamma = float(est._gamma)
@@ -94,8 +98,8 @@ class SVC(EstimatorBase, EstimatorApiABC):
             coef0=params['coef0'],
             degree=params['degree'],
         )
-        L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
+        L.info(f'Model data (keys): {self.model_data.keys()}')
+        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
         self.meta_info = dict(
             n_classes=len(est.classes_),
@@ -105,8 +109,8 @@ class SVC(EstimatorBase, EstimatorApiABC):
             n_coeffs=len(self.model_data.get('coeffs')),
             n_inters=len(self.model_data.get('inters')),
         )
-        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
+        L.info(f'Meta info (keys): {self.meta_info.keys()}')
+        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
     def port(
         self,
@@ -115,7 +119,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         class_name: str,
         converter: Callable[[object], str],
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Port an estimator.
 
@@ -141,10 +145,12 @@ class SVC(EstimatorBase, EstimatorApiABC):
         """
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=class_name,
-            to_json=to_json,
-        ))
+        plas.update(
+            dict(
+                class_name=class_name,
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -174,7 +180,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
             type=tpl_int,
             name='weights',
             values=', '.join(weights_val),
-            n=len(weights_val)
+            n=len(weights_val),
         )
 
         # Convert vectors:
@@ -186,11 +192,12 @@ class SVC(EstimatorBase, EstimatorApiABC):
                 list(
                     tpl_in_brackets.render(
                         value=', '.join(list(map(converter, v)))
-                    ) for v in vectors_val
+                    )
+                    for v in vectors_val
                 )
             ),
             n=len(vectors_val),
-            m=len(vectors_val[0])
+            m=len(vectors_val[0]),
         )
 
         # Convert coefficients:
@@ -202,11 +209,12 @@ class SVC(EstimatorBase, EstimatorApiABC):
                 list(
                     tpl_in_brackets.render(
                         value=', '.join(list(map(converter, v)))
-                    ) for v in coeffs_val
+                    )
+                    for v in coeffs_val
                 )
             ),
             n=len(coeffs_val),
-            m=len(coeffs_val[0])
+            m=len(coeffs_val[0]),
         )
 
         # Convert interceptions:
@@ -215,13 +223,16 @@ class SVC(EstimatorBase, EstimatorApiABC):
             type=tpl_double,
             name='inters',
             values=', '.join(list(map(converter, inters_val))),
-            n=len(self.model_data.get('inters'))
+            n=len(self.model_data.get('inters')),
         )
 
         # Convert kernel:
         kernel_val = self.model_data.get('kernel')
-        kernel_str = str(kernel_val)[0] \
-            if language == enum.Language.C else str(kernel_val)
+        kernel_str = (
+            str(kernel_val)[0]
+            if language == enum.Language.C
+            else str(kernel_val)
+        )
 
         # Convert gamma:
         gamma_val = self.model_data.get('gamma')
@@ -244,7 +255,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
                 kernel=kernel_str,
                 gamma=gamma_str,
                 coef0=coef0_str,
-                degree=degree_str
+                degree=degree_str,
             )
         )
 

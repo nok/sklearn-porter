@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
+from collections.abc import Callable
 from pathlib import Path
-from typing import Optional, Tuple, Union, Callable
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -12,6 +12,7 @@ class EstimatorApiABC(ABC):
     main class `sklearn_porter.Estimator` and all subclasses
     in `sklearn-porter.estimator.*`.
     """
+
     @abstractmethod
     def port(
         self,
@@ -20,7 +21,7 @@ class EstimatorApiABC(ABC):
         class_name: str,
         converter: Callable[[object], str],
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Port an estimator.
 
@@ -44,6 +45,7 @@ class EstimatorApiABC(ABC):
         -------
         The ported estimator.
         """
+
     @abstractmethod
     def save(
         self,
@@ -51,9 +53,9 @@ class EstimatorApiABC(ABC):
         template: enum.Template,
         class_name: str,
         converter: Callable[[object], str],
-        directory: Optional[Union[str, Path]] = None,
+        directory: str | Path | None = None,
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Dump an estimator to the filesystem.
 

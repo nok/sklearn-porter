@@ -1,7 +1,15 @@
 from enum import Enum
 
-from sklearn_porter.language import *
 from sklearn_porter import exceptions as exception
+from sklearn_porter.language import (  # noqa: F401 (re-export LANGUAGES)
+    LANGUAGES,
+    PHP,
+    C,
+    Go,
+    Java,
+    JavaScript,
+    Ruby,
+)
 
 
 class Method(Enum):
@@ -14,7 +22,7 @@ class Method(Enum):
             try:
                 method = Method[method.upper()]
             except KeyError:
-                raise exception.InvalidMethodError(method)
+                raise exception.InvalidMethodError(method) from None
         return method
 
 
@@ -32,7 +40,7 @@ class Template(Enum):
             try:
                 template = Template[template.upper()]
             except KeyError:
-                raise exception.InvalidTemplateError(template)
+                raise exception.InvalidTemplateError(template) from None
         return template
 
 
@@ -50,5 +58,5 @@ class Language(Enum):
             try:
                 language = Language[language.upper()]
             except KeyError:
-                raise exception.InvalidLanguageError(language)
+                raise exception.InvalidLanguageError(language) from None
         return language

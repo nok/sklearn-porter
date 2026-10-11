@@ -1,6 +1,6 @@
 import sys
-from os import environ
 from argparse import ArgumentParser, RawTextHelpFormatter
+from os import environ
 from textwrap import dedent
 
 from sklearn_porter import __version__ as porter_version
@@ -9,14 +9,14 @@ from sklearn_porter.cli.common import arg_help, arg_version
 
 
 def parse_args(args):
-    header = 'sklearn-porter CLI v{}'.format(porter_version)
+    header = f'sklearn-porter CLI v{porter_version}'
     footer = dedent(
         """
         Examples:
           `porter show`
           `porter port model --language js --template attached`
           `porter save model --directory /tmp --skip-warnings`
-        
+
         Manuals:
           https://github.com/nok/sklearn-porter
           https://github.com/scikit-learn/scikit-learn
@@ -59,5 +59,5 @@ def main():
         func(vars(args))
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

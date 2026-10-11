@@ -14,7 +14,7 @@ LANGUAGES = OrderedDict(
         Java.KEY: Java,
         JavaScript.KEY: JavaScript,
         PHP.KEY: PHP,
-        Ruby.KEY: Ruby
+        Ruby.KEY: Ruby,
     }
 )
 

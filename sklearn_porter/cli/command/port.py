@@ -2,7 +2,6 @@ from argparse import RawTextHelpFormatter
 from logging import DEBUG
 from pathlib import Path
 from textwrap import dedent
-from typing import Dict
 
 # sklearn-porter
 from sklearn_porter import Estimator, options
@@ -13,8 +12,10 @@ from sklearn_porter.language import LANGUAGES
 
 def config(sub_parser):
 
-    header = 'The subcommand `port` transpiles a trained ' \
-             'estimator to a specific programming language.'
+    header = (
+        'The subcommand `port` transpiles a trained '
+        'estimator to a specific programming language.'
+    )
     footer = dedent(
         """
         Examples:
@@ -43,7 +44,7 @@ def config(sub_parser):
         type=str,
         required=False,
         choices=LANGUAGES.keys(),
-        help='The name of the programming language.'
+        help='The name of the programming language.',
     )
     parser.add_argument(
         '-t',
@@ -51,7 +52,7 @@ def config(sub_parser):
         type=str,
         required=False,
         choices=['attached', 'combined', 'exported'],
-        help='The name of the template.'
+        help='The name of the template.',
     )
 
     for fn in (arg_skip_warnings, arg_debug, arg_help):
@@ -60,7 +61,7 @@ def config(sub_parser):
     parser.set_defaults(func=main)
 
 
-def main(args: Dict, silent: bool = False):
+def main(args: dict, silent: bool = False):
     if args.get('debug'):
         options['logging.level'] = DEBUG
 
