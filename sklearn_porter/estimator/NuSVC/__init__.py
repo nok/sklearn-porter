@@ -1,5 +1,5 @@
 # scikit-learn
-from sklearn.svm.classes import NuSVC as NuSVCClass
+from sklearn.svm import NuSVC as NuSVCClass
 
 # sklearn-porter
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase

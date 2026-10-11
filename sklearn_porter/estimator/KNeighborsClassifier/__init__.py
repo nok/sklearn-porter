@@ -5,7 +5,7 @@ from typing import Tuple, Union, Callable
 from loguru import logger as L
 
 # scikit-learn
-from sklearn.neighbors.classification import \
+from sklearn.neighbors import \
     KNeighborsClassifier as KNeighborsClassifierClass
 
 # sklearn-porter

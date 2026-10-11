@@ -7,14 +7,14 @@ from jinja2 import Environment
 from loguru import logger as L
 
 # scikit-learn
-from sklearn.tree.tree import \
-    DecisionTreeClassifier as DecisionTreeClassifierClass
+from sklearn.tree import DecisionTreeClassifier as DecisionTreeClassifierClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.utils import get_class_counts
 
 
 class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
@@ -67,15 +67,14 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         # Is the estimator fitted?
         try:
-            getattr(est, 'n_features_')  # for sklearn >  0.19
-            getattr(est.tree_, 'value')  # for sklearn <= 0.18
+            getattr(est, 'tree_')
         except AttributeError:
             raise exception.NotFittedEstimatorError(self.estimator_name)
 
         # Extract and save meta information:
         self.meta_info = dict(
-            n_features=est.n_features_,
-            n_classes=len(est.tree_.value.tolist()[0][0]),
+            n_features=est.n_features_in_,
+            n_classes=len(est.classes_),
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
         L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
@@ -86,7 +85,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             rights=est.tree_.children_right.tolist(),
             thresholds=est.tree_.threshold.tolist(),
             indices=est.tree_.feature.tolist(),
-            classes=[[int(c) for c in l[0]] for l in est.tree_.value.tolist()],
+            classes=get_class_counts(est.tree_),
         )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
         L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))

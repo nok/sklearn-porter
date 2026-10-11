@@ -5,9 +5,10 @@ from typing import Callable, Dict, Tuple, Union
 
 from loguru import logger as L
 
-# scikit-learn
 from jinja2 import Environment
-from sklearn.ensemble.forest import \
+
+# scikit-learn
+from sklearn.ensemble import \
     RandomForestClassifier as RandomForestClassifierClass
 from sklearn.tree import DecisionTreeClassifier
 
@@ -16,6 +17,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.utils import get_class_counts
 
 
 class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
@@ -54,9 +56,9 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         est = self.estimator  # alias
 
         # Check type of base estimators:
-        if not isinstance(est.base_estimator, DecisionTreeClassifier):
+        if not isinstance(est.estimator_, DecisionTreeClassifier):
             msg = 'The used base estimator `{}` is not supported yet.'
-            msg = msg.format(est.base_estimator.__class__.__qualname__)
+            msg = msg.format(est.estimator_.__class__.__qualname__)
             raise exception.NotSupportedYetError(msg)
 
         # Check number of base estimators:
@@ -67,14 +69,14 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             est.estimators_[idx] for idx in range(est.n_estimators)
         ]
         self.n_estimators = len(self.estimators)
-        self.n_features = est.estimators_[0].n_features_
+        self.n_features = est.n_features_in_
         self.n_classes = est.n_classes_
 
         # Extract and save meta information:
         self.meta_info = dict(
             n_estimators=est.n_estimators,
             n_classes=est.n_classes_,
-            n_features=est.estimators_[0].n_features_,
+            n_features=est.n_features_in_,
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
         L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
@@ -87,7 +89,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                     lefts=e.tree_.children_left.tolist(),
                     rights=e.tree_.children_right.tolist(),
                     thresholds=e.tree_.threshold.tolist(),
-                    classes=[c[0] for c in e.tree_.value.astype(int).tolist()],
+                    classes=get_class_counts(e.tree_),
                     indices=e.tree_.feature.tolist()
                 )
             )
