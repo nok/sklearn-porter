@@ -1,7 +1,6 @@
 
 # sklearn-porter
 
-[![Build Status stable branch](https://img.shields.io/travis/nok/sklearn-porter/stable.svg)](https://travis-ci.org/nok/sklearn-porter)
 [![codecov](https://codecov.io/gh/nok/sklearn-porter/branch/stable/graph/badge.svg)](https://codecov.io/gh/nok/sklearn-porter)
 [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples/basics/index.pct.ipynb)
 [![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg?color=blue)](https://pypi.python.org/pypi/sklearn-porter)
@@ -343,21 +342,18 @@ This table gives an overview over all supported combinations of estimators, prog
     <th align="left">Purpose</th>
     <th align="left">Version</th>
     <th align="left">Branch</th>
-    <th align="left">Build</th>
     <th align="left">Command</th>
   </tr>
   <tr>
     <td>Production</td>
     <td>v0.7.4</td>
     <td><a href="https://github.com/nok/sklearn-porter/tree/stable">stable</a></td>
-    <td><a href="https://travis-ci.org/nok/sklearn-porter"><img src="https://img.shields.io/travis/nok/sklearn-porter/stable.svg"></a></td>
     <td><code>pip install sklearn-porter</code></td>
   </tr>
   <tr>
     <td>Development</td>
     <td>v1.0.0</td>
     <td><a href="https://github.com/nok/sklearn-porter/tree/main">main</a></td>
-    <td><a href="https://travis-ci.org/nok/sklearn-porter"><img src="https://img.shields.io/travis/nok/sklearn-porter/main.svg"></a></td>
     <td><code>pip install https://github.com/nok/sklearn-porter/zipball/main</code></td>
   </tr>
 </table>
