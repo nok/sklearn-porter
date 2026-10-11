@@ -1,8 +1,7 @@
 
 # sklearn-porter
 
-[![codecov](https://codecov.io/gh/nok/sklearn-porter/branch/stable/graph/badge.svg)](https://codecov.io/gh/nok/sklearn-porter)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples/basics/index.pct.ipynb)
+[![CI](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml/badge.svg)](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg?color=blue)](https://pypi.python.org/pypi/sklearn-porter)
 [![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
 [![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://raw.githubusercontent.com/nok/sklearn-porter/main/LICENSE)
@@ -337,35 +336,20 @@ This table gives an overview over all supported combinations of estimators, prog
 
 ## Installation
 
-<table>
-  <tr>
-    <th align="left">Purpose</th>
-    <th align="left">Version</th>
-    <th align="left">Branch</th>
-    <th align="left">Command</th>
-  </tr>
-  <tr>
-    <td>Production</td>
-    <td>v0.7.4</td>
-    <td><a href="https://github.com/nok/sklearn-porter/tree/stable">stable</a></td>
-    <td><code>pip install sklearn-porter</code></td>
-  </tr>
-  <tr>
-    <td>Development</td>
-    <td>v1.0.0</td>
-    <td><a href="https://github.com/nok/sklearn-porter/tree/main">main</a></td>
-    <td><code>pip install https://github.com/nok/sklearn-porter/zipball/main</code></td>
-  </tr>
-</table>
+```bash
+# with uv:
+uv add sklearn-porter
 
-In both environments the only prerequisite is `scikit-learn >= 0.17, <= 0.22`.
+# or with pip:
+pip install sklearn-porter
+```
+
+The prerequisites are Python `>= 3.11` and `scikit-learn >= 1.8`. For older versions of scikit-learn you can use [sklearn-porter v0.7.4](https://pypi.org/project/sklearn-porter/0.7.4/).
+
+To compile and run the ported estimators with `make` and `test` you need the compiler or interpreter of the target language, e.g. `node` for JavaScript.
 
 
 ## Usage
-
-### Binder
-
-Try it out yourself by starting an interactive notebook with Binder: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/nok/sklearn-porter/release/1.0.0?filepath=examples/basics/index.pct.ipynb)
 
 ### Basics
 
@@ -472,210 +456,58 @@ porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estimato
 
 ## Known Issues
 
-- In some rare cases the regression tests of the support vector machine, [SVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), fail since `scikit-learn>=0.22`. Because of that a `QualityWarning` will be raised which should reminds you to evaluate the result by using the `test` method.
+- In some rare cases the regression tests of the support vector machines, [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), fail. Because of that a `QualityWarning` will be raised which should remind you to evaluate the result by using the `test` method.
+- The [AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) is ported with the `SAMME` algorithm, because scikit-learn removed `SAMME.R`.
 
 
 ## Development
 
-### Aliases
+### Setup
 
-The following commands are useful time savers in the daily development:
-
-```bash
-# Install a Python environment with `conda`:
-make setup
-
-# Start a Jupyter notebook with examples:
-make notebook
-
-# Start tests on the host or in a separate docker container:
-make tests
-make tests-docker
-
-# Lint the source code with `pylint`:
-make lint
-
-# Generate notebooks with `jupytext`:
-make examples
-
-# Deploy a new version with `twine`:
-make deploy
-```
-
-### Dependencies
-
-The prerequisite is Python 3.6 which you can install with [conda](https://docs.conda.io/en/latest/miniconda.html):
+The Python version and all dependencies are managed with [uv](https://docs.astral.sh/uv/):
 
 ```bash
-conda env create -n sklearn-porter_3.6 python=3.6
-conda activate sklearn-porter_3.6
+uv sync --all-groups
 ```
 
-After that you have to install all required packages:
+### Commands
 
 ```bash
-pip install --no-cache-dir -e ".[development,examples]"
+make lint             # Lint and check the format with ruff
+make format           # Fix and format the code with ruff
+make test             # Run the fast tests on the host
+make test-regression  # Run the regression tests in Docker
+make test-all         # Run all tests with coverage in Docker
+make notebook         # Start a Jupyter notebook with the examples
+make examples         # Generate the notebooks with jupytext
 ```
 
-### Environment
+### Testing
 
-All tests run against these combinations of [scikit-learn](https://github.com/scikit-learn/scikit-learn) and Python versions:
+The fast tests run on every push and pull request with [GitHub Actions](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml) on Python 3.11 to 3.14:
 
-<table border="0" width="100%">
-  <tr align="center">
-    <td colspan="2" rowspan="2"></td>
-    <td colspan="4"><strong>Python</strong></td>
-  </tr>
-  <tr align="center">
-    <td><strong>3.5</strong></td>
-    <td><strong>3.6</strong></td>
-    <td><strong>3.7</strong></td>
-    <td><strong>3.8</strong></td>
-  </tr>
-  <tr align="center">
-    <td rowspan="18"><strong>scikit-learn</strong></td>
-    <td rowspan="3"><strong>0.17</strong></td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-    <td rowspan="3">no support<br>by scikit-learn</td>
-  </tr>
-  <tr align="center">
-    <td>numpy 1.9.3</td>
-    <td>numpy 1.9.3</td>
-  </tr>
-  <tr align="center">
-    <td>scipy 0.16.0</td>
-    <td>scipy 0.16.0</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.18</strong></td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-  </tr>
-  <tr align="center">
-    <td>numpy 1.9.3</td>
-    <td>numpy 1.9.3</td>
-  </tr>
-  <tr align="center">
-    <td>scipy 0.16.0</td>
-    <td>scipy 0.16.0</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.19</strong></td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-    <td rowspan="3">not supported<br>by scikit-learn</td>
-  </tr>
-  <tr align="center">
-    <td>numpy 1.14.5</td>
-    <td>numpy 1.14.5</td>
-  </tr>
-  <tr align="center">
-    <td>scipy 1.1.0</td>
-    <td>scipy 1.1.0</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.20</strong></td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td>cython 0.27.3</td>
-    <td rowspan="3">not supported<br>by joblib</td>
-  </tr>
-  <tr align="center">
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-  </tr>
-  <tr align="center">
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.21</strong></td>
-    <td>cython</td>
-    <td>cython</td>
-    <td>cython</td>
-    <td>cython</td>
-  </tr>
-  <tr align="center">
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-  </tr>
-  <tr align="center">
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-  </tr>
-  <tr align="center">
-    <td rowspan="3"><strong>0.22</strong></td>
-    <td>cython</td>
-    <td>cython</td>
-    <td>cython</td>
-    <td>cython</td>
-  </tr>
-  <tr align="center">
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-    <td>numpy</td>
-  </tr>
-  <tr align="center">
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-    <td>scipy</td>
-  </tr>
-</table>
+```bash
+uv run pytest
+```
 
-For the regression tests we have to use specific compilers and interpreters:
+The regression tests compile and execute the ported estimators and compare their predictions with the original estimators of scikit-learn. They take a long time and require all compilers and interpreters, so they are marked with `regression`, skipped by default and only run locally in a [Docker](Dockerfile) container:
 
-<table>
-  <tr>
-    <th align="left">Name</th>
-    <th align="left">Source</th>
-    <th align="left">Version</th>
-  </tr>
-  <tr>
-    <td>GCC</td>
-    <td><a href="https://gcc.gnu.org">https://gcc.gnu.org</a></td>
-    <td>10.2.1</td>
-  </tr>
-  <tr>
-    <td>Go</td>
-    <td><a href="https://golang.org">https://golang.org</a></td>
-    <td>1.15.15</td>
-  </tr>
-  <tr>
-    <td>Java (OpenJDK)</td>
-    <td><a href="https://openjdk.java.net">https://openjdk.java.net</a></td>
-    <td>1.8.0</td>
-  </tr>
-  <tr>
-    <td>Node.js</td>
-    <td><a href="https://nodejs.org/en/">https://nodejs.org</a></td>
-    <td>12.22.5</td>
-  </tr>
-  <tr>
-    <td>PHP</td>
-    <td><a href="https://www.php.net/">https://www.php.net</a></td>
-    <td>7.4.28</td>
-  </tr>
-  <tr>
-    <td>Ruby</td>
-    <td><a href="https://www.ruby-lang.org/en/">https://www.ruby-lang.org</a></td>
-    <td>2.7.4</td>
-  </tr>
-</table>
+```bash
+make test-regression
+```
 
-Please notice that in general you can use older compilers and interpreters with the generated source code. For instance you can use Java 1.6 to compile and run models.
+The Docker image contains these compilers and interpreters (Debian bookworm):
+
+| Language   | Compiler / Interpreter |
+|------------|------------------------|
+| C          | GCC 12                 |
+| Go         | Go 1.19                |
+| Java       | OpenJDK 17             |
+| JavaScript | Node.js 18             |
+| PHP        | PHP 8.2                |
+| Ruby       | Ruby 3.1               |
+
+In general you can use older compilers and interpreters with the generated source code.
 
 ### Logging
 
@@ -689,45 +521,13 @@ from logging import DEBUG
 options['logging.level'] = DEBUG
 ```
 
-### Testing
+### Contributing
 
-You can run the unit and regression tests either on your local machine (host) or in a separate running Docker container.
+The commit messages and pull request titles follow the [Conventional Commits](https://www.conventionalcommits.org/) specification, e.g. `feat: add support for ...` or `fix(php): ...`. Pull requests are squash merged into `main`, so the pull request title becomes the commit message.
 
-```bash
-pytest tests -v \
-  --cov=sklearn_porter \
-  --disable-warnings \
-  --numprocesses=auto \
-  -p no:doctest \
-  -o python_files="EstimatorTest.py" \
-  -o python_functions="test_*"
-```
+### Releases
 
-```bash
-docker build \
-  -t sklearn-porter \
-  --build-arg PYTHON_VER=${PYTHON_VER:-python=3.6} \
-  --build-arg SKLEARN_VER=${SKLEARN_VER:-scikit-learn=0.21} \
-  .
-
-docker run \
-  -v $(pwd):/home/abc/repo \
-  --detach \
-  --entrypoint=/bin/bash \
-  --name test \
-  -t sklearn-porter
-
-docker exec -it test ./docker-entrypoint.sh \
-  pytest tests -v \
-    --cov=sklearn_porter \
-    --disable-warnings \
-    --numprocesses=auto \
-    -p no:doctest \
-    -o python_files="EstimatorTest.py" \
-    -o python_functions="test_*"
-
-docker rm -f $(docker ps --all --filter name=test -q)
-```
+Releases are created with [release-please](https://github.com/googleapis/release-please-action): it collects the Conventional Commits on `main` in a release pull request, which updates the version and the [changelog](CHANGELOG.md). Merging the release pull request creates the Git tag and the GitHub release. After that the package is published to [TestPyPI](https://test.pypi.org/project/sklearn-porter/), verified and finally published to [PyPI](https://pypi.org/project/sklearn-porter/).
 
 
 ## Citation
