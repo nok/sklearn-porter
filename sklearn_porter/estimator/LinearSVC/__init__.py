@@ -5,7 +5,7 @@ from typing import Tuple, Union, Callable
 from loguru import logger as L
 
 # scikit-learn
-from sklearn.svm.classes import LinearSVC as LinearSVCClass
+from sklearn.svm import LinearSVC as LinearSVCClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum

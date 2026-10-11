@@ -1,27 +1,28 @@
 import os
-import random as rd
-import shutil
 import warnings
-from os import environ
 from pathlib import Path
-from sys import version_info
 from typing import Callable, Tuple
 
 import numpy as np
 import pytest
-from joblib import dump
 
 # scikit-learn
 from sklearn import preprocessing
 from sklearn.base import BaseEstimator
 from sklearn.datasets import load_iris
-from sklearn.ensemble.forest import ExtraTreesClassifier, RandomForestClassifier
-from sklearn.ensemble.weight_boosting import AdaBoostClassifier
+from sklearn.ensemble import (
+    AdaBoostClassifier,
+    ExtraTreesClassifier,
+    RandomForestClassifier,
+)
 from sklearn.linear_model import SGDClassifier
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
-from sklearn.neighbors.classification import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, LinearSVC, NuSVC
-from sklearn.tree.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
 from sklearn_porter import exceptions as exception
@@ -32,62 +33,9 @@ from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.cli.command.show import main as show_main
 
 from tests.commons import (
-    SKLEARN_VERSION, CANDIDATES, CLASSIFIERS, DATASETS, Candidate, Dataset,
-    ROOT_DIR, RESOURCES_DIR
+    CANDIDATES, CLASSIFIERS, DATASETS, Candidate, Dataset
 )
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
-
-# Force deterministic number generation:
-np.random.seed(0)
-rd.seed(0)
-
-# Check python version:
-if version_info[:2] < (3, 6):
-    pytest.skip('tests requires python >= 3.6', allow_module_level=True)
-
-environ['SKLEARN_PORTER_PYTEST'] = 'True'
-
-
-@pytest.fixture(scope='session')
-def joblib_model_path() -> Path:
-    dataset = load_iris()
-    x, y = dataset.data, dataset.target
-    tree = DecisionTreeClassifier(random_state=0)
-    tree.fit(X=x, y=y)
-
-    version = '_'.join(list(map(str, SKLEARN_VERSION[:2])))
-    fname = 'estimator_{}.joblib'.format(version)
-    fpath = RESOURCES_DIR / 'estimators' / fname
-    dump(tree, str(fpath), compress=0)
-    return fpath
-
-
-@pytest.fixture(scope='session')
-def tmp_root_dir(worker_id) -> Path:
-    """Fixture to get the path to the temporary directory."""
-
-    # Delete the previous generated temporary directory:
-    tmp_dir = ROOT_DIR / 'tmp'
-    if worker_id is 'master':
-        if tmp_dir.exists():
-            shutil.rmtree(str(tmp_dir.resolve()), ignore_errors=True)
-    tmp_dir.mkdir(parents=True, exist_ok=True)
-
-    # Add Java dependencies:
-    gson_fname = 'gson.jar'
-    gson_path = RESOURCES_DIR / 'dependencies' / gson_fname
-    environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(gson_path.resolve())
-
-    return tmp_dir
-
-
-@pytest.fixture(scope='session')
-def fitted_tree() -> DecisionTreeClassifier:
-    dataset = load_iris()
-    x, y = dataset.data, dataset.target
-    tree = DecisionTreeClassifier(random_state=0)
-    tree.fit(X=x, y=y)
-    return tree
 
 
 def test_unsupported_estimator():
@@ -156,6 +104,7 @@ def test_common_properties(fitted_tree):
     assert isinstance(est.estimator, BaseEstimator)
 
 
+@pytest.mark.regression
 def test_and_compare_multiprocessed_results(fitted_tree):
     dataset = load_iris()
     x, y = dataset.data, dataset.target
@@ -167,6 +116,7 @@ def test_and_compare_multiprocessed_results(fitted_tree):
     assert res_a[0][2] == res_b[0][2]
 
 
+@pytest.mark.regression
 def test_file_handling(fitted_tree, tmp_root_dir):
     dataset = load_iris()
     x, y = dataset.data, dataset.target
@@ -196,48 +146,31 @@ def test_file_handling(fitted_tree, tmp_root_dir):
     assert len(os.listdir(str(tmp_dir_keep))) == 2
 
 
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 18), reason='requires scikit-learn >= v0.18'
-)
 def test_list_of_regressors():
     """Test and compare list of regressors."""
-    try:
-        from sklearn.neural_network.multilayer_perceptron import MLPRegressor
-    except ImportError:
-        pass
-    else:
-        regressors = [MLPRegressor]
-        regressors = sorted([r.__class__.__name__ for r in regressors])
-        result = sorted([r.__class__.__name__ for r in Estimator.regressors()])
-        assert regressors == result
+    regressors = sorted([r.__name__ for r in [MLPRegressor]])
+    result = sorted([r.__name__ for r in Estimator.regressors()])
+    assert regressors == result
 
 
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 18), reason='requires scikit-learn >= v0.18'
-)
 def test_list_of_classifiers():
     """Test and compare list of classifiers."""
-    try:
-        from sklearn.neural_network.multilayer_perceptron import MLPClassifier
-    except ImportError:
-        pass
-    else:
-        classifiers = [
-            AdaBoostClassifier,
-            BernoulliNB,
-            DecisionTreeClassifier,
-            ExtraTreesClassifier,
-            GaussianNB,
-            KNeighborsClassifier,
-            LinearSVC,
-            NuSVC,
-            RandomForestClassifier,
-            SVC,
-            MLPClassifier,
-        ]
-        classifiers = sorted([c.__class__.__name__ for c in classifiers])
-        result = sorted([c.__class__.__name__ for c in Estimator.classifiers()])
-        assert classifiers == result
+    classifiers = [
+        AdaBoostClassifier,
+        BernoulliNB,
+        DecisionTreeClassifier,
+        ExtraTreesClassifier,
+        GaussianNB,
+        KNeighborsClassifier,
+        LinearSVC,
+        NuSVC,
+        RandomForestClassifier,
+        SVC,
+        MLPClassifier,
+    ]
+    classifiers = sorted([c.__name__ for c in classifiers])
+    result = sorted([c.__name__ for c in Estimator.classifiers()])
+    assert classifiers == result
 
 
 @pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
@@ -254,26 +187,16 @@ def test_invalid_estimator(obj):
         Estimator(obj)
 
 
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 15), reason='requires scikit-learn >= v0.15'
-)
 def test_estimator_extraction_from_pipeline():
     """Test the extraction of an estimator from a pipeline."""
-    from sklearn.pipeline import Pipeline
-
     pipeline = Pipeline([('SVM', SVC())])
     pipeline.fit(X=[[1, 1], [1, 1], [2, 2]], y=[1, 1, 2])
     est = Estimator(pipeline)
     assert isinstance(est.estimator, SVC)
 
 
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 15), reason='requires scikit-learn >= v0.15'
-)
 def test_unfitted_estimator_in_pipeline():
     """Test the extraction of an estimator from a pipeline."""
-    from sklearn.pipeline import Pipeline
-
     pipeline = Pipeline([('SVM', SVC())])
     with pytest.raises(exception.NotFittedEstimatorError):
         Estimator(pipeline)
@@ -317,12 +240,8 @@ def test_invalid_params_on_save_method(candidate: Candidate, params: Tuple):
         Estimator(est).save(**params[1])
 
 
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 19), reason='requires scikit-learn >= v0.19'
-)
 def test_extraction_from_grid_search_cv():
     """Test the extraction from an optimizer."""
-    from sklearn.model_selection import GridSearchCV
 
     params = {
         'kernel': ('linear', 'rbf'),
@@ -345,12 +264,8 @@ def test_extraction_from_grid_search_cv():
     assert isinstance(est.estimator, SVC)
 
 
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 19), reason='requires scikit-learn >= v0.19'
-)
 def test_extraction_from_randomized_search_cv():
     """Test the extraction from an optimizer."""
-    from sklearn.model_selection import RandomizedSearchCV
 
     params = {
         'kernel': ('linear', 'rbf'),
@@ -373,6 +288,7 @@ def test_extraction_from_randomized_search_cv():
     assert isinstance(est.estimator, SVC)
 
 
+@pytest.mark.regression
 @pytest.mark.parametrize(
     'x',
     [
@@ -451,6 +367,7 @@ def test_make_the_inputs_outputs(
         assert list(y_proba[0]) == [1, 0, 0]
 
 
+@pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
@@ -597,12 +514,3 @@ def test_cli_subcommand_save(tmp_root_dir: Path, joblib_model_path: Path):
         silent=True
     )
     assert 'Saved files' in out
-
-
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] <= (0, 20), reason='requires scikit-learn >= v0.20'
-)
-def test_cli_subcommand_port_old_serialization():
-    with pytest.raises(DeprecationWarning):
-        pickle_model_path = RESOURCES_DIR / 'estimators' / 'estimator_0_19.pkl'
-        port_main(dict(model=str(pickle_model_path)), silent=True)

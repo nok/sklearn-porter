@@ -1,7 +1,7 @@
 import urllib.request
-from abc import ABCMeta
 from collections import OrderedDict
 from functools import partial
+from importlib import import_module
 from json import JSONDecodeError, loads
 from multiprocessing import Pool, cpu_count
 from os import environ, remove
@@ -22,8 +22,21 @@ from tabulate import tabulate
 # scikit-learn
 from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
-from sklearn.ensemble import BaseEnsemble
+from sklearn.ensemble import (
+    AdaBoostClassifier,
+    BaseEnsemble,
+    ExtraTreesClassifier,
+    RandomForestClassifier,
+)
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
+from sklearn.model_selection._search import BaseSearchCV
+from sklearn.naive_bayes import BernoulliNB, GaussianNB
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.pipeline import Pipeline
+from sklearn.svm import SVC, LinearSVC, NuSVC
+from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
 from sklearn_porter import decorators as decorator
@@ -208,107 +221,53 @@ class Estimator:
 
         # Check BaseEnsemble:
         if isinstance(est, BaseEnsemble):
-            try:
-                est.estimators_  # for sklearn > 0.19
-            except AttributeError:
-                raise exception.NotFittedEstimatorError(qualname)
-            try:
-                est.estimators_[0]  # for sklearn <= 0.18
-            except IndexError:
+            estimators = getattr(est, 'estimators_', None)
+            if not estimators:
                 raise exception.NotFittedEstimatorError(qualname)
 
         # Check GridSearchCV and RandomizedSearchCV:
         L.debug('Check whether the estimator is embedded in an optimizer.')
-        try:
-            from sklearn.model_selection._search import (
-                BaseSearchCV,
-            )  # pylint: disable=protected-access
-        except ImportError:
+        if isinstance(est, BaseSearchCV):
+            L.debug('└> Yes, the estimator is embedded in an optimizer.')
+            if not isinstance(est, (GridSearchCV, RandomizedSearchCV)):
+                msg = (
+                    'The used optimizer `{}` is not supported '
+                    'by this version of sklearn-porter. Try to '
+                    'extract the internal estimator manually '
+                    'and pass it.'.format(qualname)
+                )
+                L.error(msg)
+                raise ValueError(msg)
+            if getattr(est, 'best_estimator_', None) is None:
+                msg = 'The embedded estimator is not fitted.'
+                L.error(msg)
+                raise ValueError(msg)
+            est = est.best_estimator_
             msg = (
-                'Your installed version of scikit-learn v{} '
-                'does not support optimizers in general.'
-                ''.format(sklearn_version)
+                'Extract the embedded estimator of type `{}` '
+                'from optimizer `{}`.'.format(_get_qualname(est), qualname)
             )
-            L.warning(msg)
+            L.info(msg)
         else:
-            if isinstance(est, BaseSearchCV):
-                L.debug('└> Yes, the estimator is embedded in an optimizer.')
-                try:
-                    from sklearn.model_selection import GridSearchCV
-                    from sklearn.model_selection import RandomizedSearchCV
-                except ImportError:
-                    msg = (
-                        'Your installed version of scikit-learn '
-                        'v{} does not support `GridSearchCV` or '
-                        '`RandomizedSearchCV`.'.format(sklearn_version)
-                    )
-                    L.warning(msg)
-                else:
-                    optimizers = (GridSearchCV, RandomizedSearchCV)
-                    if isinstance(est, optimizers):
-                        # pylint: disable=protected-access
-                        is_fitted = (
-                            hasattr(est, 'best_estimator_')
-                            and est.best_estimator_
-                        )
-                        if is_fitted:
-                            est = est.best_estimator_
-                            est_qualname = _get_qualname(est)
-                            msg = (
-                                'Extract the embedded estimator of '
-                                'type `{}` from optimizer `{}`.'
-                                ''.format(est_qualname, qualname)
-                            )
-                            L.info(msg)
-                        # pylint: enable=protected-access
-                        else:
-                            msg = 'The embedded estimator is not fitted.'
-                            L.error(msg)
-                            raise ValueError(msg)
-                    else:
-                        msg = (
-                            'The used optimizer `{}` is not supported '
-                            'by this version of sklearn-porter. Try to '
-                            'extract the internal estimator manually '
-                            'and pass it.'.format(qualname)
-                        )
-                        L.error(msg)
-                        raise ValueError(msg)
-            else:
-                L.debug('└> No, the estimator is not embedded in an optimizer.')
+            L.debug('└> No, the estimator is not embedded in an optimizer.')
 
         # Check Pipeline:
         L.debug('Check whether the estimator is embedded in a pipeline.')
-        try:
-            from sklearn.pipeline import Pipeline
-        except ImportError:
+        if isinstance(est, Pipeline):
+            L.debug('└> Yes, the estimator is embedded in a pipeline.')
+            final_est = est._final_estimator
+            if final_est is None or final_est == 'passthrough':
+                msg = 'There is no final estimator in the pipeline.'
+                L.error(msg)
+                raise ValueError(msg)
+            est = final_est
             msg = (
-                'Your installed version of scikit-learn '
-                'v{} does not support pipelines.'.format(sklearn_version)
+                'Extract the embedded estimator of type '
+                '`{}` from the pipeline.'.format(_get_qualname(est))
             )
-            L.warning(msg)
+            L.info(msg)
         else:
-            if isinstance(est, Pipeline):
-                L.debug('└> Yes, the estimator is embedded in a pipeline.')
-                # pylint: disable=protected-access
-                has_est = (
-                    hasattr(est, '_final_estimator') and est._final_estimator
-                )
-                if has_est:
-                    est = est._final_estimator
-                    est_qualname = _get_qualname(est)
-                    msg = (
-                        'Extract the embedded estimator of type '
-                        '`{}` from the pipeline.'.format(est_qualname)
-                    )
-                    L.info(msg)
-                # pylint: enable=protected-access
-                else:
-                    msg = 'There is no final estimator is the pipeline.'
-                    L.error(msg)
-                    raise ValueError(msg)
-            else:
-                L.debug('└> No, the estimator is not embedded in a pipeline.')
+            L.debug('└> No, the estimator is not embedded in a pipeline.')
 
         # Check ClassifierMixin:
         L.debug(
@@ -362,138 +321,11 @@ class Estimator:
         L.debug('Start loading the passed estimator: `{}`.'.format(qualname))
 
         name = est.__class__.__qualname__
-
-        msg = (
-            'Your installed version of scikit-learn v{} does not support '
-            'the `{}` estimator. Please update your local installation '
-            'of scikit-learn with `pip install -U scikit-learn`.'
-        )
-
-        # Classifiers:
-        if name == 'DecisionTreeClassifier':
-            from sklearn.tree.tree import (
-                DecisionTreeClassifier as DecisionTreeClassifierClass,
-            )
-
-            if isinstance(est, DecisionTreeClassifierClass):
-                from sklearn_porter.estimator.DecisionTreeClassifier import (
-                    DecisionTreeClassifier,
-                )
-
-                return DecisionTreeClassifier(est)
-        elif name == 'AdaBoostClassifier':
-            from sklearn.ensemble.weight_boosting import (
-                AdaBoostClassifier as AdaBoostClassifierClass,
-            )
-
-            if isinstance(estimator, AdaBoostClassifierClass):
-                from sklearn_porter.estimator.AdaBoostClassifier import (
-                    AdaBoostClassifier,
-                )
-
-                return AdaBoostClassifier(est)
-        elif name == 'RandomForestClassifier':
-            from sklearn.ensemble.forest import (
-                RandomForestClassifier as RandomForestClassifierClass,
-            )
-
-            if isinstance(estimator, RandomForestClassifierClass):
-                from sklearn_porter.estimator.RandomForestClassifier import (
-                    RandomForestClassifier,
-                )
-
-                return RandomForestClassifier(est)
-        elif name == 'ExtraTreesClassifier':
-            from sklearn.ensemble.forest import (
-                ExtraTreesClassifier as ExtraTreesClassifierClass,
-            )
-
-            if isinstance(estimator, ExtraTreesClassifierClass):
-                from sklearn_porter.estimator.ExtraTreesClassifier import (
-                    ExtraTreesClassifier,
-                )
-
-                return ExtraTreesClassifier(est)
-        elif name == 'LinearSVC':
-            from sklearn.svm.classes import LinearSVC as LinearSVCClass
-
-            if isinstance(estimator, LinearSVCClass):
-                from sklearn_porter.estimator.LinearSVC import LinearSVC
-
-                return LinearSVC(est)
-        elif name == 'SVC':
-            from sklearn.svm.classes import SVC as SVCClass
-
-            if isinstance(estimator, SVCClass):
-                from sklearn_porter.estimator.SVC import SVC
-
-                return SVC(est)
-        elif name == 'NuSVC':
-            from sklearn.svm.classes import NuSVC as NuSVCClass
-
-            if isinstance(estimator, NuSVCClass):
-                from sklearn_porter.estimator.NuSVC import NuSVC
-
-                return NuSVC(est)
-        elif name == 'KNeighborsClassifier':
-            from sklearn.neighbors.classification import (
-                KNeighborsClassifier as KNeighborsClassifierClass,
-            )
-
-            if isinstance(estimator, KNeighborsClassifierClass):
-                from sklearn_porter.estimator.KNeighborsClassifier import (
-                    KNeighborsClassifier,
-                )
-
-                return KNeighborsClassifier(est)
-        elif name == 'GaussianNB':
-            from sklearn.naive_bayes import GaussianNB as GaussianNBClass
-
-            if isinstance(estimator, GaussianNBClass):
-                from sklearn_porter.estimator.GaussianNB import GaussianNB
-
-                return GaussianNB(est)
-        elif name == 'BernoulliNB':
-            from sklearn.naive_bayes import BernoulliNB as BernoulliNBClass
-
-            if isinstance(estimator, BernoulliNBClass):
-                from sklearn_porter.estimator.BernoulliNB import BernoulliNB
-
-                return BernoulliNB(est)
-        elif name == 'MLPClassifier':
-            try:
-                from sklearn.neural_network.multilayer_perceptron import (
-                    MLPClassifier as MLPClassifierClass,
-                )
-            except ImportError:
-                msg = msg.format(sklearn_version, name)
-                L.error(msg)
-                raise ValueError(msg)
-            else:
-                if isinstance(estimator, MLPClassifierClass):
-                    from sklearn_porter.estimator.MLPClassifier import (
-                        MLPClassifier,
-                    )
-
-                    return MLPClassifier(est)
-
-        # Regressors:
-        elif name == 'MLPRegressor':
-            try:
-                from sklearn.neural_network.multilayer_perceptron import (
-                    MLPRegressor as MLPRegressorClass,
-                )
-            except ImportError:
-                msg = msg.format(sklearn_version, name)
-                L.error(msg)
-                raise ValueError(msg)
-            else:
-                if isinstance(estimator, MLPRegressorClass):
-                    from sklearn_porter.estimator.MLPRegressor import (
-                        MLPRegressor,
-                    )
-
-                    return MLPRegressor(est)
+        clazzes = Estimator.classifiers() + Estimator.regressors()
+        clazzes = {clazz.__name__: clazz for clazz in clazzes}
+        if name in clazzes and isinstance(est, clazzes[name]):
+            module = import_module('sklearn_porter.estimator.{}'.format(name))
+            return getattr(module, name)(est)
 
         msg = 'The passed estimator `{}` is not supported.'.format(name)
         raise exception.NotSupportedYetError(msg)
@@ -849,20 +681,7 @@ class Estimator:
         estimators : Tuple
             A set of supported classifiers.
         """
-
-        # scikit-learn version < 0.18.0
-        from sklearn.tree.tree import DecisionTreeClassifier
-        from sklearn.ensemble.weight_boosting import AdaBoostClassifier
-        from sklearn.ensemble.forest import RandomForestClassifier
-        from sklearn.ensemble.forest import ExtraTreesClassifier
-        from sklearn.svm.classes import LinearSVC
-        from sklearn.svm.classes import SVC
-        from sklearn.svm.classes import NuSVC
-        from sklearn.neighbors.classification import KNeighborsClassifier
-        from sklearn.naive_bayes import GaussianNB
-        from sklearn.naive_bayes import BernoulliNB
-
-        classifiers = (
+        return (
             AdaBoostClassifier,
             BernoulliNB,
             DecisionTreeClassifier,
@@ -870,22 +689,11 @@ class Estimator:
             GaussianNB,
             KNeighborsClassifier,
             LinearSVC,
+            MLPClassifier,
             NuSVC,
             RandomForestClassifier,
             SVC,
         )
-
-        # scikit-learn version >= 0.18.0
-        try:
-            from sklearn.neural_network.multilayer_perceptron import (
-                MLPClassifier,
-            )
-        except ImportError:
-            pass
-        else:
-            classifiers += (MLPClassifier, )
-
-        return classifiers
 
     @staticmethod
     def regressors() -> Tuple:
@@ -897,21 +705,7 @@ class Estimator:
         estimators : Tuple
             A set of supported regressors.
         """
-
-        # scikit-learn version < 0.18.0
-        regressors = ()
-
-        # scikit-learn version >= 0.18.0
-        try:
-            from sklearn.neural_network.multilayer_perceptron import (
-                MLPRegressor,
-            )
-        except ImportError:
-            pass
-        else:
-            regressors += (MLPRegressor, )
-
-        return regressors
+        return (MLPRegressor, )
 
     def __repr__(self):
         """
@@ -973,7 +767,7 @@ def _system_call(cmd: str, executable='/bin/bash'):
             sleep(0.1)
         else:
             try:
-                out = loads(out, encoding='utf-8')
+                out = loads(out)
             except JSONDecodeError as e:
                 L.error(e)
             else:
@@ -1039,7 +833,7 @@ def show(language: Optional[Union[str, enum.Language]] = None):
 
 
 def can(
-    estimator: Union[BaseEstimator, ABCMeta],
+    estimator: Union[BaseEstimator, type],
     language: Optional[Union[str, enum.Language]] = None,
     template: Optional[Union[str, enum.Template]] = None,
     method: Optional[Union[str, enum.Method]] = None
@@ -1049,7 +843,7 @@ def can(
 
     Parameters
     ----------
-    estimator : BaseEstimator or abstract ABCMeta class.
+    estimator : BaseEstimator or estimator class.
         Set a fitted base estimator of scikit-learn.
     language : str
         Set the target programming language.
@@ -1065,7 +859,7 @@ def can(
 
     if isinstance(estimator, BaseEstimator):
         name = estimator.__class__.__name__
-    elif isinstance(estimator, ABCMeta):
+    elif isinstance(estimator, type):
         name = estimator.__name__
     else:
         return False
@@ -1078,8 +872,7 @@ def can(
 
     if language or template or method:
         pckg = 'sklearn_porter.estimator.{}'.format(name)
-        module = __import__(pckg, globals(), locals(), [name], 0)
-        clazz = getattr(module, name)
+        clazz = getattr(import_module(pckg), name)
         support = getattr(clazz, 'SUPPORT')
     else:
         return True

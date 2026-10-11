@@ -1,4 +1,4 @@
-.PHONY: setup lint format test test-docker docker-image notebook examples clean
+.PHONY: setup lint format test test-regression test-all docker-image notebook examples clean
 
 IMAGE := sklearn-porter:testing
 PYTHON_VERSION ?= $(shell cat .python-version)
@@ -14,15 +14,22 @@ format:
 	uv run ruff check --fix .
 	uv run ruff format .
 
+# Fast tests without the regression tests (see `addopts` in pyproject.toml):
 test:
-	uv run pytest
+	uv run pytest --numprocesses=auto
 
 docker-image:
 	docker build --build-arg PYTHON_VERSION=$(PYTHON_VERSION) -t $(IMAGE) .
 
-test-docker: docker-image
+# Long running regression tests with all compilers and interpreters:
+test-regression: docker-image
 	docker run --rm -v "$(CURDIR)":/app $(IMAGE) \
-		uv run pytest --numprocesses=auto --cov
+		uv run pytest --numprocesses=auto -m regression
+
+# All tests with coverage:
+test-all: docker-image
+	docker run --rm -v "$(CURDIR)":/app $(IMAGE) \
+		uv run pytest --numprocesses=auto -m '' --cov
 
 notebook:
 	uv run --group examples jupyter notebook --notebook-dir=examples/basics
