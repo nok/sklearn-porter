@@ -1,0 +1,145 @@
+name: Release
+
+# 1. release-please opens or updates the release PR on every push to `main`.
+# 2. Merging the release PR creates the tag and the GitHub release, then the
+#    package is built once, published to TestPyPI, installed and checked from
+#    TestPyPI and only then published to PyPI.
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+# Never cancel a running release:
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          # A personal access token is required, otherwise the CI checks
+          # don't run on the release PR (GITHUB_TOKEN doesn't trigger
+          # workflows):
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  build:
+    name: Build
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ needs.release-please.outputs.tag_name }}
+      - uses: astral-sh/setup-uv@v7
+      - run: uv build --no-sources
+      - name: Check the version of the built package
+        env:
+          VERSION: ${{ needs.release-please.outputs.version }}
+        run: |
+          ls dist
+          test -f "dist/sklearn_porter-${VERSION}-py3-none-any.whl"
+          test -f "dist/sklearn_porter-${VERSION}.tar.gz"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  publish-testpypi:
+    name: Publish to TestPyPI
+    needs: [release-please, build]
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/sklearn-porter/${{ needs.release-please.outputs.version }}/
+    permissions:
+      id-token: write  # trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: astral-sh/setup-uv@v7
+      # `--check-url` skips files which already exist, e.g. on a re-run:
+      - run: >-
+          uv publish
+          --trusted-publishing always
+          --publish-url https://test.pypi.org/legacy/
+          --check-url https://test.pypi.org/simple/
+
+  verify-testpypi:
+    name: Verify TestPyPI
+    needs: [release-please, publish-testpypi]
+    runs-on: ubuntu-latest
+    permissions: {}
+    env:
+      VERSION: ${{ needs.release-please.outputs.version }}
+    steps:
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: '3.11'
+      - name: Install sklearn-porter from TestPyPI
+        run: |
+          uv venv
+          # The new version can take a while until it's available:
+          for i in $(seq 1 10); do
+            uv pip install --no-cache --no-deps \
+              --index-url https://test.pypi.org/simple/ \
+              "sklearn-porter==${VERSION}" && break
+            if [ "$i" -eq 10 ]; then exit 1; fi
+            sleep 30
+          done
+          # Install the dependencies from PyPI, because TestPyPI may contain
+          # broken or foreign packages with the same names:
+          .venv/bin/python -c "from importlib.metadata import requires; print('\n'.join(requires('sklearn-porter')))" > requirements.txt
+          uv pip install -r requirements.txt
+      - name: Check the installed package
+        run: |
+          .venv/bin/porter show > /dev/null
+          .venv/bin/python - <<'EOF'
+          import os
+          from sklearn.datasets import load_iris
+          from sklearn.tree import DecisionTreeClassifier
+          import sklearn_porter
+          from sklearn_porter import Estimator
+
+          assert sklearn_porter.__version__ == os.environ['VERSION']
+
+          x, y = load_iris(return_X_y=True)
+          clf = DecisionTreeClassifier(random_state=0).fit(x, y)
+          score = Estimator(clf, language='js').test(x[:20], n_jobs=False)
+          assert score == 1.0, score
+          print('sklearn-porter', sklearn_porter.__version__, 'works')
+          EOF
+
+  publish-pypi:
+    name: Publish to PyPI
+    needs: [release-please, build, verify-testpypi]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/sklearn-porter/${{ needs.release-please.outputs.version }}/
+    permissions:
+      id-token: write  # trusted publishing
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: astral-sh/setup-uv@v7
+      - run: uv publish --trusted-publishing always
