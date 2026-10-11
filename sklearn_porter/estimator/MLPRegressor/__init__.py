@@ -1,5 +1,5 @@
 # scikit-learn
-from sklearn.neural_network.multilayer_perceptron import \
+from sklearn.neural_network import \
     MLPRegressor as MLPRegressorClass
 
 # sklearn-porter

@@ -6,7 +6,6 @@ from typing import Tuple, Union, Callable
 from loguru import logger as L
 
 # scikit-learn
-import sklearn
 from sklearn.svm import SVC as SVCClass
 
 # sklearn-porter
@@ -59,8 +58,6 @@ class SVC(EstimatorBase, EstimatorApiABC):
         est = self.estimator  # alias
         params = est.get_params()
 
-        sklearn_version = tuple(map(int, str(sklearn.__version__).split('.')))
-
         # Is the estimator fitted?
         try:
             est.support_vectors_
@@ -74,19 +71,14 @@ class SVC(EstimatorBase, EstimatorApiABC):
             msg = msg.format(params['kernel'])
             raise exception.NotSupportedYetError(msg)
 
-        if sklearn_version[:2] >= (0, 22):
-            msg = 'You use scikit-learn>=0.22 and want to port a support ' \
-                  'vector machine. In some rare cases the regression tests ' \
-                  'failed significantly. Because of that we recommend to ' \
-                  'evaluate the ported estimator by using the `test` method.'
-            warnings.warn(msg, exception.QualityWarning)
+        msg = 'In some rare cases the regression tests of ported support ' \
+              'vector machines failed significantly. Because of that we ' \
+              'recommend to evaluate the ported estimator by using the ' \
+              '`test` method.'
+        warnings.warn(msg, exception.QualityWarning)
 
-        # Check gamma value:
-        gamma = params['gamma']
-        if str(gamma).startswith('auto') or str(gamma).startswith('scale'):
-            gamma = 1. / len(est.support_vectors_[0])
-        if sklearn_version[:2] >= (0, 22):
-            gamma = str('{:.16f}').format(est._gamma)
+        # Use the computed gamma value (e.g. of 'scale' or 'auto'):
+        gamma = str('{:.16f}').format(est._gamma)
 
         # Prepare intercepts and coefficients:
         inters = est._intercept_

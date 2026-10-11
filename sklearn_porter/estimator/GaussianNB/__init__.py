@@ -43,12 +43,12 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
 
         # Is the estimator fitted?
         try:
-            est.sigma_
+            est.var_
         except AttributeError:
             raise exception.NotFittedEstimatorError(self.estimator_name)
 
         self.meta_info = dict(
-            n_features=len(est.sigma_[0]),
+            n_features=len(est.var_[0]),
             n_classes=len(est.classes_),
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
@@ -56,7 +56,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
 
         self.model_data = dict(
             priors=est.class_prior_.tolist(),
-            sigmas=est.sigma_.tolist(),
+            sigmas=est.var_.tolist(),
             thetas=est.theta_.tolist(),
         )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))

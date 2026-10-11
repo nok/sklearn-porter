@@ -8,15 +8,13 @@ import pytest
 # sklearn-porter
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import DATASETS, SKLEARN_VERSION, Dataset
+from tests.commons import DATASETS, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
-from tests.EstimatorTest import tmp_root_dir  # fixture
+# Long running regression tests, see `make test-regression`:
+pytestmark = pytest.mark.regression
 
 
-@pytest.mark.skipif(
-    SKLEARN_VERSION[:2] < (0, 18), reason='requires scikit-learn >= v0.18'
-)
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 @pytest.mark.parametrize('activation', ['relu', 'identity', 'tanh', 'logistic'])
@@ -35,7 +33,7 @@ def test_estimator_mlp_classifier(
 ):
     """Test and compare different MLP classifiers."""
     try:
-        from sklearn.neural_network.multilayer_perceptron import MLPClassifier
+        from sklearn.neural_network import MLPClassifier
     except ImportError:
         pass
     else:

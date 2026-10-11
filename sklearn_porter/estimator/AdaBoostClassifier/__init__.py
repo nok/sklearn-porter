@@ -7,8 +7,7 @@ from jinja2 import Environment
 from loguru import logger as L
 
 # scikit-learn
-from sklearn.ensemble.weight_boosting import \
-    AdaBoostClassifier as AdaBoostClassifierClass
+from sklearn.ensemble import AdaBoostClassifier as AdaBoostClassifierClass
 from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
@@ -45,42 +44,37 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         L.info('Create specific estimator `%s`.', self.estimator_name)
         est = self.estimator  # alias
 
-        # Check the used algorithm type:
-        if est.algorithm != 'SAMME.R':
-            msg = 'The used algorithm `{}` is not supported yet.'
-            msg = msg.format(est.algorithm)
-            raise exception.NotSupportedYetError(msg)
-
         # Check type of base estimators:
-        if not isinstance(est.base_estimator_, DecisionTreeClassifier):
+        if not isinstance(est.estimator_, DecisionTreeClassifier):
             msg = 'The used base estimator `{}` is not supported yet.'
-            msg = msg.format(est.base_estimator.__class__.__qualname__)
+            msg = msg.format(est.estimator_.__class__.__qualname__)
             raise exception.NotSupportedYetError(msg)
 
         # Ignore estimators with zero weight:
         estimators = []
-        for idx in range(est.n_estimators):
-            if est.estimator_weights_[idx] > 0:
-                estimators.append(est.estimators_[idx])
+        for e, weight in zip(est.estimators_, est.estimator_weights_):
+            if weight > 0:
+                estimators.append((e, weight))
         n_estimators = len(estimators)
 
         self.meta_info = dict(
             n_classes=est.n_classes_,
-            n_features=est.estimators_[0].n_features_,
+            n_features=est.n_features_in_,
             n_estimators=n_estimators,
         )
         L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
         L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
 
         self.model_data['estimators'] = []
-        for e in estimators:
+        for e, weight in estimators:
             self.model_data['estimators'].append(
                 dict(
                     lefts=e.tree_.children_left.tolist(),
                     rights=e.tree_.children_right.tolist(),
                     thresholds=e.tree_.threshold.tolist(),
                     classes=[c[0] for c in e.tree_.value.tolist()],
-                    indices=e.tree_.feature.tolist()
+                    indices=e.tree_.feature.tolist(),
+                    weight=float(weight),
                 )
             )
         L.info('Model data (keys): {}'.format(self.model_data.keys()))
@@ -182,8 +176,12 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
 
         # Make method:
         tpl_method = tpls.get_template('combined.method')
+        weights = [e.get('weight') for e in self.model_data.get('estimators')]
+        weights = dumps(weights, separators=(',', ':'))
         plas_copy = deepcopy(plas)
-        plas_copy.update(dict(methods=out_fns, method_calls=out_calls))
+        plas_copy.update(
+            dict(methods=out_fns, method_calls=out_calls, weights=weights)
+        )
         out_method = tpl_method.render(**plas_copy)
 
         if language in (enum.Language.JAVA, enum.Language.JS):

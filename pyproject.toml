@@ -71,9 +71,12 @@ select = ["E", "F", "W", "I", "UP", "B"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = ["EstimatorTest.py"]
-python_functions = ["test_*"]
-addopts = "-p no:doctest"
+# Skip the long running regression tests by default,
+# run them with `make test-regression` in Docker:
+addopts = "-m 'not regression' -p no:doctest"
+markers = [
+    "regression: compile and execute the transpiled estimators (slow, requires all compilers and interpreters)",
+]
 
 [tool.coverage.run]
 source = ["sklearn_porter"]

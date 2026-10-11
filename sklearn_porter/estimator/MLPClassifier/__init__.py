@@ -6,7 +6,7 @@ import numpy as np
 from loguru import logger as L
 
 # scikit-learn
-from sklearn.neural_network.multilayer_perceptron import \
+from sklearn.neural_network import \
     MLPClassifier as MLPClassifierClass
 
 # sklearn-porter
