@@ -1,7 +1,9 @@
 name: Trigger Test
-on: push
+on:
+  push:
+  pull_request:
 jobs:
   hello:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Actions works"
+      - run: echo "Actions works for ${{ github.event_name }}"
