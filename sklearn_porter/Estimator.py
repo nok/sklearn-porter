@@ -1,5 +1,6 @@
 import urllib.request
 from collections import OrderedDict
+from collections.abc import Callable
 from functools import partial
 from importlib import import_module
 from json import JSONDecodeError, loads
@@ -12,12 +13,10 @@ from sys import platform, stdout, version_info
 from tempfile import mktemp
 from textwrap import dedent
 from time import sleep
-from typing import Callable, Dict, List, Optional, Tuple, Union
 
 # Additional installed modules:
 import numpy as np
 from loguru import logger as L
-from tabulate import tabulate
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -37,6 +36,7 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, LinearSVC, NuSVC
 from sklearn.tree import DecisionTreeClassifier
+from tabulate import tabulate
 
 # sklearn-porter
 from sklearn_porter import decorators as decorator
@@ -52,13 +52,14 @@ class Estimator:
     Main class which validates the passed estimator and
     coordinates the kind of estimator to a concrete subclass.
     """
+
     def __init__(
         self,
         estimator: BaseEstimator,
-        language: Optional[Union[str, enum.Language]] = None,
-        template: Optional[Union[str, enum.Template]] = None,
-        class_name: Optional[str] = None,
-        converter: Optional[Callable[[object], str]] = None,
+        language: str | enum.Language | None = None,
+        template: str | enum.Template | None = None,
+        class_name: str | None = None,
+        converter: Callable[[object], str] | None = None,
     ):
         """
         Validate and coordinate the passed estimator for transpiling.
@@ -82,10 +83,10 @@ class Estimator:
         self.python_version = '.'.join(map(str, version_info[:3]))
         self.porter_version = str(meta.__version__)
 
-        L.debug('Platform: {}'.format(platform))
-        L.debug('Python: v{}'.format(self.python_version))
-        L.debug('Package: scikit-learn: v{}'.format(sklearn_version))
-        L.debug('Package: sklearn-porter: v{}'.format(self.porter_version))
+        L.debug(f'Platform: {platform}')
+        L.debug(f'Python: v{self.python_version}')
+        L.debug(f'Package: scikit-learn: v{sklearn_version}')
+        L.debug(f'Package: sklearn-porter: v{self.porter_version}')
 
         self.estimator = estimator  # see @estimator.setter
 
@@ -112,14 +113,16 @@ class Estimator:
         return self._language.value.KEY
 
     @language.setter
-    def language(self, language: Union[str, enum.Language]):
+    def language(self, language: str | enum.Language):
         language = enum.Language.convert(language)
         if can(self.estimator, language):
             self._language = language
         else:
             name = self._estimator.estimator_name
-            msg = 'The passed language `{}` is not ' \
-                  'supported for the estimator `{}`.'
+            msg = (
+                'The passed language `{}` is not '
+                'supported for the estimator `{}`.'
+            )
             msg = msg.format(language.value.KEY, name)
             raise exception.NotSupportedYetError(msg)
 
@@ -128,16 +131,18 @@ class Estimator:
         return self._template.value
 
     @template.setter
-    def template(self, name: Union[str, enum.Template]):
+    def template(self, name: str | enum.Template):
         template = enum.Template.convert(name)
         if can(self.estimator, self.language, template):
             self._template = template
         else:
             name = self._estimator.estimator_name
             language = enum.Language.convert(self.language)
-            msg = 'The passed template `{}` is not ' \
-                  'supported for the estimator `{}` ' \
-                  'and language `{}`.'
+            msg = (
+                'The passed template `{}` is not '
+                'supported for the estimator `{}` '
+                'and language `{}`.'
+            )
             msg = msg.format(template.value, name, language.value.KEY)
             raise exception.NotSupportedYetError(msg)
 
@@ -157,7 +162,7 @@ class Estimator:
     def converter(self, converter: Callable[[object], str]):
         self._converter = converter
 
-    def _check_kwargs(self, kwargs: Dict) -> Dict:
+    def _check_kwargs(self, kwargs: dict) -> dict:
         """
         Check and save optional kwargs arguments internally.
 
@@ -184,7 +189,7 @@ class Estimator:
         return kwargs
 
     @staticmethod
-    def _extract_est(estimator: BaseEstimator) -> Optional[BaseEstimator]:
+    def _extract_est(estimator: BaseEstimator) -> BaseEstimator | None:
         """
         Extract the original estimator.
 
@@ -204,17 +209,13 @@ class Estimator:
         est = estimator  # shorter <3
         qualname = _get_qualname(est)
 
-        L.debug(
-            'Start validation of the passed '
-            'estimator: `{}`.'.format(qualname)
-        )
+        L.debug(f'Start validation of the passed estimator: `{qualname}`.')
 
         # Check BaseEstimator:
         if not isinstance(est, BaseEstimator):
             msg = (
-                'The passed estimator `{}` is not a '
-                'valid base estimator of scikit-learn v{} .'
-                ''.format(qualname, sklearn_version)
+                f'The passed estimator `{qualname}` is not a '
+                f'valid base estimator of scikit-learn v{sklearn_version} .'
             )
             L.error(msg)
             raise ValueError(msg)
@@ -231,10 +232,10 @@ class Estimator:
             L.debug('└> Yes, the estimator is embedded in an optimizer.')
             if not isinstance(est, (GridSearchCV, RandomizedSearchCV)):
                 msg = (
-                    'The used optimizer `{}` is not supported '
+                    f'The used optimizer `{qualname}` is not supported '
                     'by this version of sklearn-porter. Try to '
                     'extract the internal estimator manually '
-                    'and pass it.'.format(qualname)
+                    'and pass it.'
                 )
                 L.error(msg)
                 raise ValueError(msg)
@@ -244,8 +245,8 @@ class Estimator:
                 raise ValueError(msg)
             est = est.best_estimator_
             msg = (
-                'Extract the embedded estimator of type `{}` '
-                'from optimizer `{}`.'.format(_get_qualname(est), qualname)
+                f'Extract the embedded estimator of type `{_get_qualname(est)}` '
+                f'from optimizer `{qualname}`.'
             )
             L.info(msg)
         else:
@@ -263,7 +264,7 @@ class Estimator:
             est = final_est
             msg = (
                 'Extract the embedded estimator of type '
-                '`{}` from the pipeline.'.format(_get_qualname(est))
+                f'`{_get_qualname(est)}` from the pipeline.'
             )
             L.info(msg)
         else:
@@ -293,9 +294,9 @@ class Estimator:
 
         if not (is_classifier or is_regressor):
             msg = (
-                'The passed object of type `{}` is neither '
+                f'The passed object of type `{qualname}` is neither '
                 'a classifier nor a regressor.'
-            ).format(qualname)
+            )
             L.error(msg)
             raise ValueError(msg)
 
@@ -318,30 +319,30 @@ class Estimator:
         """
         est = estimator  # shorter <3
         qualname = _get_qualname(est)
-        L.debug('Start loading the passed estimator: `{}`.'.format(qualname))
+        L.debug(f'Start loading the passed estimator: `{qualname}`.')
 
         name = est.__class__.__qualname__
         clazzes = Estimator.classifiers() + Estimator.regressors()
         clazzes = {clazz.__name__: clazz for clazz in clazzes}
         if name in clazzes and isinstance(est, clazzes[name]):
-            module = import_module('sklearn_porter.estimator.{}'.format(name))
+            module = import_module(f'sklearn_porter.estimator.{name}')
             return getattr(module, name)(est)
 
-        msg = 'The passed estimator `{}` is not supported.'.format(name)
+        msg = f'The passed estimator `{name}` is not supported.'
         raise exception.NotSupportedYetError(msg)
 
     def can(
         self,
-        language: Optional[Union[str, enum.Language]] = None,
-        template: Optional[Union[str, enum.Template]] = None,
-        method: Optional[Union[str, enum.Method]] = None
+        language: str | enum.Language | None = None,
+        template: str | enum.Template | None = None,
+        method: str | enum.Method | None = None,
     ) -> bool:
         return can(
             self.estimator, language=language, template=template, method=method
         )
 
     @decorator.alias('export')
-    def port(self, to_json: bool = False, **kwargs) -> Union[str, Tuple[str]]:
+    def port(self, to_json: bool = False, **kwargs) -> str | tuple[str]:
         """
         Port or transpile a passed estimator to a target programming language.
 
@@ -360,16 +361,16 @@ class Estimator:
             template=self._template,
             class_name=self.class_name,
             converter=self.converter,
-            to_json=to_json
+            to_json=to_json,
         )
 
     @decorator.alias('dump')
     def save(
         self,
-        directory: Optional[Union[str, Path]] = None,
+        directory: str | Path | None = None,
         to_json: bool = False,
-        **kwargs
-    ) -> Union[str, Tuple[str, str]]:
+        **kwargs,
+    ) -> str | tuple[str, str]:
         """
         Port a passed estimator to a target programming language and save them.
 
@@ -396,15 +397,18 @@ class Estimator:
     @decorator.alias('predict')
     def make(
         self,
-        x: Union[List, np.ndarray],
-        n_jobs: Union[bool, int] = True,
-        directory: Optional[Union[str, Path]] = None,
+        x: list | np.ndarray,
+        n_jobs: bool | int = True,
+        directory: str | Path | None = None,
         delete_created_files: bool = True,
         check_dependencies: bool = True,
         shell_executable: str = '/bin/bash',
-        **kwargs
-    ) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray],
-               Tuple[np.ndarray, None]]:
+        **kwargs,
+    ) -> (
+        tuple[np.int64, np.ndarray]
+        | tuple[np.ndarray, np.ndarray]
+        | tuple[np.ndarray, None]
+    ):
         """
         Make predictions with transpiled estimators locally.
 
@@ -471,7 +475,9 @@ class Estimator:
                 cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
             cmd_args['dest_path'] = str(src_path.stem)
         elif language in (
-            enum.Language.JS, enum.Language.PHP, enum.Language.RUBY
+            enum.Language.JS,
+            enum.Language.PHP,
+            enum.Language.RUBY,
         ):
             cmd_args['src_path'] = str(src_path)
 
@@ -484,14 +490,14 @@ class Estimator:
             for _ in range(10):
                 try:
                     fp = open(path_to_check)
-                except IOError:
+                except OSError:
                     sleep(0.1)
                 else:
                     fp.close()
                     break
 
         cmd = cmd.format(**cmd_args)
-        L.info('Execution command: `{}`'.format(cmd))
+        L.info(f'Execution command: `{cmd}`')
 
         # Model data:
         json_path = ' ' if not data_path else ' ' + str(data_path) + ' '
@@ -519,7 +525,7 @@ class Estimator:
                 n_jobs = cpu_count()
             with Pool(n_jobs) as pool:
                 y = pool.map(calls, x)
-        y = list(zip(*y))
+        y = list(zip(*y, strict=False))
         y = list(map(np.array, y))
 
         # Delete generated files finally:
@@ -542,13 +548,16 @@ class Estimator:
         # is_windows = platform in ('cygwin', 'win32', 'win64')
         for app in language.value.DEPENDENCIES:
             if not which(app):
-                msg = 'Required dependency `{}` is missing.'.format(app)
+                msg = f'Required dependency `{app}` is missing.'
                 raise RuntimeError(msg)
 
     @staticmethod
     def _compile(
-        src_path: Path, class_paths: List, created_files: List,
-        language: enum.Language, template: enum.Template
+        src_path: Path,
+        class_paths: list,
+        created_files: list,
+        language: enum.Language,
+        template: enum.Template,
     ):
         """
         Execute a compilation.
@@ -576,13 +585,13 @@ class Estimator:
         if language in (enum.Language.C, enum.Language.GO):
             cmd_args['src_path'] = str(src_path)
             cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
-            created_files.append((src_path.parent / src_path.stem))
+            created_files.append(src_path.parent / src_path.stem)
 
         elif language is enum.Language.JAVA:
             cmd_args['src_path'] = str(src_path)
-            cmd_args['dest_dir'] = '-d {}'.format(str(src_path.parent))
+            cmd_args['dest_dir'] = f'-d {str(src_path.parent)}'
             class_paths.append(str(src_path.parent))
-            created_files.append((src_path.parent / (src_path.stem + '.class')))
+            created_files.append(src_path.parent / (src_path.stem + '.class'))
 
             # Dependencies:
             if template is enum.Template.EXPORTED:
@@ -606,13 +615,13 @@ class Estimator:
                 cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
 
         cmd = cmd.format(**cmd_args)
-        L.info('Compilation command: `{}`'.format(cmd))
+        L.info(f'Compilation command: `{cmd}`')
 
         subp_args = dict(
             shell=True,
             universal_newlines=True,
             stderr=STDOUT,
-            executable='/bin/bash'
+            executable='/bin/bash',
         )
         try:
             check_output(cmd, **subp_args)
@@ -621,20 +630,20 @@ class Estimator:
             msg = msg.format(e.cmd, e.returncode, e.output)
             if language is enum.Language.JAVA:
                 if 'code too large' in e.output:
-                    raise exception.CodeTooLarge(msg)
+                    raise exception.CodeTooLarge(msg) from None
                 elif 'too many constants' in e.output:
-                    raise exception.TooManyConstants(msg)
-            raise exception.CompilationFailed(msg)
+                    raise exception.TooManyConstants(msg) from None
+            raise exception.CompilationFailed(msg) from None
 
     @decorator.alias('integrity_score')
     def test(
         self,
         x,
-        n_jobs: Union[bool, int] = True,
-        directory: Optional[Union[str, Path]] = None,
+        n_jobs: bool | int = True,
+        directory: str | Path | None = None,
         delete_created_files: bool = True,
         normalize: bool = True,
-        **kwargs
+        **kwargs,
     ) -> float:
         """
         Compute the accuracy of the ported classifier.
@@ -672,7 +681,7 @@ class Estimator:
         return float(accuracy_score(y_true, y_pred, normalize=normalize))
 
     @staticmethod
-    def classifiers() -> Tuple:
+    def classifiers() -> tuple:
         """
         Get a set of supported and installed classifiers.
 
@@ -696,7 +705,7 @@ class Estimator:
         )
 
     @staticmethod
-    def regressors() -> Tuple:
+    def regressors() -> tuple:
         """
         Get a set of supported and installed regressors.
 
@@ -705,7 +714,7 @@ class Estimator:
         estimators : Tuple
             A set of supported regressors.
         """
-        return (MLPRegressor, )
+        return (MLPRegressor,)
 
     def __repr__(self):
         """
@@ -716,24 +725,18 @@ class Estimator:
         -------
         An overview of basic information.
         """
-        report = '''\
+        report = f"""\
             estimator
             ---------
-            name: {}
-        
+            name: {self._estimator.estimator_name}
+
             environment
             -----------
-            platform       {}
-            python         v{}
-            scikit-learn   v{}
-            sklearn-porter v{}\
-        '''.format(
-            self._estimator.estimator_name,
-            platform,
-            self.python_version,
-            sklearn_version,
-            self.porter_version,
-        )
+            platform       {platform}
+            python         v{self.python_version}
+            scikit-learn   v{sklearn_version}
+            sklearn-porter v{self.porter_version}\
+        """
         return dedent(report)
 
 
@@ -758,7 +761,7 @@ def _system_call(cmd: str, executable='/bin/bash'):
         shell=True,
         universal_newlines=True,
         stderr=STDOUT,
-        executable=executable
+        executable=executable,
     )
     for _ in range(10):
         try:
@@ -779,7 +782,7 @@ def _system_call(cmd: str, executable='/bin/bash'):
                 return result
 
 
-def show(language: Optional[Union[str, enum.Language]] = None):
+def show(language: str | enum.Language | None = None):
     """
     Show the supported estimators, programming languages
     and templates in a compact table.
@@ -797,7 +800,7 @@ def show(language: Optional[Union[str, enum.Language]] = None):
     if language:
         language = enum.Language.convert(language)
         languages = {language.value.KEY: language.value}
-    headers = ['Estimator'] + [l.LABEL for l in languages.values()]
+    headers = ['Estimator'] + [lang.LABEL for lang in languages.values()]
     clazzes = Estimator.classifiers() + Estimator.regressors()
     clazzes = {_get_qualname(c()): c() for c in clazzes}
     clazzes = OrderedDict(sorted(clazzes.items()))
@@ -812,11 +815,11 @@ def show(language: Optional[Union[str, enum.Language]] = None):
                     estimator=est,
                     language=lang,
                     template=tpl,
-                    method='predict_proba'
+                    method='predict_proba',
                 ):
-                    out = '✓{}ᴾ'.format(templates.get(tpl))
+                    out = f'✓{templates.get(tpl)}ᴾ'
                 elif can(estimator=est, language=lang, template=tpl):
-                    out = '✓{} '.format(templates.get(tpl))
+                    out = f'✓{templates.get(tpl)} '
                 else:
                     out = '···'
                 td.append(out)
@@ -828,15 +831,15 @@ def show(language: Optional[Union[str, enum.Language]] = None):
         headers=headers,
         tablefmt='presto',
         disable_numparse=True,
-        colalign=['left'] + ['center'] * len(languages)
+        colalign=['left'] + ['center'] * len(languages),
     )
 
 
 def can(
-    estimator: Union[BaseEstimator, type],
-    language: Optional[Union[str, enum.Language]] = None,
-    template: Optional[Union[str, enum.Template]] = None,
-    method: Optional[Union[str, enum.Method]] = None
+    estimator: BaseEstimator | type,
+    language: str | enum.Language | None = None,
+    template: str | enum.Template | None = None,
+    method: str | enum.Method | None = None,
 ) -> bool:
     """
     Check the support of the given arguments.
@@ -871,9 +874,9 @@ def can(
         return False
 
     if language or template or method:
-        pckg = 'sklearn_porter.estimator.{}'.format(name)
+        pckg = f'sklearn_porter.estimator.{name}'
         clazz = getattr(import_module(pckg), name)
-        support = getattr(clazz, 'SUPPORT')
+        support = clazz.SUPPORT
     else:
         return True
 
@@ -896,91 +899,94 @@ def can(
 
 def port(
     estimator: BaseEstimator,
-    language: Optional[Union[str, enum.Language]] = None,
-    template: Optional[Union[str, enum.Template]] = None,
-    class_name: Optional[str] = None,
-    converter: Optional[Callable[[object], str]] = None,
-    to_json: bool = False
-) -> Union[str, Tuple[str]]:
+    language: str | enum.Language | None = None,
+    template: str | enum.Template | None = None,
+    class_name: str | None = None,
+    converter: Callable[[object], str] | None = None,
+    to_json: bool = False,
+) -> str | tuple[str]:
     return Estimator(
         estimator,
         language=language,
         template=template,
         class_name=class_name,
-        converter=converter
+        converter=converter,
     ).port(to_json)
 
 
 def save(
     estimator: BaseEstimator,
-    language: Optional[Union[str, enum.Language]] = None,
-    template: Optional[Union[str, enum.Template]] = None,
-    class_name: Optional[str] = None,
-    converter: Optional[Callable[[object], str]] = None,
-    directory: Optional[Union[str, Path]] = None,
+    language: str | enum.Language | None = None,
+    template: str | enum.Template | None = None,
+    class_name: str | None = None,
+    converter: Callable[[object], str] | None = None,
+    directory: str | Path | None = None,
     to_json: bool = False,
-) -> Union[str, Tuple[str, str]]:
+) -> str | tuple[str, str]:
     return Estimator(
         estimator,
         language=language,
         template=template,
         class_name=class_name,
-        converter=converter
+        converter=converter,
     ).save(directory=directory, to_json=to_json)
 
 
 def make(
     estimator: BaseEstimator,
-    x: Union[List, np.ndarray],
-    language: Optional[Union[str, enum.Language]] = None,
-    template: Optional[Union[str, enum.Template]] = None,
-    class_name: Optional[str] = None,
-    converter: Optional[Callable[[object], str]] = None,
-    n_jobs: Union[bool, int] = True,
-    directory: Optional[Union[str, Path]] = None,
+    x: list | np.ndarray,
+    language: str | enum.Language | None = None,
+    template: str | enum.Template | None = None,
+    class_name: str | None = None,
+    converter: Callable[[object], str] | None = None,
+    n_jobs: bool | int = True,
+    directory: str | Path | None = None,
     delete_created_files: bool = True,
     check_dependencies: bool = True,
-    shell_executable: str = '/bin/bash'
-) -> Union[Tuple[np.int64, np.ndarray], Tuple[np.ndarray, np.ndarray],
-           Tuple[np.ndarray, None]]:
+    shell_executable: str = '/bin/bash',
+) -> (
+    tuple[np.int64, np.ndarray]
+    | tuple[np.ndarray, np.ndarray]
+    | tuple[np.ndarray, None]
+):
     return Estimator(
         estimator,
         language=language,
         template=template,
         class_name=class_name,
-        converter=converter
+        converter=converter,
     ).make(
         x,
         n_jobs=n_jobs,
         directory=directory,
         delete_created_files=delete_created_files,
         check_dependencies=check_dependencies,
-        shell_executable=shell_executable
+        shell_executable=shell_executable,
     )
 
 
 def test(
     estimator: BaseEstimator,
-    x: Union[List, np.ndarray],
-    language: Optional[Union[str, enum.Language]] = None,
-    template: Optional[Union[str, enum.Template]] = None,
-    class_name: Optional[str] = None,
-    converter: Optional[Callable[[object], str]] = None,
-    n_jobs: Union[bool, int] = True,
-    directory: Optional[Union[str, Path]] = None,
+    x: list | np.ndarray,
+    language: str | enum.Language | None = None,
+    template: str | enum.Template | None = None,
+    class_name: str | None = None,
+    converter: Callable[[object], str] | None = None,
+    n_jobs: bool | int = True,
+    directory: str | Path | None = None,
     delete_created_files: bool = True,
-    normalize: bool = True
+    normalize: bool = True,
 ) -> float:
     return Estimator(
         estimator,
         language=language,
         template=template,
         class_name=class_name,
-        converter=converter
+        converter=converter,
     ).test(
         x,
         n_jobs=n_jobs,
         directory=directory,
         delete_created_files=delete_created_files,
-        normalize=normalize
+        normalize=normalize,
     )

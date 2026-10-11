@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from copy import deepcopy
 from json import dumps, encoder
-from typing import Tuple, Union, Callable
 
 from loguru import logger as L
 
@@ -45,22 +45,24 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         try:
             est.var_
         except AttributeError:
-            raise exception.NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(
+                self.estimator_name
+            ) from None
 
         self.meta_info = dict(
             n_features=len(est.var_[0]),
             n_classes=len(est.classes_),
         )
-        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
+        L.info(f'Meta info (keys): {self.meta_info.keys()}')
+        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         self.model_data = dict(
             priors=est.class_prior_.tolist(),
             sigmas=est.var_.tolist(),
             thetas=est.theta_.tolist(),
         )
-        L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
+        L.info(f'Model data (keys): {self.model_data.keys()}')
+        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
     def port(
         self,
@@ -69,7 +71,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         class_name: str,
         converter: Callable[[object], str],
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Port an estimator.
 
@@ -95,10 +97,12 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         """
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=class_name,
-            to_json=to_json,
-        ))
+        plas.update(
+            dict(
+                class_name=class_name,
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -125,7 +129,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
             type=tpl_double,
             name='priors',
             values=', '.join(priors_val_converted),
-            n=len(priors_val_converted)
+            n=len(priors_val_converted),
         )
 
         sigmas_val = self.model_data.get('sigmas')
@@ -136,11 +140,12 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
                 list(
                     tpl_in_brackets.render(
                         value=', '.join(list(map(converter, v)))
-                    ) for v in sigmas_val
+                    )
+                    for v in sigmas_val
                 )
             ),
             n=len(sigmas_val),
-            m=len(sigmas_val[0])
+            m=len(sigmas_val[0]),
         )
 
         thetas_val = self.model_data.get('thetas')
@@ -151,11 +156,12 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
                 list(
                     tpl_in_brackets.render(
                         value=', '.join(list(map(converter, v)))
-                    ) for v in thetas_val
+                    )
+                    for v in thetas_val
                 )
             ),
             n=len(thetas_val),
-            m=len(thetas_val[0])
+            m=len(thetas_val[0]),
         )
 
         plas.update(

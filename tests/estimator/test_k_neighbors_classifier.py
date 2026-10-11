@@ -1,17 +1,18 @@
-from pathlib import Path
 import warnings
+from pathlib import Path
 
-import pytest
 import numpy as np
+import pytest
 
 # scikit-learn
 from sklearn.neighbors import KNeighborsClassifier as KNeighborsClassifierClass
 
+from sklearn_porter import exceptions as exception
+
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
-from sklearn_porter import exceptions as exception
-from tests.commons import Dataset, DATASETS
-from tests.utils import dataset_uniform_x, dataset_generate_x, fs_mkdir
+from tests.commons import DATASETS, Dataset
+from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 # Long running regression tests, see `make test-regression`:
 pytestmark = pytest.mark.regression
@@ -32,10 +33,7 @@ def test_estimator_k_neighbors_classifier(
     orig_est = KNeighborsClassifierClass(n_neighbors=n_neighbors)
 
     if not can(orig_est, language, template, 'predict'):
-        pytest.skip(
-            'Skip unsupported estimator/'
-            'language/template combination'
-        )
+        pytest.skip('Skip unsupported estimator/language/template combination')
 
     # Estimator:
     x, y = dataset.data, dataset.target
@@ -47,13 +45,14 @@ def test_estimator_k_neighbors_classifier(
 
     # Directory:
     tmp_dir = fs_mkdir(
-        tmp_root_dir, [
+        tmp_root_dir,
+        [
             ('test', 'estimator_decision_tree_classifier'),
             ('dataset', dataset.name),
             ('language', language),
             ('template', template),
             ('n_neighbors', str(n_neighbors)),
-        ]
+        ],
     )
 
     try:
@@ -62,14 +61,15 @@ def test_estimator_k_neighbors_classifier(
             language=language,
             template=template,
             directory=tmp_dir,
-            delete_created_files=False
+            delete_created_files=False,
         )
     except exception.CodeTooLarge:
-        msg = 'Code too large for the combination: ' \
-              'language: {}, template: {}, dataset: {}' \
-              ''.format(language, template, dataset.name)
-        warnings.warn(msg)
+        msg = (
+            'Code too large for the combination: '
+            f'language: {language}, template: {template}, dataset: {dataset.name}'
+        )
+        warnings.warn(msg, stacklevel=2)
     except Exception as e:
         pytest.fail('Unexpected exception ... ' + str(e))
     else:
-        assert score == 1.
+        assert score == 1.0

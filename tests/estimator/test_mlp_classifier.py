@@ -1,6 +1,5 @@
 import warnings
 from pathlib import Path
-from typing import List, Union
 
 import numpy as np
 import pytest
@@ -19,8 +18,9 @@ pytestmark = pytest.mark.regression
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 @pytest.mark.parametrize('activation', ['relu', 'identity', 'tanh', 'logistic'])
 @pytest.mark.parametrize(
-    'hidden_layer_sizes', [15, [15, 5], [15, 10, 5]],
-    ids=['15', '15_5', '15_10_5']
+    'hidden_layer_sizes',
+    [15, [15, 5], [15, 10, 5]],
+    ids=['15', '15_5', '15_10_5'],
 )
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 def test_estimator_mlp_classifier(
@@ -29,7 +29,7 @@ def test_estimator_mlp_classifier(
     template: str,
     language: str,
     activation: str,
-    hidden_layer_sizes: Union[int, List[int]],
+    hidden_layer_sizes: int | list[int],
 ):
     """Test and compare different MLP classifiers."""
     try:
@@ -40,15 +40,14 @@ def test_estimator_mlp_classifier(
         orig_est = MLPClassifier(
             activation=activation,
             hidden_layer_sizes=hidden_layer_sizes,
-            learning_rate_init=.1,
+            learning_rate_init=0.1,
             random_state=1,
             max_iter=10,
         )
 
         if not can(orig_est, language, template, 'predict'):
             pytest.skip(
-                'Skip unsupported estimator/'
-                'language/template combination'
+                'Skip unsupported estimator/language/template combination'
             )
 
         # Estimator:
@@ -65,11 +64,15 @@ def test_estimator_mlp_classifier(
             [str(hls)] if isinstance(hls, int) else list(map(str, hls))
         )
         tmp_dir = fs_mkdir(
-            tmp_root_dir, [
-                ('test', 'estimator_mlp_classifier'), ('dataset', dataset.name),
-                ('language', language), ('template', template),
-                ('activation', activation), ('hidden_layer_sizes', hls)
-            ]
+            tmp_root_dir,
+            [
+                ('test', 'estimator_mlp_classifier'),
+                ('dataset', dataset.name),
+                ('language', language),
+                ('template', template),
+                ('activation', activation),
+                ('hidden_layer_sizes', hls),
+            ],
         )
 
         try:
@@ -78,14 +81,15 @@ def test_estimator_mlp_classifier(
                 language=language,
                 template=template,
                 directory=tmp_dir,
-                delete_created_files=False
+                delete_created_files=False,
             )
         except exception.CodeTooLarge:
-            msg = 'Code too large for the combination: ' \
-                  'language: {}, template: {}, dataset: {}' \
-                  ''.format(language, template, dataset.name)
-            warnings.warn(msg)
+            msg = (
+                'Code too large for the combination: '
+                f'language: {language}, template: {template}, dataset: {dataset.name}'
+            )
+            warnings.warn(msg, stacklevel=2)
         except Exception as e:
             pytest.fail('Unexpected exception ... ' + str(e))
         else:
-            assert score == 1.
+            assert score == 1.0

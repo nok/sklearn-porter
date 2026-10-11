@@ -1,18 +1,18 @@
-from pathlib import Path
-from typing import Union
 import warnings
+from pathlib import Path
 
-import pytest
 import numpy as np
+import pytest
 
 # scikit-learn
 from sklearn.svm import LinearSVC
 
+from sklearn_porter import exceptions as exception
+
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
-from sklearn_porter import exceptions as exception
-from tests.commons import Dataset, DATASETS
-from tests.utils import dataset_uniform_x, dataset_generate_x, fs_mkdir
+from tests.commons import DATASETS, Dataset
+from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 # @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 # @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
@@ -40,10 +40,7 @@ def test_estimator_linear_svc(
     )
 
     if not can(orig_est, language, template, 'predict'):
-        pytest.skip(
-            'Skip unsupported estimator/'
-            'language/template combination'
-        )
+        pytest.skip('Skip unsupported estimator/language/template combination')
 
     # Estimator:
     x, y = dataset.data, dataset.target
@@ -55,10 +52,14 @@ def test_estimator_linear_svc(
 
     # Directory:
     tmp_dir = fs_mkdir(
-        tmp_root_dir, [
-            ('test', 'estimator_svc'), ('dataset', dataset.name),
-            ('language', language), ('template', template), ('loss', loss)
-        ]
+        tmp_root_dir,
+        [
+            ('test', 'estimator_svc'),
+            ('dataset', dataset.name),
+            ('language', language),
+            ('template', template),
+            ('loss', loss),
+        ],
     )
 
     try:
@@ -67,18 +68,19 @@ def test_estimator_linear_svc(
             language=language,
             template=template,
             directory=tmp_dir,
-            delete_created_files=False
+            delete_created_files=False,
         )
     except exception.NotSupportedYetError as e:
         if 'template' == 'precomputed':
             msg = 'The passed kernel `precomputed` is not supported.'
             assert msg in str(e)
     except exception.CodeTooLarge:
-        msg = 'Code too large for the combination: ' \
-              'language: {}, template: {}, dataset: {}' \
-              ''.format(language, template, dataset.name)
-        warnings.warn(msg)
+        msg = (
+            'Code too large for the combination: '
+            f'language: {language}, template: {template}, dataset: {dataset.name}'
+        )
+        warnings.warn(msg, stacklevel=2)
     except Exception as e:
         pytest.fail('Unexpected exception ... ' + str(e))
     else:
-        assert score == 1.
+        assert score == 1.0

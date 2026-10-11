@@ -1,12 +1,11 @@
+from collections.abc import Callable
 from copy import deepcopy
 from json import dumps, encoder
-from typing import Tuple, Union, Callable
 
 from loguru import logger as L
 
 # scikit-learn
-from sklearn.neighbors import \
-    KNeighborsClassifier as KNeighborsClassifierClass
+from sklearn.neighbors import KNeighborsClassifier as KNeighborsClassifierClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -58,7 +57,9 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         try:
             est.classes_
         except AttributeError:
-            raise exception.NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(
+                self.estimator_name
+            ) from None
 
         if est.weights != 'uniform':
             msg = 'Only `uniform` weights are supported.'
@@ -68,20 +69,20 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             n_classes=len(est.classes_),
             n_templates=len(est._fit_X),  # pylint: disable=W0212
             n_features=len(est._fit_X[0]),  # pylint: disable=W0212
-            metric=est.metric
+            metric=est.metric,
         )
-        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
+        L.info(f'Meta info (keys): {self.meta_info.keys()}')
+        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         self.model_data = dict(
             X=est._fit_X.tolist(),  # pylint: disable=W0212
             y=est._y.astype(int).tolist(),  # pylint: disable=W0212
             k=est.n_neighbors,  # number of relevant neighbors
             n=len(est.classes_),  # number of classes
-            power=est.p
+            power=est.p,
         )
-        L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
+        L.info(f'Model data (keys): {self.model_data.keys()}')
+        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
     def port(
         self,
@@ -90,7 +91,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         class_name: str,
         converter: Callable[[object], str],
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Port an estimator.
 
@@ -116,10 +117,12 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         """
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=class_name,
-            to_json=to_json,
-        ))
+        plas.update(
+            dict(
+                class_name=class_name,
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -149,11 +152,12 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
                 list(
                     tpl_in_brackets.render(
                         value=', '.join(list(map(converter, v)))
-                    ) for v in x_val
+                    )
+                    for v in x_val
                 )
             ),
             n=len(x_val),
-            m=len(x_val[0])
+            m=len(x_val[0]),
         )
 
         y_val = list(map(str, self.model_data.get('y')))

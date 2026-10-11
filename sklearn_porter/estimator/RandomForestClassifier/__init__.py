@@ -1,15 +1,15 @@
+from collections.abc import Callable
 from copy import deepcopy
 from json import dumps, encoder
 from textwrap import indent
-from typing import Callable, Dict, Tuple, Union
-
-from loguru import logger as L
 
 from jinja2 import Environment
+from loguru import logger as L
 
 # scikit-learn
-from sklearn.ensemble import \
-    RandomForestClassifier as RandomForestClassifierClass
+from sklearn.ensemble import (
+    RandomForestClassifier as RandomForestClassifierClass,
+)
 from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
@@ -78,8 +78,8 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             n_classes=est.n_classes_,
             n_features=est.n_features_in_,
         )
-        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
+        L.info(f'Meta info (keys): {self.meta_info.keys()}')
+        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         # Extract and save model data:
         self.model_data['estimators'] = []
@@ -90,11 +90,11 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                     rights=e.tree_.children_right.tolist(),
                     thresholds=e.tree_.threshold.tolist(),
                     classes=get_class_counts(e.tree_),
-                    indices=e.tree_.feature.tolist()
+                    indices=e.tree_.feature.tolist(),
                 )
             )
-        L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
+        L.info(f'Model data (keys): {self.model_data.keys()}')
+        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
     def port(
         self,
@@ -103,7 +103,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         class_name: str,
         converter: Callable[[object], str],
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Port an estimator.
 
@@ -129,10 +129,12 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         """
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=class_name,
-            to_json=to_json,
-        ))
+        plas.update(
+            dict(
+                class_name=class_name,
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -174,7 +176,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                 converter=converter,
                 method_index=str(idx),
                 class_name=plas.get('class_name'),
-                model_data=model_data
+                model_data=model_data,
             )
             out_fns.append(out_fn)
         out_fns = '\n'.join(out_fns)
@@ -191,7 +193,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
 
         n_indents = 1
         out_calls = indent(out_calls, n_indents * tpl_indent)
-        out_calls = out_calls[(n_indents * len(tpl_indent)):]
+        out_calls = out_calls[(n_indents * len(tpl_indent)) :]
 
         # Make method:
         tpl_method = tpls.get_template('combined.method')
@@ -202,7 +204,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         if language in (enum.Language.JAVA, enum.Language.JS):
             n_indents = 1
             out_method = indent(out_method, n_indents * tpl_indent)
-            out_method = out_method[(n_indents * len(tpl_indent)):]
+            out_method = out_method[(n_indents * len(tpl_indent)) :]
 
         # Make class:
         tpl_class = tpls.get_template('combined.class')
@@ -244,9 +246,16 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             The created method as string.
         """
         tree = self._create_tree(
-            templates, language, converter, model_data.get('lefts'),
-            model_data.get('rights'), model_data.get('thresholds'),
-            model_data.get('classes'), model_data.get('indices'), 0, 1
+            templates,
+            language,
+            converter,
+            model_data.get('lefts'),
+            model_data.get('rights'),
+            model_data.get('thresholds'),
+            model_data.get('classes'),
+            model_data.get('indices'),
+            0,
+            1,
         )
 
         tpl_tree = templates.get_template('combined.tree')
@@ -255,14 +264,22 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             n_classes=self.meta_info.get('n_classes'),
             n_estimators=self.meta_info.get('n_estimators'),
             method_index=method_index,
-            class_name=class_name
+            class_name=class_name,
         )
         return out_tree
 
     def _create_tree(
-        self, tpls: Environment, language: str,
-        converter: Callable[[object], str], left_nodes: list, right_nodes: list,
-        threshold: list, value: list, features: list, node: int, depth: int
+        self,
+        tpls: Environment,
+        language: str,
+        converter: Callable[[object], str],
+        left_nodes: list,
+        right_nodes: list,
+        threshold: list,
+        value: list,
+        features: list,
+        node: int,
+        depth: int,
     ):
         """
         The ported single tree as function or method.
@@ -300,7 +317,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             if node != 0:
                 out += '\n'
 
-            val_a = 'features[{}]'.format(features[node])
+            val_a = f'features[{features[node]}]'
             if language is enum.Language.PHP:
                 val_a = '$' + val_a
             val_b = converter(threshold[node])

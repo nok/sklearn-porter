@@ -1,8 +1,8 @@
 import sys
 import warnings
-import joblib
-
 from pathlib import Path
+
+import joblib
 
 
 def load_model(path: Path, skip_warnings: bool = False):
@@ -20,8 +20,8 @@ def load_model(path: Path, skip_warnings: bool = False):
     The loaded BaseEstimator, pipeline or searcher.
     """
     if not path.exists() or not path.is_file():
-        msg = 'File not found: {}'.format(str(path))
-        sys.exit('Error: {}'.format(msg))
+        msg = f'File not found: {str(path)}'
+        sys.exit(f'Error: {msg}')
     if skip_warnings:
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')

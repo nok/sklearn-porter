@@ -1,7 +1,7 @@
+from collections.abc import Callable
 from copy import deepcopy
 from json import dumps, encoder
 from textwrap import indent
-from typing import Callable, Tuple, Union
 
 from jinja2 import Environment
 from loguru import logger as L
@@ -67,17 +67,19 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
         # Is the estimator fitted?
         try:
-            getattr(est, 'tree_')
+            est.tree_
         except AttributeError:
-            raise exception.NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(
+                self.estimator_name
+            ) from None
 
         # Extract and save meta information:
         self.meta_info = dict(
             n_features=est.n_features_in_,
             n_classes=len(est.classes_),
         )
-        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
+        L.info(f'Meta info (keys): {self.meta_info.keys()}')
+        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         # Extract and save model data:
         self.model_data = dict(
@@ -87,8 +89,8 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             indices=est.tree_.feature.tolist(),
             classes=get_class_counts(est.tree_),
         )
-        L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
+        L.info(f'Model data (keys): {self.model_data.keys()}')
+        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
     def port(
         self,
@@ -97,7 +99,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         class_name: str,
         converter: Callable[[object], str],
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Port an estimator.
 
@@ -124,10 +126,12 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         """
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=class_name,
-            to_json=to_json,
-        ))
+        plas.update(
+            dict(
+                class_name=class_name,
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -245,10 +249,15 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         A tree of a DecisionTreeClassifier.
         """
         n_indents = (
-            1 if language in {
-                enum.Language.JAVA, enum.Language.JS, enum.Language.PHP,
-                enum.Language.RUBY
-            } else 0
+            1
+            if language
+            in {
+                enum.Language.JAVA,
+                enum.Language.JS,
+                enum.Language.PHP,
+                enum.Language.RUBY,
+            }
+            else 0
         )
         return self._create_branch(
             tpls,
@@ -310,7 +319,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         out_indent = tpls.get_template('indent').render()
         if threshold[node] != -2.0:
             out += '\n'
-            val_a = 'features[{}]'.format(features[node])
+            val_a = f'features[{features[node]}]'
             if language is enum.Language.PHP:
                 val_a = '$' + val_a
             val_b = converter(threshold[node])
