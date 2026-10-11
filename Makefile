@@ -1,38 +1,37 @@
-SHELL := /bin/bash
+.PHONY: setup lint format test test-docker docker-image notebook examples clean
 
-export PYTHONPATH=$(shell pwd)
+IMAGE := sklearn-porter:testing
+PYTHON_VERSION ?= $(shell cat .python-version)
 
-export CONDA_ENV_NAME=sklearn-porter
-export PYTHON_VERSION=3.6
+setup:
+	uv sync --all-groups
 
-ACTIVATE_CONDA_ENV := source activate $(CONDA_ENV_NAME)_$(PYTHON_VERSION) > /dev/null 2>&1;
+lint:
+	uv run ruff check .
+	uv run ruff format --check .
+
+format:
+	uv run ruff check --fix .
+	uv run ruff format .
+
+test:
+	uv run pytest
+
+docker-image:
+	docker build --build-arg PYTHON_VERSION=$(PYTHON_VERSION) -t $(IMAGE) .
+
+test-docker: docker-image
+	docker run --rm -v "$(CURDIR)":/app $(IMAGE) \
+		uv run pytest --numprocesses=auto --cov
+
+notebook:
+	uv run --group examples jupyter notebook --notebook-dir=examples/basics
+
+examples:
+	cd examples && for f in $$(find . -type f -name '*.pct.py'); do \
+		uv run --group examples jupytext --to notebook --execute "$$f"; \
+	done
 
 clean:
-	resources/scripts/make_clean.sh
-
-setup: clean
-	resources/scripts/make_setup.sh ${CONDA_ENV_NAME} ${PYTHON_VERSION}
-
-test: tests
-
-tests:: setup
-	$(ACTIVATE_CONDA_ENV) resources/scripts/make_tests.sh
-
-test-docker: tests-docker
-
-tests-docker:
-	resources/scripts/make_tests_docker.sh
-
-lint: setup
-	$(ACTIVATE_CONDA_ENV) resources/scripts/make_lint.sh
-
-deploy: setup
-	$(ACTIVATE_CONDA_ENV) resources/scripts/make_deploy.sh
-
-examples: setup
-	$(ACTIVATE_CONDA_ENV) resources/scripts/make_examples.sh
-
-book: notebook
-
-notebook: setup
-	$(ACTIVATE_CONDA_ENV) resources/scripts/make_notebook.sh
+	rm -rf build dist tmp .pytest_cache .ruff_cache .coverage htmlcov
+	find . -name '__pycache__' -type d -prune -exec rm -rf {} +
