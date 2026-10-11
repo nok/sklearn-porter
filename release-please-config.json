@@ -1,0 +1,20 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "2509355ec7a421290819308b72ab5de71f83dd5e",
+  "include-component-in-tag": false,
+  "packages": {
+    ".": {
+      "release-type": "python",
+      "package-name": "sklearn-porter",
+      "changelog-path": "CHANGELOG.md",
+      "release-as": "1.0.0",
+      "extra-files": [
+        {
+          "type": "toml",
+          "path": "uv.lock",
+          "jsonpath": "$.package[?(@.name.value=='sklearn-porter')].version"
+        }
+      ]
+    }
+  }
+}

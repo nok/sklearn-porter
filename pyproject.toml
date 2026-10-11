@@ -31,7 +31,7 @@ dependencies = [
 [project.urls]
 Homepage = "https://github.com/nok/sklearn-porter"
 Repository = "https://github.com/nok/sklearn-porter"
-Changelog = "https://github.com/nok/sklearn-porter/blob/main/changelog.md"
+Changelog = "https://github.com/nok/sklearn-porter/blob/main/CHANGELOG.md"
 
 [project.scripts]
 porter = "sklearn_porter.cli.__main__:main"

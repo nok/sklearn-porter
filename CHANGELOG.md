@@ -3,18 +3,6 @@
 All notable changes to this project will be documented in this file.
 
 
-## Unreleased
-
-### Fixed
-
-### Added
-
-### Changed
-
-- Drop support for Python 3.4 and below
-- Run all tests in a [Docker](https://www.docker.com/) container
-
-
 ## 0.7.3
 
 ### Fixed
