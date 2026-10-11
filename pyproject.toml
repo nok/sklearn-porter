@@ -1,0 +1,79 @@
+[project]
+name = "sklearn-porter"
+version = "1.0.0"
+description = "Transpile trained scikit-learn estimators to C, Go, Java, JavaScript, PHP and Ruby."
+readme = "readme.md"
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+authors = [{ name = "Darius Morawiec", email = "nok@users.noreply.github.com" }]
+keywords = ["scikit-learn", "sklearn", "transpiler", "machine-learning"]
+classifiers = [
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Software Development",
+]
+requires-python = ">=3.11"
+dependencies = [
+    "jinja2>=3.1",
+    "joblib>=1.4",
+    "loguru>=0.7",
+    "scikit-learn>=1.8.0",
+    "tabulate>=0.9",
+]
+
+[project.urls]
+Homepage = "https://github.com/nok/sklearn-porter"
+Repository = "https://github.com/nok/sklearn-porter"
+Changelog = "https://github.com/nok/sklearn-porter/blob/main/changelog.md"
+
+[project.scripts]
+porter = "sklearn_porter.cli.__main__:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-cov>=6",
+    "pytest-xdist>=3",
+    "ruff>=0.14",
+]
+examples = [
+    "jupytext>=1.17",
+    "notebook>=7",
+]
+
+[tool.uv]
+default-groups = ["dev"]
+
+[build-system]
+requires = ["uv_build>=0.9,<0.14"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "sklearn_porter"
+module-root = ""
+
+[tool.ruff]
+line-length = 80
+target-version = "py311"
+
+[tool.ruff.format]
+quote-style = "single"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["EstimatorTest.py"]
+python_functions = ["test_*"]
+addopts = "-p no:doctest"
+
+[tool.coverage.run]
+source = ["sklearn_porter"]

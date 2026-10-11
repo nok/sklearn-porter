@@ -1,66 +1,26 @@
-FROM continuumio/miniconda3:4.11.0
+ARG PYTHON_VERSION=3.11
+FROM ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
 
+# Compilers and interpreters to run the transpiled estimators:
 RUN apt-get update && \
+    mkdir -p /usr/share/man/man1 && \
     apt-get install -y --no-install-recommends \
-        apt-transport-https \
-        apt-utils \
-        ca-certificates \
-        software-properties-common \
-        gnupg \
-        make \
-        sudo \
-        wget && \
-    wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | sudo apt-key add - && \
-    add-apt-repository --yes https://adoptopenjdk.jfrog.io/adoptopenjdk/deb/ && \
-    apt-get update && \
-    mkdir -p /usr/share/man/man1/ && \
-    apt-get install -y --no-install-recommends \
-        adoptopenjdk-8-hotspot \
-        libopenblas-dev liblapack-dev gfortran cpp g++ gcc \
-        ruby \
-        php \
+        gcc libc6-dev \
+        golang \
+        default-jdk-headless \
         nodejs \
-        golang && \
+        php-cli \
+        ruby && \
     rm -rf /var/lib/apt/lists/*
 
-RUN echo "\n\nJava version:\n" && java -version && \
-    echo "\n\nGCC version:\n" && gcc --version && \
-    echo "\n\nRuby version:\n" && ruby --version && \
-    echo "\n\nPHP version:\n" && php --version && \
-    echo "\n\nPython version:\n" && python --version && \
-    echo "\n\nNode version:\n" && node --version && \
-    echo "\n\nGo version:\n" && go version
+ENV UV_LINK_MODE=copy \
+    UV_PROJECT_ENVIRONMENT=/opt/venv
 
-ENV USER user
-ENV HOME /home/${USER}
-ENV CONDA_AUTO_ACTIVATE_BASE true
-ENV CONDA_ALWAYS_YES true
-ENV CONDA_AUTO_UPDATE_CONDA false
+WORKDIR /app
 
-RUN mkdir -p ${HOME}/repo
-COPY . ${HOME}/repo
-WORKDIR ${HOME}/repo
-
-ARG PYTHON_VER
-ARG SKLEARN_VER
-ARG EXTRAS
-
-RUN conda create -n sklearn-porter ${PYTHON_VER:-python=3.6} && \
-    conda run -n sklearn-porter --no-capture-output python -m \
-        pip install --no-cache-dir -U pip && \
-    conda run -n sklearn-porter --no-capture-output python -m \
-        pip install --no-cache-dir \
-            -e ".[${EXTRAS:-development,examples}]" \
-            "${SKLEARN_VER:-scikit-learn}" \
-            cython numpy scipy && \
-    conda clean --all && \
-    conda run -n sklearn-porter --no-capture-output python -m \
-        pip freeze | grep -i -E 'cython|numpy|scipy|scikit-learn'
-
-RUN if [ -e /opt/conda/bin/ipython ] ; then \
-        conda run --no-capture-output -n sklearn-porter \
-            ipython profile create && \
-        echo -e "\nc.InteractiveShellApp.exec_lines = [\x27import sys; sys.path.append(\x22${HOME}\x22)\x27]" >> $(conda run -n base ipython locate)/profile_default/ipython_config.py \
-    ; fi
+# Install the dependencies only; the repository is mounted at runtime:
+COPY pyproject.toml uv.lock .python-version readme.md ./
+RUN uv sync --locked --no-install-project
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
+CMD ["uv", "run", "pytest"]
