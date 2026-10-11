@@ -385,7 +385,9 @@ output = port(clf, language='js', template='attached')
 print(output)
 
 # 3. Save the ported estimator:
-src_path, json_path = save(clf, language='js', template='exported', directory='/tmp')
+src_path, json_path = save(
+    clf, language='js', template='exported', directory='/tmp'
+)
 print(src_path, json_path)
 
 # 4. Make predictions with the ported estimator:

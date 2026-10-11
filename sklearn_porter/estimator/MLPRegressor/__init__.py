@@ -1,6 +1,5 @@
 # scikit-learn
-from sklearn.neural_network import \
-    MLPRegressor as MLPRegressorClass
+from sklearn.neural_network import MLPRegressor as MLPRegressorClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -37,6 +36,6 @@ class MLPRegressor(MLPClassifier, EstimatorBase):
             estimator.coefs_
         except AttributeError:
             estimator_name = estimator.__class__.__qualname__
-            raise exception.NotFittedEstimatorError(estimator_name)
+            raise exception.NotFittedEstimatorError(estimator_name) from None
 
         super().__init__(estimator)

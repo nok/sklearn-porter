@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from copy import deepcopy
 from json import dumps, encoder
-from typing import Tuple, Union, Callable
 
 from loguru import logger as L
 
@@ -45,21 +45,23 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         try:
             est.feature_log_prob_
         except AttributeError:
-            raise exception.NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(
+                self.estimator_name
+            ) from None
 
         self.meta_info = dict(
             n_features=len(est.feature_log_prob_[0]),
             n_classes=len(est.classes_),
         )
-        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
+        L.info(f'Meta info (keys): {self.meta_info.keys()}')
+        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         self.model_data = dict(
             priors=est.class_log_prior_.tolist(),  # class_log_prior
             probs=est.feature_log_prob_.tolist(),  # feature_log_prob
         )
-        L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
+        L.info(f'Model data (keys): {self.model_data.keys()}')
+        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
     def port(
         self,
@@ -68,7 +70,7 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         class_name: str,
         converter: Callable[[object], str],
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Port an estimator.
 
@@ -94,10 +96,12 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         """
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=class_name,
-            to_json=to_json,
-        ))
+        plas.update(
+            dict(
+                class_name=class_name,
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -124,7 +128,7 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             type=tpl_double,
             name='priors',
             values=', '.join(priors_val_converted),
-            n=len(priors_val)
+            n=len(priors_val),
         )
 
         probs_val = self.model_data.get('probs')
@@ -135,17 +139,20 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
                 list(
                     tpl_in_brackets.render(
                         value=', '.join(list(map(converter, v)))
-                    ) for v in probs_val
+                    )
+                    for v in probs_val
                 )
             ),
             n=len(probs_val),
-            m=len(probs_val[0])
+            m=len(probs_val[0]),
         )
 
-        plas.update(dict(
-            priors=priors_str,
-            probs=probs_str,
-        ))
+        plas.update(
+            dict(
+                priors=priors_str,
+                probs=probs_str,
+            )
+        )
 
         tpl_class = tpls.get_template('attached.class')
         out_class = tpl_class.render(**plas)

@@ -1,6 +1,16 @@
-from sklearn_porter.Estimator import Estimator, make, port, save, show, test
 from sklearn_porter import meta
+from sklearn_porter.Estimator import Estimator, make, port, save, show, test
 from sklearn_porter.utils import options
+
+__all__ = [
+    'Estimator',
+    'make',
+    'options',
+    'port',
+    'save',
+    'show',
+    'test',
+]
 
 __author__ = meta.__author__
 __email__ = meta.__email__

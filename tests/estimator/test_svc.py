@@ -1,19 +1,19 @@
-from pathlib import Path
-from typing import Union
 import warnings
+from pathlib import Path
 
-import pytest
 import numpy as np
+import pytest
 
 # scikit-learn
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
+from sklearn_porter import exceptions as exception
+
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
-from sklearn_porter import exceptions as exception
-from tests.commons import Dataset, DATASETS
-from tests.utils import dataset_uniform_x, dataset_generate_x, fs_mkdir
+from tests.commons import DATASETS, Dataset
+from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 # Long running regression tests, see `make test-regression`:
 pytestmark = pytest.mark.regression
@@ -32,17 +32,14 @@ def test_estimator_svc(
     template: str,
     language: str,
     kernel: str,
-    gamma: Union[str, float],
+    gamma: str | float,
 ):
     """Test and compare different SVM classifiers."""
     # Limit the iterations, because libsvm may not converge (e.g. `poly`):
     orig_est = SVC(kernel=kernel, gamma=gamma, max_iter=100_000, random_state=1)
 
     if not can(orig_est, language, template, 'predict'):
-        pytest.skip(
-            'Skip unsupported estimator/'
-            'language/template combination'
-        )
+        pytest.skip('Skip unsupported estimator/language/template combination')
 
     # Estimator:
     # Scale the features, otherwise libsvm takes extremely long to converge:
@@ -57,11 +54,15 @@ def test_estimator_svc(
     if not isinstance(gamma, str):
         gamma = str(gamma).replace('.', '_')
     tmp_dir = fs_mkdir(
-        tmp_root_dir, [
-            ('test', 'estimator_svc'), ('dataset', dataset.name),
-            ('language', language), ('template', template), ('kernel', kernel),
-            ('gamma', gamma)
-        ]
+        tmp_root_dir,
+        [
+            ('test', 'estimator_svc'),
+            ('dataset', dataset.name),
+            ('language', language),
+            ('template', template),
+            ('kernel', kernel),
+            ('gamma', gamma),
+        ],
     )
 
     try:
@@ -70,18 +71,19 @@ def test_estimator_svc(
             language=language,
             template=template,
             directory=tmp_dir,
-            delete_created_files=False
+            delete_created_files=False,
         )
     except exception.NotSupportedYetError as e:
         if 'template' == 'precomputed':
             msg = 'The passed kernel `precomputed` is not supported.'
             assert msg in str(e)
     except exception.CodeTooLarge:
-        msg = 'Code too large for the combination: ' \
-              'language: {}, template: {}, dataset: {}' \
-              ''.format(language, template, dataset.name)
-        warnings.warn(msg)
+        msg = (
+            'Code too large for the combination: '
+            f'language: {language}, template: {template}, dataset: {dataset.name}'
+        )
+        warnings.warn(msg, stacklevel=2)
     except Exception as e:
         pytest.fail('Unexpected exception ... ' + str(e))
     else:
-        assert score == 1.
+        assert score == 1.0

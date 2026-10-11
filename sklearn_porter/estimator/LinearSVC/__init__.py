@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from copy import deepcopy
 from json import dumps, encoder
-from typing import Tuple, Union, Callable
 
 from loguru import logger as L
 
@@ -46,7 +46,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         enum.Language.RUBY: {
             enum.Template.ATTACHED: {enum.Method.PREDICT},
             enum.Template.EXPORTED: {enum.Method.PREDICT},
-        }
+        },
     }
 
     estimator = None  # type: LinearSVCClass
@@ -60,15 +60,17 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         try:
             est.coef_
         except AttributeError:
-            raise exception.NotFittedEstimatorError(self.estimator_name)
+            raise exception.NotFittedEstimatorError(
+                self.estimator_name
+            ) from None
 
         self.meta_info = dict(
             n_features=len(est.coef_[0]),
             n_classes=len(est.classes_),
-            is_binary=len(est.classes_) == 2
+            is_binary=len(est.classes_) == 2,
         )
-        L.info('Meta info (keys): {}'.format(self.meta_info.keys()))
-        L.opt(lazy=True).debug('Meta info: {}'.format(self.meta_info))
+        L.info(f'Meta info (keys): {self.meta_info.keys()}')
+        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         if self.meta_info['is_binary']:
             self.model_data = dict(
@@ -78,8 +80,8 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
             self.model_data = dict(
                 coeffs=est.coef_.tolist(), inters=est.intercept_.tolist()
             )
-        L.info('Model data (keys): {}'.format(self.model_data.keys()))
-        L.opt(lazy=True).debug('Model data: {}'.format(self.model_data))
+        L.info(f'Model data (keys): {self.model_data.keys()}')
+        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
     def port(
         self,
@@ -88,7 +90,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         class_name: str,
         converter: Callable[[object], str],
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Port an estimator.
 
@@ -114,10 +116,12 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         """
         # Placeholders:
         plas = deepcopy(self.placeholders)  # alias
-        plas.update(dict(
-            class_name=class_name,
-            to_json=to_json,
-        ))
+        plas.update(
+            dict(
+                class_name=class_name,
+                to_json=to_json,
+            )
+        )
         plas.update(self.meta_info)
 
         # Templates:
@@ -141,7 +145,6 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         tpl_in_brackets = tpls.get_template('in_brackets')
 
         if self.meta_info['is_binary']:
-
             inters_val = converter(self.model_data.get('inters'))
             inters_str = tpl_init.render(
                 type=tpl_double, name='inters', value=inters_val
@@ -152,17 +155,16 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
                 type=tpl_double,
                 name='coeffs',
                 values=', '.join(coeffs_val),
-                n=len(coeffs_val)
+                n=len(coeffs_val),
             )
 
         else:  # is multi
-
             inters_val = list(map(converter, self.model_data.get('inters')))
             inters_str = tpl_arr_1.render(
                 type=tpl_double,
                 name='inters',
                 values=', '.join(inters_val),
-                n=len(inters_val)
+                n=len(inters_val),
             )
 
             coeffs_val = self.model_data.get('coeffs')
@@ -173,17 +175,20 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
                     list(
                         tpl_in_brackets.render(
                             value=', '.join(list(map(converter, v)))
-                        ) for v in coeffs_val
+                        )
+                        for v in coeffs_val
                     )
                 ),
                 n=len(coeffs_val),
-                m=len(coeffs_val[0])
+                m=len(coeffs_val[0]),
             )
 
-        plas.update(dict(
-            coeffs=coeffs_str,
-            inters=inters_str,
-        ))
+        plas.update(
+            dict(
+                coeffs=coeffs_str,
+                inters=inters_str,
+            )
+        )
 
         tpl_class = tpls.get_template('attached.class')
         out_class = tpl_class.render(**plas)

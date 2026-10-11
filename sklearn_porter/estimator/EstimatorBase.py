@@ -1,7 +1,7 @@
+from collections.abc import Callable
 from os import environ, getcwd
 from pathlib import Path
 from time import sleep
-from typing import Dict, Optional, Set, Tuple, Union, Callable
 
 from jinja2 import DictLoader, Environment
 from loguru import logger as L
@@ -17,7 +17,6 @@ from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 
 
 class EstimatorBase(EstimatorApiABC):
-
     SKLEARN_BASE_URL = 'https://scikit-learn.org/stable/modules/generated/'
     SKLEARN_URL = None  # type: str
 
@@ -107,9 +106,9 @@ class EstimatorBase(EstimatorApiABC):
         template: enum.Template,
         class_name: str,
         converter: Callable[[object], str],
-        directory: Optional[Union[str, Path]] = None,
+        directory: str | Path | None = None,
         to_json: bool = False,
-    ) -> Union[str, Tuple[str, str]]:
+    ) -> str | tuple[str, str]:
         """
         Dump an estimator to the filesystem.
 
@@ -149,10 +148,10 @@ class EstimatorBase(EstimatorApiABC):
             template=template,
             class_name=class_name,
             converter=converter,
-            to_json=to_json
+            to_json=to_json,
         )
         if not isinstance(ported, tuple):
-            ported = (ported, )
+            ported = (ported,)
 
         # Dump ported estimator:
         suffix = language.value.SUFFIX
@@ -173,9 +172,7 @@ class EstimatorBase(EstimatorApiABC):
 
         return paths
 
-    def _load_templates(
-        self, language: Union[str, enum.Language]
-    ) -> Environment:
+    def _load_templates(self, language: str | enum.Language) -> Environment:
         """
         Load templates from static files and the global language files.
 
@@ -194,7 +191,8 @@ class EstimatorBase(EstimatorApiABC):
         """
         language = (
             enum.Language[language.upper()].value
-            if isinstance(language, str) else language
+            if isinstance(language, str)
+            else language
         )
 
         tpls = {}  # Dict
@@ -227,8 +225,7 @@ class EstimatorBase(EstimatorApiABC):
             if tpls_dir.exists():
                 tpls_paths = set(tpls_dir.glob('*.jinja2'))
                 tpls.update(
-                    {path.stem: path.read_text()
-                     for path in tpls_paths}
+                    {path.stem: path.read_text() for path in tpls_paths}
                 )
 
         L.debug('Load template files: {}'.format(', '.join(tpls.keys())))

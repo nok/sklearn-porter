@@ -4,7 +4,7 @@ from sklearn.ensemble import ExtraTreesClassifier as ExtraTreesClassifierClass
 # sklearn-porter
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.estimator.RandomForestClassifier import (
-    RandomForestClassifier
+    RandomForestClassifier,
 )
 
 
