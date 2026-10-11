@@ -78,7 +78,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         warnings.warn(msg, exception.QualityWarning)
 
         # Use the computed gamma value (e.g. of 'scale' or 'auto'):
-        gamma = str('{:.16f}').format(est._gamma)
+        gamma = float(est._gamma)
 
         # Prepare intercepts and coefficients:
         inters = est._intercept_
