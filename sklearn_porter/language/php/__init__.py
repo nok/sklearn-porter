@@ -10,8 +10,8 @@ class PHP(LanguageABC):
 
     CMD_COMPILE = None
 
-    # php -f {} Estimator.php <args>
-    CMD_EXECUTE = 'php -f {src_path}'
+    # php -f Estimator.php -- <args>
+    CMD_EXECUTE = 'php -f {src_path} --'
 
     # yapf: disable
     TEMPLATES = {
