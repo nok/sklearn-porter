@@ -73,7 +73,12 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 3. Register the estimator in `Estimator.classifiers()` or
    `Estimator.regressors()` in `sklearn_porter/Estimator.py`.
 4. Add tests and run the regression tests in Docker.
-5. Update the support table in `README.md`.
+5. Add the estimator to the manually maintained list of classifiers or
+   regressors in `README.md`.
+
+Goal: every estimator supports all languages, templates and methods
+(`predict_proba` only for classifiers), so the README needs no support
+table.
 
 ## scikit-learn specifics
 
