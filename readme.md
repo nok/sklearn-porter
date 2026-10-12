@@ -104,7 +104,7 @@ The table shows the supported estimators for each programming language and templ
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
     </td>
     <td>✓ᴾ</td>
-    <td></td>
+    <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>

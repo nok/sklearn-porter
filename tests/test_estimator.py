@@ -74,9 +74,13 @@ def test_valid_but_unsupported_language():
         Estimator(clf, language='ruby')
 
 
-def test_valid_but_unsupported_template(fitted_tree):
+def test_valid_but_unsupported_template():
+    dataset = load_iris()
+    x, y = dataset.data, dataset.target
+    clf = KNeighborsClassifier()
+    clf.fit(X=x, y=y)
     with pytest.raises(exception.NotSupportedYetError):
-        Estimator(fitted_tree, language='c', template='exported')
+        Estimator(clf, language='c', template='combined')
 
 
 def test_repr_output(fitted_tree):
