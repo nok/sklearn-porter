@@ -35,7 +35,7 @@ The table shows the supported estimators for each programming language and templ
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a>
     </td>
     <td>✓</td>
-    <td></td>
+    <td>✓</td>
     <td>×</td>
     <td>✓</td>
     <td>✓</td>
@@ -58,7 +58,7 @@ The table shows the supported estimators for each programming language and templ
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a>
     </td>
     <td>✓</td>
-    <td></td>
+    <td>✓</td>
     <td>×</td>
     <td>✓</td>
     <td>✓</td>
