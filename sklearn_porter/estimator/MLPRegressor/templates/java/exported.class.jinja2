@@ -1,0 +1,115 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import com.google.gson.Gson;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.Scanner;
+{% if is_test or to_json %}
+import java.util.Arrays;
+{% endif %}
+
+class {{ class_name }} {
+
+    private enum Activation { IDENTITY, LOGISTIC, RELU, TANH }
+
+    private class Regressor {
+        private String hidden_activation;
+        private int[] layers;
+        private double[][][] weights;
+        private double[][] bias;
+    }
+
+    private Activation hidden;
+    private int[] layers;
+    private double[][][] weights;
+    private double[][] bias;
+
+    public {{ class_name }}(String file) throws FileNotFoundException {
+        String jsonStr = new Scanner(new File(file)).useDelimiter("\\Z").next();
+        Regressor data = new Gson().fromJson(jsonStr, Regressor.class);
+        this.hidden = Activation.valueOf(data.hidden_activation.toUpperCase());
+        this.layers = data.layers;
+        this.weights = data.weights;
+        this.bias = data.bias;
+    }
+
+    private void compute(Activation activation, double[] v) {
+        int i, l = v.length;
+        switch (activation) {
+            case LOGISTIC:
+                for (i = 0; i < l; i++) {
+                    v[i] = 1. / (1. + Math.exp(-v[i]));
+                }
+                break;
+            case RELU:
+                for (i = 0; i < l; i++) {
+                    v[i] = Math.max(0, v[i]);
+                }
+                break;
+            case TANH:
+                for (i = 0; i < l; i++) {
+                    v[i] = Math.tanh(v[i]);
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    private double[] feedForward(double[] features) {
+        double[] inputs = features;
+        for (int i = 0; i < this.layers.length; i++) {
+            double[] outputs = this.bias[i].clone();
+            for (int j = 0; j < inputs.length; j++) {
+                for (int k = 0; k < outputs.length; k++) {
+                    outputs[k] += inputs[j] * this.weights[i][j][k];
+                }
+            }
+            if (i < this.layers.length - 1) {
+                this.compute(this.hidden, outputs);
+            }
+            inputs = outputs;
+        }
+        return inputs;
+    }
+
+    public double[] predict(double[] features) {
+        return this.feedForward(features);
+    }
+
+    public static void main(String[] args) throws FileNotFoundException {
+        int nFeatures = {{ n_features }};
+        if (args.length != (nFeatures + 1) || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data and " +  String.valueOf(nFeatures) + " features.");
+        }
+
+        // Features:
+        double[] features = new double[args.length - 1];
+        for (int i = 1, l = args.length; i < l; i++) {
+            features[i - 1] = Double.parseDouble(args[i]);
+        }
+
+        // Model data:
+        String modelData = args[0];
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}(modelData);
+
+        {% if is_test or to_json %}
+        // Get JSON:
+        double[] prediction = reg.predict(features);
+        String values = prediction.length == 1 ? String.valueOf(prediction[0]) : Arrays.toString(prediction);
+        System.out.println("{\"predict\": " + values + "}");
+        {% else %}
+        // Get predicted values:
+        double[] prediction = reg.predict(features);
+        for (int i = 0; i < prediction.length; i++) {
+            System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
+        }
+        {% endif %}
+
+    }
+}
+{% endblock %}
