@@ -5,6 +5,7 @@ import numpy as np
 import pytest
 
 # scikit-learn
+from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC, NuSVC
 
@@ -23,7 +24,9 @@ pytestmark = pytest.mark.regression
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 @pytest.mark.parametrize('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
 @pytest.mark.parametrize(
-    'gamma', [0.001, 0.01, 'auto'], ids=['0_001', '0_01', 'auto']
+    'gamma',
+    [0.001, 0.01, 'auto', 'scale'],
+    ids=['0_001', '0_01', 'auto', 'scale'],
 )
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 def test_estimator_svc(
@@ -144,3 +147,54 @@ def test_estimator_nu_svc(
         warnings.warn(msg, stacklevel=2)
     else:
         assert score == 1.0
+
+
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('kernel', ['poly', 'rbf', 'sigmoid'])
+@pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
+def test_estimator_svm_with_gamma_scale_on_unscaled_features(
+    tmp_root_dir: Path,
+    orig_est: type,
+    template: str,
+    language: str,
+    kernel: str,
+):
+    """Test the computed value of `gamma='scale'` (see PR #83)."""
+    # Without scaling the features `X.var() != 1`, so the values of
+    # `gamma='scale'` and `gamma='auto'` differ significantly:
+    x, y = load_iris(return_X_y=True)
+    orig_est = orig_est(
+        kernel=kernel, gamma='scale', max_iter=100_000, random_state=1
+    )
+
+    if not can(orig_est, language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+
+    orig_est.fit(X=x, y=y)
+    assert not np.isclose(orig_est._gamma, 1.0 / x.shape[1])
+    est = Estimator(orig_est)
+
+    # Samples:
+    test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
+
+    # Directory:
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'estimator_svm_with_gamma_scale'),
+            ('estimator', type(orig_est).__name__),
+            ('language', language),
+            ('template', template),
+            ('kernel', kernel),
+        ],
+    )
+
+    score = est.test(
+        test_x,
+        language=language,
+        template=template,
+        directory=tmp_dir,
+        delete_created_files=False,
+    )
+    assert score == 1.0
