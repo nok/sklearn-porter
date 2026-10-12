@@ -50,6 +50,7 @@ make lint              # ruff check + ruff format --check + ty check
 make format            # fix and format with ruff
 make test              # fast tests on the host (uv run pytest)
 make test-regression   # regression tests in Docker (slow, ~20+ min)
+make readme            # generate the support table in README.md
 ```
 
 ## Testing
@@ -73,7 +74,9 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 3. Register the estimator in `Estimator.classifiers()` or
    `Estimator.regressors()` in `sklearn_porter/Estimator.py`.
 4. Add tests and run the regression tests in Docker.
-5. Update the support table in `README.md`.
+5. Run `make readme` to generate the support table in `README.md` from
+   `SUPPORT` (`tests/test_readme.py` fails if it is outdated). Never edit
+   the table between the `support-table` markers manually.
 
 ## scikit-learn specifics
 

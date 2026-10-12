@@ -1,4 +1,4 @@
-.PHONY: setup lint format test test-regression test-all docker-image notebook examples clean
+.PHONY: setup lint format test test-regression test-all docker-image readme notebook examples clean
 
 PYTHON_VERSION ?= $(shell cat .python-version)
 IMAGE := sklearn-porter:python$(PYTHON_VERSION)
@@ -31,6 +31,10 @@ test-regression: docker-image
 test-all: docker-image
 	docker run --rm -v "$(CURDIR)":/app $(IMAGE) \
 		uv run pytest --numprocesses=auto -m '' --cov
+
+# Generate the support table in README.md from the `SUPPORT` declarations:
+readme:
+	uv run python scripts/update_readme.py
 
 notebook:
 	uv run --group examples jupyter notebook --notebook-dir=examples/basics

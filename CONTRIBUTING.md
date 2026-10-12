@@ -20,6 +20,7 @@ make format           # Fix and format the code with ruff
 make test             # Run the fast tests
 make test-regression  # Run the regression tests in Docker
 make test-all         # Run all tests with coverage in Docker
+make readme           # Generate the support table in README.md
 make notebook         # Start Jupyter with the examples
 make examples         # Generate the example notebooks with jupytext
 ```
@@ -69,7 +70,7 @@ In general, the generated source code works with older compilers and interpreter
 2. Add or update the Jinja2 templates in `sklearn_porter/estimator/<Name>/templates/<language>/` for every supported language and template.
 3. Register the estimator in `Estimator.classifiers()` or `Estimator.regressors()` in [`sklearn_porter/Estimator.py`](sklearn_porter/Estimator.py).
 4. Add tests and run the regression tests in Docker.
-5. Update the support table in the [README](README.md).
+5. Run `make readme` to generate the support table in the [README](README.md) from `SUPPORT`. A test fails if the table is outdated.
 
 
 ## Pull requests

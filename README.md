@@ -16,6 +16,7 @@ Navigation: [Estimators](#estimators) • [Installation](#installation) • [Usa
 
 The table shows the supported estimators for each programming language and template.
 
+<!-- support-table:start -->
 <table>
   <tr>
     <th rowspan="2"></th>
@@ -25,105 +26,13 @@ The table shows the supported estimators for each programming language and templ
     <th colspan="3">C</th>
     <th colspan="3">Go</th>
     <th colspan="3">Java</th>
-    <th colspan="3">JS</th>
+    <th colspan="3">JavaScript</th>
     <th colspan="3">PHP</th>
     <th colspan="3">Ruby</th>
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a>
-    </td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a>
-    </td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a>
-    </td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
-    </td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">ensemble.RandomForestClassifier</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">ensemble.AdaBoostClassifier</a>
     </td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
@@ -169,7 +78,7 @@ The table shows the supported estimators for each programming language and templ
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">ensemble.AdaBoostClassifier</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">ensemble.RandomForestClassifier</a>
     </td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
@@ -189,56 +98,56 @@ The table shows the supported estimators for each programming language and templ
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html">naive_bayes.BernoulliNB</a>
+    </td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html">naive_bayes.GaussianNB</a>
+    </td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
   </tr>
   <tr align="center">
     <td align="left">
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">neighbors.KNeighborsClassifier</a>
-    </td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">naive_bayes.BernoulliNB</a>
-    </td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-    <td>✓ᴾ</td>
-    <td>✓ᴾ</td>
-    <td>×</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">naive_bayes.GaussianNB</a>
     </td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
@@ -284,7 +193,99 @@ The table shows the supported estimators for each programming language and templ
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html">tree.DecisionTreeRegressor</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a>
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a>
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a>
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
+    </td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesRegressor.html">ensemble.ExtraTreesRegressor</a>
     </td>
     <td>✓</td>
     <td>✓</td>
@@ -330,29 +331,6 @@ The table shows the supported estimators for each programming language and templ
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesRegressor.html">ensemble.ExtraTreesRegressor</a>
-    </td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-    <td>✓</td>
-  </tr>
-  <tr align="center">
-    <td align="left">
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">neural_network.MLPRegressor</a>
     </td>
     <td>✓</td>
@@ -373,6 +351,29 @@ The table shows the supported estimators for each programming language and templ
     <td>✓</td>
     <td>✓</td>
     <td>×</td>
+  </tr>
+  <tr align="center">
+    <td align="left">
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html">tree.DecisionTreeRegressor</a>
+    </td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>✓</td>
   </tr>
   <tr align="center">
     <td rowspan="2"></td>
@@ -399,6 +400,7 @@ The table shows the supported estimators for each programming language and templ
     <th colspan="18">Template</th>
   </tr>
 </table>
+<!-- support-table:end -->
 
 ✓ = `predict` is supported,　ᴾ = `predict_proba` is supported too,　× = not supported<br>
 ᴀ = attached: the model data is part of the code,　ᴇ = exported: the model data is saved in a separate JSON file,　ᴄ = combined: the model data is compiled into the logic of the code (e.g. nested if-else statements)
