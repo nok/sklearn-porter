@@ -13,8 +13,13 @@ RUN apt-get update && \
         ruby && \
     rm -rf /var/lib/apt/lists/*
 
+# Use the Python of the base image instead of `.python-version`, so that
+# PYTHON_VERSION selects the Python version of the tests:
+ARG PYTHON_VERSION
 ENV UV_LINK_MODE=copy \
-    UV_PROJECT_ENVIRONMENT=/opt/venv
+    UV_PROJECT_ENVIRONMENT=/opt/venv \
+    UV_PYTHON=${PYTHON_VERSION} \
+    UV_PYTHON_DOWNLOADS=never
 
 WORKDIR /app
 
