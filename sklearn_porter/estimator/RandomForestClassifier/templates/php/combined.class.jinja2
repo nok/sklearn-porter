@@ -1,0 +1,68 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private function findMax($nums) {
+        $idx = 0;
+        for ($i = 0, $l = count($nums); $i < $l; $i++) {
+            $idx = $nums[$i] > $nums[$idx] ? $i : $idx;
+        }
+        return $idx;
+    }
+
+    private function normVals($nums) {
+        $l = count($nums);
+        $result = array();
+        $sum = 0.;
+        for ($i = 0; $i < $l; $i++) {
+            $sum += $nums[$i];
+        }
+        if ($sum == 0) {
+            for ($i = 0; $i < $l; $i++) {
+                $result[$i] = 1. / $l;
+            }
+        } else {
+            for ($i = 0; $i < $l; $i++) {
+                $result[$i] = $nums[$i] / $sum;
+            }
+        }
+        return $result;
+    }
+
+    {{ method | indent(4) }}
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = array_map('floatval', $argv);
+    if (count($features) != {{ n_features }}) {
+        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
+        exit(1);
+    }
+
+    // Estimator:
+    $clf = new {{ class_name }}();
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $clf->predict($features);
+    $probabilities = $clf->predictProba($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
+    {% else %}
+    // Get class prediction:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+
+    // Get class probabilities:
+    $probabilities = $clf->predictProba($features);
+    for ($i = 0; $i < count($probabilities); $i++) {
+        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+    }
+    {% endif %}
+
+}
+{% endblock %}

@@ -1,0 +1,14 @@
+{{ methods }}
+
+public function predictProba($features) {
+    $probas = array_fill(0, {{ n_classes }}, 0.);
+    {{ method_calls }}
+    for ($i = 0; $i < {{ n_classes }}; $i++) {
+        $probas[$i] /= {{ n_estimators }};
+    }
+    return $probas;
+}
+
+public function predict($features) {
+    return $this->findMax($this->predictProba($features));
+}

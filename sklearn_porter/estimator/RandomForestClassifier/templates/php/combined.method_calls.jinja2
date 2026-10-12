@@ -1,0 +1,4 @@
+$temp = $this->compute{{ method_index }}($features);
+for ($i = 0; $i < {{ n_classes }}; $i++) {
+    $probas[$i] += $temp[$i];
+}
