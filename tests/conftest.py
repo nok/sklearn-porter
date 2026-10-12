@@ -1,5 +1,4 @@
 import random as rd
-import shutil
 from os import environ
 from pathlib import Path
 
@@ -9,7 +8,7 @@ from joblib import dump
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
 
-from tests.commons import RESOURCES_DIR, ROOT_DIR
+from tests.commons import RESOURCES_DIR
 
 # Force deterministic number generation:
 np.random.seed(0)
@@ -38,18 +37,17 @@ def joblib_model_path(
 
 
 @pytest.fixture(scope='session')
-def tmp_root_dir(worker_id) -> Path:
-    """Fixture to get the path to the temporary directory."""
+def tmp_root_dir(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """
+    Fixture to get the path to the temporary directory.
 
-    # Delete the previous generated temporary directory:
-    tmp_dir = ROOT_DIR / 'tmp'
-    if worker_id == 'master':
-        if tmp_dir.exists():
-            shutil.rmtree(str(tmp_dir.resolve()), ignore_errors=True)
-    tmp_dir.mkdir(parents=True, exist_ok=True)
+    The directory is not in the repository, because in Docker the repository
+    is a mounted volume (e.g. sshfs with Colima) on which freshly compiled
+    binaries are not always executable immediately.
+    """
 
     # Add Java dependencies:
     gson_path = RESOURCES_DIR / 'dependencies' / 'gson.jar'
     environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(gson_path.resolve())
 
-    return tmp_dir
+    return tmp_path_factory.mktemp('tmp')
