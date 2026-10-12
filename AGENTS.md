@@ -15,9 +15,10 @@ code must predict exactly the same classes as the original estimator.
   `attached` (data embedded as variables), `exported` (data in a separate
   JSON file), `combined` (data compiled into the code, e.g. nested if/else).
 - **Methods**: `predict` and, if supported, `predict_proba`.
-- **Public API** (`sklearn_porter/Estimator.py`): class `Estimator` and the
-  functions `port`, `save`, `make`, `test`, `show`, `can`. The CLI `porter`
-  (`show`, `port`, `save`) lives in `sklearn_porter/cli/`.
+- **Public API** (exported in `sklearn_porter/__init__.py`): class
+  `Estimator` (incl. the method `can`), the functions `port`, `save`, `make`,
+  `test`, `show` and the dict `options`. The CLI `porter` (`show`, `port`,
+  `save`) lives in `sklearn_porter/cli/`.
 - `make()` compiles and executes the ported estimator via subprocess calls,
   `test()` compares its predictions with scikit-learn (integrity score).
 
