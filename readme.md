@@ -2,18 +2,20 @@
 # sklearn-porter
 
 [![CI](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml/badge.svg)](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml)
-[![PyPI](https://img.shields.io/pypi/v/sklearn-porter.svg?color=blue)](https://pypi.python.org/pypi/sklearn-porter)
-[![PyPI](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.python.org/pypi/sklearn-porter)
-[![GitHub license](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://raw.githubusercontent.com/nok/sklearn-porter/main/LICENSE)
+[![PyPI version](https://img.shields.io/pypi/v/sklearn-porter.svg?color=blue)](https://pypi.org/project/sklearn-porter/)
+[![Python versions](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.org/project/sklearn-porter/)
+[![License](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://github.com/nok/sklearn-porter/blob/main/LICENSE)
 
-Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Java, JavaScript and others.<br>It's recommended for limited embedded systems and critical applications where performance matters most.
+Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to C, Go, Java, JavaScript, PHP and Ruby.
 
-Navigation: [Estimators](#estimators) • [Installation](#installation) • [Usage](#usage) • [Known Issues](#known-issues) • [Development](#development) • [Citation](#citation) • [License](#license)
+Use the generated code to make predictions where Python isn't available or too heavy, e.g. on embedded systems, in web browsers or in existing applications. The ported estimators make the same predictions as the original estimators of scikit-learn.
+
+Navigation: [Estimators](#estimators) • [Installation](#installation) • [Usage](#usage) • [Known Issues](#known-issues) • [Development](#development) • [Citation](#citation) • [License](#license)
 
 
 ## Estimators
 
-This table gives an overview over all supported combinations of estimators, programming languages and templates.
+The table shows the supported estimators for each programming language and template.
 
 <table>
   <tr>
@@ -30,7 +32,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html">svm.SVC</a>
     </td>
     <td>✓</td>
     <td></td>
@@ -53,7 +55,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html">svm.NuSVC</a>
     </td>
     <td>✓</td>
     <td></td>
@@ -76,7 +78,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a>
     </td>
     <td>✓</td>
     <td></td>
@@ -99,7 +101,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeClassifier.html">tree.DecisionTreeClassifier</a>
     </td>
     <td>✓ᴾ</td>
     <td></td>
@@ -122,7 +124,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">ensemble.RandomForestClassifier</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">ensemble.RandomForestClassifier</a>
     </td>
     <td></td>
     <td></td>
@@ -145,7 +147,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">ensemble.ExtraTreesClassifier</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">ensemble.ExtraTreesClassifier</a>
     </td>
     <td></td>
     <td></td>
@@ -168,7 +170,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">ensemble.AdaBoostClassifier</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html">ensemble.AdaBoostClassifier</a>
     </td>
     <td></td>
     <td></td>
@@ -191,7 +193,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">neighbors.KNeighborsClassifier</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html">neighbors.KNeighborsClassifier</a>
     </td>
     <td></td>
     <td></td>
@@ -214,7 +216,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">naive_bayes.BernoulliNB</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">naive_bayes.BernoulliNB</a>
     </td>
     <td></td>
     <td></td>
@@ -237,7 +239,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">naive_bayes.GaussianNB</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html#sklearn.naive_bayes.GaussianNB">naive_bayes.GaussianNB</a>
     </td>
     <td></td>
     <td></td>
@@ -260,7 +262,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html">neural_network.MLPClassifier</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html">neural_network.MLPClassifier</a>
     </td>
     <td></td>
     <td></td>
@@ -283,7 +285,7 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
   <tr align="center">
     <td align="left">
-      <a href="http://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">neural_network.MLPRegressor</a>
+      <a href="https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html">neural_network.MLPRegressor</a>
     </td>
     <td></td>
     <td></td>
@@ -330,8 +332,8 @@ This table gives an overview over all supported combinations of estimators, prog
   </tr>
 </table>
 
-✓ = support of `predict`,　ᴾ = support of `predict_proba`,　× = not supported or feasible<br>
-ᴀ = attached model data,　ᴇ = exported model data (JSON),　ᴄ = combined model data
+✓ = `predict` is supported,　ᴾ = `predict_proba` is supported too,　× = not supported<br>
+ᴀ = attached: the model data is part of the code,　ᴇ = exported: the model data is saved in a separate JSON file,　ᴄ = combined: the model data is compiled into the logic of the code (e.g. nested if-else statements)
 
 
 ## Installation
@@ -344,9 +346,9 @@ uv add sklearn-porter
 pip install sklearn-porter
 ```
 
-The prerequisites are Python `>= 3.11` and `scikit-learn >= 1.8`. For older versions of scikit-learn you can use [sklearn-porter v0.7.4](https://pypi.org/project/sklearn-porter/0.7.4/).
+sklearn-porter requires Python 3.11 or newer and scikit-learn 1.8 or newer. It's tested with Python 3.11, 3.12, 3.13 and 3.14. For older versions of Python and scikit-learn use [sklearn-porter 0.7.4](https://pypi.org/project/sklearn-porter/0.7.4/).
 
-To compile and run the ported estimators with `make` and `test` you need the compiler or interpreter of the target language, e.g. `node` for JavaScript.
+You only need a compiler or interpreter of the target language (e.g. `node` for JavaScript) if you want to run the ported estimator with `make` or `test`. `port` and `save` work without it.
 
 
 ## Usage
@@ -357,33 +359,34 @@ To compile and run the ported estimators with `make` and `test` you need the com
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
 
-from sklearn_porter import port, save, make, test
+from sklearn_porter import make, port, save, test
 
-# 1. Load data and train a dummy classifier:
+# 1. Load the data and train a classifier:
 X, y = load_iris(return_X_y=True)
 clf = DecisionTreeClassifier()
 clf.fit(X, y)
 
-# 2. Port or transpile an estimator:
+# 2. Port (transpile) the classifier and get the source code:
 output = port(clf, language='js', template='attached')
 print(output)
 
-# 3. Save the ported estimator:
+# 3. Save the ported classifier to files:
 src_path, json_path = save(
     clf, language='js', template='exported', directory='/tmp'
 )
 print(src_path, json_path)
 
-# 4. Make predictions with the ported estimator:
+# 4. Make predictions with the ported classifier:
 y_classes, y_probas = make(clf, X[:10], language='js', template='exported')
 print(y_classes, y_probas)
 
-# 5. Test always the ported estimator by making an integrity check:
+# 5. Check the ported classifier: the score is the share of predictions
+#    which are equal to the predictions of the original classifier.
 score = test(clf, X[:10], language='js', template='exported')
 print(score)
 ```
 
-### OOP
+### Object-oriented
 
 ```python
 from sklearn.datasets import load_iris
@@ -391,33 +394,34 @@ from sklearn.tree import DecisionTreeClassifier
 
 from sklearn_porter import Estimator
 
-# 1. Load data and train a dummy classifier:
+# 1. Load the data and train a classifier:
 X, y = load_iris(return_X_y=True)
 clf = DecisionTreeClassifier()
 clf.fit(X, y)
 
-# 2. Port or transpile an estimator:
+# 2. Port (transpile) the classifier and get the source code:
 est = Estimator(clf, language='js', template='attached')
 output = est.port()
 print(output)
 
-# 3. Save the ported estimator:
+# 3. Save the ported classifier to files:
 est.template = 'exported'
 src_path, json_path = est.save(directory='/tmp')
 print(src_path, json_path)
 
-# 4. Make predictions with the ported estimator:
+# 4. Make predictions with the ported classifier:
 y_classes, y_probas = est.make(X[:10])
 print(y_classes, y_probas)
 
-# 5. Test always the ported estimator by making an integrity check:
+# 5. Check the ported classifier: the score is the share of predictions
+#    which are equal to the predictions of the original classifier.
 score = est.test(X[:10])
 print(score)
 ```
 
-### CLI
+### Command line
 
-In addition you can use the sklearn-porter on the command line. The command calls `porter` and is available after the installation.
+After the installation the command `porter` is available:
 
 ```
 porter {show,port,save} [-h] [-v]
@@ -434,7 +438,7 @@ porter save <estimator> [-l {c,go,java,js,php,ruby}]
                         [--skip-warnings] [-h]
 ```
 
-You can serialize an estimator and save it locally. For more details you can read the instructions to  [model persistence](http://scikit-learn.org/stable/modules/model_persistence.html#persistence-example).
+First save the trained estimator to a file (see [model persistence](https://scikit-learn.org/stable/model_persistence.html)):
 
 ```python
 from joblib import dump
@@ -442,29 +446,30 @@ from joblib import dump
 dump(clf, 'estimator.joblib', compress=0)
 ```
 
-After that the estimator can be transpiled by using the subcommand `port`:
+Then port the saved estimator with the subcommand `port`:
 
 ```bash
 porter port estimator.joblib -l js -t attached > estimator.js
 ```
 
-For further processing you can pass the result to another applications, e.g. [UglifyJS](https://github.com/mishoo/UglifyJS2).
+The output can be passed to other tools, e.g. to [UglifyJS](https://github.com/mishoo/UglifyJS) to minify the code:
 
 ```bash
 porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estimator.min.js
 ```
 
+
 ## Known Issues
 
-- In some rare cases the regression tests of the support vector machines, [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), fail. Because of that a `QualityWarning` will be raised which should remind you to evaluate the result by using the `test` method.
-- The [AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) is ported with the `SAMME` algorithm, because scikit-learn removed `SAMME.R`.
+- The ported support vector machines, [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), can make different predictions than the original estimators in rare cases. Therefore sklearn-porter raises a `QualityWarning` for them: check the ported estimator with the `test` method.
+- The [AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) is ported with the `SAMME` algorithm, because scikit-learn removed the `SAMME.R` algorithm.
 
 
 ## Development
 
 ### Setup
 
-The Python version and all dependencies are managed with [uv](https://docs.astral.sh/uv/):
+The Python version and all dependencies are managed with [uv](https://docs.astral.sh/uv/). Install everything with:
 
 ```bash
 uv sync --all-groups
@@ -473,36 +478,36 @@ uv sync --all-groups
 ### Commands
 
 ```bash
-make lint             # Lint and check the format with ruff
+make lint             # Check the code and its format with ruff
 make format           # Fix and format the code with ruff
-make test             # Run the fast tests on the host
+make test             # Run the fast tests
 make test-regression  # Run the regression tests in Docker
 make test-all         # Run all tests with coverage in Docker
-make notebook         # Start a Jupyter notebook with the examples
-make examples         # Generate the notebooks with jupytext
+make notebook         # Start Jupyter with the examples
+make examples         # Generate the example notebooks with jupytext
 ```
 
 ### Testing
 
-The fast tests run on every push and pull request with [GitHub Actions](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml) on Python 3.11 to 3.14:
+The fast tests check the Python code without running the ported estimators. GitHub Actions runs them on every push and pull request with Python 3.11 to 3.14 ([workflow](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml)):
 
 ```bash
 uv run pytest
 ```
 
-The regression tests compile and execute the ported estimators and compare their predictions with the original estimators of scikit-learn. They take a long time and require all compilers and interpreters, so they are marked with `regression`, skipped by default and only run locally in a [Docker](Dockerfile) container:
+The regression tests compile and run the ported estimators and compare their predictions with the original estimators. They take a long time (10+ minutes) and need all compilers and interpreters. Therefore they are marked with `regression`, skipped by default and only run locally in [Docker](Dockerfile):
 
 ```bash
 make test-regression
 ```
 
-By default the tests run with the Python version from [`.python-version`](.python-version). Set `PYTHON_VERSION` to test another one:
+The tests use the Python version from [`.python-version`](.python-version). Set `PYTHON_VERSION` to use another one:
 
 ```bash
 make test-regression PYTHON_VERSION=3.14
 ```
 
-The Docker image contains these compilers and interpreters (Debian bookworm):
+The Docker image (Debian 12 "bookworm") contains these compilers and interpreters:
 
 | Language   | Compiler / Interpreter |
 |------------|------------------------|
@@ -513,38 +518,42 @@ The Docker image contains these compilers and interpreters (Debian bookworm):
 | PHP        | PHP 8.2                |
 | Ruby       | Ruby 3.1               |
 
-In general you can use older compilers and interpreters with the generated source code.
+Please note that, in general, you can use older compilers and interpreters with the generated source code. For instance, you can use Java 8 to compile and run the models.
 
 ### Logging
 
-You can activate logging by changing the option `logging.level`.
+Change the option `logging.level` to see what sklearn-porter does:
 
 ```python
-from sklearn_porter import options
-
 from logging import DEBUG
+
+from sklearn_porter import options
 
 options['logging.level'] = DEBUG
 ```
 
 ### Contributing
 
-The commit messages and pull request titles follow the [Conventional Commits](https://www.conventionalcommits.org/) specification, e.g. `feat: add support for ...` or `fix(php): ...`. Pull requests are squash merged into `main`, so the pull request title becomes the commit message.
+Commit messages and pull request titles follow [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat: add support for ...` or `fix(php): ...`. Pull requests are squash merged into `main`, so the pull request title becomes the commit message.
 
 ### Releases
 
-Releases are created with [release-please](https://github.com/googleapis/release-please-action): it collects the Conventional Commits on `main` in a release pull request, which updates the version and the [changelog](CHANGELOG.md). Merging the release pull request creates the Git tag and the GitHub release. After that the package is published to [TestPyPI](https://test.pypi.org/project/sklearn-porter/), verified and finally published to [PyPI](https://pypi.org/project/sklearn-porter/).
+Releases are created with [release-please](https://github.com/googleapis/release-please-action):
+
+1. release-please collects the Conventional Commits on `main` in a release pull request. It updates the version and the [changelog](CHANGELOG.md).
+2. Merging the release pull request creates the Git tag and the GitHub release.
+3. The package is published to [TestPyPI](https://test.pypi.org/project/sklearn-porter/), installed and checked from there and only then published to [PyPI](https://pypi.org/project/sklearn-porter/).
 
 
 ## Citation
 
-If you use this implementation in you work, please add a reference/citation to the paper. You can use the following BibTeX entry:
+If you use sklearn-porter in your work, please cite it. You can use this BibTeX entry:
 
 ```bibtex
-@unpublished{sklearn_porter,
+@misc{sklearn_porter,
   author = {Darius Morawiec},
   title = {sklearn-porter},
-  note = {Transpile trained scikit-learn estimators to C, Java, JavaScript and others},
+  note = {Transpile trained scikit-learn estimators to C, Go, Java, JavaScript, PHP and Ruby},
   url = {https://github.com/nok/sklearn-porter}
 }
 ```
@@ -552,4 +561,4 @@ If you use this implementation in you work, please add a reference/citation to t
 
 ## License
 
-The package is Open Source Software released under the [BSD 3-Clause](LICENSE) license.
+sklearn-porter is open source software released under the [BSD 3-Clause](LICENSE) license.
