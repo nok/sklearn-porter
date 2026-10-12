@@ -47,6 +47,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         },
         enum.Language.PHP: {
             enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
     }
