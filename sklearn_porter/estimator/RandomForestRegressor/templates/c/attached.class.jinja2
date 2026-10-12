@@ -1,0 +1,81 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_OUTPUTS {{ n_outputs }}
+#define N_ESTIMATORS {{ n_estimators }}
+
+typedef struct {
+    int *lefts;
+    int *rights;
+    double *thresholds;
+    int *indices;
+    double *values; /* shape: (n_nodes * N_OUTPUTS) */
+} Tree;
+
+
+{{ model }}
+
+Tree trees[N_ESTIMATORS] = {
+{% for i in range(n_estimators) %}
+    {lefts_{{ i }}, rights_{{ i }}, thresholds_{{ i }}, indices_{{ i }}, values_{{ i }}}{% if not loop.last %},{% endif %}
+
+{% endfor %}
+};
+
+/* Find the leaf and return its predicted values: */
+const double *compute(const Tree *tree, double features[N_FEATURES]) {
+    int node = 0;
+    while (tree->lefts[node] != -1) {
+        if (features[tree->indices[node]] <= tree->thresholds[node]) {
+            node = tree->lefts[node];
+        } else {
+            node = tree->rights[node];
+        }
+    }
+    return tree->values + node * N_OUTPUTS;
+}
+
+/* Average the predicted values of all trees: */
+void predict(double *values, double features[N_FEATURES]) {
+    int i, j;
+    for (j = 0; j < N_OUTPUTS; j++) {
+        values[j] = 0.;
+    }
+    for (i = 0; i < N_ESTIMATORS; i++) {
+        const double *temp = compute(&trees[i], features);
+        for (j = 0; j < N_OUTPUTS; j++) {
+            values[j] += temp[j];
+        }
+    }
+    for (j = 0; j < N_OUTPUTS; j++) {
+        values[j] /= N_ESTIMATORS;
+    }
+}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 1) {
+        fprintf(stderr, "You have to pass %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 1; i < argc; i++) {
+        features[i-1] = atof(argv[i]);
+    }
+
+    double prediction[N_OUTPUTS];
+    predict(prediction, features);
+
+    {% filter indent(4, True) %}
+    {% include 'output' %}
+    {% endfilter %}
+
+    return 0;
+}
+{% endblock %}

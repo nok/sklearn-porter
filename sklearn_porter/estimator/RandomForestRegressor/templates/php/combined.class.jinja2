@@ -1,0 +1,45 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {{ trees | indent(4) }}
+
+    // Average the predicted values of all trees:
+    public static function predict($features) {
+        $values = array_fill(0, {{ n_outputs }}, 0.);
+        {% for i in range(n_estimators) %}
+        $temp = self::compute_{{ i }}($features);
+        for ($j = 0; $j < {{ n_outputs }}; $j++) {
+            $values[$j] += $temp[$j];
+        }
+        {% endfor %}
+        for ($j = 0; $j < {{ n_outputs }}; $j++) {
+            $values[$j] /= {{ n_estimators }};
+        }
+        if (count($values) == 1) {
+            return $values[0];
+        }
+        return $values;
+    }
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = array_map('floatval', $argv);
+    if (count($features) != {{ n_features }}) {
+        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
+        exit(1);
+    }
+
+    $prediction = {{ class_name }}::predict($features);
+
+    {% filter indent(4, True) %}
+    {% include 'output' %}
+    {% endfilter %}
+
+}
+{% endblock %}

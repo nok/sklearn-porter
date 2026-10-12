@@ -1,0 +1,49 @@
+private static class Tree {
+    private int[] lefts;
+    private int[] rights;
+    private double[] thresholds;
+    private int[] indices;
+    private double[][] values;
+
+    private Tree(int[] lefts, int[] rights, double[] thresholds, int[] indices, double[][] values) {
+        this.lefts = lefts;
+        this.rights = rights;
+        this.thresholds = thresholds;
+        this.indices = indices;
+        this.values = values;
+    }
+
+    // Find the leaf and return its predicted values:
+    private double[] compute(double[] features) {
+        int node = 0;
+        while (this.lefts[node] != -1) {
+            if (features[this.indices[node]] <= this.thresholds[node]) {
+                node = this.lefts[node];
+            } else {
+                node = this.rights[node];
+            }
+        }
+        return this.values[node];
+    }
+}
+
+private Tree[] forest;
+
+public {{ class_name }}(Tree[] forest) {
+    this.forest = forest;
+}
+
+// Average the predicted values of all trees:
+public double[] predict(double[] features) {
+    double[] values = new double[{{ n_outputs }}];
+    for (Tree tree : this.forest) {
+        double[] temp = tree.compute(features);
+        for (int j = 0; j < values.length; j++) {
+            values[j] += temp[j];
+        }
+    }
+    for (int j = 0; j < values.length; j++) {
+        values[j] /= this.forest.length;
+    }
+    return values;
+}

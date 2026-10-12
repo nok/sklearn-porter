@@ -1,0 +1,34 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	{% filter indent('\t', True) %}
+	{% include 'forest' %}
+	{% endfilter %}
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ model }}
+
+	# Estimator:
+	reg = {{ class_name }}.new model
+	prediction = reg.predict features
+
+	{% filter indent('\t', True) %}
+	{% include 'output' %}
+	{% endfilter %}
+end
+{% endblock %}

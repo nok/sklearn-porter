@@ -1,0 +1,34 @@
+def initialize(model)
+	@forest = model
+end
+
+# Find the leaf and return its predicted values:
+def self.compute(tree, features)
+	node = 0
+	while tree['lefts'][node] != -1
+		if features[tree['indices'][node]] <= tree['thresholds'][node]
+			node = tree['lefts'][node]
+		else
+			node = tree['rights'][node]
+		end
+	end
+	tree['values'][node]
+end
+
+# Average the predicted values of all trees:
+def predict(features)
+	values = Array.new({{ n_outputs }}, 0.0)
+	@forest.each do |tree|
+		temp = {{ class_name }}.compute(tree, features)
+		for j in 0 ... values.length
+			values[j] += temp[j]
+		end
+	end
+	for j in 0 ... values.length
+		values[j] /= @forest.length
+	end
+	if values.length == 1
+		return values[0]
+	end
+	values
+end

@@ -1,0 +1,58 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strconv"
+)
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict interface{} `json:"predict"`
+}
+
+{% endif %}
+{% include 'forest' %}
+
+
+func main() {
+
+	if len(os.Args) != {{ n_features + 2 }} {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data and {{ n_features }} features.")
+		os.Exit(1)
+	}
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[2:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	// Model data:
+	modelData, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Estimator:
+	var reg {{ class_name }}
+	if err := json.Unmarshal(modelData, &reg.Trees); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	prediction := reg.Predict(features)
+
+	{% filter indent('\t', True) %}
+	{% include 'output' %}
+	{% endfilter %}
+
+}
+{% endblock %}

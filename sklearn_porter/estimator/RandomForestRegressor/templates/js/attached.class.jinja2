@@ -1,0 +1,103 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+var {{ class_name }} = function(modelData) {
+
+    var Tree = function(lefts, rights, thresholds, indices, values) {
+        this.lefts = lefts;
+        this.rights = rights;
+        this.thresholds = thresholds;
+        this.indices = indices;
+        this.values = values;
+
+        // Find the leaf and return its predicted values:
+        this.compute = function(features) {
+            var node = 0;
+            while (this.lefts[node] !== -1) {
+                if (features[this.indices[node]] <= this.thresholds[node]) {
+                    node = this.lefts[node];
+                } else {
+                    node = this.rights[node];
+                }
+            }
+            return this.values[node];
+        };
+    };
+
+    this.forest = [];
+    for (var i = 0, il = modelData.length; i < il; i++) {
+        this.forest.push(new Tree(
+            modelData[i]['lefts'], modelData[i]['rights'],
+            modelData[i]['thresholds'], modelData[i]['indices'],
+            modelData[i]['values']
+        ));
+    }
+
+    // Average the predicted values of all trees:
+    this.predict = function(features) {
+        var nTrees = this.forest.length,
+            nOutputs = {{ n_outputs }};
+        var values = new Array(nOutputs).fill(0);
+        var i, j;
+        for (i = 0; i < nTrees; i++) {
+            var temp = this.forest[i].compute(features);
+            for (j = 0; j < nOutputs; j++) {
+                values[j] += temp[j];
+            }
+        }
+        for (j = 0; j < nOutputs; j++) {
+            values[j] /= nTrees;
+        }
+        if (nOutputs === 1) {
+            return values[0];
+        }
+        return values;
+    };
+
+};
+
+var main = function () {
+    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+        if (process.argv.length - 2 !== {{ n_features }}) {
+            var IllegalArgumentException = function(message) {
+                this.message = message;
+                this.name = "IllegalArgumentException";
+            }
+            throw new IllegalArgumentException("You have to pass {{ n_features }} features.");
+        }
+    }
+
+    // Features:
+    var features = process.argv.slice(2);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    {{ model }}
+
+    // Estimator:
+    var reg = new {{ class_name }}(model);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": reg.predict(features)
+    }));
+    {% else %}
+    // Get prediction:
+    var result = reg.predict(features);
+    if (Array.isArray(result)) {
+        for (var i = 0; i < result.length; i++) {
+            console.log("Result of value #" + i + " : " + result[i]);
+        }
+    } else {
+        console.log("Result: " + result);
+    }
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

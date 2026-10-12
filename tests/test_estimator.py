@@ -13,7 +13,9 @@ from sklearn.datasets import load_iris
 from sklearn.ensemble import (
     AdaBoostClassifier,
     ExtraTreesClassifier,
+    ExtraTreesRegressor,
     RandomForestClassifier,
+    RandomForestRegressor,
 )
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import SGDClassifier
@@ -169,7 +171,15 @@ def test_file_handling(fitted_tree, tmp_root_dir):
 def test_list_of_regressors():
     """Test and compare list of regressors."""
     regressors = sorted(
-        [r.__name__ for r in [DecisionTreeRegressor, MLPRegressor]]
+        [
+            r.__name__
+            for r in [
+                DecisionTreeRegressor,
+                ExtraTreesRegressor,
+                MLPRegressor,
+                RandomForestRegressor,
+            ]
+        ]
     )
     result = sorted([r.__name__ for r in Estimator.regressors()])
     assert regressors == result
@@ -510,13 +520,16 @@ def test_regressions_of_regressors(
         ],
     )
 
-    y_pred, _ = est.make(
-        test_x,
-        language=language,
-        template=template,
-        directory=tmp_dir,
-        delete_created_files=False,
-    )
+    try:
+        y_pred, _ = est.make(
+            test_x,
+            language=language,
+            template=template,
+            directory=tmp_dir,
+            delete_created_files=False,
+        )
+    except (exception.CodeTooLarge, exception.TooManyConstants) as e:
+        pytest.skip(str(e))
     np.testing.assert_allclose(
         y_pred.astype(float), orig_est.predict(test_x), rtol=1e-6, atol=1e-8
     )
