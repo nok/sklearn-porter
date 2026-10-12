@@ -1,0 +1,19 @@
+{{ methods }}
+
+void predict_proba(double *probas, double features[N_FEATURES]) {
+    int j;
+    double temp[N_CLASSES];
+    for (j = 0; j < N_CLASSES; j++) {
+        probas[j] = 0.;
+    }
+    {{ method_calls }}
+    for (j = 0; j < N_CLASSES; j++) {
+        probas[j] /= N_ESTIMATORS;
+    }
+}
+
+int predict(double features[N_FEATURES]) {
+    double probas[N_CLASSES];
+    predict_proba(probas, features);
+    return find_max(probas);
+}
