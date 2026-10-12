@@ -1,0 +1,59 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def initialize(coeffs, inters)
+		@coeffs = coeffs
+		@inters = inters
+	end
+
+	def predict(features)
+		values = Array.new(@inters.length, 0.0)
+		for i in 0 ... @inters.length
+			for j in 0 ... @coeffs[i].length
+				values[i] += @coeffs[i][j] * features[j]
+			end
+			values[i] += @inters[i]
+		end
+		{% if is_multi_output %}
+		values
+		{% else %}
+		values[0]
+		{% endif %}
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ coeffs }}
+	{{ inters }}
+
+	# Estimator:
+	reg = {{ class_name }}.new coeffs, inters
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = reg.predict features
+	puts JSON.generate({:predict => prediction})
+	{% else %}
+	# Get predicted values:
+	prediction = reg.predict features
+	Array(prediction).each_with_index do |value, i|
+		puts "Predicted value ##{i} : #{value}"
+	end
+	{% endif %}
+end
+{% endblock %}

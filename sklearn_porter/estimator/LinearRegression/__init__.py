@@ -28,7 +28,32 @@ class LinearRegression(EstimatorBase, EstimatorApiABC):
     DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
+        enum.Language.C: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.COMBINED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
+        },
+        enum.Language.GO: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.COMBINED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
+        },
+        enum.Language.JAVA: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.COMBINED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
+        },
         enum.Language.JS: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.COMBINED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
+        },
+        enum.Language.PHP: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.COMBINED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
+        },
+        enum.Language.RUBY: {
             enum.Template.ATTACHED: {enum.Method.PREDICT},
             enum.Template.COMBINED: {enum.Method.PREDICT},
             enum.Template.EXPORTED: {enum.Method.PREDICT},

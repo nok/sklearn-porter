@@ -1,0 +1,79 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"os"
+	"strconv"
+)
+
+type {{ class_name }} struct {
+	Coeffs [][]float64 `json:"coeffs"`
+	Inters []float64 `json:"inters"`
+}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict interface{} `json:"predict"`
+}
+
+{% endif %}
+func (reg {{ class_name }}) Predict(features []float64) []float64 {
+	values := make([]float64, len(reg.Inters))
+	for i := 0; i < len(reg.Inters); i++ {
+		for j := 0; j < len(reg.Coeffs[i]); j++ {
+			values[i] += reg.Coeffs[i][j] * features[j]
+		}
+		values[i] += reg.Inters[i]
+	}
+	return values
+}
+
+func main() {
+
+	if len(os.Args) != {{ n_features + 2 }} {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data and {{ n_features }} features.")
+		os.Exit(1)
+	}
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[2:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	// Model data:
+	byteValue, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Estimator:
+	var reg {{ class_name }}
+	json.Unmarshal(byteValue, &reg)
+
+	{% if is_test or to_json %}
+	// Get JSON:
+	prediction := reg.Predict(features)
+	{% if is_multi_output %}
+	res, _ := json.Marshal(&Response{Predict: prediction})
+	{% else %}
+	res, _ := json.Marshal(&Response{Predict: prediction[0]})
+	{% endif %}
+	fmt.Println(string(res))
+	{% else %}
+	// Get predicted values:
+	prediction := reg.Predict(features)
+	for i, value := range prediction {
+		fmt.Printf("Predicted value #%d : %v\n", i, value)
+	}
+	{% endif %}
+
+}
+{% endblock %}

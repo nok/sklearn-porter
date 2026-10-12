@@ -1,0 +1,75 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import java.io.File;
+import java.io.FileNotFoundException;
+{% if (is_test or to_json) and is_multi_output %}
+import java.util.Arrays;
+{% endif %}
+import java.util.Scanner;
+
+import com.google.gson.Gson;
+
+
+class {{ class_name }} {
+
+    private class Regressor {
+        private double[][] coeffs;
+        private double[] inters;
+    }
+
+    private Regressor reg;
+
+    public {{ class_name }}(String file) throws FileNotFoundException {
+        String jsonStr = new Scanner(new File(file)).useDelimiter("\\Z").next();
+        this.reg = new Gson().fromJson(jsonStr, Regressor.class);
+    }
+
+    public double[] predict(double[] features) {
+        double[] values = new double[this.reg.inters.length];
+        for (int i = 0, il = this.reg.inters.length; i < il; i++) {
+            for (int j = 0, jl = this.reg.coeffs[i].length; j < jl; j++) {
+                values[i] += this.reg.coeffs[i][j] * features[j];
+            }
+            values[i] += this.reg.inters[i];
+        }
+        return values;
+    }
+
+    public static void main(String[] args) throws FileNotFoundException {
+        int nFeatures = {{ n_features }};
+        if (args.length != (nFeatures + 1) || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data and " +  String.valueOf(nFeatures) + " features.");
+        }
+
+        // Features:
+        double[] features = new double[args.length-1];
+        for (int i = 1, l = args.length; i < l; i++) {
+            features[i - 1] = Double.parseDouble(args[i]);
+        }
+
+        // Model data:
+        String modelData = args[0];
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}(modelData);
+
+        {% if is_test or to_json %}
+        // Get JSON:
+        double[] prediction = reg.predict(features);
+        {% if is_multi_output %}
+        System.out.println("{\"predict\": " + Arrays.toString(prediction) + "}");
+        {% else %}
+        System.out.println("{\"predict\": " + String.valueOf(prediction[0]) + "}");
+        {% endif %}
+        {% else %}
+        // Get predicted values:
+        double[] prediction = reg.predict(features);
+        for (int i = 0; i < prediction.length; i++) {
+            System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
+        }
+        {% endif %}
+
+    }
+}
+{% endblock %}
