@@ -34,6 +34,10 @@ class MLPRegressor(MLPClassifier, EstimatorBase):
                 enum.Method.PREDICT,
             },
         },
+        enum.Language.PHP: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
+        },
     }
 
     estimator = None  # type: MLPRegressorClass
