@@ -1,0 +1,120 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_LAYERS {{ n_layers }}
+
+enum Activation { IDENTITY, LOGISTIC, RELU, TANH };
+
+
+{{ layers }}
+{{ weights }}
+{{ bias }}
+
+enum Activation hidden_activation = {{ hidden_activation | upper }};
+
+void activate(enum Activation activation, double *v, int length) {
+    int i;
+    switch (activation) {
+        case LOGISTIC:
+            for (i = 0; i < length; i++) {
+                v[i] = 1. / (1. + exp(-v[i]));
+            }
+            break;
+        case RELU:
+            for (i = 0; i < length; i++) {
+                v[i] = v[i] > 0 ? v[i] : 0;
+            }
+            break;
+        case TANH:
+            for (i = 0; i < length; i++) {
+                v[i] = tanh(v[i]);
+            }
+            break;
+        case IDENTITY:
+            break;
+    }
+}
+
+/* Compute the output layer; the caller has to free the result: */
+double *feed_forward(double features[N_FEATURES]) {
+    int i, j, k, n_inputs = N_FEATURES, n_outputs;
+    int w_offset = 0, b_offset = 0;
+    double *inputs = malloc(N_FEATURES * sizeof(double));
+    double *outputs;
+    memcpy(inputs, features, N_FEATURES * sizeof(double));
+    for (i = 0; i < N_LAYERS; i++) {
+        n_outputs = layers[i];
+        outputs = malloc(n_outputs * sizeof(double));
+        for (k = 0; k < n_outputs; k++) {
+            outputs[k] = bias[b_offset + k];
+        }
+        for (j = 0; j < n_inputs; j++) {
+            for (k = 0; k < n_outputs; k++) {
+                outputs[k] += inputs[j] * weights[w_offset + j * n_outputs + k];
+            }
+        }
+        if (i < N_LAYERS - 1) {
+            activate(hidden_activation, outputs, n_outputs);
+        }
+        w_offset += n_inputs * n_outputs;
+        b_offset += n_outputs;
+        free(inputs);
+        inputs = outputs;
+        n_inputs = n_outputs;
+    }
+    return inputs;
+}
+
+/* Predict the output values; the caller has to free the result: */
+double *predict(double features[N_FEATURES]) {
+    return feed_forward(features);
+}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 1) {
+        fprintf(stderr, "You have to pass %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 1; i < argc; i++) {
+        features[i-1] = atof(argv[i]);
+    }
+
+    int n_outputs = layers[N_LAYERS - 1];
+    double *prediction = predict(features);
+
+    {% if is_test or to_json %}
+    /* Get JSON: */
+    if (n_outputs == 1) {
+        printf("{\"predict\": %.17g}", prediction[0]);
+    } else {
+        printf("{\"predict\": [");
+        for (int i = 0; i < n_outputs; i++) {
+            printf("%.17g", prediction[i]);
+            if (i < (n_outputs - 1)) {
+                printf(",");
+            }
+        }
+        printf("]}");
+    }
+    {% else %}
+    /* Get predicted values: */
+    for (int i = 0; i < n_outputs; i++) {
+        printf("Predicted value #%d: %.17g\n", i, prediction[i]);
+    }
+    {% endif %}
+
+    free(prediction);
+
+    return 0;
+}
+{% endblock %}

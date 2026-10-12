@@ -1,0 +1,167 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+
+enum Activation { IDENTITY, LOGISTIC, RELU, TANH };
+
+
+int n_layers;
+int *layers;
+double *weights;
+double *bias;
+enum Activation hidden_activation;
+
+/* Count the numbers of nested arrays: */
+int count_numbers(JsonValue *value) {
+    int i, n = 0;
+    if (value->type == JSON_NUMBER) {
+        return 1;
+    }
+    for (i = 0; i < value->length; i++) {
+        n += count_numbers(value->items[i]);
+    }
+    return n;
+}
+
+/* Copy the numbers of nested arrays to a flat array: */
+int flatten(JsonValue *value, double *result) {
+    int i, n = 0;
+    if (value->type == JSON_NUMBER) {
+        result[0] = value->number;
+        return 1;
+    }
+    for (i = 0; i < value->length; i++) {
+        n += flatten(value->items[i], result + n);
+    }
+    return n;
+}
+
+enum Activation to_activation(const char *name) {
+    const char *names[] = {"identity", "logistic", "relu", "tanh"};
+    for (int i = 0; i < 4; i++) {
+        if (strcmp(name, names[i]) == 0) {
+            return (enum Activation) i;
+        }
+    }
+    fprintf(stderr, "Unknown activation function: %s\n", name);
+    exit(1);
+}
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    n_layers = json_get(data, "layers")->length;
+    layers = json_ints(json_get(data, "layers"));
+    weights = malloc(count_numbers(json_get(data, "weights")) * sizeof(double));
+    flatten(json_get(data, "weights"), weights);
+    bias = malloc(count_numbers(json_get(data, "bias")) * sizeof(double));
+    flatten(json_get(data, "bias"), bias);
+    hidden_activation = to_activation(json_get(data, "hidden_activation")->string);
+    json_free(data);
+}
+
+void activate(enum Activation activation, double *v, int length) {
+    int i;
+    switch (activation) {
+        case LOGISTIC:
+            for (i = 0; i < length; i++) {
+                v[i] = 1. / (1. + exp(-v[i]));
+            }
+            break;
+        case RELU:
+            for (i = 0; i < length; i++) {
+                v[i] = v[i] > 0 ? v[i] : 0;
+            }
+            break;
+        case TANH:
+            for (i = 0; i < length; i++) {
+                v[i] = tanh(v[i]);
+            }
+            break;
+        case IDENTITY:
+            break;
+    }
+}
+
+/* Compute the output layer; the caller has to free the result: */
+double *feed_forward(double features[N_FEATURES]) {
+    int i, j, k, n_inputs = N_FEATURES, n_outputs;
+    int w_offset = 0, b_offset = 0;
+    double *inputs = malloc(N_FEATURES * sizeof(double));
+    double *outputs;
+    memcpy(inputs, features, N_FEATURES * sizeof(double));
+    for (i = 0; i < n_layers; i++) {
+        n_outputs = layers[i];
+        outputs = malloc(n_outputs * sizeof(double));
+        for (k = 0; k < n_outputs; k++) {
+            outputs[k] = bias[b_offset + k];
+        }
+        for (j = 0; j < n_inputs; j++) {
+            for (k = 0; k < n_outputs; k++) {
+                outputs[k] += inputs[j] * weights[w_offset + j * n_outputs + k];
+            }
+        }
+        if (i < n_layers - 1) {
+            activate(hidden_activation, outputs, n_outputs);
+        }
+        w_offset += n_inputs * n_outputs;
+        b_offset += n_outputs;
+        free(inputs);
+        inputs = outputs;
+        n_inputs = n_outputs;
+    }
+    return inputs;
+}
+
+/* Predict the output values; the caller has to free the result: */
+double *predict(double features[N_FEATURES]) {
+    return feed_forward(features);
+}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 2) {
+        fprintf(stderr, "You have to pass the path to the model data and %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 2; i < argc; i++) {
+        features[i-2] = atof(argv[i]);
+    }
+
+    int n_outputs = layers[n_layers - 1];
+    double *prediction = predict(features);
+
+    {% if is_test or to_json %}
+    /* Get JSON: */
+    if (n_outputs == 1) {
+        printf("{\"predict\": %.17g}", prediction[0]);
+    } else {
+        printf("{\"predict\": [");
+        for (int i = 0; i < n_outputs; i++) {
+            printf("%.17g", prediction[i]);
+            if (i < (n_outputs - 1)) {
+                printf(",");
+            }
+        }
+        printf("]}");
+    }
+    {% else %}
+    /* Get predicted values: */
+    for (int i = 0; i < n_outputs; i++) {
+        printf("Predicted value #%d: %.17g\n", i, prediction[i]);
+    }
+    {% endif %}
+
+    free(prediction);
+
+    return 0;
+}
+{% endblock %}
