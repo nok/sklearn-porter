@@ -25,7 +25,32 @@ class LogisticRegression(EstimatorBase, EstimatorApiABC):
     DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
+        enum.Language.C: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
+        enum.Language.GO: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
+        enum.Language.JAVA: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         enum.Language.JS: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
+        enum.Language.PHP: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
+        enum.Language.RUBY: {
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.COMBINED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
@@ -54,6 +79,7 @@ class LogisticRegression(EstimatorBase, EstimatorApiABC):
         self.meta_info = dict(
             n_features=coeffs.shape[1],
             n_classes=len(est.classes_),
+            n_decisions=len(coeffs),
             is_binary=len(coeffs) == 1,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')

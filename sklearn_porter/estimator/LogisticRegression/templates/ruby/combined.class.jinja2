@@ -1,0 +1,84 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def self.decision_function(features)
+		decisions = Array.new({{ n_decisions }}, 0.0)
+		{% for coeffs_row in coeffs %}
+		{% set i = loop.index0 %}
+		decisions[{{ i }}] =
+			{% for coeff in coeffs_row %}
+			{{ coeff }} * features[{{ loop.index0 }}] +
+			{% endfor %}
+			{{ inters[i] }}
+		{% endfor %}
+		decisions
+	end
+
+	def self.predict(features)
+		decisions = decision_function features
+		{% if is_binary %}
+		decisions[0] > 0 ? 1 : 0
+		{% else %}
+		class_idx = 0
+		for i in 1 ... decisions.length
+			class_idx = i if decisions[i] > decisions[class_idx]
+		end
+		class_idx
+		{% endif %}
+	end
+	{% if with_proba %}
+
+	def self.predict_proba(features)
+		decisions = decision_function features
+		{% if is_binary %}
+		prob = 1.0 / (1.0 + Math.exp(-decisions[0]))
+		[1.0 - prob, prob]
+		{% else %}
+		max = decisions.max
+		decisions = decisions.map { |decision| Math.exp(decision - max) }
+		sum = decisions.sum
+		decisions.map { |decision| decision / sum }
+		{% endif %}
+	end
+	{% endif %}
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = {{ class_name }}.predict features
+	{% if with_proba %}
+	probabilities = {{ class_name }}.predict_proba features
+	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+	{% else %}
+	puts JSON.generate({:predict => prediction})
+	{% endif %}
+	{% else %}
+	# Get class prediction:
+	prediction = {{ class_name }}.predict features
+	puts "Predicted class: ##{prediction}"
+	{% if with_proba %}
+
+	# Get class probabilities:
+	probabilities = {{ class_name }}.predict_proba features
+	for i in 0 ... probabilities.length
+		puts "Probability of class ##{i} : #{probabilities[i]}"
+	end
+	{% endif %}
+	{% endif %}
+end
+{% endblock %}
