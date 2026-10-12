@@ -132,7 +132,7 @@ The table shows the supported estimators for each programming language and templ
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
-    <td>×</td>
+    <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
@@ -155,7 +155,7 @@ The table shows the supported estimators for each programming language and templ
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
-    <td>×</td>
+    <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
