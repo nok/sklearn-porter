@@ -28,6 +28,11 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
     DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
+        enum.Language.GO: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         enum.Language.JAVA: {
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
@@ -139,12 +144,12 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         # Make 'attached' variant:
         elif template == enum.Template.ATTACHED:
             tpl_class = tpls.get_template('attached.class')
-            tpl_init = tpls.get_template('init')
             model_data = self.model_data.get('estimators')
-            model_data = dumps(model_data, separators=(',', ':'))
-            plas['model'] = tpl_init.render(name='model', value=model_data)
+            plas['model'] = self._create_model(
+                tpls, language, converter, model_data
+            )
             out_class = tpl_class.render(**plas)
-            return out_class, model_data
+            return out_class
 
         # Make 'combined' variant:
         # Pick templates:
@@ -155,7 +160,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         for idx, model_data in enumerate(self.model_data.get('estimators')):
             out_fn = self._create_method(
                 templates=tpls,
-                language=language.value.KEY,
+                language=language,
                 converter=converter,
                 method_index=str(idx),
                 class_name=plas.get('class_name'),
@@ -200,10 +205,68 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         out_class = tpl_class.render(**copy_plas)
         return out_class
 
+    @staticmethod
+    def _create_model(
+        tpls: Environment,
+        language: enum.Language,
+        converter: Callable[[object], str],
+        model_data: list,
+    ) -> str:
+        """
+        Embed the model data of all trees into the source code.
+
+        C and Java get array literals per tree, all other languages parse
+        the model data as JSON string.
+
+        Parameters
+        ----------
+        tpls : Environment
+            All relevant templates.
+        language : Language
+            The required language.
+        converter : Callable[[object], str]
+            The number converter.
+        model_data : list
+            The model data of all trees.
+
+        Returns
+        -------
+        The model data as source code.
+        """
+        if language in (enum.Language.C, enum.Language.JAVA):
+            tpl_tree = tpls.get_template('attached.tree')
+            trees = []
+            for idx, tree in enumerate(model_data):
+                values = dict(
+                    lefts=', '.join(map(str, tree.get('lefts'))),
+                    rights=', '.join(map(str, tree.get('rights'))),
+                    thresholds=', '.join(
+                        map(converter, tree.get('thresholds'))
+                    ),
+                    indices=', '.join(map(str, tree.get('indices'))),
+                    classes=[
+                        ', '.join(map(converter, c))
+                        for c in tree.get('classes')
+                    ],
+                    weight=converter(tree.get('weight')),
+                )
+                trees.append(tpl_tree.render(index=idx, **values))
+            return '\n'.join(trees)
+
+        tpl_init = tpls.get_template('init')
+        model_data = dumps(model_data, separators=(',', ':'))
+        if language is enum.Language.PHP:
+            model_data = "json_decode('" + model_data + "', true)"
+        elif language is enum.Language.GO:
+            model_data = '`' + model_data + '`'
+        elif language is enum.Language.RUBY:
+            model_data = "JSON.parse('" + model_data + "')"
+        return tpl_init.render(name='model', value=model_data)
+
     def _create_method(
         self,
         templates: Environment,
-        language: str,
+        language: enum.Language,
         converter: Callable[[object], str],
         method_index: str,
         class_name: str,
@@ -258,7 +321,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
     def _create_tree(
         self,
         tpls: Environment,
-        language: str,
+        language: enum.Language,
         converter: Callable[[object], str],
         left_nodes: list,
         right_nodes: list,
