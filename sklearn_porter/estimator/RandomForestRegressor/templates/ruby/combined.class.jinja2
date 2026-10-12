@@ -1,0 +1,47 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+
+{% endif %}
+class {{ class_name }}
+
+	{{ trees | indent('\t') }}
+
+	# Average the predicted values of all trees:
+	def self.predict(features)
+		values = Array.new({{ n_outputs }}, 0.0)
+		{% for i in range(n_estimators) %}
+		temp = self.compute_{{ i }}(features)
+		for j in 0 ... values.length
+			values[j] += temp[j]
+		end
+		{% endfor %}
+		for j in 0 ... values.length
+			values[j] /= {{ n_estimators }}
+		end
+		if values.length == 1
+			return values[0]
+		end
+		values
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	prediction = {{ class_name }}.predict features
+
+	{% filter indent('\t', True) %}
+	{% include 'output' %}
+	{% endfilter %}
+end
+{% endblock %}

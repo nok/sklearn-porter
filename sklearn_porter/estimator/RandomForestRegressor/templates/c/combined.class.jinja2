@@ -1,0 +1,54 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_OUTPUTS {{ n_outputs }}
+#define N_ESTIMATORS {{ n_estimators }}
+
+
+{{ trees }}
+
+/* Average the predicted values of all trees: */
+void predict(double *values, double features[N_FEATURES]) {
+    int j;
+    double temp[N_OUTPUTS];
+    for (j = 0; j < N_OUTPUTS; j++) {
+        values[j] = 0.;
+    }
+    {% for i in range(n_estimators) %}
+    compute_{{ i }}(temp, features);
+    for (j = 0; j < N_OUTPUTS; j++) {
+        values[j] += temp[j];
+    }
+    {% endfor %}
+    for (j = 0; j < N_OUTPUTS; j++) {
+        values[j] /= N_ESTIMATORS;
+    }
+}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 1) {
+        fprintf(stderr, "You have to pass %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 1; i < argc; i++) {
+        features[i-1] = atof(argv[i]);
+    }
+
+    double prediction[N_OUTPUTS];
+    predict(prediction, features);
+
+    {% filter indent(4, True) %}
+    {% include 'output' %}
+    {% endfilter %}
+
+    return 0;
+}
+{% endblock %}

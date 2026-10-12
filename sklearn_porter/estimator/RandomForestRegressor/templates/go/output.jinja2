@@ -1,0 +1,15 @@
+{% if is_test or to_json %}
+// Get JSON:
+var res []byte
+if len(prediction) == 1 {
+	res, _ = json.Marshal(&Response{Predict: prediction[0]})
+} else {
+	res, _ = json.Marshal(&Response{Predict: prediction})
+}
+fmt.Println(string(res))
+{% else %}
+// Get predicted values:
+for i, value := range prediction {
+	fmt.Printf("Predicted value #%d : %v\n", i, value)
+}
+{% endif %}

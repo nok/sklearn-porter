@@ -1,0 +1,61 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+package main
+
+import (
+	{% if is_test or to_json %}
+	"encoding/json"
+	{% endif %}
+	"fmt"
+	"os"
+	"strconv"
+)
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict interface{} `json:"predict"`
+}
+
+{% endif %}
+{{ trees }}
+
+// Average the predicted values of all trees:
+func Predict(features []float64) []float64 {
+	values := make([]float64, {{ n_outputs }})
+	var temp []float64
+	{% for i in range(n_estimators) %}
+	temp = compute{{ i }}(features)
+	for j := range values {
+		values[j] += temp[j]
+	}
+	{% endfor %}
+	for j := range values {
+		values[j] /= {{ n_estimators }}
+	}
+	return values
+}
+
+func main() {
+
+	if len(os.Args) != {{ n_features + 1 }} {
+		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features.")
+		os.Exit(1)
+	}
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[1:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	prediction := Predict(features)
+
+	{% filter indent('\t', True) %}
+	{% include 'output' %}
+	{% endfilter %}
+
+}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% if is_test or to_json %}
+/* Get JSON: */
+if (N_OUTPUTS == 1) {
+    printf("{\"predict\": %.17g}", prediction[0]);
+} else {
+    printf("{\"predict\": [");
+    for (int i = 0; i < N_OUTPUTS; i++) {
+        printf("%.17g", prediction[i]);
+        if (i < (N_OUTPUTS - 1)) {
+            printf(",");
+        }
+    }
+    printf("]}");
+}
+{% else %}
+/* Get predicted values: */
+for (int i = 0; i < N_OUTPUTS; i++) {
+    printf("Predicted value #%d: %.17g\n", i, prediction[i]);
+}
+{% endif %}

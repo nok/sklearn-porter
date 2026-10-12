@@ -1,0 +1,10 @@
+{% if is_test or to_json %}
+// Get JSON:
+String result = prediction.length == 1 ? String.valueOf(prediction[0]) : Arrays.toString(prediction);
+System.out.println("{\"predict\": " + result + "}");
+{% else %}
+// Get predicted values:
+for (int i = 0; i < prediction.length; i++) {
+    System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
+}
+{% endif %}

@@ -1,0 +1,39 @@
+type {{ class_name }} struct {
+	Trees []{{ class_name }}Tree
+}
+
+type {{ class_name }}Tree struct {
+	Lefts []int `json:"lefts"`
+	Rights []int `json:"rights"`
+	Thresholds []float64 `json:"thresholds"`
+	Indices []int `json:"indices"`
+	Values [][]float64 `json:"values"`
+}
+
+// Find the leaf and return its predicted values:
+func (tree {{ class_name }}Tree) Compute(features []float64) []float64 {
+	node := 0
+	for tree.Lefts[node] != -1 {
+		if features[tree.Indices[node]] <= tree.Thresholds[node] {
+			node = tree.Lefts[node]
+		} else {
+			node = tree.Rights[node]
+		}
+	}
+	return tree.Values[node]
+}
+
+// Average the predicted values of all trees:
+func (forest {{ class_name }}) Predict(features []float64) []float64 {
+	values := make([]float64, {{ n_outputs }})
+	for _, tree := range forest.Trees {
+		temp := tree.Compute(features)
+		for j := range values {
+			values[j] += temp[j]
+		}
+	}
+	for j := range values {
+		values[j] /= float64(len(forest.Trees))
+	}
+	return values
+}

@@ -25,7 +25,9 @@ from sklearn.ensemble import (
     AdaBoostClassifier,
     BaseEnsemble,
     ExtraTreesClassifier,
+    ExtraTreesRegressor,
     RandomForestClassifier,
+    RandomForestRegressor,
 )
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
@@ -727,7 +729,9 @@ class Estimator:
         """
         return (
             DecisionTreeRegressor,
+            ExtraTreesRegressor,
             MLPRegressor,
+            RandomForestRegressor,
         )
 
     def __repr__(self):

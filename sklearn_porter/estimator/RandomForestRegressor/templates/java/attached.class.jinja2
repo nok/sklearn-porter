@@ -1,0 +1,45 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+import java.util.Arrays;
+
+{% endif %}
+class {{ class_name }} {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+    {% endfilter %}
+
+    // Model data:
+    {{ model | indent(4) }}
+
+    public static void main(String[] args) {
+        int nFeatures = {{ n_features }};
+        if (args.length != nFeatures) {
+            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
+        }
+
+        // Features:
+        double[] features = new double[args.length];
+        for (int i = 0, l = args.length; i < l; i++) {
+            features[i] = Double.parseDouble(args[i]);
+        }
+
+        // Estimator:
+        Tree[] forest = {
+            {% for i in range(n_estimators) %}
+            tree{{ i }}(){% if not loop.last %},{% endif %}
+
+            {% endfor %}
+        };
+        {{ class_name }} reg = new {{ class_name }}(forest);
+        double[] prediction = reg.predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+
+    }
+}
+{% endblock %}

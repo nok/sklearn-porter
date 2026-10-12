@@ -1,0 +1,9 @@
+{% if is_test or to_json %}
+# Get JSON:
+puts JSON.generate({:predict => prediction})
+{% else %}
+# Get predicted values:
+Array(prediction).each_with_index do |value, i|
+	puts "Predicted value ##{i} : #{value}"
+end
+{% endif %}

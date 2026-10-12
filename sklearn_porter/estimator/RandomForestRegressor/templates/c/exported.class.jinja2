@@ -1,0 +1,101 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#define N_FEATURES {{ n_features }}
+#define N_OUTPUTS {{ n_outputs }}
+
+typedef struct {
+    int *lefts;
+    int *rights;
+    double *thresholds;
+    int *indices;
+    double *values; /* shape: (n_nodes * N_OUTPUTS) */
+} Tree;
+
+
+int n_estimators;
+Tree *trees;
+
+/* Copy the predicted values of all nodes to a flat array: */
+double *flatten(JsonValue *values) {
+    int i, j;
+    double *result = malloc(values->length * N_OUTPUTS * sizeof(double));
+    for (i = 0; i < values->length; i++) {
+        for (j = 0; j < N_OUTPUTS; j++) {
+            result[i * N_OUTPUTS + j] = values->items[i]->items[j]->number;
+        }
+    }
+    return result;
+}
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    n_estimators = data->length;
+    trees = malloc(n_estimators * sizeof(Tree));
+    for (int i = 0; i < n_estimators; i++) {
+        JsonValue *tree = data->items[i];
+        trees[i].lefts = json_ints(json_get(tree, "lefts"));
+        trees[i].rights = json_ints(json_get(tree, "rights"));
+        trees[i].thresholds = json_doubles(json_get(tree, "thresholds"));
+        trees[i].indices = json_ints(json_get(tree, "indices"));
+        trees[i].values = flatten(json_get(tree, "values"));
+    }
+    json_free(data);
+}
+
+/* Find the leaf and return its predicted values: */
+const double *compute(const Tree *tree, double features[N_FEATURES]) {
+    int node = 0;
+    while (tree->lefts[node] != -1) {
+        if (features[tree->indices[node]] <= tree->thresholds[node]) {
+            node = tree->lefts[node];
+        } else {
+            node = tree->rights[node];
+        }
+    }
+    return tree->values + node * N_OUTPUTS;
+}
+
+/* Average the predicted values of all trees: */
+void predict(double *values, double features[N_FEATURES]) {
+    int i, j;
+    for (j = 0; j < N_OUTPUTS; j++) {
+        values[j] = 0.;
+    }
+    for (i = 0; i < n_estimators; i++) {
+        const double *temp = compute(&trees[i], features);
+        for (j = 0; j < N_OUTPUTS; j++) {
+            values[j] += temp[j];
+        }
+    }
+    for (j = 0; j < N_OUTPUTS; j++) {
+        values[j] /= n_estimators;
+    }
+}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 2) {
+        fprintf(stderr, "You have to pass the path to the model data and %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 2; i < argc; i++) {
+        features[i-2] = atof(argv[i]);
+    }
+
+    double prediction[N_OUTPUTS];
+    predict(prediction, features);
+
+    {% filter indent(4, True) %}
+    {% include 'output' %}
+    {% endfilter %}
+
+    return 0;
+}
+{% endblock %}

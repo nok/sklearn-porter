@@ -12,7 +12,9 @@ from sklearn.datasets import (
 from sklearn.ensemble import (
     AdaBoostClassifier,
     ExtraTreesClassifier,
+    ExtraTreesRegressor,
     RandomForestClassifier,
+    RandomForestRegressor,
 )
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -58,7 +60,12 @@ def get_classifiers() -> list[Candidate]:
 
 def get_regressors() -> list[Candidate]:
     """Get a list of available regressors."""
-    _regressors = [DecisionTreeRegressor, MLPRegressor]
+    _regressors = [
+        DecisionTreeRegressor,
+        RandomForestRegressor,
+        ExtraTreesRegressor,
+        MLPRegressor,
+    ]
     for e in _regressors:
         yield Candidate(name=e.__name__, clazz=e, create=e)
 

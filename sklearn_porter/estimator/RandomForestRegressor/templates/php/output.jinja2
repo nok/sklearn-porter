@@ -1,0 +1,13 @@
+{% if is_test or to_json %}
+// Get JSON:
+fwrite(STDOUT, json_encode(array("predict" => $prediction)));
+{% else %}
+// Get predicted values:
+if (is_array($prediction)) {
+    for ($i = 0; $i < count($prediction); $i++) {
+        fwrite(STDOUT, "Predicted value #" . strval($i) . " = " . strval($prediction[$i]) . "\n");
+    }
+} else {
+    fwrite(STDOUT, "Predicted value: " . strval($prediction) . "\n");
+}
+{% endif %}

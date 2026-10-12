@@ -1,0 +1,34 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+    {% endfilter %}
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = array_map('floatval', $argv);
+    if (count($features) != {{ n_features }}) {
+        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
+        exit(1);
+    }
+
+    // Model data:
+    {{ model }}
+
+    // Estimator:
+    $reg = new {{ class_name }}($model);
+    $prediction = $reg->predict($features);
+
+    {% filter indent(4, True) %}
+    {% include 'output' %}
+    {% endfilter %}
+
+}
+{% endblock %}

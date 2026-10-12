@@ -1,0 +1,36 @@
+private $forest;
+
+public function __construct($model) {
+    $this->forest = $model;
+}
+
+// Find the leaf and return its predicted values:
+private static function compute($tree, $features) {
+    $node = 0;
+    while ($tree['lefts'][$node] != -1) {
+        if ($features[$tree['indices'][$node]] <= $tree['thresholds'][$node]) {
+            $node = $tree['lefts'][$node];
+        } else {
+            $node = $tree['rights'][$node];
+        }
+    }
+    return $tree['values'][$node];
+}
+
+// Average the predicted values of all trees:
+public function predict($features) {
+    $values = array_fill(0, {{ n_outputs }}, 0.);
+    foreach ($this->forest as $tree) {
+        $temp = self::compute($tree, $features);
+        for ($j = 0; $j < {{ n_outputs }}; $j++) {
+            $values[$j] += $temp[$j];
+        }
+    }
+    for ($j = 0; $j < {{ n_outputs }}; $j++) {
+        $values[$j] /= count($this->forest);
+    }
+    if (count($values) == 1) {
+        return $values[0];
+    }
+    return $values;
+}

@@ -1,0 +1,4 @@
+func compute{{ index }}(features []float64) []float64 {
+	values := make([]float64, {{ n_outputs }}){{ tree }}
+	return values
+}
