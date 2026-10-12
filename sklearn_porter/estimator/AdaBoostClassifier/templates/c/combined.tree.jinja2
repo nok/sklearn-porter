@@ -1,0 +1,5 @@
+int compute_{{ method_index }}(double features[N_FEATURES]) {
+    double classes[N_CLASSES] = {0};
+    {{ tree }}
+    return find_max(classes);
+}

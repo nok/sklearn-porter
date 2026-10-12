@@ -1,0 +1,6 @@
+int lefts_{{ index }}[] = {{ '{' }}{{ lefts }}{{ '}' }};
+int rights_{{ index }}[] = {{ '{' }}{{ rights }}{{ '}' }};
+double thresholds_{{ index }}[] = {{ '{' }}{{ thresholds }}{{ '}' }};
+int indices_{{ index }}[] = {{ '{' }}{{ indices }}{{ '}' }};
+double classes_{{ index }}[] = {{ '{' }}{{ classes | join(', ') }}{{ '}' }};
+#define WEIGHT_{{ index }} {{ weight }}
