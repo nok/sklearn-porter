@@ -1,0 +1,26 @@
+{{ methods }}
+
+func PredictProba(features []float64) []float64 {
+	var weights = []float64{{ '{' }}{{ weights[1:-1] }}{{ '}' }}
+	var probas = make([]float64, {{ n_classes }})
+	var sumWeights, sum float64
+	// Weighted votes of all trees (SAMME):
+	{{ method_calls }}
+	for _, weight := range weights {
+		sumWeights += weight
+	}
+	// Softmax of the decision values, see `AdaBoostClassifier.decision_function`:
+	var n = float64({{ n_classes }})
+	for i := 0; i < {{ n_classes }}; i++ {
+		probas[i] = math.Exp(probas[i] * n / (sumWeights * (n - 1) * (n - 1)))
+		sum += probas[i]
+	}
+	for i := 0; i < {{ n_classes }}; i++ {
+		probas[i] /= sum
+	}
+	return probas
+}
+
+func Predict(features []float64) int {
+	return findMax(PredictProba(features))
+}

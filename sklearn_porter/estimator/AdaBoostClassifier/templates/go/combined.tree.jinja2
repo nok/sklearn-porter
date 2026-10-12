@@ -1,0 +1,5 @@
+func compute{{ method_index }}(features []float64) int {
+	var classes = make([]float64, {{ n_classes }})
+	{{ tree }}
+	return findMax(classes)
+}
