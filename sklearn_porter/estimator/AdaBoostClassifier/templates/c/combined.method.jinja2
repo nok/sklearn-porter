@@ -1,0 +1,29 @@
+{{ methods }}
+
+void predict_proba(double *probas, double features[N_FEATURES]) {
+    int i, j;
+    double weights[N_ESTIMATORS] = {{ '{' }}{{ weights[1:-1] }}{{ '}' }};
+    double sum_weights = 0., sum = 0.;
+    for (j = 0; j < N_CLASSES; j++) {
+        probas[j] = 0.;
+    }
+    /* Weighted votes of all trees (SAMME): */
+    {{ method_calls }}
+    for (i = 0; i < N_ESTIMATORS; i++) {
+        sum_weights += weights[i];
+    }
+    /* Softmax of the decision values, see `AdaBoostClassifier.decision_function`: */
+    for (j = 0; j < N_CLASSES; j++) {
+        probas[j] = exp(probas[j] * N_CLASSES / (sum_weights * (N_CLASSES - 1) * (N_CLASSES - 1)));
+        sum += probas[j];
+    }
+    for (j = 0; j < N_CLASSES; j++) {
+        probas[j] /= sum;
+    }
+}
+
+int predict(double features[N_FEATURES]) {
+    double probas[N_CLASSES];
+    predict_proba(probas, features);
+    return find_max(probas);
+}
