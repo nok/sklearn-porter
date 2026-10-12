@@ -1,0 +1,5 @@
+void compute_{{ method_index }}(double *result, double features[N_FEATURES]) {
+    int classes[N_CLASSES] = {0};
+    {{ tree }}
+    norm_vals(result, classes);
+}

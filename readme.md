@@ -126,9 +126,9 @@ The table shows the supported estimators for each programming language and templ
     <td align="left">
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">ensemble.RandomForestClassifier</a>
     </td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
@@ -149,9 +149,9 @@ The table shows the supported estimators for each programming language and templ
     <td align="left">
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.ExtraTreesClassifier.html">ensemble.ExtraTreesClassifier</a>
     </td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
