@@ -1,0 +1,134 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_CLASSES {{ n_classes }}
+#define N_TEMPLATES {{ n_templates }}
+#define K {{ k }}
+#define POWER {{ power }}
+
+
+{{ X }}
+{{ y }}
+
+typedef struct {
+    int index;
+    double dist;
+} Neighbor;
+
+int find_max(double nums[N_CLASSES]) {
+    int i;
+    int idx = 0;
+    for (i = 0; i < N_CLASSES; i++) {
+        idx = nums[i] > nums[idx] ? i : idx;
+    }
+    return idx;
+}
+
+/* Sort the neighbors by distance and index (stable): */
+int compare(const void *a, const void *b) {
+    const Neighbor *n1 = a;
+    const Neighbor *n2 = b;
+    if (n1->dist != n2->dist) {
+        return n1->dist < n2->dist ? -1 : 1;
+    }
+    return n1->index - n2->index;
+}
+
+double compute(const double *temp, const double *cand, double q) {
+    int i;
+    double dist = 0.;
+    double diff;
+    for (i = 0; i < N_FEATURES; i++) {
+        diff = fabs(temp[i] - cand[i]);
+        if (q == 1) {
+            dist += diff;
+        } else if (q == 2) {
+            dist += diff * diff;
+        } else if (q == INFINITY) {
+            if (diff > dist) {
+                dist = diff;
+            }
+        } else {
+            dist += pow(diff, q);
+        }
+    }
+    if (q == 1 || q == INFINITY) {
+        return dist;
+    } else if (q == 2) {
+        return sqrt(dist);
+    } else {
+        return pow(dist, 1. / q);
+    }
+}
+
+void predict_proba(double *result, double features[N_FEATURES]) {
+    int i;
+    Neighbor *neighbors = malloc(N_TEMPLATES * sizeof(Neighbor));
+    for (i = 0; i < N_TEMPLATES; i++) {
+        neighbors[i].index = i;
+        neighbors[i].dist = compute(X[i], features, POWER);
+    }
+    qsort(neighbors, N_TEMPLATES, sizeof(Neighbor), compare);
+    for (i = 0; i < N_CLASSES; i++) {
+        result[i] = 0.;
+    }
+    for (i = 0; i < K; i++) {
+        result[y[neighbors[i].index]] += 1.;
+    }
+    for (i = 0; i < N_CLASSES; i++) {
+        result[i] /= K;
+    }
+    free(neighbors);
+}
+
+int predict(double features[N_FEATURES]) {
+    double probabilities[N_CLASSES];
+    predict_proba(probabilities, features);
+    return find_max(probabilities);
+}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 1) {
+        fprintf(stderr, "You have to pass %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 1; i < argc; i++) {
+        features[i-1] = atof(argv[i]);
+    }
+
+    {% if is_test or to_json %}
+    /* Get JSON: */
+    double probabilities[N_CLASSES];
+    predict_proba(probabilities, features);
+    printf("{\"predict\": %d, \"predict_proba\": [", predict(features));
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("%.17g", probabilities[i]);
+        if (i < (N_CLASSES - 1)) {
+            printf(",");
+        }
+    }
+    printf("]}");
+    {% else %}
+    /* Get class prediction: */
+    printf("Predicted class: #%d\n", predict(features));
+
+    /* Get class probabilities: */
+    double probabilities[N_CLASSES];
+    predict_proba(probabilities, features);
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+    }
+    {% endif %}
+
+    return 0;
+}
+{% endblock %}

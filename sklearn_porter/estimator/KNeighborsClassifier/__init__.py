@@ -24,6 +24,10 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
     DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
+        enum.Language.C: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         enum.Language.GO: {
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
@@ -165,6 +169,10 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             type=tpl_int, name='y', values=', '.join(y_val), n=len(y_val)
         )
 
+        power = self.model_data.get('power')
+        if language is enum.Language.C and power == float('inf'):
+            power = 'INFINITY'
+
         tpl_class = tpls.get_template('attached.class')
         plas.update(
             dict(
@@ -172,7 +180,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
                 y=y_str,
                 k=self.model_data.get('k'),
                 n=self.model_data.get('n'),
-                power=self.model_data.get('power'),
+                power=power,
             )
         )
         out_class = tpl_class.render(**plas)
