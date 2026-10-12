@@ -1,4 +1,3 @@
-
 # sklearn-porter
 
 [![CI](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml/badge.svg)](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml)
@@ -10,7 +9,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
 
 Use the generated code to make predictions where Python isn't available or too heavy, e.g. on embedded systems, in web browsers or in existing applications. The ported estimators make the same predictions as the original estimators of scikit-learn.
 
-Navigation: [Estimators](#estimators) • [Installation](#installation) • [Usage](#usage) • [Known Issues](#known-issues) • [Development](#development) • [Citation](#citation) • [License](#license)
+Navigation: [Estimators](#estimators) • [Installation](#installation) • [Usage](#usage) • [Known Issues](#known-issues) • [Contributing](#contributing) • [Citation](#citation) • [License](#license)
 
 
 ## Estimators
@@ -488,6 +487,61 @@ score = est.test(X[:10])
 print(score)
 ```
 
+### Regressors
+
+Regressors are ported the same way. `make` returns the predicted values and `None` instead of probabilities. `test` returns the share of predictions which are close to the predictions of the original regressor (see [`numpy.isclose`](https://numpy.org/doc/stable/reference/generated/numpy.isclose.html)), because the floating point arithmetic of the target languages can differ slightly:
+
+```python
+from sklearn.datasets import load_diabetes
+from sklearn.ensemble import RandomForestRegressor
+
+from sklearn_porter import Estimator
+
+X, y = load_diabetes(return_X_y=True)
+reg = RandomForestRegressor(n_estimators=10, max_depth=5)
+reg.fit(X, y)
+
+est = Estimator(reg, language='java', template='attached')
+y_values, _ = est.make(X[:10])
+print(y_values)
+print(est.test(X[:10]))
+```
+
+### Options
+
+`port`, `save`, `make`, `test` and `Estimator` accept these additional arguments:
+
+- `class_name`: the name of the class (or function) in the generated code. By default it's the name of the estimator, e.g. `DecisionTreeClassifier`.
+- `converter`: a function which converts each floating point number of the model data to a string. By default it's `str`. Fewer digits make the code smaller, but can change the predictions, so check the result with `test`:
+
+```python
+output = port(
+    clf,
+    language='c',
+    template='attached',
+    class_name='Iris',
+    converter=lambda value: f'{value:.6f}',
+)
+```
+
+### Supported combinations
+
+`show` prints the supported estimators, languages and templates, `Estimator.can` checks a single combination:
+
+```python
+from sklearn_porter import Estimator, show
+
+print(show())  # or e.g. show(language='js')
+
+est = Estimator(clf)
+est.can(language='js', template='combined')  # True
+est.can(language='js', template='combined', method='predict_proba')  # True
+```
+
+### Pipelines and optimizers
+
+You can pass a fitted [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html), [`GridSearchCV`](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.GridSearchCV.html) or [`RandomizedSearchCV`](https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html). sklearn-porter extracts the final estimator of the pipeline or the best estimator of the optimizer and ports only this estimator (see [Known Issues](#known-issues)).
+
 ### Command line
 
 After the installation the command `porter` is available:
@@ -521,73 +575,11 @@ Then port the saved estimator with the subcommand `port`:
 porter port estimator.joblib -l js -t attached > estimator.js
 ```
 
-The output can be passed to other tools, e.g. to [UglifyJS](https://github.com/mishoo/UglifyJS) to minify the code:
+The output can be passed to other tools, e.g. to [terser](https://github.com/terser/terser) to minify the code:
 
 ```bash
-porter port estimator.joblib -l js -t attached | uglifyjs --compress -o estimator.min.js
+porter port estimator.joblib -l js -t attached | npx terser --compress -o estimator.min.js
 ```
-
-
-## Known Issues
-
-- The ported support vector machines, [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), can make different predictions than the original estimators in rare cases. Therefore sklearn-porter raises a `QualityWarning` for them: check the ported estimator with the `test` method.
-- The [AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) is ported with the `SAMME` algorithm, because scikit-learn removed the `SAMME.R` algorithm.
-
-
-## Development
-
-### Setup
-
-The Python version and all dependencies are managed with [uv](https://docs.astral.sh/uv/). Install everything with:
-
-```bash
-uv sync --all-groups
-```
-
-### Commands
-
-```bash
-make lint             # Check the code and its format with ruff
-make format           # Fix and format the code with ruff
-make test             # Run the fast tests
-make test-regression  # Run the regression tests in Docker
-make test-all         # Run all tests with coverage in Docker
-make notebook         # Start Jupyter with the examples
-make examples         # Generate the example notebooks with jupytext
-```
-
-### Testing
-
-The fast tests check the Python code without running the ported estimators. GitHub Actions runs them on every push and pull request with Python 3.11 to 3.14 ([workflow](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml)):
-
-```bash
-uv run pytest
-```
-
-The regression tests compile and run the ported estimators and compare their predictions with the original estimators. They take a long time (10+ minutes) and need all compilers and interpreters. Therefore they are marked with `regression`, skipped by default and only run locally in [Docker](Dockerfile):
-
-```bash
-make test-regression
-```
-
-The tests use the Python version from [`.python-version`](.python-version). Set `PYTHON_VERSION` to use another one:
-
-```bash
-make test-regression PYTHON_VERSION=3.14
-```
-
-The Docker image (Debian 12 "bookworm") contains these compilers and interpreters:
-
-| Language   | Compiler / Interpreter |
-|------------|------------------------|
-| C          | GCC 12                 |
-| Go         | Go 1.19                |
-| Java       | OpenJDK 17             |
-| JavaScript | Node.js 18             |
-| PHP        | PHP 8.2                |
-| Ruby       | Ruby 3.1               |
-
-Please note that, in general, you can use older compilers and interpreters with the generated source code. For instance, you can use Java 8 to compile and run the models.
 
 ### Logging
 
@@ -601,17 +593,21 @@ from sklearn_porter import options
 options['logging.level'] = DEBUG
 ```
 
-### Contributing
+### Examples
 
-Commit messages and pull request titles follow [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat: add support for ...` or `fix(php): ...`. Pull requests are squash merged into `main`, so the pull request title becomes the commit message.
+The [example notebook](https://github.com/nok/sklearn-porter/blob/main/examples/basics/index.pct.ipynb) shows the functional and the object-oriented API step by step.
 
-### Releases
 
-Releases are created with [release-please](https://github.com/googleapis/release-please-action):
+## Known Issues
 
-1. release-please collects the Conventional Commits on `main` in a release pull request. It updates the version and the [changelog](CHANGELOG.md).
-2. Merging the release pull request creates the Git tag and the GitHub release.
-3. The package is published to [TestPyPI](https://test.pypi.org/project/sklearn-porter/), installed and checked from there and only then published to [PyPI](https://pypi.org/project/sklearn-porter/).
+- Only the final estimator of a [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) is ported. Preprocessing steps like a [`StandardScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) are dropped without a warning, so you have to apply them to the input data of the ported estimator yourself. Otherwise the predictions differ from the predictions of the pipeline.
+- The ported support vector machines, [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), can make different predictions than the original estimators in rare cases. Therefore sklearn-porter raises a `QualityWarning` for them: check the ported estimator with the `test` method.
+- The [AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) is ported with the `SAMME` algorithm, because scikit-learn removed the `SAMME.R` algorithm.
+
+
+## Contributing
+
+Contributions are welcome! See [CONTRIBUTING.md](https://github.com/nok/sklearn-porter/blob/main/CONTRIBUTING.md) for the development setup, the tests and the release process.
 
 
 ## Citation
@@ -630,4 +626,4 @@ If you use sklearn-porter in your work, please cite it. You can use this BibTeX 
 
 ## License
 
-sklearn-porter is open source software released under the [BSD 3-Clause](LICENSE) license.
+sklearn-porter is open source software released under the [BSD 3-Clause](https://github.com/nok/sklearn-porter/blob/main/LICENSE) license.
