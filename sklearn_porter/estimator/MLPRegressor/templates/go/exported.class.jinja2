@@ -1,0 +1,114 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+)
+
+type {{ class_name }} struct {
+	Layers []int `json:"layers"`
+	Weights [][][]float64 `json:"weights"`
+	Bias [][]float64 `json:"bias"`
+	HiddenActivation string `json:"hidden_activation"`
+}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict interface{} `json:"predict"`
+}
+
+{% endif %}
+func (reg {{ class_name }}) activate(activation string, v []float64) {
+	switch activation {
+	case "logistic":
+		for i := range v {
+			v[i] = 1.0 / (1.0 + math.Exp(-v[i]))
+		}
+	case "relu":
+		for i := range v {
+			v[i] = math.Max(0, v[i])
+		}
+	case "tanh":
+		for i := range v {
+			v[i] = math.Tanh(v[i])
+		}
+	}
+}
+
+func (reg {{ class_name }}) feedForward(features []float64) []float64 {
+	var inputs = features
+	for i := 0; i < len(reg.Layers); i++ {
+		var outputs = make([]float64, reg.Layers[i])
+		copy(outputs, reg.Bias[i])
+		for j := 0; j < len(inputs); j++ {
+			for k := 0; k < len(outputs); k++ {
+				outputs[k] += inputs[j] * reg.Weights[i][j][k]
+			}
+		}
+		if i < len(reg.Layers) - 1 {
+			reg.activate(reg.HiddenActivation, outputs)
+		}
+		inputs = outputs
+	}
+	return inputs
+}
+
+func (reg {{ class_name }}) Predict(features []float64) []float64 {
+	return reg.feedForward(features)
+}
+
+func main() {
+
+	if len(os.Args) != {{ n_features + 2 }} {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data and {{ n_features }} features.")
+		os.Exit(1)
+	}
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[2:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	// Model data:
+	modelData, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Estimator:
+	var reg {{ class_name }}
+	if err := json.Unmarshal(modelData, &reg); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	{% if is_test or to_json %}
+	// Get JSON:
+	prediction := reg.Predict(features)
+	var res []byte
+	if len(prediction) == 1 {
+		res, _ = json.Marshal(&Response{Predict: prediction[0]})
+	} else {
+		res, _ = json.Marshal(&Response{Predict: prediction})
+	}
+	fmt.Println(string(res))
+	{% else %}
+	// Get predicted values:
+	prediction := reg.Predict(features)
+	for i, value := range prediction {
+		fmt.Printf("Predicted value #%d : %v\n", i, value)
+	}
+	{% endif %}
+
+}
+{% endblock %}
