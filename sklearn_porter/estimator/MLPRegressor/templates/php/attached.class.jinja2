@@ -1,0 +1,99 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private $layers;
+    private $weights;
+    private $bias;
+    private $hidden;
+
+    public function __construct($hidden, $layers, $weights, $bias) {
+        $this->hidden = $hidden;
+        $this->layers = $layers;
+        $this->weights = $weights;
+        $this->bias = $bias;
+    }
+
+    private function activate($activation, $v) {
+        $l = count($v);
+        switch ($activation) {
+            case 'logistic':
+                for ($i = 0; $i < $l; $i++) {
+                    $v[$i] = 1. / (1. + exp(-$v[$i]));
+                }
+                break;
+            case 'relu':
+                for ($i = 0; $i < $l; $i++) {
+                    $v[$i] = max(0, $v[$i]);
+                }
+                break;
+            case 'tanh':
+                for ($i = 0; $i < $l; $i++) {
+                    $v[$i] = tanh($v[$i]);
+                }
+                break;
+        }
+        return $v;
+    }
+
+    private function feedForward($features) {
+        $inputs = $features;
+        for ($i = 0, $il = count($this->layers); $i < $il; $i++) {
+            $outputs = $this->bias[$i];
+            for ($j = 0, $jl = count($inputs); $j < $jl; $j++) {
+                for ($k = 0, $kl = count($outputs); $k < $kl; $k++) {
+                    $outputs[$k] += $inputs[$j] * $this->weights[$i][$j][$k];
+                }
+            }
+            $inputs = $i < $il - 1 ? $this->activate($this->hidden, $outputs) : $outputs;
+        }
+        return $inputs;
+    }
+
+    public function predict($features) {
+        $outputs = $this->feedForward($features);
+        if (count($outputs) == 1) {
+            return $outputs[0];
+        }
+        return $outputs;
+    }
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = array_map('floatval', $argv);
+    if (count($features) != {{ n_features }}) {
+        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
+        exit(1);
+    }
+
+    // Model data:
+    {{ layers }}
+    {{ weights }}
+    {{ bias }}
+
+    // Estimator:
+    $reg = new {{ class_name }}('{{ hidden_activation }}', $layers, $weights, $bias);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $reg->predict($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction)));
+    {% else %}
+    // Get predicted values:
+    $prediction = $reg->predict($features);
+    if (is_array($prediction)) {
+        for ($i = 0; $i < count($prediction); $i++) {
+            fwrite(STDOUT, "Predicted value #" . strval($i) . " = " . strval($prediction[$i]) . "\n");
+        }
+    } else {
+        fwrite(STDOUT, "Predicted value: " . strval($prediction) . "\n");
+    }
+    {% endif %}
+
+}
+{% endblock %}
