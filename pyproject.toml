@@ -2,7 +2,7 @@
 name = "sklearn-porter"
 version = "1.0.0"
 description = "Transpile trained scikit-learn estimators to C, Go, Java, JavaScript, PHP and Ruby."
-readme = "readme.md"
+readme = "README.md"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 authors = [{ name = "Darius Morawiec", email = "nok@users.noreply.github.com" }]

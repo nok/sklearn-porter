@@ -15,9 +15,10 @@ code must predict exactly the same classes as the original estimator.
   `attached` (data embedded as variables), `exported` (data in a separate
   JSON file), `combined` (data compiled into the code, e.g. nested if/else).
 - **Methods**: `predict` and, if supported, `predict_proba`.
-- **Public API** (`sklearn_porter/Estimator.py`): class `Estimator` and the
-  functions `port`, `save`, `make`, `test`, `show`, `can`. The CLI `porter`
-  (`show`, `port`, `save`) lives in `sklearn_porter/cli/`.
+- **Public API** (exported in `sklearn_porter/__init__.py`): class
+  `Estimator` (incl. the method `can`), the functions `port`, `save`, `make`,
+  `test`, `show` and the dict `options`. The CLI `porter` (`show`, `port`,
+  `save`) lives in `sklearn_porter/cli/`.
 - `make()` compiles and executes the ported estimator via subprocess calls,
   `test()` compares its predictions with scikit-learn (integrity score).
 
@@ -36,6 +37,8 @@ code must predict exactly the same classes as the original estimator.
 - `tests/`: `test_estimator.py` (API, CLI, regression of all classifiers),
   `tests/estimator/test_*.py` (parameter sweeps per estimator), fixtures in
   `tests/conftest.py`.
+- `README.md` is the user documentation (also shown on PyPI, so use absolute
+  links there), `CONTRIBUTING.md` the developer documentation.
 - `examples/basics/index.pct.py`: example notebook in jupytext format; the
   `.ipynb` file is generated.
 
@@ -70,7 +73,12 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 3. Register the estimator in `Estimator.classifiers()` or
    `Estimator.regressors()` in `sklearn_porter/Estimator.py`.
 4. Add tests and run the regression tests in Docker.
-5. Update the support table in `readme.md`.
+5. Add the estimator to the manually maintained list of classifiers or
+   regressors in `README.md`.
+
+Goal: every estimator supports all languages, templates and methods
+(`predict_proba` only for classifiers), so the README needs no support
+table.
 
 ## scikit-learn specifics
 

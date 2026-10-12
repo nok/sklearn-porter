@@ -24,7 +24,7 @@ ENV UV_LINK_MODE=copy \
 WORKDIR /app
 
 # Install the dependencies only; the repository is mounted at runtime:
-COPY pyproject.toml uv.lock .python-version readme.md ./
+COPY pyproject.toml uv.lock .python-version README.md ./
 RUN uv sync --locked --no-install-project
 
 ENTRYPOINT ["./docker-entrypoint.sh"]
