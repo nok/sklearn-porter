@@ -23,7 +23,10 @@ from sklearn.linear_model import (
     Lasso,
     LinearRegression,
     LogisticRegression,
+    Perceptron,
     Ridge,
+    RidgeClassifier,
+    SGDClassifier,
 )
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -72,6 +75,9 @@ def get_classifiers() -> Iterator[Candidate]:
         GaussianNB,
         BernoulliNB,
         MLPClassifier,
+        SGDClassifier,
+        RidgeClassifier,
+        Perceptron,
     ]
     for e in _classifiers:
         yield Candidate(name=e.__name__, clazz=e, create=e)

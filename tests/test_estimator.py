@@ -23,12 +23,14 @@ from sklearn.linear_model import (
     Lasso,
     LinearRegression,
     LogisticRegression,
+    Perceptron,
     Ridge,
+    RidgeClassifier,
     SGDClassifier,
 )
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, LinearSVC, NuSVC
@@ -65,7 +67,7 @@ from tests.utils import (
 def test_unsupported_estimator():
     dataset = load_iris()
     x, y = dataset.data, dataset.target
-    clf = SGDClassifier()
+    clf = NearestCentroid()
     clf.fit(x, y)
     with pytest.raises(exception.NotSupportedYetError):
         Estimator(clf)
@@ -208,7 +210,10 @@ def test_list_of_classifiers():
         LinearSVC,
         LogisticRegression,
         NuSVC,
+        Perceptron,
         RandomForestClassifier,
+        RidgeClassifier,
+        SGDClassifier,
         SVC,
         MLPClassifier,
     ]
