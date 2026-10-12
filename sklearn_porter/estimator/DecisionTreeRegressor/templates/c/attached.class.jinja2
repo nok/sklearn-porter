@@ -1,0 +1,68 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_OUTPUTS {{ n_outputs }}
+
+
+{{ lefts }}
+{{ rights }}
+{{ thresholds }}
+{{ indices }}
+{{ values }}
+
+/* Find the leaf and return its predicted values: */
+double *predict(double features[N_FEATURES]) {
+    int node = 0;
+    while (lefts[node] != -1) {
+        if (features[indices[node]] <= thresholds[node]) {
+            node = lefts[node];
+        } else {
+            node = rights[node];
+        }
+    }
+    return values[node];
+}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 1) {
+        fprintf(stderr, "You have to pass %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 1; i < argc; i++) {
+        features[i-1] = atof(argv[i]);
+    }
+
+    double *prediction = predict(features);
+
+    {% if is_test or to_json %}
+    /* Get JSON: */
+    if (N_OUTPUTS == 1) {
+        printf("{\"predict\": %.17g}", prediction[0]);
+    } else {
+        printf("{\"predict\": [");
+        for (int i = 0; i < N_OUTPUTS; i++) {
+            printf("%.17g", prediction[i]);
+            if (i < (N_OUTPUTS - 1)) {
+                printf(",");
+            }
+        }
+        printf("]}");
+    }
+    {% else %}
+    /* Get predicted values: */
+    for (int i = 0; i < N_OUTPUTS; i++) {
+        printf("Predicted value #%d: %.17g\n", i, prediction[i]);
+    }
+    {% endif %}
+
+    return 0;
+}
+{% endblock %}

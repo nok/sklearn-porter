@@ -18,7 +18,7 @@ from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.svm import SVC, LinearSVC, NuSVC
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
 
@@ -58,7 +58,7 @@ def get_classifiers() -> list[Candidate]:
 
 def get_regressors() -> list[Candidate]:
     """Get a list of available regressors."""
-    _regressors = [MLPRegressor]
+    _regressors = [DecisionTreeRegressor, MLPRegressor]
     for e in _regressors:
         yield Candidate(name=e.__name__, clazz=e, create=e)
 

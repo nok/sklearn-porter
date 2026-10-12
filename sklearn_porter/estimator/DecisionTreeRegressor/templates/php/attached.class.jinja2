@@ -1,0 +1,76 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private $lefts;
+    private $rights;
+    private $thresholds;
+    private $indices;
+    private $values;
+
+    public function __construct($lefts, $rights, $thresholds, $indices, $values) {
+        $this->lefts = $lefts;
+        $this->rights = $rights;
+        $this->thresholds = $thresholds;
+        $this->indices = $indices;
+        $this->values = $values;
+    }
+
+    // Find the leaf and return its predicted values:
+    public function predict($features) {
+        $node = 0;
+        while ($this->lefts[$node] != -1) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+                $node = $this->lefts[$node];
+            } else {
+                $node = $this->rights[$node];
+            }
+        }
+        $values = $this->values[$node];
+        if (count($values) == 1) {
+            return $values[0];
+        }
+        return $values;
+    }
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = array_map('floatval', $argv);
+    if (count($features) != {{ n_features }}) {
+        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
+        exit(1);
+    }
+
+    // Model data:
+    {{ lefts }}
+    {{ rights }}
+    {{ thresholds }}
+    {{ indices }}
+    {{ values }}
+
+    // Estimator:
+    $reg = new {{ class_name }}($lefts, $rights, $thresholds, $indices, $values);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $reg->predict($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction)));
+    {% else %}
+    // Get predicted values:
+    $prediction = $reg->predict($features);
+    if (is_array($prediction)) {
+        for ($i = 0; $i < count($prediction); $i++) {
+            fwrite(STDOUT, "Predicted value #" . strval($i) . " = " . strval($prediction[$i]) . "\n");
+        }
+    } else {
+        fwrite(STDOUT, "Predicted value: " . strval($prediction) . "\n");
+    }
+    {% endif %}
+
+}
+{% endblock %}

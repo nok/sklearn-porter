@@ -1,0 +1,43 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+
+{% endif %}
+class {{ class_name }}
+
+	# Return the predicted values:
+	def self.predict(features)
+		values = Array.new({{ n_outputs }}, 0.0)
+		{{ tree | indent(4, True) }}
+		if values.length == 1
+			return values[0]
+		end
+		values
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = {{ class_name }}.predict features
+	puts JSON.generate({:predict => prediction})
+	{% else %}
+	# Get predicted values:
+	prediction = {{ class_name }}.predict features
+	Array(prediction).each_with_index do |value, i|
+		puts "Predicted value ##{i} : #{value}"
+	end
+	{% endif %}
+end
+{% endblock %}

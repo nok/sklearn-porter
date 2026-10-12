@@ -1,0 +1,78 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+var {{ class_name }} = function(lefts, rights, thresholds, indices, values) {
+
+    this.lefts = lefts;
+    this.rights = rights;
+    this.thresholds = thresholds;
+    this.indices = indices;
+    this.values = values;
+
+    this.predict = function(features) {
+        var node = 0;
+        while (this.lefts[node] !== -1) {
+            if (features[this.indices[node]] <= this.thresholds[node]) {
+                node = this.lefts[node];
+            } else {
+                node = this.rights[node];
+            }
+        }
+        var values = this.values[node];
+        if (values.length === 1) {
+            return values[0];
+        }
+        return values.slice();
+    };
+
+};
+
+var main = function () {
+    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+        if (process.argv.length - 2 !== {{ n_features }}) {
+            var IllegalArgumentException = function(message) {
+                this.message = message;
+                this.name = "IllegalArgumentException";
+            }
+            throw new IllegalArgumentException("You have to pass {{ n_features }} features.");
+        }
+    }
+
+    // Features:
+    var features = process.argv.slice(2);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    {{ lefts }}
+    {{ rights }}
+    {{ thresholds }}
+    {{ indices }}
+    {{ values }}
+
+    // Estimator:
+    var reg = new {{ class_name }}(lefts, rights, thresholds, indices, values);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": reg.predict(features)
+    }));
+    {% else %}
+    // Get prediction:
+    var result = reg.predict(features);
+    if (Array.isArray(result)) {
+        for (var i = 0; i < result.length; i++) {
+            console.log("Result of value #" + i + " : " + result[i]);
+        }
+    } else {
+        console.log("Result: " + result);
+    }
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

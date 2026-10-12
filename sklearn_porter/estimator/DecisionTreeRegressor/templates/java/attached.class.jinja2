@@ -1,0 +1,74 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+import java.util.Arrays;
+
+{% endif %}
+class {{ class_name }} {
+
+    private int[] lefts;
+    private int[] rights;
+    private double[] thresholds;
+    private int[] indices;
+    private double[][] values;
+
+    public {{ class_name }}(int[] lefts, int[] rights, double[] thresholds, int[] indices, double[][] values) {
+        this.lefts = lefts;
+        this.rights = rights;
+        this.thresholds = thresholds;
+        this.indices = indices;
+        this.values = values;
+    }
+
+    // Find the leaf and return its predicted values:
+    public double[] predict(double[] features) {
+        int node = 0;
+        while (this.lefts[node] != -1) {
+            if (features[this.indices[node]] <= this.thresholds[node]) {
+                node = this.lefts[node];
+            } else {
+                node = this.rights[node];
+            }
+        }
+        return this.values[node].clone();
+    }
+
+    public static void main(String[] args) {
+        int nFeatures = {{ n_features }};
+        if (args.length != nFeatures) {
+            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
+        }
+
+        // Features:
+        double[] features = new double[args.length];
+        for (int i = 0, l = args.length; i < l; i++) {
+            features[i] = Double.parseDouble(args[i]);
+        }
+
+        // Model data:
+        {{ lefts }}
+        {{ rights }}
+        {{ thresholds }}
+        {{ indices }}
+        {{ values }}
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}(lefts, rights, thresholds, indices, values);
+
+        {% if is_test or to_json %}
+        // Get JSON:
+        double[] prediction = reg.predict(features);
+        String result = prediction.length == 1 ? String.valueOf(prediction[0]) : Arrays.toString(prediction);
+        System.out.println("{\"predict\": " + result + "}");
+        {% else %}
+        // Get predicted values:
+        double[] prediction = reg.predict(features);
+        for (int i = 0; i < prediction.length; i++) {
+            System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
+        }
+        {% endif %}
+
+    }
+}
+{% endblock %}

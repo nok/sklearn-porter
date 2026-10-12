@@ -1,0 +1,68 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+
+{% endif %}
+class {{ class_name }}
+
+	def initialize(lefts, rights, thresholds, indices, values)
+		@lefts = lefts
+		@rights = rights
+		@thresholds = thresholds
+		@indices = indices
+		@values = values
+	end
+
+	# Find the leaf and return its predicted values:
+	def predict(features)
+		node = 0
+		while @lefts[node] != -1
+			if features[@indices[node]] <= @thresholds[node]
+				node = @lefts[node]
+			else
+				node = @rights[node]
+			end
+		end
+		values = @values[node]
+		if values.length == 1
+			return values[0]
+		end
+		values.dup
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ lefts }}
+	{{ rights }}
+	{{ thresholds }}
+	{{ indices }}
+	{{ values }}
+
+	# Estimator:
+	reg = {{ class_name }}.new lefts, rights, thresholds, indices, values
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = reg.predict features
+	puts JSON.generate({:predict => prediction})
+	{% else %}
+	# Get predicted values:
+	prediction = reg.predict features
+	Array(prediction).each_with_index do |value, i|
+		puts "Predicted value ##{i} : #{value}"
+	end
+	{% endif %}
+end
+{% endblock %}

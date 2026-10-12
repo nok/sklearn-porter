@@ -1,0 +1,63 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	def initialize(path)
+		data = JSON.parse(File.read(path))
+		@lefts = data['lefts']
+		@rights = data['rights']
+		@thresholds = data['thresholds']
+		@indices = data['indices']
+		@values = data['values']
+	end
+
+	# Find the leaf and return its predicted values:
+	def predict(features)
+		node = 0
+		while @lefts[node] != -1
+			if features[@indices[node]] <= @thresholds[node]
+				node = @lefts[node]
+			else
+				node = @rights[node]
+			end
+		end
+		values = @values[node]
+		if values.length == 1
+			return values[0]
+		end
+		values.dup
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features + 1 }}
+		raise "You have to pass the path to the model data and {{ n_features }} features."
+	end
+
+	# Model data:
+	model_data = ARGV.shift
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Estimator:
+	reg = {{ class_name }}.new model_data
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = reg.predict features
+	puts JSON.generate({:predict => prediction})
+	{% else %}
+	# Get predicted values:
+	prediction = reg.predict features
+	Array(prediction).each_with_index do |value, i|
+		puts "Predicted value ##{i} : #{value}"
+	end
+	{% endif %}
+end
+{% endblock %}
