@@ -1,0 +1,72 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#define N_FEATURES {{ n_features }}
+#define N_OUTPUTS {{ n_outputs }}
+
+
+double **coeffs;
+double *inters;
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    coeffs = json_doubles_2d(json_get(data, "coeffs"));
+    inters = json_doubles(json_get(data, "inters"));
+    json_free(data);
+}
+
+/* Write the predicted values to `values`: */
+void predict(double *values, double features[N_FEATURES]) {
+    int i, j;
+    for (i = 0; i < N_OUTPUTS; i++) {
+        values[i] = 0.;
+        for (j = 0; j < N_FEATURES; j++) {
+            values[i] += coeffs[i][j] * features[j];
+        }
+        values[i] += inters[i];
+    }
+}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 2) {
+        fprintf(stderr, "You have to pass the path to the model data and %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 2; i < argc; i++) {
+        features[i-2] = atof(argv[i]);
+    }
+
+    double prediction[N_OUTPUTS];
+    predict(prediction, features);
+
+    {% if is_test or to_json %}
+    /* Get JSON: */
+    {% if is_multi_output %}
+    printf("{\"predict\": [");
+    for (int i = 0; i < N_OUTPUTS; i++) {
+        printf("%.17g", prediction[i]);
+        if (i < (N_OUTPUTS - 1)) {
+            printf(",");
+        }
+    }
+    printf("]}");
+    {% else %}
+    printf("{\"predict\": %.17g}", prediction[0]);
+    {% endif %}
+    {% else %}
+    /* Get predicted values: */
+    for (int i = 0; i < N_OUTPUTS; i++) {
+        printf("Predicted value #%d: %.17g\n", i, prediction[i]);
+    }
+    {% endif %}
+
+    return 0;
+}
+{% endblock %}

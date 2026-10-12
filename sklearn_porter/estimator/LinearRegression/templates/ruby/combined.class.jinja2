@@ -1,0 +1,49 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def self.predict(features)
+		values = Array.new({{ n_outputs }}, 0.0)
+		{% for coeffs_row in coeffs %}
+		{% set i = loop.index0 %}
+		values[{{ i }}] =
+			{% for coeff in coeffs_row %}
+			{{ coeff }} * features[{{ loop.index0 }}] +
+			{% endfor %}
+			{{ inters[i] }}
+		{% endfor %}
+		{% if is_multi_output %}
+		values
+		{% else %}
+		values[0]
+		{% endif %}
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = {{ class_name }}.predict features
+	puts JSON.generate({:predict => prediction})
+	{% else %}
+	# Get predicted values:
+	prediction = {{ class_name }}.predict features
+	Array(prediction).each_with_index do |value, i|
+		puts "Predicted value ##{i} : #{value}"
+	end
+	{% endif %}
+end
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+package main
+
+import (
+	{% if is_test or to_json %}
+	"encoding/json"
+	{% endif %}
+	"fmt"
+	"os"
+	"strconv"
+)
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict interface{} `json:"predict"`
+}
+
+{% endif %}
+// Return the predicted values:
+func Predict(features []float64) []float64 {
+	values := make([]float64, {{ n_outputs }})
+	{% for coeffs_row in coeffs %}
+	{% set i = loop.index0 %}
+	values[{{ i }}] =
+		{% for coeff in coeffs_row %}
+		{{ coeff }} * features[{{ loop.index0 }}] +
+		{% endfor %}
+		{{ inters[i] }}
+	{% endfor %}
+	return values
+}
+
+func main() {
+
+	if len(os.Args) != {{ n_features + 1 }} {
+		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features.")
+		os.Exit(1)
+	}
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[1:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	{% if is_test or to_json %}
+	// Get JSON:
+	prediction := Predict(features)
+	{% if is_multi_output %}
+	res, _ := json.Marshal(&Response{Predict: prediction})
+	{% else %}
+	res, _ := json.Marshal(&Response{Predict: prediction[0]})
+	{% endif %}
+	fmt.Println(string(res))
+	{% else %}
+	// Get predicted values:
+	prediction := Predict(features)
+	for i, value := range prediction {
+		fmt.Printf("Predicted value #%d : %v\n", i, value)
+	}
+	{% endif %}
+
+}
+{% endblock %}

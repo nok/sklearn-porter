@@ -1,0 +1,67 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if (is_test or to_json) and is_multi_output %}
+import java.util.Arrays;
+
+
+{% endif %}
+class {{ class_name }} {
+
+    private double[][] coeffs;
+    private double[] inters;
+
+    public {{ class_name }}(double[][] coeffs, double[] inters) {
+        this.coeffs = coeffs;
+        this.inters = inters;
+    }
+
+    public double[] predict(double[] features) {
+        double[] values = new double[this.inters.length];
+        for (int i = 0, il = this.inters.length; i < il; i++) {
+            for (int j = 0, jl = this.coeffs[i].length; j < jl; j++) {
+                values[i] += this.coeffs[i][j] * features[j];
+            }
+            values[i] += this.inters[i];
+        }
+        return values;
+    }
+
+    public static void main(String[] args) {
+        int nFeatures = {{ n_features }};
+        if (args.length != nFeatures) {
+            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
+        }
+
+        // Features:
+        double[] features = new double[args.length];
+        for (int i = 0, l = args.length; i < l; i++) {
+            features[i] = Double.parseDouble(args[i]);
+        }
+
+        // Model data:
+        {{ coeffs }}
+        {{ inters }}
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}(coeffs, inters);
+
+        {% if is_test or to_json %}
+        // Get JSON:
+        double[] prediction = reg.predict(features);
+        {% if is_multi_output %}
+        System.out.println("{\"predict\": " + Arrays.toString(prediction) + "}");
+        {% else %}
+        System.out.println("{\"predict\": " + String.valueOf(prediction[0]) + "}");
+        {% endif %}
+        {% else %}
+        // Get predicted values:
+        double[] prediction = reg.predict(features);
+        for (int i = 0; i < prediction.length; i++) {
+            System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
+        }
+        {% endif %}
+
+    }
+}
+{% endblock %}
