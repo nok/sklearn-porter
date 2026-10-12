@@ -12,7 +12,12 @@ from sklearn_porter import exceptions as exception
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
 from tests.commons import DATASETS, Dataset
-from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
+from tests.utils import (
+    dataset_generate_x,
+    dataset_uniform_x,
+    drop_neighbor_ties,
+    fs_mkdir,
+)
 
 # Long running regression tests, see `make test-regression`:
 pytestmark = pytest.mark.regression
@@ -42,6 +47,7 @@ def test_estimator_k_neighbors_classifier(
 
     # Samples:
     test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
+    test_x = drop_neighbor_ties(orig_est, test_x)
 
     # Directory:
     tmp_dir = fs_mkdir(

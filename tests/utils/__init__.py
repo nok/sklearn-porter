@@ -43,3 +43,18 @@ def dataset_uniform_x(
         n_samples = PORTER_N_UNI_REGRESSION_TESTS
     n_samples = min(n_samples, len(x))
     return x[(np.random.uniform(0, 1, n_samples) * (len(x) - 1)).astype(int)]
+
+
+def drop_neighbor_ties(est, x: np.ndarray) -> np.ndarray:
+    """
+    Drop the samples whose k-th and (k+1)-th nearest neighbors have the same
+    distance. Which of them is used depends on the ordering of the training
+    data and the sorting algorithm, so the results of the ported estimator
+    and scikit-learn can differ for them.
+    """
+    k = est.n_neighbors
+    n_samples = len(est._fit_X)  # pylint: disable=W0212
+    if k >= n_samples:
+        return x
+    dists, _ = est.kneighbors(x, n_neighbors=k + 1)
+    return x[~np.isclose(dists[:, k - 1], dists[:, k])]

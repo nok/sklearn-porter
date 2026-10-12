@@ -39,7 +39,7 @@ class {{ class_name }}
                     dist = diff
                 end
             else
-                dist += dist ** q
+                dist += diff ** q
             end
         end
         if q == 1 || q == INF

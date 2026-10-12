@@ -32,7 +32,12 @@ from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.cli.command.show import main as show_main
 from sklearn_porter.Estimator import Estimator, can, show
 from tests.commons import CANDIDATES, CLASSIFIERS, DATASETS, Candidate, Dataset
-from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
+from tests.utils import (
+    dataset_generate_x,
+    dataset_uniform_x,
+    drop_neighbor_ties,
+    fs_mkdir,
+)
 
 
 def test_unsupported_estimator():
@@ -375,6 +380,8 @@ def test_regressions_of_classifiers(
 
     # Samples:
     test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
+    if isinstance(orig_est, KNeighborsClassifier):
+        test_x = drop_neighbor_ties(orig_est, test_x)
 
     # Directory:
     tmp_dir = fs_mkdir(
@@ -390,14 +397,13 @@ def test_regressions_of_classifiers(
 
     warnings.filterwarnings('default')
     try:
-        score = est.test(
+        y_pred, y_proba = est.make(
             test_x,
             language=language,
             template=template,
             directory=tmp_dir,
             delete_created_files=False,
         )
-        assert score == 1.0
     except exception.CodeTooLarge:
         msg = (
             'The code too large for the combination: '
@@ -412,6 +418,12 @@ def test_regressions_of_classifiers(
         warnings.warn(msg, stacklevel=2)
     except Exception as e:
         pytest.fail('Unexpected exception ... ' + str(e))
+    else:
+        np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
+        if can(orig_est, language, template, 'predict_proba'):
+            np.testing.assert_allclose(
+                y_proba, orig_est.predict_proba(test_x), rtol=0, atol=1e-5
+            )
 
 
 @pytest.mark.parametrize('subcommand', ['show', 'port', 'save'])
