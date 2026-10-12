@@ -1,0 +1,130 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private $layers;
+    private $weights;
+    private $bias;
+    private $hidden;
+    private $output;
+
+    public function __construct($hidden, $output, $layers, $weights, $bias) {
+        $this->hidden = $hidden;
+        $this->output = $output;
+        $this->layers = $layers;
+        $this->weights = $weights;
+        $this->bias = $bias;
+    }
+
+    private function findMax($nums) {
+        $idx = 0;
+        for ($i = 0, $l = count($nums); $i < $l; $i++) {
+            $idx = $nums[$i] > $nums[$idx] ? $i : $idx;
+        }
+        return $idx;
+    }
+
+    private function activate($activation, $v) {
+        $l = count($v);
+        switch ($activation) {
+            case 'logistic':
+                for ($i = 0; $i < $l; $i++) {
+                    $v[$i] = 1. / (1. + exp(-$v[$i]));
+                }
+                break;
+            case 'relu':
+                for ($i = 0; $i < $l; $i++) {
+                    $v[$i] = max(0, $v[$i]);
+                }
+                break;
+            case 'tanh':
+                for ($i = 0; $i < $l; $i++) {
+                    $v[$i] = tanh($v[$i]);
+                }
+                break;
+            case 'softmax':
+                $max = $v[$this->findMax($v)];
+                $sum = 0.;
+                for ($i = 0; $i < $l; $i++) {
+                    $v[$i] = exp($v[$i] - $max);
+                    $sum += $v[$i];
+                }
+                for ($i = 0; $i < $l; $i++) {
+                    $v[$i] /= $sum;
+                }
+                break;
+        }
+        return $v;
+    }
+
+    private function feedForward($features) {
+        $inputs = $features;
+        for ($i = 0, $il = count($this->layers); $i < $il; $i++) {
+            $outputs = $this->bias[$i];
+            for ($j = 0, $jl = count($inputs); $j < $jl; $j++) {
+                for ($k = 0, $kl = count($outputs); $k < $kl; $k++) {
+                    $outputs[$k] += $inputs[$j] * $this->weights[$i][$j][$k];
+                }
+            }
+            $activation = $i < $il - 1 ? $this->hidden : $this->output;
+            $inputs = $this->activate($activation, $outputs);
+        }
+        return $inputs;
+    }
+
+    public function predict($features) {
+        $outputs = $this->feedForward($features);
+        if (count($outputs) == 1) {
+            return $outputs[0] > .5 ? 1 : 0;
+        }
+        return $this->findMax($outputs);
+    }
+
+    public function predictProba($features) {
+        $outputs = $this->feedForward($features);
+        if (count($outputs) == 1) {
+            return array(1. - $outputs[0], $outputs[0]);
+        }
+        return $outputs;
+    }
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = array_map('floatval', $argv);
+    if (count($features) != {{ n_features }}) {
+        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
+        exit(1);
+    }
+
+    // Model data:
+    {{ layers }}
+    {{ weights }}
+    {{ bias }}
+
+    // Estimator:
+    $clf = new {{ class_name }}('{{ hidden_activation }}', '{{ output_activation }}', $layers, $weights, $bias);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $clf->predict($features);
+    $probabilities = $clf->predictProba($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
+    {% else %}
+    // Get class prediction:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+
+    // Get class probabilities:
+    $probabilities = $clf->predictProba($features);
+    for ($i = 0; $i < count($probabilities); $i++) {
+        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+    }
+    {% endif %}
+
+}
+{% endblock %}
