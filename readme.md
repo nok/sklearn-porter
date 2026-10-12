@@ -496,6 +496,12 @@ The regression tests compile and execute the ported estimators and compare their
 make test-regression
 ```
 
+By default the tests run with the Python version from [`.python-version`](.python-version). Set `PYTHON_VERSION` to test another one:
+
+```bash
+make test-regression PYTHON_VERSION=3.14
+```
+
 The Docker image contains these compilers and interpreters (Debian bookworm):
 
 | Language   | Compiler / Interpreter |

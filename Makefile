@@ -1,7 +1,7 @@
 .PHONY: setup lint format test test-regression test-all docker-image notebook examples clean
 
-IMAGE := sklearn-porter:testing
 PYTHON_VERSION ?= $(shell cat .python-version)
+IMAGE := sklearn-porter:python$(PYTHON_VERSION)
 
 setup:
 	uv sync --all-groups
