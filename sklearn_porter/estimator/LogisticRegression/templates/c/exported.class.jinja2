@@ -1,0 +1,122 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_CLASSES {{ n_classes }}
+#define N_DECISIONS {{ n_decisions }}
+
+
+double **coeffs;
+double *inters;
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    coeffs = json_doubles_2d(json_get(data, "coeffs"));
+    inters = json_doubles(json_get(data, "inters"));
+    json_free(data);
+}
+
+void decision_function(double *decisions, double features[N_FEATURES]) {
+    int i, j;
+    for (i = 0; i < N_DECISIONS; i++) {
+        decisions[i] = 0.;
+        for (j = 0; j < N_FEATURES; j++) {
+            decisions[i] += coeffs[i][j] * features[j];
+        }
+        decisions[i] += inters[i];
+    }
+}
+
+int predict(double features[N_FEATURES]) {
+    double decisions[N_DECISIONS];
+    decision_function(decisions, features);
+    {% if is_binary %}
+    return decisions[0] > 0 ? 1 : 0;
+    {% else %}
+    int i, class_idx = 0;
+    for (i = 1; i < N_DECISIONS; i++) {
+        if (decisions[i] > decisions[class_idx]) {
+            class_idx = i;
+        }
+    }
+    return class_idx;
+    {% endif %}
+}
+{% if with_proba %}
+
+void predict_proba(double *probabilities, double features[N_FEATURES]) {
+    double decisions[N_DECISIONS];
+    decision_function(decisions, features);
+    {% if is_binary %}
+    probabilities[1] = 1. / (1. + exp(-decisions[0]));
+    probabilities[0] = 1. - probabilities[1];
+    {% else %}
+    int i;
+    double max = decisions[0], sum = 0.;
+    for (i = 1; i < N_CLASSES; i++) {
+        if (decisions[i] > max) {
+            max = decisions[i];
+        }
+    }
+    for (i = 0; i < N_CLASSES; i++) {
+        probabilities[i] = exp(decisions[i] - max);
+        sum += probabilities[i];
+    }
+    for (i = 0; i < N_CLASSES; i++) {
+        probabilities[i] /= sum;
+    }
+    {% endif %}
+}
+{% endif %}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 2) {
+        fprintf(stderr, "You have to pass the path to the model data and %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 2; i < argc; i++) {
+        features[i-2] = atof(argv[i]);
+    }
+
+    {% if is_test or to_json %}
+    /* Get JSON: */
+    printf("{\"predict\": %d", predict(features));
+    {% if with_proba %}
+    double probabilities[N_CLASSES];
+    predict_proba(probabilities, features);
+    printf(", \"predict_proba\": [");
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("%.17g", probabilities[i]);
+        if (i < (N_CLASSES - 1)) {
+            printf(",");
+        }
+    }
+    printf("]");
+    {% endif %}
+    printf("}");
+    {% else %}
+    /* Get class prediction: */
+    printf("Predicted class: #%d\n", predict(features));
+    {% if with_proba %}
+
+    /* Get class probabilities: */
+    double probabilities[N_CLASSES];
+    predict_proba(probabilities, features);
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+    }
+    {% endif %}
+    {% endif %}
+
+    return 0;
+}
+{% endblock %}

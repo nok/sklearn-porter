@@ -1,0 +1,109 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+var {{ class_name }} = function(coeffs, inters) {
+
+    this.coeffs = coeffs;
+    this.inters = inters;
+
+    this.decisionFunction = function(features) {
+        var decisions = new Array(this.inters.length);
+        for (var i = 0, il = this.inters.length; i < il; i++) {
+            decisions[i] = 0.;
+            for (var j = 0, jl = this.coeffs[i].length; j < jl; j++) {
+                decisions[i] += this.coeffs[i][j] * features[j];
+            }
+            decisions[i] += this.inters[i];
+        }
+        return decisions;
+    };
+
+    this.predict = function(features) {
+        var decisions = this.decisionFunction(features);
+        {% if is_binary %}
+        return decisions[0] > 0 ? 1 : 0;
+        {% else %}
+        var classIdx = 0;
+        for (var i = 1, l = decisions.length; i < l; i++) {
+            if (decisions[i] > decisions[classIdx]) {
+                classIdx = i;
+            }
+        }
+        return classIdx;
+        {% endif %}
+    };
+    {% if with_proba %}
+
+    this.predictProba = function(features) {
+        var decisions = this.decisionFunction(features);
+        {% if is_binary %}
+        var prob = 1. / (1. + Math.exp(-decisions[0]));
+        return [1. - prob, prob];
+        {% else %}
+        var i, l = decisions.length,
+            max = Math.max(...decisions),
+            sum = 0.;
+        for (i = 0; i < l; i++) {
+            decisions[i] = Math.exp(decisions[i] - max);
+            sum += decisions[i];
+        }
+        for (i = 0; i < l; i++) {
+            decisions[i] /= sum;
+        }
+        return decisions;
+        {% endif %}
+    };
+    {% endif %}
+
+};
+
+var main = function () {
+    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+        if (process.argv.length - 2 !== {{ n_features }}) {
+            var IllegalArgumentException = function(message) {
+                this.message = message;
+                this.name = "IllegalArgumentException";
+            }
+            throw new IllegalArgumentException("You have to pass {{ n_features }} features.");
+        }
+    }
+
+    // Features:
+    var features = process.argv.slice(2);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    {{ coeffs }}
+    {{ inters }}
+
+    // Estimator:
+    var clf = new {{ class_name }}(coeffs, inters);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": clf.predict(features){% if with_proba %},
+        "predict_proba": clf.predictProba(features){% endif %}
+
+    }));
+    {% else %}
+    // Get class prediction:
+    var prediction = clf.predict(features);
+    console.log("Predicted class: #" + prediction);
+    {% if with_proba %}
+
+    // Get class probabilities:
+    var probabilities = clf.predictProba(features);
+    for (var i = 0; i < probabilities.length; i++) {
+        console.log("Probability of class #" + i + " : " + probabilities[i]);
+    }
+    {% endif %}
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

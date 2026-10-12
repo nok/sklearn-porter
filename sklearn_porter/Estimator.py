@@ -28,6 +28,7 @@ from sklearn.ensemble import (
     RandomForestClassifier,
     RandomForestRegressor,
 )
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.model_selection._search import BaseSearchCV
@@ -708,6 +709,7 @@ class Estimator:
             GaussianNB,
             KNeighborsClassifier,
             LinearSVC,
+            LogisticRegression,
             MLPClassifier,
             NuSVC,
             RandomForestClassifier,

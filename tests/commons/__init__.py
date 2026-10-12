@@ -18,6 +18,7 @@ from sklearn.ensemble import (
     RandomForestClassifier,
     RandomForestRegressor,
 )
+from sklearn.linear_model import LogisticRegression
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
@@ -58,6 +59,7 @@ def get_classifiers() -> Iterator[Candidate]:
         RandomForestClassifier,
         ExtraTreesClassifier,
         LinearSVC,
+        LogisticRegression,
         SVC,
         NuSVC,
         KNeighborsClassifier,

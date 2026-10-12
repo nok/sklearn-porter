@@ -1,0 +1,105 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private $coeffs;
+    private $inters;
+
+    public function __construct($coeffs, $inters) {
+        $this->coeffs = $coeffs;
+        $this->inters = $inters;
+    }
+
+    public function decisionFunction($features) {
+        $decisions = array();
+        for ($i = 0, $il = count($this->inters); $i < $il; $i++) {
+            $decisions[$i] = 0.;
+            for ($j = 0, $jl = count($this->coeffs[$i]); $j < $jl; $j++) {
+                $decisions[$i] += $this->coeffs[$i][$j] * $features[$j];
+            }
+            $decisions[$i] += $this->inters[$i];
+        }
+        return $decisions;
+    }
+
+    public function predict($features) {
+        $decisions = $this->decisionFunction($features);
+        {% if is_binary %}
+        return $decisions[0] > 0 ? 1 : 0;
+        {% else %}
+        $classIdx = 0;
+        for ($i = 1, $l = count($decisions); $i < $l; $i++) {
+            if ($decisions[$i] > $decisions[$classIdx]) {
+                $classIdx = $i;
+            }
+        }
+        return $classIdx;
+        {% endif %}
+    }
+    {% if with_proba %}
+
+    public function predictProba($features) {
+        $decisions = $this->decisionFunction($features);
+        {% if is_binary %}
+        $prob = 1. / (1. + exp(-$decisions[0]));
+        return array(1. - $prob, $prob);
+        {% else %}
+        $max = max($decisions);
+        $sum = 0.;
+        for ($i = 0, $l = count($decisions); $i < $l; $i++) {
+            $decisions[$i] = exp($decisions[$i] - $max);
+            $sum += $decisions[$i];
+        }
+        for ($i = 0, $l = count($decisions); $i < $l; $i++) {
+            $decisions[$i] /= $sum;
+        }
+        return $decisions;
+        {% endif %}
+    }
+    {% endif %}
+
+}
+
+if ($argc > 1) {
+
+    // Features:
+    array_shift($argv);
+    $features = array_map('floatval', $argv);
+    if (count($features) != {{ n_features }}) {
+        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
+        exit(1);
+    }
+
+    // Model data:
+    {{ coeffs }}
+    {{ inters }}
+
+    // Estimator:
+    $clf = new {{ class_name }}($coeffs, $inters);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $clf->predict($features);
+    {% if with_proba %}
+    $probabilities = $clf->predictProba($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
+    {% else %}
+    fwrite(STDOUT, json_encode(array("predict" => $prediction)));
+    {% endif %}
+    {% else %}
+    // Get class prediction:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    {% if with_proba %}
+
+    // Get class probabilities:
+    $probabilities = $clf->predictProba($features);
+    for ($i = 0; $i < count($probabilities); $i++) {
+        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+    }
+    {% endif %}
+    {% endif %}
+
+}
+{% endblock %}

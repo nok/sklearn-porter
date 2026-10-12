@@ -1,0 +1,112 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if (is_test or to_json) and with_proba %}
+import java.util.Arrays;
+
+
+{% endif %}
+class {{ class_name }} {
+
+    private double[][] coeffs;
+    private double[] inters;
+
+    public {{ class_name }}(double[][] coeffs, double[] inters) {
+        this.coeffs = coeffs;
+        this.inters = inters;
+    }
+
+    public double[] decisionFunction(double[] features) {
+        double[] decisions = new double[this.inters.length];
+        for (int i = 0, il = this.inters.length; i < il; i++) {
+            for (int j = 0, jl = this.coeffs[i].length; j < jl; j++) {
+                decisions[i] += this.coeffs[i][j] * features[j];
+            }
+            decisions[i] += this.inters[i];
+        }
+        return decisions;
+    }
+
+    public int predict(double[] features) {
+        double[] decisions = this.decisionFunction(features);
+        {% if is_binary %}
+        return decisions[0] > 0 ? 1 : 0;
+        {% else %}
+        int classIdx = 0;
+        for (int i = 1, l = decisions.length; i < l; i++) {
+            if (decisions[i] > decisions[classIdx]) {
+                classIdx = i;
+            }
+        }
+        return classIdx;
+        {% endif %}
+    }
+    {% if with_proba %}
+
+    public double[] predictProba(double[] features) {
+        double[] decisions = this.decisionFunction(features);
+        {% if is_binary %}
+        double prob = 1. / (1. + Math.exp(-decisions[0]));
+        return new double[] {1. - prob, prob};
+        {% else %}
+        double max = decisions[0], sum = 0.;
+        for (int i = 1, l = decisions.length; i < l; i++) {
+            max = Math.max(max, decisions[i]);
+        }
+        for (int i = 0, l = decisions.length; i < l; i++) {
+            decisions[i] = Math.exp(decisions[i] - max);
+            sum += decisions[i];
+        }
+        for (int i = 0, l = decisions.length; i < l; i++) {
+            decisions[i] /= sum;
+        }
+        return decisions;
+        {% endif %}
+    }
+    {% endif %}
+
+    public static void main(String[] args) {
+        int nFeatures = {{ n_features }};
+        if (args.length != nFeatures) {
+            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
+        }
+
+        // Features:
+        double[] features = new double[args.length];
+        for (int i = 0, l = args.length; i < l; i++) {
+            features[i] = Double.parseDouble(args[i]);
+        }
+
+        // Model data:
+        {{ coeffs }}
+        {{ inters }}
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(coeffs, inters);
+
+        {% if is_test or to_json %}
+        // Get JSON:
+        int prediction = clf.predict(features);
+        {% if with_proba %}
+        double[] probabilities = clf.predictProba(features);
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + Arrays.toString(probabilities) + "}");
+        {% else %}
+        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        {% endif %}
+        {% else %}
+        // Get class prediction:
+        int prediction = clf.predict(features);
+        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {% if with_proba %}
+
+        // Get class probabilities:
+        double[] probabilities = clf.predictProba(features);
+        for (int i = 0; i < probabilities.length; i++) {
+            System.out.println("Probability of class #" + i + " : " + String.valueOf(probabilities[i]));
+        }
+        {% endif %}
+        {% endif %}
+
+    }
+}
+{% endblock %}

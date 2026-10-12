@@ -1,0 +1,132 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	{% if is_test or to_json %}
+	"encoding/json"
+	{% endif %}
+	"fmt"
+	{% if with_proba %}
+	"math"
+	{% endif %}
+	"os"
+	"strconv"
+)
+
+type {{ class_name }} struct {
+	Coeffs [][]float64
+	Inters []float64
+}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict int `json:"predict"`
+	{% if with_proba %}
+	PredictProba []float64 `json:"predict_proba"`
+	{% endif %}
+}
+
+{% endif %}
+func (clf {{ class_name }}) DecisionFunction(features []float64) []float64 {
+	decisions := make([]float64, len(clf.Inters))
+	for i := 0; i < len(clf.Inters); i++ {
+		for j := 0; j < len(clf.Coeffs[i]); j++ {
+			decisions[i] += clf.Coeffs[i][j] * features[j]
+		}
+		decisions[i] += clf.Inters[i]
+	}
+	return decisions
+}
+
+func (clf {{ class_name }}) Predict(features []float64) int {
+	decisions := clf.DecisionFunction(features)
+	{% if is_binary %}
+	if decisions[0] > 0 {
+		return 1
+	}
+	return 0
+	{% else %}
+	classIdx := 0
+	for i := 1; i < len(decisions); i++ {
+		if decisions[i] > decisions[classIdx] {
+			classIdx = i
+		}
+	}
+	return classIdx
+	{% endif %}
+}
+{% if with_proba %}
+
+func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
+	decisions := clf.DecisionFunction(features)
+	{% if is_binary %}
+	prob := 1.0 / (1.0 + math.Exp(-decisions[0]))
+	return []float64{1.0 - prob, prob}
+	{% else %}
+	max, sum := decisions[0], 0.0
+	for i := 1; i < len(decisions); i++ {
+		if decisions[i] > max {
+			max = decisions[i]
+		}
+	}
+	for i := 0; i < len(decisions); i++ {
+		decisions[i] = math.Exp(decisions[i] - max)
+		sum += decisions[i]
+	}
+	for i := 0; i < len(decisions); i++ {
+		decisions[i] /= sum
+	}
+	return decisions
+	{% endif %}
+}
+{% endif %}
+
+func main() {
+
+	if len(os.Args) != {{ n_features + 1 }} {
+		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features.")
+		os.Exit(1)
+	}
+
+	// Features:
+	var features []float64
+	for _, arg := range os.Args[1:] {
+		if n, err := strconv.ParseFloat(arg, 64); err == nil {
+			features = append(features, n)
+		}
+	}
+
+	// Model data:
+	{{ coeffs }}
+	{{ inters }}
+
+	// Estimator:
+	clf := {{ class_name }}{coeffs, inters}
+
+	{% if is_test or to_json %}
+	// Get JSON:
+	res, _ := json.Marshal(&Response{
+		Predict: clf.Predict(features),
+		{% if with_proba %}
+		PredictProba: clf.PredictProba(features),
+		{% endif %}
+	})
+	fmt.Println(string(res))
+	{% else %}
+	// Get class prediction:
+	prediction := clf.Predict(features)
+	fmt.Printf("Predicted class: #%d\n", prediction)
+	{% if with_proba %}
+
+	// Get class probabilities:
+	probabilities := clf.PredictProba(features)
+	for i, probability := range probabilities {
+		fmt.Printf("Probability of class #%d : %f\n", i, probability)
+	}
+	{% endif %}
+	{% endif %}
+
+}
+{% endblock %}
