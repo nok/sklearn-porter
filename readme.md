@@ -221,9 +221,9 @@ The table shows the supported estimators for each programming language and templ
     <td></td>
     <td></td>
     <td></td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>×</td>
