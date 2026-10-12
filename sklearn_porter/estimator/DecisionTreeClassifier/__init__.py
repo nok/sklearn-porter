@@ -59,6 +59,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         },
     }
 
+    # The key of the model data with the content of the leaves:
+    LEAF_DATA = 'classes'
+
     estimator = None  # type: DecisionTreeClassifierClass
 
     def __init__(self, estimator: DecisionTreeClassifierClass):
@@ -267,7 +270,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             self.model_data.get('lefts'),
             self.model_data.get('rights'),
             self.model_data.get('thresholds'),
-            self.model_data.get('classes'),
+            self.model_data.get(self.LEAF_DATA),
             self.model_data.get('indices'),
             0,
             n_indents,
@@ -367,18 +370,51 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             out_endif = indent(out_endif, depth * out_indent)
             out += out_endif
         else:
-            clazzes = []
-            tpl = 'classes[{0}] = {1}'
-            if language is enum.Language.PHP:
-                tpl = '$' + tpl
-            tpl = indent(tpl, depth * out_indent)
-
-            for i, rate in enumerate(value[node]):
-                if int(rate) > 0:
-                    clazz = tpl.format(i, rate)
-                    clazz = '\n' + clazz
-                    clazzes.append(clazz)
-
-            out_join = tpls.get_template('join').render()
-            out += out_join.join(clazzes) + out_join
+            out += self._create_leaf(
+                tpls, language, converter, value[node], depth
+            )
         return out
+
+    def _create_leaf(
+        self,
+        tpls: Environment,
+        language: enum.Language,
+        converter: Callable[[object], str],
+        value: list,
+        depth: int,
+    ):
+        """
+        The assignments of a single leaf.
+
+        Parameters
+        ----------
+        tpls : Environment
+            All relevant templates.
+        language
+            The required language.
+        converter
+            The number converter.
+        value : list
+            The class counts of the leaf.
+        depth : list
+            The tree depth.
+
+        Returns
+        -------
+        The assignments of the class counts of a single leaf.
+        """
+        out_indent = tpls.get_template('indent').render()
+        clazzes = []
+        tpl = 'classes[{0}] = {1}'
+        if language is enum.Language.PHP:
+            tpl = '$' + tpl
+        tpl = indent(tpl, depth * out_indent)
+
+        for i, rate in enumerate(value):
+            if int(rate) > 0:
+                clazz = tpl.format(i, rate)
+                clazz = '\n' + clazz
+                clazzes.append(clazz)
+
+        out_join = tpls.get_template('join').render()
+        return out_join.join(clazzes) + out_join

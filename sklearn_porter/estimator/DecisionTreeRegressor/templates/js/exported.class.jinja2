@@ -1,0 +1,78 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+var {{ class_name }} = function(jsonFile) {
+    this.data = JSON.parse(fs.readFileSync(jsonFile));
+
+    this.lefts = this.data.lefts;
+    this.rights = this.data.rights;
+    this.thresholds = this.data.thresholds;
+    this.indices = this.data.indices;
+    this.values = this.data.values;
+
+    this.predict = function(features) {
+        var node = 0;
+        while (this.lefts[node] !== -1) {
+            if (features[this.indices[node]] <= this.thresholds[node]) {
+                node = this.lefts[node];
+            } else {
+                node = this.rights[node];
+            }
+        }
+        var values = this.values[node];
+        if (values.length === 1) {
+            return values[0];
+        }
+        return values.slice();
+    };
+
+};
+
+var main = function () {
+    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+        if (process.argv.length - 3 !== {{ n_features }}) {
+            var IllegalArgumentException = function(message) {
+                this.message = message;
+                this.name = "IllegalArgumentException";
+            }
+            throw new IllegalArgumentException("You have to pass the path to the model data and {{ n_features }} features.");
+        }
+    }
+
+    // Features:
+    var features = process.argv.slice(3);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    var json = process.argv[2];
+
+    // Estimator:
+    var reg = new {{ class_name }}(json);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": reg.predict(features)
+    }));
+    {% else %}
+    // Get prediction:
+    var result = reg.predict(features);
+    if (Array.isArray(result)) {
+        for (var i = 0; i < result.length; i++) {
+            console.log("Result of value #" + i + " : " + result[i]);
+        }
+    } else {
+        console.log("Result: " + result);
+    }
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

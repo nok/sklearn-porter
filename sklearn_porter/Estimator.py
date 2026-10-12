@@ -35,7 +35,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, LinearSVC, NuSVC
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from tabulate import tabulate
 
 # sklearn-porter
@@ -725,7 +725,10 @@ class Estimator:
         estimators : Tuple
             A set of supported regressors.
         """
-        return (MLPRegressor,)
+        return (
+            DecisionTreeRegressor,
+            MLPRegressor,
+        )
 
     def __repr__(self):
         """

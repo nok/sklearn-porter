@@ -23,7 +23,7 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, LinearSVC, NuSVC
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -168,7 +168,9 @@ def test_file_handling(fitted_tree, tmp_root_dir):
 
 def test_list_of_regressors():
     """Test and compare list of regressors."""
-    regressors = sorted([r.__name__ for r in [MLPRegressor]])
+    regressors = sorted(
+        [r.__name__ for r in [DecisionTreeRegressor, MLPRegressor]]
+    )
     result = sorted([r.__name__ for r in Estimator.regressors()])
     assert regressors == result
 
