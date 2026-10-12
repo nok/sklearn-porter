@@ -14,7 +14,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_class_counts
+from sklearn_porter.utils import get_class_counts, get_thresholds
 
 
 class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
@@ -85,7 +85,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         self.model_data = dict(
             lefts=est.tree_.children_left.tolist(),
             rights=est.tree_.children_right.tolist(),
-            thresholds=est.tree_.threshold.tolist(),
+            thresholds=get_thresholds(est.tree_),
             indices=est.tree_.feature.tolist(),
             classes=get_class_counts(est.tree_),
         )
