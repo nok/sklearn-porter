@@ -26,12 +26,16 @@ from sklearn.svm import SVC, LinearSVC, NuSVC
 from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
+from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.cli.__main__ import parse_args
 from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.cli.command.show import main as show_main
 from sklearn_porter.Estimator import Estimator, can, show
+from sklearn_porter.estimator.AdaBoostClassifier import (
+    AdaBoostClassifier as AdaBoostClassifierPorter,
+)
 from tests.commons import (
     CANDIDATES,
     CLASSIFIERS,
@@ -65,11 +69,15 @@ def test_unsupported_objects():
         Estimator(binarizer)
 
 
-def test_valid_but_unsupported_language():
+def test_valid_but_unsupported_language(monkeypatch: pytest.MonkeyPatch):
     dataset = load_iris()
     x, y = dataset.data, dataset.target
     clf = AdaBoostClassifier()
     clf.fit(X=x, y=y)
+    # All estimators support all languages, so remove one temporarily:
+    support = dict(AdaBoostClassifierPorter.SUPPORT)
+    support.pop(enum.Language.RUBY)
+    monkeypatch.setattr(AdaBoostClassifierPorter, 'SUPPORT', support)
     with pytest.raises(exception.NotSupportedYetError):
         Estimator(clf, language='ruby')
 

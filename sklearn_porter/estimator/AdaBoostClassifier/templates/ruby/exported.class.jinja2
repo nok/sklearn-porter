@@ -1,0 +1,111 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	class Tree
+
+		attr_reader :classes, :weight
+
+		def initialize(lefts, rights, thresholds, indices, classes, weight)
+			@lefts = lefts
+			@rights = rights
+			@thresholds = thresholds
+			@indices = indices
+			@classes = classes
+			@weight = weight
+		end
+
+		def _find_max(nums)
+			idx = 0
+			for i in 0 ... nums.length
+				idx = nums[i] > nums[idx] ? i : idx
+			end
+			idx
+		end
+
+		def compute(features)
+			node = 0
+			while @thresholds[node] != -2
+				if features[@indices[node]] <= @thresholds[node]
+					node = @lefts[node]
+				else
+					node = @rights[node]
+				end
+			end
+			_find_max(@classes[node])
+		end
+
+	end
+
+	def initialize(path)
+		model = JSON.parse(File.read(path))
+		@forest = model.map do |tree|
+			Tree.new(tree['lefts'], tree['rights'], tree['thresholds'], tree['indices'], tree['classes'], tree['weight'])
+		end
+	end
+
+	def _find_max(nums)
+		idx = 0
+		for i in 0 ... nums.length
+			idx = nums[i] > nums[idx] ? i : idx
+		end
+		idx
+	end
+
+	def predict_proba(features)
+		n_classes = @forest[0].classes[0].length
+		probas = Array.new(n_classes, 0.0)
+		sum_weights = 0.0
+		# Weighted votes of all trees (SAMME):
+		@forest.each do |tree|
+			probas[tree.compute(features)] += tree.weight
+			sum_weights += tree.weight
+		end
+		# Softmax of the decision values, see `AdaBoostClassifier.decision_function`:
+		probas = probas.map { |proba| Math.exp(proba * n_classes / (sum_weights * (n_classes - 1) * (n_classes - 1))) }
+		sum = probas.sum
+		probas.map { |proba| proba / sum }
+	end
+
+	def predict(features)
+		_find_max(predict_proba(features))
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features + 1 }}
+		raise "You have to pass the path to the model data and {{ n_features }} features."
+	end
+
+	# Model data:
+	model_data = ARGV.shift
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Estimator:
+	clf = {{ class_name }}.new model_data
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = clf.predict features
+	probabilities = clf.predict_proba features
+	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+	{% else %}
+	# Get class prediction:
+	prediction = clf.predict features
+	puts "Predicted class: ##{prediction}"
+
+	# Get class probabilities:
+	probabilities = clf.predict_proba features
+	for i in 0 ... probabilities.length
+		puts "Probability of class ##{i} : #{probabilities[i]}"
+	end
+	{% endif %}
+end
+{% endblock %}

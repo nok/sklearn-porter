@@ -1,0 +1,14 @@
+{{ methods }}
+
+def predict_proba(features)
+    n_classes = {{ n_classes }}
+    weights = {{ weights }}
+    probas = Array.new(n_classes, 0.0)
+    # Weighted votes of all trees (SAMME):
+    {{ method_calls }}
+    sum_weights = weights.sum
+    # Softmax of the decision values, see `AdaBoostClassifier.decision_function`:
+    probas = probas.map { |proba| Math.exp(proba * n_classes / (sum_weights * (n_classes - 1) * (n_classes - 1))) }
+    sum = probas.sum
+    probas.map { |proba| proba / sum }
+end
