@@ -28,7 +28,13 @@ from sklearn.ensemble import (
     RandomForestClassifier,
     RandomForestRegressor,
 )
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import (
+    ElasticNet,
+    Lasso,
+    LinearRegression,
+    LogisticRegression,
+    Ridge,
+)
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.model_selection._search import BaseSearchCV
@@ -728,9 +734,13 @@ class Estimator:
         """
         return (
             DecisionTreeRegressor,
+            ElasticNet,
             ExtraTreesRegressor,
+            Lasso,
+            LinearRegression,
             MLPRegressor,
             RandomForestRegressor,
+            Ridge,
         )
 
     def __repr__(self):

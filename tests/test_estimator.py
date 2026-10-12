@@ -18,7 +18,14 @@ from sklearn.ensemble import (
     RandomForestRegressor,
 )
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.linear_model import LogisticRegression, SGDClassifier
+from sklearn.linear_model import (
+    ElasticNet,
+    Lasso,
+    LinearRegression,
+    LogisticRegression,
+    Ridge,
+    SGDClassifier,
+)
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -175,9 +182,13 @@ def test_list_of_regressors():
             r.__name__
             for r in [
                 DecisionTreeRegressor,
+                ElasticNet,
                 ExtraTreesRegressor,
+                Lasso,
+                LinearRegression,
                 MLPRegressor,
                 RandomForestRegressor,
+                Ridge,
             ]
         ]
     )

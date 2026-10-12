@@ -1,0 +1,71 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+var {{ class_name }} = function(jsonFile) {
+    this.data = JSON.parse(fs.readFileSync(jsonFile));
+
+    this.predict = function(features) {
+        var values = new Array(this.data.inters.length);
+        for (var i = 0, il = this.data.inters.length; i < il; i++) {
+            values[i] = 0.;
+            for (var j = 0, jl = this.data.coeffs[i].length; j < jl; j++) {
+                values[i] += this.data.coeffs[i][j] * features[j];
+            }
+            values[i] += this.data.inters[i];
+        }
+        {% if is_multi_output %}
+        return values;
+        {% else %}
+        return values[0];
+        {% endif %}
+    };
+};
+
+var main = function () {
+    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
+        if (process.argv.length - 3 !== {{ n_features }}) {
+            var IllegalArgumentException = function(message) {
+                this.message = message;
+                this.name = "IllegalArgumentException";
+            }
+            throw new IllegalArgumentException("You have to pass the path to the model data and {{ n_features }} features.");
+        }
+    }
+
+    // Features:
+    var features = process.argv.slice(3);
+    for (var i = 0; i < features.length; i++) {
+        features[i] = parseFloat(features[i]);
+    }
+
+    // Model data:
+    var json = process.argv[2];
+
+    // Estimator:
+    var reg = new {{ class_name }}(json);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    console.log(JSON.stringify({
+        "predict": reg.predict(features)
+    }));
+    {% else %}
+    // Get predicted values:
+    var result = reg.predict(features);
+    {% if is_multi_output %}
+    for (var i = 0; i < result.length; i++) {
+        console.log("Predicted value #" + i + ": " + result[i]);
+    }
+    {% else %}
+    console.log("Predicted value: " + result);
+    {% endif %}
+    {% endif %}
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}
