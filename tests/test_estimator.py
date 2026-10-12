@@ -306,6 +306,29 @@ def test_extraction_from_randomized_search_cv():
     assert isinstance(est.estimator, SVC)
 
 
+@pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
+@pytest.mark.parametrize('gamma', ['scale', 'auto'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+def test_computed_gamma_of_svm(orig_est: type, gamma: str, language: str):
+    """Test the use of the computed gamma value instead of `scale` or `auto`."""
+    # The unscaled iris features (X.var() != 1) lead to different values:
+    x, y = load_iris(return_X_y=True)
+    orig_est = orig_est(kernel='rbf', gamma=gamma).fit(X=x, y=y)
+    expected = orig_est._gamma
+    assert expected == (
+        1.0 / (x.shape[1] * x.var()) if gamma == 'scale' else 1.0 / x.shape[1]
+    )
+
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', category=exception.QualityWarning)
+        est = Estimator(orig_est, language=language, template='attached')
+    assert est._estimator.model_data['gamma'] == expected
+
+    output = est.port()
+    assert est.converter(expected) in output
+    assert gamma not in output
+
+
 @pytest.mark.regression
 @pytest.mark.parametrize(
     'x',
