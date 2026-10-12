@@ -1,0 +1,5 @@
+private static int compute{{ method_index }}(double[] features) {
+    double[] classes = new double[{{ n_classes }}];
+    {{ tree }}
+    return {{ class_name }}.findMax(classes);
+}
