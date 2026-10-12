@@ -30,6 +30,12 @@ class CompilationFailed(RuntimeError):
         super().__init__(self.message)
 
 
+class ExecutionFailed(RuntimeError):
+    def __init__(self, message: str):
+        self.message = f'Execution failed:\n\n{message}'
+        super().__init__(self.message)
+
+
 class CodeTooLarge(CompilationFailed):
     def __init__(self, message: str):
         hint = (

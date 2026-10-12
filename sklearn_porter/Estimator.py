@@ -1,14 +1,14 @@
 import urllib.request
 from collections import OrderedDict
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial
 from importlib import import_module
 from json import JSONDecodeError, loads
-from multiprocessing import Pool, cpu_count
-from os import environ, remove
+from os import cpu_count, environ, remove
 from pathlib import Path
 from shutil import which
-from subprocess import STDOUT, CalledProcessError, check_output
+from subprocess import STDOUT, CalledProcessError, check_output, run
 from sys import platform, stdout, version_info
 from tempfile import mktemp
 from textwrap import dedent
@@ -416,8 +416,8 @@ class Estimator:
         ----------
         x : Union[List, np.ndarray] of shape (n_samples, n_features) or (n_features)
             Input data.
-        n_jobs : Union[bool, int] (default: True, which uses `count_cpus()`)
-            The number of processes to make the predictions.
+        n_jobs : Union[bool, int] (default: True, which uses `os.cpu_count()`)
+            The number of threads to make the predictions.
         directory : Optional[Union[str, Path]] (default: current working dir)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)
@@ -519,12 +519,12 @@ class Estimator:
         if not n_jobs:
             y = list(map(calls, x))
         else:
-            if isinstance(n_jobs, bool):
+            if isinstance(n_jobs, bool) or not isinstance(n_jobs, int):
                 n_jobs = cpu_count()
-            if not isinstance(n_jobs, int):
-                n_jobs = cpu_count()
-            with Pool(n_jobs) as pool:
-                y = pool.map(calls, x)
+            # Threads are sufficient, because they only wait for the
+            # subprocesses which execute the ported estimator:
+            with ThreadPoolExecutor(n_jobs) as executor:
+                y = list(executor.map(calls, x))
         y = list(zip(*y, strict=False))
         y = list(map(np.array, y))
 
@@ -652,8 +652,8 @@ class Estimator:
         ----------
         x : numpy.ndarray, shape (n_samples, n_features)
             Input data.
-        n_jobs : Union[bool, int] (default: True, which uses `count_cpus()`)
-            The number of processes to make the predictions.
+        n_jobs : Union[bool, int] (default: True, which uses `os.cpu_count()`)
+            The number of threads to make the predictions.
         directory : Optional[Union[str, Path]] (default: current working dir)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)
@@ -744,42 +744,55 @@ def _get_qualname(obj: object):
     return obj.__class__.__module__ + '.' + obj.__class__.__qualname__
 
 
-def _system_call(cmd: str, executable='/bin/bash'):
+def _system_call(cmd: str, executable='/bin/bash', n_retries: int = 3):
     """
-    Separate helper function for multi-processed system calls.
+    Separate helper function for parallel system calls.
 
     Parameters
     ----------
     cmd : str
         The command for the system call.
+    executable : str (default: '/bin/bash')
+        The shell which should be used for the system call.
+    n_retries : int (default: 3)
+        The number of retries after a failed call.
 
     Returns
     -------
-    The output of subprocess.check_output.
+    The predictions (and probabilities) of the executed estimator.
+
+    Raises
+    ------
+    ExecutionFailed
+        If the call failed or didn't return valid JSON on every attempt.
     """
-    subp_args = dict(
-        shell=True,
-        universal_newlines=True,
-        stderr=STDOUT,
-        executable=executable,
-    )
-    for _ in range(10):
+    for attempt in range(n_retries + 1):
+        if attempt:
+            sleep(0.1 * 2**attempt)
+        proc = run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            executable=executable,
+        )
+        if proc.returncode != 0:
+            error = f'Exit code {proc.returncode}'
+            continue
         try:
-            out = check_output(cmd, **subp_args)
-        except CalledProcessError:
-            sleep(0.1)
-        else:
-            try:
-                out = loads(out)
-            except JSONDecodeError as e:
-                L.error(e)
-            else:
-                result = []
-                if 'predict' in out.keys():
-                    result.append(out.get('predict'))
-                    if 'predict_proba' in out.keys():
-                        result.append(out.get('predict_proba'))
-                return result
+            out = loads(proc.stdout)
+        except JSONDecodeError as e:
+            error = f'Invalid JSON ({e})'
+            continue
+        result = [out.get('predict')]
+        if 'predict_proba' in out.keys():
+            result.append(out.get('predict_proba'))
+        return result
+    msg = (
+        f'Command `{cmd}` failed after {n_retries + 1} attempts.\n'
+        f'{error}\n\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}'
+    )
+    raise exception.ExecutionFailed(msg)
 
 
 def show(language: str | enum.Language | None = None):
