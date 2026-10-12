@@ -302,9 +302,9 @@ The table shows the supported estimators for each programming language and templ
     <td>✓</td>
     <td>✓</td>
     <td>×</td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>✓</td>
+    <td>✓</td>
+    <td>×</td>
   </tr>
   <tr align="center">
     <td rowspan="2"></td>
