@@ -1,0 +1,110 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def initialize(hidden, output, layers, weights, bias)
+		@hidden = hidden
+		@output = output
+		@layers = layers
+		@weights = weights
+		@bias = bias
+	end
+
+	def _find_max(nums)
+		idx = 0
+		for i in 0 ... nums.length
+			idx = nums[i] > nums[idx] ? i : idx
+		end
+		idx
+	end
+
+	def _activate(activation, v)
+		case activation
+		when 'logistic'
+			v.map { |x| 1.0 / (1.0 + Math.exp(-x)) }
+		when 'relu'
+			v.map { |x| x > 0 ? x : 0.0 }
+		when 'tanh'
+			v.map { |x| Math.tanh(x) }
+		when 'softmax'
+			max = v.max
+			v = v.map { |x| Math.exp(x - max) }
+			sum = v.sum
+			v.map { |x| x / sum }
+		else
+			v
+		end
+	end
+
+	def _feed_forward(features)
+		inputs = features
+		for i in 0 ... @layers.length
+			outputs = @bias[i].dup
+			for j in 0 ... inputs.length
+				for k in 0 ... outputs.length
+					outputs[k] += inputs[j] * @weights[i][j][k]
+				end
+			end
+			activation = i < @layers.length - 1 ? @hidden : @output
+			inputs = _activate(activation, outputs)
+		end
+		inputs
+	end
+
+	def predict(features)
+		outputs = _feed_forward(features)
+		if outputs.length == 1
+			return outputs[0] > 0.5 ? 1 : 0
+		end
+		_find_max(outputs)
+	end
+
+	def predict_proba(features)
+		outputs = _feed_forward(features)
+		if outputs.length == 1
+			return [1.0 - outputs[0], outputs[0]]
+		end
+		outputs
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ layers }}
+	{{ weights }}
+	{{ bias }}
+
+	# Estimator:
+	clf = {{ class_name }}.new '{{ hidden_activation }}', '{{ output_activation }}', layers, weights, bias
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = clf.predict features
+	probabilities = clf.predict_proba features
+	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+	{% else %}
+	# Get class prediction:
+	prediction = clf.predict features
+	puts "Predicted class: ##{prediction}"
+
+	# Get class probabilities:
+	probabilities = clf.predict_proba features
+	for i in 0 ... probabilities.length
+		puts "Probability of class ##{i} : #{probabilities[i]}"
+	end
+	{% endif %}
+end
+{% endblock %}
