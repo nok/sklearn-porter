@@ -1,0 +1,95 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private $priors;
+    private $probs;
+
+    public function __construct($path) {
+        $data = json_decode(file_get_contents($path), true);
+        $this->priors = $data['priors'];
+        $this->probs = $data['probs'];
+    }
+
+    private function findMax($nums) {
+        $idx = 0;
+        for ($i = 0, $l = count($nums); $i < $l; $i++) {
+            $idx = $nums[$i] > $nums[$idx] ? $i : $idx;
+        }
+        return $idx;
+    }
+
+    private function logSumExp($nums) {
+        $max = $nums[$this->findMax($nums)];
+        $sum = 0.;
+        for ($i = 0, $l = count($nums); $i < $l; $i++) {
+            $sum += exp($nums[$i] - $max);
+        }
+        return $max + log($sum);
+    }
+
+    private function compute($features) {
+        $likelihoods = array();
+        for ($i = 0, $il = count($this->priors); $i < $il; $i++) {
+            $sum = 0.;
+            for ($j = 0, $jl = count($this->probs[$i]); $j < $jl; $j++) {
+                $delta = log(1. - exp($this->probs[$i][$j]));
+                $sum += ($features[$j] > 0 ? 1. : 0.) * ($this->probs[$i][$j] - $delta) + $delta;
+            }
+            $likelihoods[$i] = $this->priors[$i] + $sum;
+        }
+        return $likelihoods;
+    }
+
+    public function predict($features) {
+        return $this->findMax($this->compute($features));
+    }
+
+    public function predictProba($features) {
+        $likelihoods = $this->compute($features);
+        $sum = $this->logSumExp($likelihoods);
+        for ($i = 0, $l = count($likelihoods); $i < $l; $i++) {
+            $likelihoods[$i] = exp($likelihoods[$i] - $sum);
+        }
+        return $likelihoods;
+    }
+
+}
+
+if ($argc > 1) {
+
+    array_shift($argv);
+
+    // Model data:
+    $path = array_shift($argv);
+
+    // Features:
+    $features = array_map('floatval', $argv);
+    if (count($features) != {{ n_features }}) {
+        fwrite(STDERR, "You have to pass the path to the model data and {{ n_features }} features.\n");
+        exit(1);
+    }
+
+    // Estimator:
+    $clf = new {{ class_name }}($path);
+
+    {% if is_test or to_json %}
+    // Get JSON:
+    $prediction = $clf->predict($features);
+    $probabilities = $clf->predictProba($features);
+    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
+    {% else %}
+    // Get class prediction:
+    $prediction = $clf->predict($features);
+    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+
+    // Get class probabilities:
+    $probabilities = $clf->predictProba($features);
+    for ($i = 0; $i < count($probabilities); $i++) {
+        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+    }
+    {% endif %}
+
+}
+{% endblock %}
