@@ -218,9 +218,9 @@ The table shows the supported estimators for each programming language and templ
     <td align="left">
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html#sklearn.naive_bayes.BernoulliNB">naive_bayes.BernoulliNB</a>
     </td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>×</td>

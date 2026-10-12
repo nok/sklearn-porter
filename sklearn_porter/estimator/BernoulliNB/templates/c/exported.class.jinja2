@@ -1,0 +1,109 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_CLASSES {{ n_classes }}
+
+
+double *priors;
+double **probs;
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    priors = json_doubles(json_get(data, "priors"));
+    probs = json_doubles_2d(json_get(data, "probs"));
+    json_free(data);
+}
+
+int find_max(double nums[N_CLASSES]) {
+    int i;
+    int idx = 0;
+    for (i = 0; i < N_CLASSES; i++) {
+        idx = nums[i] > nums[idx] ? i : idx;
+    }
+    return idx;
+}
+
+double log_sum_exp(double nums[N_CLASSES]) {
+    int i;
+    double max = nums[find_max(nums)];
+    double sum = 0.;
+    for (i = 0; i < N_CLASSES; i++) {
+        sum += exp(nums[i] - max);
+    }
+    return max + log(sum);
+}
+
+void compute(double *likelihoods, double features[N_FEATURES]) {
+    int i, j;
+    double delta, sum;
+    for (i = 0; i < N_CLASSES; i++) {
+        sum = 0.;
+        for (j = 0; j < N_FEATURES; j++) {
+            delta = log(1. - exp(probs[i][j]));
+            sum += (features[j] > 0 ? 1. : 0.) * (probs[i][j] - delta) + delta;
+        }
+        likelihoods[i] = priors[i] + sum;
+    }
+}
+
+int predict(double features[N_FEATURES]) {
+    double likelihoods[N_CLASSES];
+    compute(likelihoods, features);
+    return find_max(likelihoods);
+}
+
+void predict_proba(double *result, double features[N_FEATURES]) {
+    int i;
+    compute(result, features);
+    double sum = log_sum_exp(result);
+    for (i = 0; i < N_CLASSES; i++) {
+        result[i] = exp(result[i] - sum);
+    }
+}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 2) {
+        fprintf(stderr, "You have to pass the path to the model data and %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 2; i < argc; i++) {
+        features[i-2] = atof(argv[i]);
+    }
+
+    {% if is_test or to_json %}
+    /* Get JSON: */
+    double probabilities[N_CLASSES];
+    predict_proba(probabilities, features);
+    printf("{\"predict\": %d, \"predict_proba\": [", predict(features));
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("%.17g", probabilities[i]);
+        if (i < (N_CLASSES - 1)) {
+            printf(",");
+        }
+    }
+    printf("]}");
+    {% else %}
+    /* Get class prediction: */
+    printf("Predicted class: #%d\n", predict(features));
+
+    /* Get class probabilities: */
+    double probabilities[N_CLASSES];
+    predict_proba(probabilities, features);
+    for (int i = 0; i < N_CLASSES; i++) {
+        printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+    }
+    {% endif %}
+
+    return 0;
+}
+{% endblock %}
