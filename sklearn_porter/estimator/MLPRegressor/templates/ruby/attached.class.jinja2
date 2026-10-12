@@ -1,0 +1,82 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def initialize(hidden, layers, weights, bias)
+		@hidden = hidden
+		@layers = layers
+		@weights = weights
+		@bias = bias
+	end
+
+	def _activate(activation, v)
+		case activation
+		when 'logistic'
+			v.map { |x| 1.0 / (1.0 + Math.exp(-x)) }
+		when 'relu'
+			v.map { |x| x > 0 ? x : 0.0 }
+		when 'tanh'
+			v.map { |x| Math.tanh(x) }
+		else
+			v
+		end
+	end
+
+	def _feed_forward(features)
+		inputs = features
+		for i in 0 ... @layers.length
+			outputs = @bias[i].dup
+			for j in 0 ... inputs.length
+				for k in 0 ... outputs.length
+					outputs[k] += inputs[j] * @weights[i][j][k]
+				end
+			end
+			inputs = i < @layers.length - 1 ? _activate(@hidden, outputs) : outputs
+		end
+		inputs
+	end
+
+	def predict(features)
+		outputs = _feed_forward(features)
+		if outputs.length == 1
+			return outputs[0]
+		end
+		outputs
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ layers }}
+	{{ weights }}
+	{{ bias }}
+
+	# Estimator:
+	reg = {{ class_name }}.new '{{ hidden_activation }}', layers, weights, bias
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = reg.predict features
+	puts JSON.generate({:predict => prediction})
+	{% else %}
+	# Get predicted values:
+	prediction = reg.predict features
+	Array(prediction).each_with_index do |value, i|
+		puts "Predicted value ##{i} : #{value}"
+	end
+	{% endif %}
+end
+{% endblock %}
