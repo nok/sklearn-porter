@@ -264,9 +264,9 @@ The table shows the supported estimators for each programming language and templ
     <td align="left">
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html">neural_network.MLPClassifier</a>
     </td>
-    <td></td>
-    <td></td>
-    <td></td>
+    <td>✓ᴾ</td>
+    <td>✓ᴾ</td>
+    <td>×</td>
     <td>✓ᴾ</td>
     <td>✓ᴾ</td>
     <td>×</td>

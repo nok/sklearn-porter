@@ -25,6 +25,10 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
     DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
+        enum.Language.C: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         enum.Language.GO: {
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
@@ -159,8 +163,41 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             n=len(layers_val),
         )
 
-        # Convert weights:
         weights_val = self.model_data.get('weights')
+        bias_val = self.model_data.get('bias')
+
+        # C doesn't support jagged arrays, so flatten the weights and bias:
+        if language is enum.Language.C:
+            weights_flat = [
+                w for layer in weights_val for row in layer for w in row
+            ]
+            weights_str = tpl_arr_1.render(
+                type=tpl_double,
+                name='weights',
+                values=', '.join(list(map(converter, weights_flat))),
+                n=len(weights_flat),
+            )
+            bias_flat = [b for layer in bias_val for b in layer]
+            bias_str = tpl_arr_1.render(
+                type=tpl_double,
+                name='bias',
+                values=', '.join(list(map(converter, bias_flat))),
+                n=len(bias_flat),
+            )
+            plas.update(
+                dict(
+                    layers=layers_str,
+                    weights=weights_str,
+                    bias=bias_str,
+                    n_layers=len(layers_val),
+                    hidden_activation=self.model_data.get('hidden_activation'),
+                    output_activation=self.model_data.get('output_activation'),
+                )
+            )
+            tpl_class = tpls.get_template('attached.class')
+            return tpl_class.render(**plas)
+
+        # Convert weights:
         weights_str = []
         for layer in weights_val:
             layer_weights = ', '.join(
@@ -182,7 +219,6 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         )
 
         # Convert bias:
-        bias_val = self.model_data.get('bias')
         bias_str = tpl_arr_2.render(
             type=tpl_double,
             name='bias',
