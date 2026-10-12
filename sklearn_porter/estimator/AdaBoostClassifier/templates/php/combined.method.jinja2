@@ -1,0 +1,24 @@
+{{ methods }}
+
+public function predictProba($features) {
+    $nClasses = {{ n_classes }};
+    $weights = {{ weights }};
+    $probas = array_fill(0, $nClasses, 0.);
+    $sum = 0.;
+    // Weighted votes of all trees (SAMME):
+    {{ method_calls }}
+    $sumWeights = array_sum($weights);
+    // Softmax of the decision values, see `AdaBoostClassifier.decision_function`:
+    for ($i = 0; $i < $nClasses; $i++) {
+        $probas[$i] = exp($probas[$i] * $nClasses / ($sumWeights * ($nClasses - 1) * ($nClasses - 1)));
+        $sum += $probas[$i];
+    }
+    for ($i = 0; $i < $nClasses; $i++) {
+        $probas[$i] /= $sum;
+    }
+    return $probas;
+}
+
+public function predict($features) {
+    return $this->findMax($this->predictProba($features));
+}
