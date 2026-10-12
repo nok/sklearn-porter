@@ -26,6 +26,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
     SUPPORT = {
         enum.Language.C: {
             enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
         },
         enum.Language.GO: {
             enum.Template.ATTACHED: {enum.Method.PREDICT},

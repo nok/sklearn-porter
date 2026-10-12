@@ -81,7 +81,7 @@ The table shows the supported estimators for each programming language and templ
       <a href="https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVC.html">svm.LinearSVC</a>
     </td>
     <td>✓</td>
-    <td></td>
+    <td>✓</td>
     <td>×</td>
     <td>✓</td>
     <td>✓</td>
