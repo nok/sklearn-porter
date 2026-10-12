@@ -1,0 +1,96 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def initialize(priors, sigmas, thetas)
+		@priors = priors
+		@sigmas = sigmas
+		@thetas = thetas
+	end
+
+	def _find_max(nums)
+		idx = 0
+		for i in 0 ... nums.length
+			idx = nums[i] > nums[idx] ? i : idx
+		end
+		idx
+	end
+
+	def _log_sum_exp(nums)
+		max = nums[_find_max nums]
+		sum = 0.0
+		for i in 0 ... nums.length
+			sum += Math.exp(nums[i] - max)
+		end
+		max + Math.log(sum)
+	end
+
+	def _compute(features)
+		likelihoods = Array.new(@priors.length, 0.0)
+		for i in 0 ... @priors.length
+			sum = 0.0
+			for j in 0 ... @sigmas[i].length
+				sum += Math.log(2.0 * Math::PI * @sigmas[i][j])
+			end
+			nij = -0.5 * sum
+			sum = 0.0
+			for j in 0 ... @sigmas[i].length
+				sum += ((features[j] - @thetas[i][j]) ** 2) / @sigmas[i][j]
+			end
+			nij -= 0.5 * sum
+			likelihoods[i] = Math.log(@priors[i]) + nij
+		end
+		likelihoods
+	end
+
+	def predict(features)
+		_find_max _compute(features)
+	end
+
+	def predict_proba(features)
+		likelihoods = _compute features
+		sum = _log_sum_exp likelihoods
+		likelihoods.map { |likelihood| Math.exp(likelihood - sum) }
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ priors }}
+	{{ sigmas }}
+	{{ thetas }}
+
+	# Estimator:
+	clf = {{ class_name }}.new priors, sigmas, thetas
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = clf.predict features
+	probabilities = clf.predict_proba features
+	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+	{% else %}
+	# Get class prediction:
+	prediction = clf.predict features
+	puts "Predicted class: ##{prediction}"
+
+	# Get class probabilities:
+	probabilities = clf.predict_proba features
+	for i in 0 ... probabilities.length
+		puts "Probability of class ##{i} : #{probabilities[i]}"
+	end
+	{% endif %}
+end
+{% endblock %}
