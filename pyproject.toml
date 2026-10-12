@@ -81,6 +81,14 @@ ignore = [
 # The examples are executed as notebook cells (see `make examples`):
 "examples/**" = ["E402"]
 
+[tool.ty.src]
+exclude = [
+    # The notebooks are generated from `*.pct.py` files with jupytext:
+    "**/*.ipynb",
+    # The variable `c` is injected by IPython:
+    "examples/.ipython_config.py",
+]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # Skip the long running regression tests by default,

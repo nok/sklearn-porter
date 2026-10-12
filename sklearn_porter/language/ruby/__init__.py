@@ -13,7 +13,7 @@ class Ruby(LanguageABC):
     # ruby estimator.rb <args>
     CMD_EXECUTE = 'ruby {src_path}'
 
-    # yapf: disable
+    # fmt: off
     TEMPLATES = {
         'init':         '{{ name }} = {{ value }}',
 
@@ -37,4 +37,4 @@ class Ruby(LanguageABC):
         'int':          '',
         'double':       ''
     }
-    # yapf: enable
+    # fmt: on

@@ -43,7 +43,7 @@ code must predict exactly the same classes as the original estimator.
 
 ```bash
 uv sync --all-groups   # install all dependencies
-make lint              # ruff check + ruff format --check
+make lint              # ruff check + ruff format --check + ty check
 make format            # fix and format with ruff
 make test              # fast tests on the host (uv run pytest)
 make test-regression   # regression tests in Docker (slow, ~20+ min)
@@ -84,6 +84,8 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 ## Conventions
 
 - Format and lint with ruff (line length 80, single quotes).
+- Type check with ty (`uvx ty check`); use `# ty: ignore[<rule>]` only for
+  attributes which scikit-learn sets dynamically.
 - NumPy style docstrings and type hints.
 - Commit messages and PR titles follow Conventional Commits
   (`feat:`, `fix:`, `docs:`, `ci:`, `build:`, `style:`, `refactor:`,

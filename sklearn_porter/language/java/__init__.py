@@ -16,7 +16,7 @@ class Java(LanguageABC):
     # class_path = '-cp ./gson.jar:./tmp'
     CMD_EXECUTE = 'java {class_path} {dest_path}'
 
-    # yapf: disable
+    # fmt: off
     TEMPLATES = {
         'init':         '{{ type }} {{ name }} = {{ value }};',
 
@@ -32,15 +32,15 @@ class Java(LanguageABC):
 
         # Arrays:
         'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
-        'arr[]':        '{{ type }}[] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',  # pylint: disable=line-too-long
-        'arr[][]':      '{{ type }}[][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',  # pylint: disable=line-too-long
-        'arr[][][]':    '{{ type }}[][][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',  # pylint: disable=line-too-long
+        'arr[]':        '{{ type }}[] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[][]':      '{{ type }}[][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[][][]':    '{{ type }}[][][] {{ name }} = {{ "{" }}{{ values }}{{ "}" }};',
 
         # Primitive data types:
         'int':          'int',
         'double':       'double',
     }
-    # yapf: enable
+    # fmt: on
 
     GSON_DOWNLOAD_URI = (
         'https://repo1.maven.org/maven2/'

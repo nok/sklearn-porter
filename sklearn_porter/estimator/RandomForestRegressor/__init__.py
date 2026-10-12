@@ -7,6 +7,9 @@ from loguru import logger as L
 
 # scikit-learn
 from sklearn.ensemble import (
+    ExtraTreesRegressor as ExtraTreesRegressorClass,
+)
+from sklearn.ensemble import (
     RandomForestRegressor as RandomForestRegressorClass,
 )
 from sklearn.tree import DecisionTreeRegressor as DecisionTreeRegressorClass
@@ -67,16 +70,17 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         },
     }
 
-    estimator = None  # type: RandomForestRegressorClass
-
     # The single trees are generated like the ones of a DecisionTreeRegressor:
     _create_branch = DecisionTreeClassifier._create_branch
     _create_leaf = DecisionTreeRegressor._create_leaf
 
-    def __init__(self, estimator: RandomForestRegressorClass):
+    def __init__(
+        self,
+        estimator: RandomForestRegressorClass | ExtraTreesRegressorClass,
+    ):
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
 
         # Is the estimator fitted?
         try:
@@ -88,14 +92,14 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
 
         # Check type of base estimators:
         if not isinstance(est.estimator_, DecisionTreeRegressorClass):
-            msg = 'The used base estimator `{}` is not supported yet.'
-            msg = msg.format(est.estimator_.__class__.__qualname__)
+            name = est.estimator_.__class__.__qualname__
+            msg = f'The used base estimator `{name}` is not supported yet.'
             raise exception.NotSupportedYetError(msg)
 
         # Extract and save meta information:
         self.meta_info = dict(
             n_estimators=len(est.estimators_),
-            n_features=est.n_features_in_,
+            n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
             n_outputs=est.n_outputs_,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
@@ -163,7 +167,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
-        trees = self.model_data.get('estimators')
+        trees = self.model_data['estimators']
 
         # Make 'exported' variant:
         if template == enum.Template.EXPORTED:
@@ -187,11 +191,11 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
                 tpls,
                 language,
                 converter,
-                tree.get('lefts'),
-                tree.get('rights'),
-                tree.get('thresholds'),
-                tree.get('values'),
-                tree.get('indices'),
+                tree['lefts'],
+                tree['rights'],
+                tree['thresholds'],
+                tree['values'],
+                tree['indices'],
                 0,
                 1,
             )
@@ -226,7 +230,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         -------
         The model data as source code.
         """
-        trees = self.model_data.get('estimators')
+        trees = self.model_data['estimators']
         if language in (enum.Language.C, enum.Language.JAVA):
             tpl_tree = tpls.get_template('attached.tree')
             out_trees = []
@@ -234,26 +238,25 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
                 out_trees.append(
                     tpl_tree.render(
                         index=idx,
-                        lefts=', '.join(map(str, tree.get('lefts'))),
-                        rights=', '.join(map(str, tree.get('rights'))),
+                        lefts=', '.join(map(str, tree['lefts'])),
+                        rights=', '.join(map(str, tree['rights'])),
                         thresholds=', '.join(
-                            map(converter, tree.get('thresholds'))
+                            map(converter, tree['thresholds'])
                         ),
-                        indices=', '.join(map(str, tree.get('indices'))),
+                        indices=', '.join(map(str, tree['indices'])),
                         values=[
-                            ', '.join(map(converter, v))
-                            for v in tree.get('values')
+                            ', '.join(map(converter, v)) for v in tree['values']
                         ],
                     )
                 )
             return '\n'.join(out_trees)
 
         tpl_init = tpls.get_template('init')
-        model_data = dumps(trees, separators=(',', ':'))
+        value = dumps(trees, separators=(',', ':'))
         if language is enum.Language.PHP:
-            model_data = "json_decode('" + model_data + "', true)"
+            value = f"json_decode('{value}', true)"
         elif language is enum.Language.GO:
-            model_data = '`' + model_data + '`'
+            value = f'`{value}`'
         elif language is enum.Language.RUBY:
-            model_data = "JSON.parse('" + model_data + "')"
-        return tpl_init.render(name='model', value=model_data)
+            value = f"JSON.parse('{value}')"
+        return tpl_init.render(name='model', value=value)

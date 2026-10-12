@@ -1,7 +1,8 @@
 from collections.abc import Callable
-from os import environ, getcwd
+from os import environ
 from pathlib import Path
 from time import sleep
+from typing import Any
 
 from jinja2 import DictLoader, Environment
 from loguru import logger as L
@@ -18,25 +19,27 @@ from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 
 class EstimatorBase(EstimatorApiABC):
     SKLEARN_BASE_URL = 'https://scikit-learn.org/stable/modules/generated/'
-    SKLEARN_URL = None  # type: str
+    SKLEARN_URL: str | None = None
 
-    DEFAULT_LANGUAGE = None  # type: enum.Language
-    DEFAULT_METHOD = None  # type: enum.Method
-    DEFAULT_TEMPLATE = None  # type: enum.Template
+    DEFAULT_LANGUAGE: enum.Language
+    DEFAULT_METHOD: enum.Method
+    DEFAULT_TEMPLATE: enum.Template
 
-    SUPPORT = None  # type: Dict[enum.Language, Dict[enum.Template, Set[enum.Method]]]
+    SUPPORT: dict[enum.Language, dict[enum.Template, set[enum.Method]]]
 
-    estimator = None  # type: BaseEstimator
-    estimator_name = None  # type: str
-    estimator_url = None  # type: str
+    estimator: BaseEstimator
+    estimator_name: str
+    estimator_url: str
 
-    model_data = {}  # stores parameters, e.g. weights or coefficients
-    meta_info = {}  # stores meta information, e.g. num of classes or features
-
-    placeholders = {}  # stores rendered templates and single information
+    model_data: dict[str, Any]  # parameters, e.g. weights or coefficients
+    meta_info: dict[str, Any]  # meta information, e.g. num of features
+    placeholders: dict[str, Any]  # rendered templates and single information
 
     def __init__(self, estimator: BaseEstimator):
         self.estimator = estimator
+        self.model_data = {}
+        self.meta_info = {}
+        self.placeholders = {}
 
         # Set name:
         self.estimator_name = estimator.__class__.__qualname__
@@ -136,7 +139,7 @@ class EstimatorBase(EstimatorApiABC):
         """
 
         if not directory:
-            directory = Path(getcwd()).resolve()
+            directory = Path.cwd()
         if isinstance(directory, str):
             directory = Path(directory)
         if not directory.is_dir():
@@ -189,46 +192,39 @@ class EstimatorBase(EstimatorApiABC):
         environment : Environment
             An Jinja environment with all loaded templates.
         """
-        language = (
-            enum.Language[language.upper()].value
-            if isinstance(language, str)
-            else language
-        )
+        if isinstance(language, str):
+            language = enum.Language[language.upper()]
+        lang = language.value
 
-        tpls = {}  # Dict
+        tpls: dict[str, str] = {}
 
         # 1. Load basic language templates (e.g. `if`, `else`, ...):
-        lang_tpls = language.TEMPLATES
-        if isinstance(language.TEMPLATES, dict):
-            tpls.update(lang_tpls)
-        L.debug(
-            'Load template variables: {}'.format(', '.join(lang_tpls.keys()))
-        )
+        tpls.update(lang.TEMPLATES)
+        L.debug(f'Load template variables: {", ".join(lang.TEMPLATES)}')
 
         # 2. Load base language templates (e.g. `base.attached.class`):
         root_dir = Path(__file__).parent.parent
-        tpls_dir = root_dir / 'language' / language.KEY / 'templates'
+        tpls_dir = root_dir / 'language' / lang.KEY / 'templates'
         if tpls_dir.exists():
             tpls_paths = set(tpls_dir.glob('*.jinja2'))
             tpls.update({path.stem: path.read_text() for path in tpls_paths})
 
         # 3. Load specific templates from template files:
-        bases = list(set([base.__name__ for base in self.__class__.__bases__]))
-        if 'EstimatorBase' in bases:
-            bases.remove('EstimatorBase')
-        if 'EstimatorApiABC' in bases:
-            bases.remove('EstimatorApiABC')
+        # The templates of a class overwrite the templates of its bases:
+        ignored = {'EstimatorBase', 'EstimatorApiABC'}
+        bases = [b.__name__ for b in self.__class__.__bases__]
+        bases = [b for b in dict.fromkeys(bases) if b not in ignored]
         bases.append(self.__class__.__name__)
         est_dir = root_dir / 'estimator'
         for base_dir in bases:
-            tpls_dir = est_dir / base_dir / 'templates' / language.KEY
+            tpls_dir = est_dir / base_dir / 'templates' / lang.KEY
             if tpls_dir.exists():
                 tpls_paths = set(tpls_dir.glob('*.jinja2'))
                 tpls.update(
                     {path.stem: path.read_text() for path in tpls_paths}
                 )
 
-        L.debug('Load template files: {}'.format(', '.join(tpls.keys())))
+        L.debug(f'Load template files: {", ".join(tpls)}')
 
         environment = Environment(
             autoescape=False,

@@ -48,8 +48,6 @@ class MLPRegressor(MLPClassifier, EstimatorBase):
         },
     }
 
-    estimator = None  # type: MLPRegressorClass
-
     def __init__(self, estimator: MLPRegressorClass):
 
         try:

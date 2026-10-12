@@ -64,12 +64,10 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
     # The key of the model data with the content of the leaves:
     LEAF_DATA = 'values'
 
-    estimator = None  # type: DecisionTreeRegressorClass
-
     def __init__(self, estimator: DecisionTreeRegressorClass):
         EstimatorBase.__init__(self, estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
 
         # Is the estimator fitted?
         try:
@@ -170,7 +168,7 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
         tpl_in_brackets = tpls.get_template('in_brackets')
 
         for name in ('lefts', 'rights', 'indices'):
-            vals = list(map(str, self.model_data.get(name)))
+            vals = list(map(str, self.model_data[name]))
             plas[name] = tpl_arr_1.render(
                 type=tpl_int,
                 name=name,
@@ -178,7 +176,7 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
                 n=len(vals),
             )
 
-        thresholds_val = list(map(converter, self.model_data.get('thresholds')))
+        thresholds_val = list(map(converter, self.model_data['thresholds']))
         plas['thresholds'] = tpl_arr_1.render(
             type=tpl_double,
             name='thresholds',
@@ -187,7 +185,7 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
         )
 
         values_val = [
-            list(map(converter, e)) for e in self.model_data.get('values')
+            list(map(converter, e)) for e in self.model_data['values']
         ]
         values_str = ', '.join(
             [tpl_in_brackets.render(value=', '.join(e)) for e in values_val]

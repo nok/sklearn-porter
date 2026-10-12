@@ -24,6 +24,7 @@ jobs:
           enable-cache: true
       - run: uv run --locked ruff check .
       - run: uv run --locked ruff format --check .
+      - run: uvx ty check
 
   test:
     name: Test (Python ${{ matrix.python-version }})

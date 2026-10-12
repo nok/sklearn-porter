@@ -13,7 +13,5 @@ class ExtraTreesClassifier(RandomForestClassifier, EstimatorBase):
 
     SKLEARN_URL = 'sklearn.ensemble.ExtraTreesClassifier.html'
 
-    estimator = None  # type: ExtraTreesClassifierClass
-
     def __init__(self, estimator: ExtraTreesClassifierClass):
         super().__init__(estimator)

@@ -1,12 +1,13 @@
 import warnings
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps, encoder
+from json import dumps
 
 from loguru import logger as L
 
 # scikit-learn
 from sklearn.svm import SVC as SVCClass
+from sklearn.svm import NuSVC as NuSVCClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -51,12 +52,10 @@ class SVC(EstimatorBase, EstimatorApiABC):
         },
     }
 
-    estimator = None  # type: SVCClass
-
-    def __init__(self, estimator: SVCClass):
+    def __init__(self, estimator: SVCClass | NuSVCClass):
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
         params = est.get_params()
 
         # Is the estimator fitted?
@@ -70,8 +69,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         # Check kernel type:
         supported_kernels = ['linear', 'rbf', 'poly', 'sigmoid']
         if params['kernel'] not in supported_kernels:
-            msg = 'The passed kernel `{}` is not supported.'
-            msg = msg.format(params['kernel'])
+            msg = f'The passed kernel `{params["kernel"]}` is not supported.'
             raise exception.NotSupportedYetError(msg)
 
         msg = (
@@ -105,10 +103,10 @@ class SVC(EstimatorBase, EstimatorApiABC):
         self.meta_info = dict(
             n_classes=len(est.classes_),
             n_features=len(est.support_vectors_[0]),
-            n_weights=len(self.model_data.get('weights')),
-            n_vectors=len(self.model_data.get('vectors')),
-            n_coeffs=len(self.model_data.get('coeffs')),
-            n_inters=len(self.model_data.get('inters')),
+            n_weights=len(self.model_data['weights']),
+            n_vectors=len(self.model_data['vectors']),
+            n_coeffs=len(self.model_data['coeffs']),
+            n_inters=len(self.model_data['inters']),
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
@@ -161,7 +159,6 @@ class SVC(EstimatorBase, EstimatorApiABC):
         if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
@@ -175,7 +172,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         # Convert weights:
         weights_val = list(
-            map(lambda x: str(int(x)), self.model_data.get('weights'))
+            map(lambda x: str(int(x)), self.model_data['weights'])
         )
         weights_str = tpl_arr_1.render(
             type=tpl_int,
@@ -185,7 +182,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         )
 
         # Convert vectors:
-        vectors_val = self.model_data.get('vectors')
+        vectors_val = self.model_data['vectors']
         vectors_str = tpl_arr_2.render(
             type=tpl_double,
             name='vectors',  # convert 2D lists to a string `{{1, 2, 3}, {...}}`
@@ -202,7 +199,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
         )
 
         # Convert coefficients:
-        coeffs_val = self.model_data.get('coeffs')
+        coeffs_val = self.model_data['coeffs']
         coeffs_str = tpl_arr_2.render(
             type=tpl_double,
             name='coeffs',
@@ -219,16 +216,16 @@ class SVC(EstimatorBase, EstimatorApiABC):
         )
 
         # Convert interceptions:
-        inters_val = self.model_data.get('inters')
+        inters_val = self.model_data['inters']
         inters_str = tpl_arr_1.render(
             type=tpl_double,
             name='inters',
             values=', '.join(list(map(converter, inters_val))),
-            n=len(self.model_data.get('inters')),
+            n=len(self.model_data['inters']),
         )
 
         # Convert kernel:
-        kernel_val = self.model_data.get('kernel')
+        kernel_val = self.model_data['kernel']
         kernel_str = (
             str(kernel_val)[0]
             if language == enum.Language.C
@@ -236,15 +233,15 @@ class SVC(EstimatorBase, EstimatorApiABC):
         )
 
         # Convert gamma:
-        gamma_val = self.model_data.get('gamma')
+        gamma_val = self.model_data['gamma']
         gamma_str = converter(gamma_val)
 
         # Convert coefficient:
-        coef0_val = self.model_data.get('coef0')
+        coef0_val = self.model_data['coef0']
         coef0_str = converter(coef0_val)
 
         # Convert degree:
-        degree_val = self.model_data.get('degree')
+        degree_val = self.model_data['degree']
         degree_str = converter(degree_val)
 
         plas.update(

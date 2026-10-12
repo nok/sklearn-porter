@@ -11,7 +11,6 @@ from sklearn_porter.language import LANGUAGES
 
 
 def config(sub_parser):
-
     header = (
         'The subcommand `port` transpiles a trained '
         'estimator to a specific programming language.'
@@ -65,15 +64,15 @@ def main(args: dict, silent: bool = False):
     if args.get('debug'):
         options['logging.level'] = DEBUG
 
-    path = Path(args.get('model'))
+    path = Path(args['model'])
     mdl = load_model(path, args.get('skip_warnings', False))
     est = Estimator(mdl)
 
-    if args.get('language'):
-        est.language = args.get('language')
+    if language := args.get('language'):
+        est.language = language
 
-    if args.get('template'):
-        est.template = args.get('template')
+    if template := args.get('template'):
+        est.template = template
 
     out = est.port()
 

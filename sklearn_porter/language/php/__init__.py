@@ -13,7 +13,7 @@ class PHP(LanguageABC):
     # php -f Estimator.php -- <args>
     CMD_EXECUTE = 'php -f {src_path} --'
 
-    # yapf: disable
+    # fmt: off
     TEMPLATES = {
         'init':         '${{ name }} = {{ value }};',
         # if/else condition:
@@ -36,4 +36,4 @@ class PHP(LanguageABC):
         'int':          '',
         'double':       ''
     }
-    # yapf: enable
+    # fmt: on

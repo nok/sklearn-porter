@@ -408,6 +408,25 @@ def test_make_the_inputs_outputs(
         assert list(y_proba[0]) == [1, 0, 0]
 
 
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
+def test_port_all_combinations(
+    candidate: Candidate, language: str, template: str
+):
+    """Port every supported combination without compiling the output."""
+    if not can(candidate.clazz(), language, template):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+    x, y = load_iris(return_X_y=True)
+    orig_est = candidate.create()
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', ConvergenceWarning)
+        orig_est.fit(X=x, y=y)
+    out = Estimator(orig_est, language=language, template=template).port()
+    outputs = out if isinstance(out, tuple) else (out,)
+    assert all(isinstance(o, str) and o for o in outputs)
+
+
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])

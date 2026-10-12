@@ -53,7 +53,7 @@ def drop_neighbor_ties(est, x: np.ndarray) -> np.ndarray:
     and scikit-learn can differ for them.
     """
     k = est.n_neighbors
-    n_samples = len(est._fit_X)  # pylint: disable=W0212
+    n_samples = len(est._fit_X)
     if k >= n_samples:
         return x
     dists, _ = est.kneighbors(x, n_neighbors=k + 1)

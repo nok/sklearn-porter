@@ -13,7 +13,5 @@ class ExtraTreesRegressor(RandomForestRegressor, EstimatorBase):
 
     SKLEARN_URL = 'sklearn.ensemble.ExtraTreesRegressor.html'
 
-    estimator = None  # type: ExtraTreesRegressorClass
-
     def __init__(self, estimator: ExtraTreesRegressorClass):
         super().__init__(estimator)

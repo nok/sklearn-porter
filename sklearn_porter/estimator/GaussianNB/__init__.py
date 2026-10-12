@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps, encoder
+from json import dumps
 
 from loguru import logger as L
 
@@ -50,12 +50,10 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         },
     }
 
-    estimator = None  # type: GaussianNBClass
-
     def __init__(self, estimator: GaussianNBClass):
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
 
         # Is the estimator fitted?
         try:
@@ -67,7 +65,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
 
         self.meta_info = dict(
             n_features=len(est.var_[0]),
-            n_classes=len(est.classes_),
+            n_classes=len(est.classes_),  # ty: ignore[invalid-argument-type]
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
@@ -128,7 +126,6 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
@@ -139,7 +136,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         tpl_arr_2 = tpls.get_template('arr[][]')
         tpl_in_brackets = tpls.get_template('in_brackets')
 
-        priors_val = self.model_data.get('priors')
+        priors_val = self.model_data['priors']
         priors_val_converted = list(map(converter, priors_val))
         priors_str = tpl_arr_1.render(
             type=tpl_double,
@@ -148,7 +145,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
             n=len(priors_val_converted),
         )
 
-        sigmas_val = self.model_data.get('sigmas')
+        sigmas_val = self.model_data['sigmas']
         sigmas_str = tpl_arr_2.render(
             type=tpl_double,
             name='sigmas',
@@ -164,7 +161,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
             m=len(sigmas_val[0]),
         )
 
-        thetas_val = self.model_data.get('thetas')
+        thetas_val = self.model_data['thetas']
         thetas_str = tpl_arr_2.render(
             type=tpl_double,
             name='thetas',
