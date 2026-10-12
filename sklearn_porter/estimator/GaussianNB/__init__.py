@@ -36,6 +36,10 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
+        enum.Language.PHP: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
     }
 
     estimator = None  # type: GaussianNBClass
