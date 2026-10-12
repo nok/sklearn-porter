@@ -41,6 +41,10 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
+        enum.Language.RUBY: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
     }
 
     estimator = None  # type: MLPClassifierClass
