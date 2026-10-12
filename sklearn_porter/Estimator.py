@@ -33,7 +33,10 @@ from sklearn.linear_model import (
     Lasso,
     LinearRegression,
     LogisticRegression,
+    Perceptron,
     Ridge,
+    RidgeClassifier,
+    SGDClassifier,
 )
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
@@ -718,7 +721,10 @@ class Estimator:
             LogisticRegression,
             MLPClassifier,
             NuSVC,
+            Perceptron,
             RandomForestClassifier,
+            RidgeClassifier,
+            SGDClassifier,
             SVC,
         )
 

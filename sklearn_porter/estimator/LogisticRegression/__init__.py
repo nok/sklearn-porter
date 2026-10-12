@@ -7,6 +7,9 @@ from loguru import logger as L
 
 # scikit-learn
 from sklearn.linear_model import LogisticRegression as LogisticRegressionClass
+from sklearn.linear_model import Perceptron as PerceptronClass
+from sklearn.linear_model import RidgeClassifier as RidgeClassifierClass
+from sklearn.linear_model import SGDClassifier as SGDClassifierClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -57,7 +60,13 @@ class LogisticRegression(EstimatorBase, EstimatorApiABC):
         },
     }
 
-    def __init__(self, estimator: LogisticRegressionClass):
+    def __init__(
+        self,
+        estimator: LogisticRegressionClass
+        | SGDClassifierClass
+        | RidgeClassifierClass
+        | PerceptronClass,
+    ):
         super().__init__(estimator)
         L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
@@ -73,12 +82,14 @@ class LogisticRegression(EstimatorBase, EstimatorApiABC):
         # Binary classifiers have one row of coefficients, multiclass
         # classifiers one row per class. Some linear classifiers store a
         # single row as vector and the intercept as scalar:
-        coeffs = np.atleast_2d(est.coef_)
-        inters = np.broadcast_to(est.intercept_, (len(coeffs),))
+        coeffs = np.atleast_2d(est.coef_)  # ty: ignore[no-matching-overload]
+        inters = np.broadcast_to(  # ty: ignore[no-matching-overload]
+            est.intercept_, (len(coeffs),)
+        )
 
         self.meta_info = dict(
             n_features=coeffs.shape[1],
-            n_classes=len(est.classes_),
+            n_classes=len(est.classes_),  # ty: ignore[unresolved-attribute]
             n_decisions=len(coeffs),
             is_binary=len(coeffs) == 1,
         )
