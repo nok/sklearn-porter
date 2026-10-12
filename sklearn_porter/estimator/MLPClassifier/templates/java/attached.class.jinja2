@@ -118,7 +118,7 @@ class {{ class_name }} {
     public double[] predictProba(double[] neurons) {
         double[] lastLayer = this.feedForward(neurons);
         if (lastLayer.length == 1) {
-            return new double[] {lastLayer[0], 1 - lastLayer[0]};
+            return new double[] {1 - lastLayer[0], lastLayer[0]};
         }
         return lastLayer;
     }

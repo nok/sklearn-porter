@@ -37,7 +37,7 @@ class {{ class_name }} {
         for (int i = 0 , il = nums.length; i < il; i++) {
             sum += Math.exp(nums[i] - max);
         }
-        return max - Math.log(sum);
+        return max + Math.log(sum);
     }
 
     private double[] compute(double[] features) {

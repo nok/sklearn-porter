@@ -92,7 +92,7 @@ var {{ class_name }} = function(jsonFile) {
     this.predictProba = function(neurons) {
         var lastLayer = this.feedForward(neurons);
         if (lastLayer.length === 1) {
-            return [lastLayer[0], 1 - lastLayer[0]];
+            return [1 - lastLayer[0], lastLayer[0]];
         } else {
             return lastLayer;
         }

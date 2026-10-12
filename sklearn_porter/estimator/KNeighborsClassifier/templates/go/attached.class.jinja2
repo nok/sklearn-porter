@@ -93,7 +93,7 @@ func (knn {{ class_name }}) PredictProba(features []float64) []float64 {
 			d := Distance{knn.Y[i], dist}
 			dists = append(dists, d)
 		}
-		sort.Slice(dists, func(i, j int) bool {
+		sort.SliceStable(dists, func(i, j int) bool {
 			return dists[i].value < dists[j].value
 		})
 		for i := 0; i < knn.K; i++ {
