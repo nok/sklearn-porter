@@ -15,6 +15,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.utils import get_thresholds
 
 
 class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
@@ -72,7 +73,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
                 dict(
                     lefts=e.tree_.children_left.tolist(),
                     rights=e.tree_.children_right.tolist(),
-                    thresholds=e.tree_.threshold.tolist(),
+                    thresholds=get_thresholds(e.tree_),
                     classes=[c[0] for c in e.tree_.value.tolist()],
                     indices=e.tree_.feature.tolist(),
                     weight=float(weight),

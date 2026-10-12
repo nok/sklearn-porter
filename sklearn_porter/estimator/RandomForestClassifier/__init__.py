@@ -17,7 +17,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_class_counts
+from sklearn_porter.utils import get_class_counts, get_thresholds
 
 
 class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
@@ -88,7 +88,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                 dict(
                     lefts=e.tree_.children_left.tolist(),
                     rights=e.tree_.children_right.tolist(),
-                    thresholds=e.tree_.threshold.tolist(),
+                    thresholds=get_thresholds(e.tree_),
                     classes=get_class_counts(e.tree_),
                     indices=e.tree_.feature.tolist(),
                 )
