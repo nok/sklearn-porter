@@ -646,7 +646,11 @@ class Estimator:
         **kwargs,
     ) -> float:
         """
-        Compute the accuracy of the ported classifier.
+        Compute the integrity score of the ported estimator.
+
+        The score is the share of predictions of the ported estimator which
+        are equal (classifiers) or close (regressors) to the predictions of
+        the original estimator.
 
         Parameters
         ----------
@@ -663,9 +667,9 @@ class Estimator:
 
         Returns
         -------
-        score : Tuple[float, int]
-            Return the relative and absolute number of correct
-            classified samples.
+        score : float
+            Return the relative (or with `normalize=False` the absolute)
+            number of equal predictions.
         """
         self._check_kwargs(kwargs)
         y_true = self._estimator.estimator.predict(x)
@@ -678,6 +682,13 @@ class Estimator:
             delete_created_files=delete_created_files,
         )
         y_pred = y_pred[0]  # only predicts
+        if isinstance(self._estimator.estimator, RegressorMixin):
+            # Small deviations because of the floating point arithmetic:
+            is_close = np.isclose(y_true, y_pred)
+            if is_close.ndim > 1:  # multiple outputs
+                is_close = is_close.all(axis=1)
+            score = is_close.mean() if normalize else is_close.sum()
+            return float(score)
         return float(accuracy_score(y_true, y_pred, normalize=normalize))
 
     @staticmethod

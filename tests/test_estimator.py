@@ -15,6 +15,7 @@ from sklearn.ensemble import (
     ExtraTreesClassifier,
     RandomForestClassifier,
 )
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import SGDClassifier
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
@@ -31,7 +32,15 @@ from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.cli.command.show import main as show_main
 from sklearn_porter.Estimator import Estimator, can, show
-from tests.commons import CANDIDATES, CLASSIFIERS, DATASETS, Candidate, Dataset
+from tests.commons import (
+    CANDIDATES,
+    CLASSIFIERS,
+    DATASETS,
+    REGRESSION_DATASETS,
+    REGRESSORS,
+    Candidate,
+    Dataset,
+)
 from tests.utils import (
     dataset_generate_x,
     dataset_uniform_x,
@@ -424,6 +433,64 @@ def test_regressions_of_classifiers(
             np.testing.assert_allclose(
                 y_proba, orig_est.predict_proba(test_x), rtol=0, atol=1e-5
             )
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('dataset', REGRESSION_DATASETS, ids=lambda x: x.name)
+@pytest.mark.parametrize('candidate', REGRESSORS, ids=lambda x: x.name)
+def test_regressions_of_regressors(
+    tmp_root_dir: Path,
+    candidate: Candidate,
+    dataset: Dataset,
+    template: str,
+    language: str,
+):
+    if not can(candidate.clazz(), language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+
+    # Estimator:
+    orig_est = candidate.create()
+    x, y = dataset.data, dataset.target
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', ConvergenceWarning)
+        orig_est.fit(X=x, y=y)
+    est = Estimator(orig_est)
+
+    # Samples:
+    test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
+
+    # Directory:
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'regressions_of_regressors'),
+            ('estimator', candidate.name),
+            ('dataset', dataset.name),
+            ('language', language),
+            ('template', template),
+        ],
+    )
+
+    y_pred, _ = est.make(
+        test_x,
+        language=language,
+        template=template,
+        directory=tmp_dir,
+        delete_created_files=False,
+    )
+    np.testing.assert_allclose(
+        y_pred.astype(float), orig_est.predict(test_x), rtol=1e-6, atol=1e-8
+    )
+    score = est.test(
+        test_x,
+        language=language,
+        template=template,
+        directory=tmp_dir,
+        delete_created_files=False,
+    )
+    assert score == 1.0
 
 
 @pytest.mark.parametrize('subcommand', ['show', 'port', 'save'])

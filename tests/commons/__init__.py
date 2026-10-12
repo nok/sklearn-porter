@@ -2,7 +2,13 @@ from collections import namedtuple
 from os import environ
 from pathlib import Path
 
-from sklearn.datasets import load_breast_cancer, load_digits, load_iris
+from sklearn.datasets import (
+    load_breast_cancer,
+    load_diabetes,
+    load_digits,
+    load_iris,
+    load_linnerud,
+)
 from sklearn.ensemble import (
     AdaBoostClassifier,
     ExtraTreesClassifier,
@@ -72,7 +78,23 @@ def get_datasets() -> list[Dataset]:
     )
 
 
+def get_regression_datasets() -> list[Dataset]:
+    """Get a list of available toy datasets for regressions."""
+
+    diabetes_ds = load_diabetes()
+    yield Dataset(
+        name='diabetes', data=diabetes_ds.data, target=diabetes_ds.target
+    )
+
+    # Multiple outputs:
+    linnerud_ds = load_linnerud()
+    yield Dataset(
+        name='linnerud', data=linnerud_ds.data, target=linnerud_ds.target
+    )
+
+
 CLASSIFIERS = list(get_classifiers())
 REGRESSORS = list(get_regressors())
 CANDIDATES = CLASSIFIERS + REGRESSORS
 DATASETS = list(get_datasets())
+REGRESSION_DATASETS = list(get_regression_datasets())
