@@ -1,0 +1,101 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	class Tree
+
+		def initialize(lefts, rights, thresholds, indices, classes)
+			@lefts = lefts
+			@rights = rights
+			@thresholds = thresholds
+			@indices = indices
+			@classes = classes
+		end
+
+		def _norm_vals(nums)
+			sum = nums.sum.to_f
+			if sum == 0
+				return Array.new(nums.length, 1.0 / nums.length)
+			end
+			nums.map { |num| num / sum }
+		end
+
+		def compute(features)
+			node = 0
+			while @thresholds[node] != -2
+				if features[@indices[node]] <= @thresholds[node]
+					node = @lefts[node]
+				else
+					node = @rights[node]
+				end
+			end
+			_norm_vals(@classes[node])
+		end
+
+	end
+
+	def initialize(model)
+		@forest = model.map do |tree|
+			Tree.new(tree['lefts'], tree['rights'], tree['thresholds'], tree['indices'], tree['classes'])
+		end
+	end
+
+	def _find_max(nums)
+		idx = 0
+		for i in 0 ... nums.length
+			idx = nums[i] > nums[idx] ? i : idx
+		end
+		idx
+	end
+
+	def predict_proba(features)
+		probas = nil
+		@forest.each do |tree|
+			temp = tree.compute(features)
+			probas = probas.nil? ? temp : probas.zip(temp).map { |a, b| a + b }
+		end
+		probas.map { |proba| proba / @forest.length }
+	end
+
+	def predict(features)
+		_find_max(predict_proba(features))
+	end
+
+end
+
+if __FILE__ == $0
+	if ARGV.length != {{ n_features }}
+		raise "You have to pass {{ n_features }} features."
+	end
+
+	# Features:
+	features = ARGV.collect(&:to_f)
+
+	# Model data:
+	{{ model }}
+
+	# Estimator:
+	clf = {{ class_name }}.new model
+
+	{% if is_test or to_json %}
+	# Get JSON:
+	prediction = clf.predict features
+	probabilities = clf.predict_proba features
+	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+	{% else %}
+	# Get class prediction:
+	prediction = clf.predict features
+	puts "Predicted class: ##{prediction}"
+
+	# Get class probabilities:
+	probabilities = clf.predict_proba features
+	for i in 0 ... probabilities.length
+		puts "Probability of class ##{i} : #{probabilities[i]}"
+	end
+	{% endif %}
+end
+{% endblock %}

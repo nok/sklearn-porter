@@ -1,0 +1,62 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+    def _norm_vals(nums)
+        sum = nums.sum.to_f
+        if sum == 0
+            return Array.new(nums.length, 1.0 / nums.length)
+        end
+        nums.map { |num| num / sum }
+    end
+
+    def _find_max(nums)
+        idx = 0
+        for i in 0 ... nums.length
+            idx = nums[i] > nums[idx] ? i : idx
+        end
+        idx
+    end
+
+    {{ method | indent(4) }}
+
+    def predict(features)
+        _find_max(predict_proba(features))
+    end
+
+end
+
+if __FILE__ == $0
+    if ARGV.length != {{ n_features }}
+        raise "You have to pass {{ n_features }} features."
+    end
+
+    # Features:
+    features = ARGV.collect(&:to_f)
+
+    # Estimator:
+    clf = {{ class_name }}.new
+
+    {% if is_test or to_json %}
+    # Get JSON:
+    prediction = clf.predict features
+    probabilities = clf.predict_proba features
+    puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+    {% else %}
+    # Get class prediction:
+    prediction = clf.predict features
+    puts "Predicted class: ##{prediction}"
+
+    # Get class probabilities:
+    probabilities = clf.predict_proba features
+    for i in 0 ... probabilities.length
+        puts "Probability of class ##{i} : #{probabilities[i]}"
+    end
+    {% endif %}
+end
+{% endblock %}
