@@ -18,7 +18,7 @@ from sklearn.ensemble import (
     RandomForestRegressor,
 )
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import LogisticRegression, SGDClassifier
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.naive_bayes import BernoulliNB, GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -195,6 +195,7 @@ def test_list_of_classifiers():
         GaussianNB,
         KNeighborsClassifier,
         LinearSVC,
+        LogisticRegression,
         NuSVC,
         RandomForestClassifier,
         SVC,
