@@ -1,12 +1,13 @@
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps, encoder
+from json import dumps
 
 import numpy as np
 from loguru import logger as L
 
 # scikit-learn
 from sklearn.neural_network import MLPClassifier as MLPClassifierClass
+from sklearn.neural_network import MLPRegressor as MLPRegressorClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -51,12 +52,10 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         },
     }
 
-    estimator = None  # type: MLPClassifierClass
-
-    def __init__(self, estimator: MLPClassifierClass):
+    def __init__(self, estimator: MLPClassifierClass | MLPRegressorClass):
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
 
         # Check output function:
         try:
@@ -141,7 +140,6 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
@@ -155,7 +153,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         tpl_in_brackets = tpls.get_template('in_brackets')
 
         # Convert layers:
-        layers_val = self.model_data.get('layers')
+        layers_val = self.model_data['layers']
         layers_str = tpl_arr_1.render(
             type=tpl_int,
             name='layers',
@@ -163,8 +161,8 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             n=len(layers_val),
         )
 
-        weights_val = self.model_data.get('weights')
-        bias_val = self.model_data.get('bias')
+        weights_val = self.model_data['weights']
+        bias_val = self.model_data['bias']
 
         # C doesn't support jagged arrays, so flatten the weights and bias:
         if language is enum.Language.C:
@@ -190,7 +188,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
                     weights=weights_str,
                     bias=bias_str,
                     n_layers=len(layers_val),
-                    hidden_activation=self.model_data.get('hidden_activation'),
+                    hidden_activation=self.model_data['hidden_activation'],
                     output_activation=self.model_data.get('output_activation'),
                 )
             )
@@ -239,7 +237,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
                 layers=layers_str,
                 weights=weights_str,
                 bias=bias_str,
-                hidden_activation=self.model_data.get('hidden_activation'),
+                hidden_activation=self.model_data['hidden_activation'],
                 output_activation=self.model_data.get('output_activation'),
             )
         )

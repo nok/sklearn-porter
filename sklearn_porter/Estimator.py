@@ -1,5 +1,4 @@
 import urllib.request
-from collections import OrderedDict
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from functools import partial
@@ -7,10 +6,10 @@ from importlib import import_module
 from json import JSONDecodeError, loads
 from os import cpu_count, environ, remove
 from pathlib import Path
-from shutil import which
+from shutil import rmtree, which
 from subprocess import STDOUT, CalledProcessError, check_output, run
 from sys import platform, stdout, version_info
-from tempfile import mktemp
+from tempfile import mkdtemp
 from textwrap import dedent
 from time import sleep
 
@@ -79,8 +78,7 @@ class Estimator:
             data. By default a simple string cast `str(value)` will be used.
         """
         L.remove()  # remove basic logger
-        logging_level = options.get('logging.level')
-        L.add(stdout, level=logging_level)
+        L.add(stdout, level=options['logging.level'])
 
         self.python_version = '.'.join(map(str, version_info[:3]))
         self.porter_version = str(meta.__version__)
@@ -92,14 +90,11 @@ class Estimator:
 
         self.estimator = estimator  # see @estimator.setter
 
-        def either_or(a, b):
-            return a if a else b
-
         # Set defaults:
-        self.language = either_or(language, self._estimator.DEFAULT_LANGUAGE)
-        self.template = either_or(template, self._estimator.DEFAULT_TEMPLATE)
-        self.class_name = either_or(class_name, self._estimator.estimator_name)
-        self.converter = either_or(converter, lambda x: str(x))
+        self.language = language or self._estimator.DEFAULT_LANGUAGE
+        self.template = template or self._estimator.DEFAULT_TEMPLATE
+        self.class_name = class_name or self._estimator.estimator_name
+        self.converter = converter or str
 
     @property
     def estimator(self):
@@ -122,10 +117,9 @@ class Estimator:
         else:
             name = self._estimator.estimator_name
             msg = (
-                'The passed language `{}` is not '
-                'supported for the estimator `{}`.'
+                f'The passed language `{language.value.KEY}` is not '
+                f'supported for the estimator `{name}`.'
             )
-            msg = msg.format(language.value.KEY, name)
             raise exception.NotSupportedYetError(msg)
 
     @property
@@ -141,11 +135,10 @@ class Estimator:
             name = self._estimator.estimator_name
             language = enum.Language.convert(self.language)
             msg = (
-                'The passed template `{}` is not '
-                'supported for the estimator `{}` '
-                'and language `{}`.'
+                f'The passed template `{template.value}` is not '
+                f'supported for the estimator `{name}` '
+                f'and language `{language.value.KEY}`.'
             )
-            msg = msg.format(template.value, name, language.value.KEY)
             raise exception.NotSupportedYetError(msg)
 
     @property
@@ -170,24 +163,22 @@ class Estimator:
 
         Parameters
         ----------
-        kwargs : Dict
+        kwargs : dict
             The additional passed arguments.
 
         Returns
         -------
         The original passed arguments.
         """
-        keys = kwargs.keys()
-        if 'language' in keys:
-            self.language = kwargs.get('language')
-        if 'template' in keys:
-            self.template = kwargs.get('template')
-        if 'class_name' in keys:
-            class_name = kwargs.get('class_name')
-            if isinstance(class_name, str) and len(class_name) > 0:
-                self.class_name = class_name
-        if 'converter' in keys:
-            self.converter = kwargs.get('converter')
+        if 'language' in kwargs:
+            self.language = kwargs['language']
+        if 'template' in kwargs:
+            self.template = kwargs['template']
+        class_name = kwargs.get('class_name')
+        if isinstance(class_name, str) and len(class_name) > 0:
+            self.class_name = class_name
+        if 'converter' in kwargs:
+            self.converter = kwargs['converter']
         return kwargs
 
     @staticmethod
@@ -311,7 +302,7 @@ class Estimator:
 
         Parameters
         ----------
-        estimator : Union[ClassifierMixin, RegressorMixin]
+        estimator : ClassifierMixin or RegressorMixin
             Set a fitted base estimator of scikit-learn.
 
         Returns
@@ -344,7 +335,7 @@ class Estimator:
         )
 
     @decorator.alias('export')
-    def port(self, to_json: bool = False, **kwargs) -> str | tuple[str]:
+    def port(self, to_json: bool = False, **kwargs) -> str | tuple[str, str]:
         """
         Port or transpile a passed estimator to a target programming language.
 
@@ -378,10 +369,11 @@ class Estimator:
 
         Parameters
         ----------
-        directory : Optional[Union[str, Path]] (default: current working dir)
+        directory : str or Path, optional (default: current working dir)
             Set the directory where all generated files should be saved.
         to_json : bool (default: False)
             Return the result as JSON string.
+
         Returns
         -------
         The path(s) to the generated file(s).
@@ -416,11 +408,11 @@ class Estimator:
 
         Parameters
         ----------
-        x : Union[List, np.ndarray] of shape (n_samples, n_features) or (n_features)
+        x : list or np.ndarray of shape (n_samples, n_features) or (n_features)
             Input data.
-        n_jobs : Union[bool, int] (default: True, which uses `os.cpu_count()`)
+        n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
             The number of threads to make the predictions.
-        directory : Optional[Union[str, Path]] (default: current working dir)
+        directory : str or Path, optional (default: a temporary directory)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)
             Whether to delete the generated files finally or not.
@@ -438,8 +430,9 @@ class Estimator:
         if check_dependencies:
             self._check_dependencies(self._language)
 
+        temp_dir = None
         if not directory:
-            directory = mktemp()
+            directory = temp_dir = mkdtemp(prefix='sklearn-porter-')
         created_files = []  # for final deletion
 
         # Transpile model:
@@ -483,11 +476,11 @@ class Estimator:
         ):
             cmd_args['src_path'] = str(src_path)
 
-        paths_to_check = []
-        if 'src_path' in cmd_args.keys():
-            paths_to_check.append(cmd_args.get('src_path'))
-        if 'dest_path' in cmd_args.keys():
-            paths_to_check.append(cmd_args.get('dest_path'))
+        paths_to_check = [
+            cmd_args[key]
+            for key in ('src_path', 'dest_path')
+            if key in cmd_args
+        ]
         for path_to_check in paths_to_check:
             for _ in range(10):
                 try:
@@ -522,7 +515,7 @@ class Estimator:
             y = list(map(calls, x))
         else:
             if isinstance(n_jobs, bool) or not isinstance(n_jobs, int):
-                n_jobs = cpu_count()
+                n_jobs = cpu_count() or 1
             # Threads are sufficient, because they only wait for the
             # subprocesses which execute the ported estimator:
             with ThreadPoolExecutor(n_jobs) as executor:
@@ -535,6 +528,8 @@ class Estimator:
             for path in created_files:
                 if path and path.exists():
                     remove(str(path))
+            if temp_dir:
+                rmtree(temp_dir, ignore_errors=True)
 
         if len(y) == 1:  # predict
             if len(y[0]) == 1:
@@ -568,9 +563,9 @@ class Estimator:
         ----------
         src_path : Path
             The absolute path to the source files.
-        class_paths : List
+        class_paths : list
             A list of necessary class paths.
-        created_files : List
+        created_files : list
             A linked list to save the paths of created files.
         language : Language
             The requested programming language.
@@ -591,7 +586,7 @@ class Estimator:
 
         elif language is enum.Language.JAVA:
             cmd_args['src_path'] = str(src_path)
-            cmd_args['dest_dir'] = f'-d {str(src_path.parent)}'
+            cmd_args['dest_dir'] = f'-d {src_path.parent}'
             class_paths.append(str(src_path.parent))
             created_files.append(src_path.parent / (src_path.stem + '.class'))
 
@@ -619,17 +614,19 @@ class Estimator:
         cmd = cmd.format(**cmd_args)
         L.info(f'Compilation command: `{cmd}`')
 
-        subp_args = dict(
-            shell=True,
-            universal_newlines=True,
-            stderr=STDOUT,
-            executable='/bin/bash',
-        )
         try:
-            check_output(cmd, **subp_args)
+            check_output(
+                cmd,
+                shell=True,
+                text=True,
+                stderr=STDOUT,
+                executable='/bin/bash',
+            )
         except CalledProcessError as e:
-            msg = 'Command "{}" return with error (code {}):\n\n{}'
-            msg = msg.format(e.cmd, e.returncode, e.output)
+            msg = (
+                f'Command "{e.cmd}" return with error '
+                f'(code {e.returncode}):\n\n{e.output}'
+            )
             if language is enum.Language.JAVA:
                 if 'code too large' in e.output:
                     raise exception.CodeTooLarge(msg) from None
@@ -658,9 +655,9 @@ class Estimator:
         ----------
         x : numpy.ndarray, shape (n_samples, n_features)
             Input data.
-        n_jobs : Union[bool, int] (default: True, which uses `os.cpu_count()`)
+        n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
             The number of threads to make the predictions.
-        directory : Optional[Union[str, Path]] (default: current working dir)
+        directory : str or Path, optional (default: a temporary directory)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)
             Whether to delete the generated files finally or not.
@@ -700,7 +697,7 @@ class Estimator:
 
         Returns
         -------
-        estimators : Tuple
+        estimators : tuple
             A set of supported classifiers.
         """
         return (
@@ -724,7 +721,7 @@ class Estimator:
 
         Returns
         -------
-        estimators : Tuple
+        estimators : tuple
             A set of supported regressors.
         """
         return (
@@ -834,7 +831,7 @@ def show(language: str | enum.Language | None = None):
     headers = ['Estimator'] + [lang.LABEL for lang in languages.values()]
     clazzes = Estimator.classifiers() + Estimator.regressors()
     clazzes = {_get_qualname(c()): c() for c in clazzes}
-    clazzes = OrderedDict(sorted(clazzes.items()))
+    clazzes = dict(sorted(clazzes.items()))
     table = []
     templates = dict(attached='ᴀ', combined='ᴄ', exported='ᴇ')
     for name, est in clazzes.items():
@@ -935,7 +932,7 @@ def port(
     class_name: str | None = None,
     converter: Callable[[object], str] | None = None,
     to_json: bool = False,
-) -> str | tuple[str]:
+) -> str | tuple[str, str]:
     return Estimator(
         estimator,
         language=language,

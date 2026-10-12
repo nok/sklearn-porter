@@ -1,7 +1,9 @@
-from collections import namedtuple
+from collections.abc import Callable, Iterator
 from os import environ
 from pathlib import Path
+from typing import NamedTuple
 
+import numpy as np
 from sklearn.datasets import (
     load_breast_cancer,
     load_diabetes,
@@ -24,23 +26,32 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
 
-PORTER_N_UNI_REGRESSION_TESTS = environ.get(
-    'SKLEARN_PORTER_PYTEST_N_UNI_REGRESSION_TESTS', 15
+PORTER_N_UNI_REGRESSION_TESTS = int(
+    environ.get('SKLEARN_PORTER_PYTEST_N_UNI_REGRESSION_TESTS', 15)
 )
-PORTER_N_GEN_REGRESSION_TESTS = environ.get(
-    'SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 15
+PORTER_N_GEN_REGRESSION_TESTS = int(
+    environ.get('SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 15)
 )
 
 ROOT_DIR = (Path(__file__).parent / '..' / '..').resolve()
 TESTS_DIR = ROOT_DIR / 'tests'
 RESOURCES_DIR = ROOT_DIR / 'resources'
 
-Candidate = namedtuple('Candidate', 'name clazz create')
-Dataset = namedtuple('Dataset', 'name data target')
+
+class Candidate(NamedTuple):
+    name: str
+    clazz: type
+    create: Callable
 
 
-def get_classifiers() -> list[Candidate]:
-    """Get a list of available classifiers."""
+class Dataset(NamedTuple):
+    name: str
+    data: np.ndarray
+    target: np.ndarray
+
+
+def get_classifiers() -> Iterator[Candidate]:
+    """Get the available classifiers."""
     _classifiers = [
         DecisionTreeClassifier,
         AdaBoostClassifier,
@@ -58,8 +69,8 @@ def get_classifiers() -> list[Candidate]:
         yield Candidate(name=e.__name__, clazz=e, create=e)
 
 
-def get_regressors() -> list[Candidate]:
-    """Get a list of available regressors."""
+def get_regressors() -> Iterator[Candidate]:
+    """Get the available regressors."""
     _regressors = [
         DecisionTreeRegressor,
         RandomForestRegressor,
@@ -70,8 +81,8 @@ def get_regressors() -> list[Candidate]:
         yield Candidate(name=e.__name__, clazz=e, create=e)
 
 
-def get_datasets() -> list[Dataset]:
-    """Get a list of available toy datasets."""
+def get_datasets() -> Iterator[Dataset]:
+    """Get the available toy datasets."""
 
     digits_ds = load_digits()
     yield Dataset(name='digits', data=digits_ds.data, target=digits_ds.target)
@@ -85,8 +96,8 @@ def get_datasets() -> list[Dataset]:
     )
 
 
-def get_regression_datasets() -> list[Dataset]:
-    """Get a list of available toy datasets for regressions."""
+def get_regression_datasets() -> Iterator[Dataset]:
+    """Get the available toy datasets for regressions."""
 
     diabetes_ds = load_diabetes()
     yield Dataset(

@@ -11,7 +11,5 @@ class NuSVC(SVC, EstimatorBase):
 
     SKLEARN_URL = 'sklearn.svm.NuSVC.html'
 
-    estimator = None  # type: NuSVCClass
-
     def __init__(self, estimator: NuSVCClass):
         super().__init__(estimator)

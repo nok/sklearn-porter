@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps, encoder
+from json import dumps
 
 from loguru import logger as L
 
@@ -50,12 +50,10 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         },
     }
 
-    estimator = None  # type: BernoulliNBClass
-
     def __init__(self, estimator: BernoulliNBClass):
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
 
         # Is the estimator fitted?
         try:
@@ -127,7 +125,6 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
@@ -138,7 +135,7 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         tpl_arr_2 = tpls.get_template('arr[][]')
         tpl_in_brackets = tpls.get_template('in_brackets')
 
-        priors_val = self.model_data.get('priors')
+        priors_val = self.model_data['priors']
         priors_val_converted = list(map(converter, priors_val))
         priors_str = tpl_arr_1.render(
             type=tpl_double,
@@ -147,7 +144,7 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             n=len(priors_val),
         )
 
-        probs_val = self.model_data.get('probs')
+        probs_val = self.model_data['probs']
         probs_str = tpl_arr_2.render(
             type=tpl_double,
             name='probs',

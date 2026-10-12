@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps, encoder
+from json import dumps
 
 from loguru import logger as L
 
@@ -50,12 +50,10 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         },
     }
 
-    estimator = None  # type: KNeighborsClassifierClass
-
     def __init__(self, estimator: KNeighborsClassifierClass):
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
 
         # Is the estimator fitted?
         try:
@@ -71,16 +69,16 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
 
         self.meta_info = dict(
             n_classes=len(est.classes_),
-            n_templates=len(est._fit_X),  # pylint: disable=W0212
-            n_features=len(est._fit_X[0]),  # pylint: disable=W0212
+            n_templates=len(est._fit_X),
+            n_features=len(est._fit_X[0]),
             metric=est.metric,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         self.model_data = dict(
-            X=est._fit_X.tolist(),  # pylint: disable=W0212
-            y=est._y.astype(int).tolist(),  # pylint: disable=W0212
+            X=est._fit_X.tolist(),
+            y=est._y.astype(int).tolist(),  # ty: ignore[unresolved-attribute]
             k=est.n_neighbors,  # number of relevant neighbors
             n=len(est.classes_),  # number of classes
             power=est.p,
@@ -136,7 +134,6 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
@@ -148,7 +145,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         tpl_in_brackets = tpls.get_template('in_brackets')
 
         # Make 'attached' variant:
-        x_val = self.model_data.get('X')
+        x_val = self.model_data['X']
         x_str = tpl_arr_2.render(
             type=tpl_double,
             name='X',
@@ -164,12 +161,12 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             m=len(x_val[0]),
         )
 
-        y_val = list(map(str, self.model_data.get('y')))
+        y_val = list(map(str, self.model_data['y']))
         y_str = tpl_arr_1.render(
             type=tpl_int, name='y', values=', '.join(y_val), n=len(y_val)
         )
 
-        power = self.model_data.get('power')
+        power = self.model_data['power']
         if language is enum.Language.C and power == float('inf'):
             power = 'INFINITY'
 
@@ -178,8 +175,8 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             dict(
                 X=x_str,
                 y=y_str,
-                k=self.model_data.get('k'),
-                n=self.model_data.get('n'),
+                k=self.model_data['k'],
+                n=self.model_data['n'],
                 power=power,
             )
         )

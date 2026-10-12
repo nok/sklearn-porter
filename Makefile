@@ -9,6 +9,7 @@ setup:
 lint:
 	uv run ruff check .
 	uv run ruff format --check .
+	uvx ty check
 
 format:
 	uv run ruff check --fix .

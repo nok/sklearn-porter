@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps, encoder
+from json import dumps
 
 from loguru import logger as L
 
@@ -50,12 +50,10 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         },
     }
 
-    estimator = None  # type: LinearSVCClass
-
     def __init__(self, estimator: LinearSVCClass):
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
 
         # Is the estimator fitted?
         try:
@@ -133,7 +131,6 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
             tpl_name = 'exported.class'
             tpl_class = tpls.get_template(tpl_name)
             out_class = tpl_class.render(**plas)
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
@@ -146,12 +143,12 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         tpl_in_brackets = tpls.get_template('in_brackets')
 
         if self.meta_info['is_binary']:
-            inters_val = converter(self.model_data.get('inters'))
+            inters_val = converter(self.model_data['inters'])
             inters_str = tpl_init.render(
                 type=tpl_double, name='inters', value=inters_val
             )
 
-            coeffs_val = list(map(converter, self.model_data.get('coeffs')))
+            coeffs_val = list(map(converter, self.model_data['coeffs']))
             coeffs_str = tpl_arr_1.render(
                 type=tpl_double,
                 name='coeffs',
@@ -160,7 +157,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
             )
 
         else:  # is multi
-            inters_val = list(map(converter, self.model_data.get('inters')))
+            inters_val = list(map(converter, self.model_data['inters']))
             inters_str = tpl_arr_1.render(
                 type=tpl_double,
                 name='inters',
@@ -168,7 +165,7 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
                 n=len(inters_val),
             )
 
-            coeffs_val = self.model_data.get('coeffs')
+            coeffs_val = self.model_data['coeffs']
             coeffs_str = tpl_arr_2.render(
                 type=tpl_double,
                 name='coeffs',

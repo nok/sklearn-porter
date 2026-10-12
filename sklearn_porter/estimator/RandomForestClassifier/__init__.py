@@ -1,12 +1,15 @@
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps, encoder
+from json import dumps
 from textwrap import indent
 
 from jinja2 import Environment
 from loguru import logger as L
 
 # scikit-learn
+from sklearn.ensemble import (
+    ExtraTreesClassifier as ExtraTreesClassifierClass,
+)
 from sklearn.ensemble import (
     RandomForestClassifier as RandomForestClassifierClass,
 )
@@ -62,35 +65,29 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         },
     }
 
-    estimator = None  # type: RandomForestClassifierClass
-
-    def __init__(self, estimator: RandomForestClassifierClass):
+    def __init__(
+        self,
+        estimator: RandomForestClassifierClass | ExtraTreesClassifierClass,
+    ):
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
 
         # Check type of base estimators:
         if not isinstance(est.estimator_, DecisionTreeClassifier):
-            msg = 'The used base estimator `{}` is not supported yet.'
-            msg = msg.format(est.estimator_.__class__.__qualname__)
+            name = est.estimator_.__class__.__qualname__
+            msg = f'The used base estimator `{name}` is not supported yet.'
             raise exception.NotSupportedYetError(msg)
 
         # Check number of base estimators:
         if not estimator.n_estimators > 0:
             raise exception.NotFittedEstimatorError(self.estimator_name)
 
-        self.estimators = [
-            est.estimators_[idx] for idx in range(est.n_estimators)
-        ]
-        self.n_estimators = len(self.estimators)
-        self.n_features = est.n_features_in_
-        self.n_classes = est.n_classes_
-
         # Extract and save meta information:
         self.meta_info = dict(
             n_estimators=est.n_estimators,
             n_classes=est.n_classes_,
-            n_features=est.n_features_in_,
+            n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
@@ -153,20 +150,19 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
-        encoder.FLOAT_REPR = lambda o: converter(o)
 
         # Make 'exported' variant:
         if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            model_data = self.model_data.get('estimators')
+            model_data = self.model_data['estimators']
             model_data = dumps(model_data, separators=(',', ':'))
             return out_class, model_data
 
         # Make 'attached' variant:
         if template == enum.Template.ATTACHED:
             tpl_class = tpls.get_template('attached.class')
-            model_data = self.model_data.get('estimators')
+            model_data = self.model_data['estimators']
             plas['model'] = self._create_model(
                 tpls, language, converter, model_data
             )
@@ -179,13 +175,13 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
 
         # Generate functions:
         out_fns = []
-        for idx, model_data in enumerate(self.model_data.get('estimators')):
+        for idx, model_data in enumerate(self.model_data['estimators']):
             out_fn = self._create_method(
                 templates=tpls,
                 language=language,
                 converter=converter,
                 method_index=str(idx),
-                class_name=plas.get('class_name'),
+                class_name=class_name,
                 model_data=model_data,
             )
             out_fns.append(out_fn)
@@ -194,7 +190,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         # Generate function names:
         tpl_calls = tpls.get_template('combined.method_calls')
         out_calls = []
-        for idx in range(self.meta_info.get('n_estimators')):
+        for idx in range(self.meta_info['n_estimators']):
             plas_copy = deepcopy(plas)
             plas_copy.update(dict(method_index=idx))
             out_call = tpl_calls.render(**plas_copy)
@@ -256,15 +252,11 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             trees = []
             for idx, tree in enumerate(model_data):
                 values = dict(
-                    lefts=', '.join(map(str, tree.get('lefts'))),
-                    rights=', '.join(map(str, tree.get('rights'))),
-                    thresholds=', '.join(
-                        map(converter, tree.get('thresholds'))
-                    ),
-                    indices=', '.join(map(str, tree.get('indices'))),
-                    classes=[
-                        ', '.join(map(str, c)) for c in tree.get('classes')
-                    ],
+                    lefts=', '.join(map(str, tree['lefts'])),
+                    rights=', '.join(map(str, tree['rights'])),
+                    thresholds=', '.join(map(converter, tree['thresholds'])),
+                    indices=', '.join(map(str, tree['indices'])),
+                    classes=[', '.join(map(str, c)) for c in tree['classes']],
                     weight=converter(tree['weight'])
                     if 'weight' in tree
                     else None,
@@ -273,14 +265,14 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             return '\n'.join(trees)
 
         tpl_init = tpls.get_template('init')
-        model_data = dumps(model_data, separators=(',', ':'))
+        value = dumps(model_data, separators=(',', ':'))
         if language is enum.Language.PHP:
-            model_data = "json_decode('" + model_data + "', true)"
+            value = f"json_decode('{value}', true)"
         elif language is enum.Language.GO:
-            model_data = '`' + model_data + '`'
+            value = f'`{value}`'
         elif language is enum.Language.RUBY:
-            model_data = "JSON.parse('" + model_data + "')"
-        return tpl_init.render(name='model', value=model_data)
+            value = f"JSON.parse('{value}')"
+        return tpl_init.render(name='model', value=value)
 
     def _create_method(
         self,
@@ -318,11 +310,11 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             templates,
             language,
             converter,
-            model_data.get('lefts'),
-            model_data.get('rights'),
-            model_data.get('thresholds'),
-            model_data.get('classes'),
-            model_data.get('indices'),
+            model_data['lefts'],
+            model_data['rights'],
+            model_data['thresholds'],
+            model_data['classes'],
+            model_data['indices'],
             0,
             1,
         )
@@ -330,8 +322,8 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         tpl_tree = templates.get_template('combined.tree')
         out_tree = tpl_tree.render(
             tree=tree,
-            n_classes=self.meta_info.get('n_classes'),
-            n_estimators=self.meta_info.get('n_estimators'),
+            n_classes=self.meta_info['n_classes'],
+            n_estimators=self.meta_info['n_estimators'],
             method_index=method_index,
             class_name=class_name,
         )

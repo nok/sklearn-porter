@@ -1,6 +1,6 @@
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps, encoder
+from json import dumps
 from textwrap import indent
 
 from jinja2 import Environment
@@ -62,12 +62,10 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
     # The key of the model data with the content of the leaves:
     LEAF_DATA = 'classes'
 
-    estimator = None  # type: DecisionTreeClassifierClass
-
     def __init__(self, estimator: DecisionTreeClassifierClass):
         super().__init__(estimator)
-        L.info('Create specific estimator `%s`.', self.estimator_name)
-        est = self.estimator  # alias
+        L.info(f'Create specific estimator `{self.estimator_name}`.')
+        est = estimator  # alias
 
         # Is the estimator fitted?
         try:
@@ -145,8 +143,6 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            # converter = kwargs.get('converter')
-            encoder.FLOAT_REPR = lambda o: converter(o)
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
@@ -159,7 +155,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         tpl_in_brackets = tpls.get_template('in_brackets')
 
         # Make contents:
-        lefts_val = list(map(str, self.model_data.get('lefts')))
+        lefts_val = list(map(str, self.model_data['lefts']))
         lefts_str = tpl_arr_1.render(
             type=tpl_int,
             name='lefts',
@@ -167,7 +163,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(lefts_val),
         )
 
-        rights_val = list(map(str, self.model_data.get('rights')))
+        rights_val = list(map(str, self.model_data['rights']))
         rights_str = tpl_arr_1.render(
             type=tpl_int,
             name='rights',
@@ -175,7 +171,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(rights_val),
         )
 
-        thresholds_val = list(map(converter, self.model_data.get('thresholds')))
+        thresholds_val = list(map(converter, self.model_data['thresholds']))
         thresholds_str = tpl_arr_1.render(
             type=tpl_double,
             name='thresholds',
@@ -183,7 +179,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(thresholds_val),
         )
 
-        indices_val = list(map(str, self.model_data.get('indices')))
+        indices_val = list(map(str, self.model_data['indices']))
         indices_str = tpl_arr_1.render(
             type=tpl_int,
             name='indices',
@@ -191,9 +187,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(indices_val),
         )
 
-        classes_val = [
-            list(map(str, e)) for e in self.model_data.get('classes')
-        ]
+        classes_val = [list(map(str, e)) for e in self.model_data['classes']]
         classes_str = [', '.join(e) for e in classes_val]
         classes_str = ', '.join(
             [tpl_in_brackets.render(value=e) for e in classes_str]
@@ -267,11 +261,11 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             tpls,
             language,
             converter,
-            self.model_data.get('lefts'),
-            self.model_data.get('rights'),
-            self.model_data.get('thresholds'),
-            self.model_data.get(self.LEAF_DATA),
-            self.model_data.get('indices'),
+            self.model_data['lefts'],
+            self.model_data['rights'],
+            self.model_data['thresholds'],
+            self.model_data[self.LEAF_DATA],
+            self.model_data['indices'],
             0,
             n_indents,
         )
