@@ -41,6 +41,11 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             enum.Template.EXPORTED: enum.ALL_METHODS,
             enum.Template.COMBINED: enum.ALL_METHODS,
         },
+        enum.Language.PHP: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
     }
 
     estimator = None  # type: AdaBoostClassifierClass
