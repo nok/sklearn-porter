@@ -1,0 +1,5 @@
+def _compute_{{ method_index }}(features)
+    classes = Array.new({{ n_classes }}, 0.0)
+    {{ tree }}
+    _find_max(classes)
+end
