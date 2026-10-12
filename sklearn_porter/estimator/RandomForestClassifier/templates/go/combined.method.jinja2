@@ -1,0 +1,15 @@
+{{ methods }}
+
+func PredictProba(features []float64) []float64 {
+	var probas = make([]float64, {{ n_classes }})
+	var temp []float64
+	{{ method_calls }}
+	for i := 0; i < {{ n_classes }}; i++ {
+		probas[i] /= {{ n_estimators }}
+	}
+	return probas
+}
+
+func Predict(features []float64) int {
+	return findMax(PredictProba(features))
+}
