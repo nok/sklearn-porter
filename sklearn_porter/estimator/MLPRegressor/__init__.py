@@ -18,6 +18,10 @@ class MLPRegressor(MLPClassifier, EstimatorBase):
     DEFAULT_METHOD = enum.Method.PREDICT
 
     SUPPORT = {
+        enum.Language.GO: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
+        },
         enum.Language.JS: {
             enum.Template.ATTACHED: {
                 enum.Method.PREDICT,
