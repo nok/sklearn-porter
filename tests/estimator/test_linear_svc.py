@@ -22,7 +22,7 @@ pytestmark = pytest.mark.regression
 
 
 @pytest.mark.parametrize('template', ['attached', 'exported'])
-@pytest.mark.parametrize('language', ['go'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 @pytest.mark.parametrize('loss', ['hinge', 'squared_hinge'])
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 def test_estimator_linear_svc(

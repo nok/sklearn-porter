@@ -1,0 +1,87 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_CLASSES {{ n_classes }}
+
+
+{% if is_binary %}
+double *coeffs;
+double inters;
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    coeffs = json_doubles(json_get(data, "coeffs"));
+    inters = json_get(data, "inters")->number;
+    json_free(data);
+}
+
+int predict(double features[N_FEATURES]) {
+    int i;
+    double prob = 0.;
+    for (i = 0; i < N_FEATURES; i++) {
+        prob += coeffs[i] * features[i];
+    }
+    if (prob + inters > 0) {
+        return 1;
+    }
+    return 0;
+}
+{% else %}
+double **coeffs;
+double *inters;
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    coeffs = json_doubles_2d(json_get(data, "coeffs"));
+    inters = json_doubles(json_get(data, "inters"));
+    json_free(data);
+}
+
+int predict(double features[N_FEATURES]) {
+    double class_val = -INFINITY;
+    int class_idx = -1;
+    int i, j;
+    for (i = 0; i < N_CLASSES; i++) {
+        double prob = 0.;
+        for (j = 0; j < N_FEATURES; j++) {
+            prob += coeffs[i][j] * features[j];
+        }
+        if (prob + inters[i] > class_val) {
+            class_val = prob + inters[i];
+            class_idx = i;
+        }
+    }
+    return class_idx;
+}
+{% endif %}
+
+int main(int argc, const char *argv[]) {
+
+    if (argc != N_FEATURES + 2) {
+        fprintf(stderr, "You have to pass the path to the model data and %d features.\n", N_FEATURES);
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features: */
+    double features[N_FEATURES];
+    for (int i = 2; i < argc; i++) {
+        features[i-2] = atof(argv[i]);
+    }
+
+    {% if is_test or to_json %}
+    /* Get JSON: */
+    printf("{\"predict\": %d}", predict(features));
+    {% else %}
+    /* Get class prediction: */
+    printf("Predicted class: #%d\n", predict(features));
+    {% endif %}
+
+    return 0;
+}
+{% endblock %}
