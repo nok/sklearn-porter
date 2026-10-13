@@ -22,11 +22,9 @@ def load_model(path: Path, skip_warnings: bool = False):
     if not path.exists() or not path.is_file():
         msg = f'File not found: {str(path)}'
         sys.exit(f'Error: {msg}')
-    if skip_warnings:
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
-            mdl = joblib.load(str(path.resolve()))
-    else:
-        warnings.filterwarnings('error')
+    with warnings.catch_warnings():
+        # Raise warnings like the `InconsistentVersionWarning` of scikit-learn
+        # only while loading, not while porting the estimator:
+        warnings.simplefilter('ignore' if skip_warnings else 'error')
         mdl = joblib.load(str(path.resolve()))
     return mdl
