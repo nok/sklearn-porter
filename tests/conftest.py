@@ -1,5 +1,5 @@
 import random as rd
-from os import environ
+from os import environ, pathsep
 from pathlib import Path
 
 import numpy as np
@@ -15,6 +15,23 @@ np.random.seed(0)
 rd.seed(0)
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
+
+
+@pytest.fixture(scope='session', autouse=True)
+def strict_php(tmp_path_factory: pytest.TempPathFactory):
+    """
+    Fixture to show all PHP errors on stdout.
+
+    The default `php.ini` of the Docker image hides deprecations. With this
+    configuration notices, warnings and deprecations (e.g. dynamic properties
+    since PHP 8.2) break the JSON output of the ported estimators, so that
+    the regression tests fail.
+    """
+    ini_dir = tmp_path_factory.mktemp('php')
+    ini_path = ini_dir / 'strict.ini'
+    ini_path.write_text('error_reporting = E_ALL\ndisplay_errors = On\n')
+    # The leading separator keeps the default scan directory:
+    environ['PHP_INI_SCAN_DIR'] = pathsep + str(ini_dir)
 
 
 @pytest.fixture(scope='session')

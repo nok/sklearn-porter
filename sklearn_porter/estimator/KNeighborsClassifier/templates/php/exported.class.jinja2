@@ -3,6 +3,13 @@
 {% block content %}
 class {{ class_name }} {
 
+    private $data;
+    private $X;
+    private $y;
+    private $k;
+    private $n;
+    private $power;
+
     public function __construct($path) {
         $this->data = json_decode(file_get_contents($path, true), true);
 

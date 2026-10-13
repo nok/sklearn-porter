@@ -95,6 +95,10 @@ table.
 - Type check with ty (`uvx ty check`); use `# ty: ignore[<rule>]` only for
   attributes which scikit-learn sets dynamically.
 - NumPy style docstrings and type hints.
+- PHP templates declare all properties of their classes explicitly, because
+  dynamic properties are deprecated since PHP 8.2. The regression tests run
+  PHP with `error_reporting = E_ALL` (see `tests/conftest.py`), so any notice,
+  warning or deprecation breaks the JSON output and fails the tests.
 - Commit messages and PR titles follow Conventional Commits
   (`feat:`, `fix:`, `docs:`, `ci:`, `build:`, `style:`, `refactor:`,
   `test:`, `chore:`; `!` or `BREAKING CHANGE:` for breaking changes).

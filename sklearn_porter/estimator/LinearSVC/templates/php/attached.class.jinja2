@@ -3,6 +3,9 @@
 {% block content %}
 class {{ class_name }} {
 
+    private $coeffs;
+    private $inters;
+
     public function __construct($coeffs, $inters) {
         $this->coeffs = $coeffs;
         $this->inters = $inters;

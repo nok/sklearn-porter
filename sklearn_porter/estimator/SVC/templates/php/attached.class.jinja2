@@ -3,6 +3,17 @@
 {% block content %}
 class {{ class_name }} {
 
+    private $nClasses;
+    private $classes;
+    private $vectors;
+    private $coeffs;
+    private $inters;
+    private $weights;
+    private $kernel;
+    private $gamma;
+    private $coef0;
+    private $degree;
+
     public function __construct($vectors, $coeffs, $inters, $weights, $kernel, $gamma, $coef0, $degree) {
         $this->nClasses = count($weights);
         $this->classes = array_fill(0, $this->nClasses, 0);

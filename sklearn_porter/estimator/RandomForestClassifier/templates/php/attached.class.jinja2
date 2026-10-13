@@ -4,6 +4,8 @@
 namespace {
     class {{ class_name }} {
 
+        private $forest;
+
         public function __construct($model) {
             $this->forest = array();
             foreach($model as $tree){
@@ -53,6 +55,13 @@ namespace {
 
 namespace {{ class_name }} {
     class Tree {
+
+        public $lefts;
+        public $rights;
+        public $thresholds;
+        public $indices;
+        public $classes;
+
         public function __construct($lefts, $rights, $thresholds, $indices, $classes) {
             $this->lefts = $lefts;
             $this->rights = $rights;

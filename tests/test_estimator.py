@@ -2,6 +2,7 @@ import os
 import warnings
 from collections.abc import Callable
 from pathlib import Path
+from subprocess import run
 
 import numpy as np
 import pytest
@@ -607,6 +608,50 @@ def test_regressions_of_regressors(
         delete_created_files=False,
     )
     assert score == 1.0
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
+def test_php_without_errors(
+    tmp_root_dir: Path,
+    candidate: Candidate,
+    template: str,
+):
+    """Test that the ported PHP code raises no notices, warnings or
+    deprecations, e.g. dynamic properties (deprecated since PHP 8.2)."""
+    if not can(candidate.clazz(), 'php', template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+
+    x, y = load_iris(return_X_y=True)
+    orig_est = candidate.create()
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', ConvergenceWarning)
+        orig_est.fit(X=x, y=y)
+
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'php_without_errors'),
+            ('estimator', candidate.name),
+            ('template', template),
+        ],
+    )
+    out = Estimator(orig_est, language='php', template=template).save(
+        directory=tmp_dir
+    )
+    src_path, data_path = out if isinstance(out, tuple) else (out, None)
+
+    # Ignore the `php.ini` and show all errors on stderr:
+    cmd = ['php', '-n', '-d', 'error_reporting=-1']
+    cmd += ['-d', 'display_errors=stderr', '-f', str(src_path), '--']
+    if data_path:
+        cmd.append(str(data_path))
+    cmd += list(map(str, x[0]))
+    proc = run(cmd, capture_output=True, text=True)
+    assert proc.returncode == 0
+    assert proc.stderr == ''
+    assert proc.stdout
 
 
 @pytest.mark.parametrize('subcommand', ['show', 'port', 'save'])
