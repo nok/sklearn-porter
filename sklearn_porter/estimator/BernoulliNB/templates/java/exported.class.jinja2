@@ -14,6 +14,8 @@ class {{ class_name }} {
     private class Classifier {
         private double[] priors;
         private double[][] probs;
+        private boolean binarize;
+        private double threshold;
     }
 
     private Classifier clf;
@@ -50,8 +52,12 @@ class {{ class_name }} {
         int i, j;
         double sum;
 
-        for (j = 0; j < nFeatures; j++) {
-            features[j] = features[j] > 0 ? 1 : 0;
+        if (this.clf.binarize) {
+            // Binarize a copy of the features with the threshold:
+            features = features.clone();
+            for (j = 0; j < nFeatures; j++) {
+                features[j] = features[j] > this.clf.threshold ? 1 : 0;
+            }
         }
         for (i = 0; i < nClasses; i++) {
             for (j = 0; j < nFeatures; j++) {

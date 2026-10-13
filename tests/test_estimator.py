@@ -395,6 +395,21 @@ def test_linear_svc_without_intercept(binary: bool):
 
 
 @pytest.mark.parametrize(
+    ('binarize', 'threshold'),
+    [(0.0, 0.0), (3, 3.0), (None, 0.0)],
+    ids=['zero', 'int', 'none'],
+)
+def test_bernoulli_nb_with_binarize(binarize, threshold: float):
+    """Test the threshold to binarize the features of a BernoulliNB."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = BernoulliNB(binarize=binarize).fit(X=x, y=y)
+    model_data = Estimator(orig_est)._estimator.model_data
+    assert model_data['binarize'] == (binarize is not None)
+    assert model_data['threshold'] == threshold
+    assert isinstance(model_data['threshold'], float)
+
+
+@pytest.mark.parametrize(
     ('params', 'metric', 'power'),
     [
         (dict(), 'minkowski', 2),

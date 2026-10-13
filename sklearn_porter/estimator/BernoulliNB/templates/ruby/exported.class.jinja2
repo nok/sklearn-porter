@@ -10,6 +10,8 @@ class {{ class_name }}
 		data = JSON.parse(File.read(path))
 		@priors = data['priors']
 		@probs = data['probs']
+		@binarize = data['binarize']
+		@threshold = data['threshold']
 	end
 
 	def _find_max(nums)
@@ -35,7 +37,8 @@ class {{ class_name }}
 			sum = 0.0
 			for j in 0 ... @probs[i].length
 				delta = Math.log(1.0 - Math.exp(@probs[i][j]))
-				sum += (features[j] > 0 ? 1.0 : 0.0) * (@probs[i][j] - delta) + delta
+				feature = @binarize ? (features[j] > @threshold ? 1.0 : 0.0) : features[j]
+				sum += feature * (@probs[i][j] - delta) + delta
 			end
 			likelihoods[i] = @priors[i] + sum
 		end

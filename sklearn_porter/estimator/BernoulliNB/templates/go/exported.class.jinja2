@@ -14,6 +14,8 @@ import (
 type {{ class_name }} struct {
 	Priors []float64 `json:"priors"`
 	Probs [][]float64 `json:"probs"`
+	Binarize bool `json:"binarize"`
+	Threshold float64 `json:"threshold"`
 }
 
 {% if is_test or to_json %}
@@ -48,9 +50,12 @@ func (clf {{ class_name }}) compute(features []float64) []float64 {
 		var sum = 0.0
 		for j := 0; j < len(clf.Probs[i]); j++ {
 			var delta = math.Log(1.0 - math.Exp(clf.Probs[i][j]))
-			var feature = 0.0
-			if features[j] > 0 {
-				feature = 1.0
+			var feature = features[j]
+			if clf.Binarize {
+				feature = 0.0
+				if features[j] > clf.Threshold {
+					feature = 1.0
+				}
 			}
 			sum += feature * (clf.Probs[i][j] - delta) + delta
 		}

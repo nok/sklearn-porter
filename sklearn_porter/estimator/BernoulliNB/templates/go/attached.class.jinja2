@@ -50,10 +50,15 @@ func (clf {{ class_name }}) compute(features []float64) []float64 {
 		var sum = 0.0
 		for j := 0; j < len(clf.Probs[i]); j++ {
 			var delta = math.Log(1.0 - math.Exp(clf.Probs[i][j]))
+			{% if binarize %}
+			// Binarize the feature with the threshold:
 			var feature = 0.0
-			if features[j] > 0 {
+			if features[j] > {{ threshold }} {
 				feature = 1.0
 			}
+			{% else %}
+			var feature = features[j]
+			{% endif %}
 			sum += feature * (clf.Probs[i][j] - delta) + delta
 		}
 		likelihoods[i] = clf.Priors[i] + sum

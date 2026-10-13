@@ -5,11 +5,15 @@ class {{ class_name }} {
 
     private $priors;
     private $probs;
+    private $binarize;
+    private $threshold;
 
     public function __construct($path) {
         $data = json_decode(file_get_contents($path), true);
         $this->priors = $data['priors'];
         $this->probs = $data['probs'];
+        $this->binarize = $data['binarize'];
+        $this->threshold = $data['threshold'];
     }
 
     private function findMax($nums) {
@@ -35,7 +39,8 @@ class {{ class_name }} {
             $sum = 0.;
             for ($j = 0, $jl = count($this->probs[$i]); $j < $jl; $j++) {
                 $delta = log(1. - exp($this->probs[$i][$j]));
-                $sum += ($features[$j] > 0 ? 1. : 0.) * ($this->probs[$i][$j] - $delta) + $delta;
+                $feature = $this->binarize ? ($features[$j] > $this->threshold ? 1. : 0.) : $features[$j];
+                $sum += $feature * ($this->probs[$i][$j] - $delta) + $delta;
             }
             $likelihoods[$i] = $this->priors[$i] + $sum;
         }

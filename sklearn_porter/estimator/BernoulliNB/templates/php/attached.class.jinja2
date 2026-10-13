@@ -34,7 +34,13 @@ class {{ class_name }} {
             $sum = 0.;
             for ($j = 0, $jl = count($this->probs[$i]); $j < $jl; $j++) {
                 $delta = log(1. - exp($this->probs[$i][$j]));
-                $sum += ($features[$j] > 0 ? 1. : 0.) * ($this->probs[$i][$j] - $delta) + $delta;
+                {% if binarize %}
+                // Binarize the feature with the threshold:
+                $feature = $features[$j] > {{ threshold }} ? 1. : 0.;
+                {% else %}
+                $feature = $features[$j];
+                {% endif %}
+                $sum += $feature * ($this->probs[$i][$j] - $delta) + $delta;
             }
             $likelihoods[$i] = $this->priors[$i] + $sum;
         }
