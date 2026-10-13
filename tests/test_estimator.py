@@ -381,6 +381,18 @@ def test_svm_fitted_on_sparse_data(orig_est: type):
     assert sparse_est.meta_info['n_features'] == x.shape[1]
 
 
+@pytest.mark.parametrize('binary', [True, False], ids=['binary', 'multi'])
+def test_linear_svc_without_intercept(binary: bool):
+    """Test a LinearSVC without intercept, which is stored as scalar `0.0`."""
+    x, y = load_iris(return_X_y=True)
+    if binary:
+        y = (y > 0).astype(int)
+    orig_est = LinearSVC(fit_intercept=False).fit(X=x, y=y)
+    assert orig_est.intercept_ == 0.0
+    model_data = Estimator(orig_est)._estimator.model_data
+    assert model_data['inters'] == (0.0 if binary else [0.0, 0.0, 0.0])
+
+
 @pytest.mark.regression
 @pytest.mark.parametrize(
     'x',
