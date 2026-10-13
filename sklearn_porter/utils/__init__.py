@@ -5,6 +5,28 @@ import numpy as np
 options = {'logging.level': ERROR}
 
 
+def is_multilabel(estimator) -> bool:
+    """
+    Check whether a classifier was fitted on a label indicator matrix.
+
+    Multilabel classifiers (e.g. `RidgeClassifier` or `MLPClassifier`) don't
+    predict a single class per sample, but one binary value per label.
+    scikit-learn checks the type of the target in the same way.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The fitted estimator.
+
+    Returns
+    -------
+    Whether the estimator is a multilabel classifier.
+    """
+    binarizer = getattr(estimator, '_label_binarizer', None)
+    y_type = getattr(binarizer, 'y_type_', '')
+    return y_type.startswith('multilabel')
+
+
 def get_class_counts(tree) -> list:
     """
     Get the weighted number of samples per class and node of a fitted tree.

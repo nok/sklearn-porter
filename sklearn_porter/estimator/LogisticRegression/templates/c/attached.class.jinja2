@@ -24,6 +24,17 @@ void decision_function(double *decisions, double features[N_FEATURES]) {
     }
 }
 
+{% if is_multilabel %}
+/* Predict the labels, each one is 1 if its decision is positive: */
+void predict(int *labels, double features[N_FEATURES]) {
+    int i;
+    double decisions[N_DECISIONS];
+    decision_function(decisions, features);
+    for (i = 0; i < N_DECISIONS; i++) {
+        labels[i] = decisions[i] > 0 ? 1 : 0;
+    }
+}
+{% else %}
 int predict(double features[N_FEATURES]) {
     double decisions[N_DECISIONS];
     decision_function(decisions, features);
@@ -39,6 +50,7 @@ int predict(double features[N_FEATURES]) {
     return class_idx;
     {% endif %}
 }
+{% endif %}
 {% if with_proba %}
 
 void predict_proba(double *probabilities, double features[N_FEATURES]) {
@@ -81,7 +93,20 @@ int main(int argc, const char *argv[]) {
 
     {% if is_test or to_json %}
     /* Get JSON: */
+    {% if is_multilabel %}
+    int labels[N_DECISIONS];
+    predict(labels, features);
+    printf("{\"predict\": [");
+    for (int i = 0; i < N_DECISIONS; i++) {
+        printf("%d", labels[i]);
+        if (i < (N_DECISIONS - 1)) {
+            printf(",");
+        }
+    }
+    printf("]");
+    {% else %}
     printf("{\"predict\": %d", predict(features));
+    {% endif %}
     {% if with_proba %}
     double probabilities[N_CLASSES];
     predict_proba(probabilities, features);
@@ -97,7 +122,15 @@ int main(int argc, const char *argv[]) {
     printf("}");
     {% else %}
     /* Get class prediction: */
+    {% if is_multilabel %}
+    int labels[N_DECISIONS];
+    predict(labels, features);
+    for (int i = 0; i < N_DECISIONS; i++) {
+        printf("Predicted label #%d: %d\n", i, labels[i]);
+    }
+    {% else %}
     printf("Predicted class: #%d\n", predict(features));
+    {% endif %}
     {% if with_proba %}
 
     /* Get class probabilities: */

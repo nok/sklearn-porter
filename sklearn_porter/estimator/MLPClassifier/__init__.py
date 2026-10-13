@@ -14,6 +14,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.utils import is_multilabel
 
 
 class MLPClassifier(EstimatorBase, EstimatorApiABC):
@@ -76,6 +77,9 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
         self.meta_info = dict(
             n_features=n_inputs,
+            # Multilabel classifiers (fitted on a label indicator matrix)
+            # predict one binary value per label:
+            is_multilabel=is_multilabel(est),
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

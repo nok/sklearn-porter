@@ -20,7 +20,11 @@ var {{ class_name }} = function(coeffs, inters) {
 
     this.predict = function(features) {
         var decisions = this.decisionFunction(features);
-        {% if is_binary %}
+        {% if is_multilabel %}
+return decisions.map(function(decision) {
+            return decision > 0 ? 1 : 0;
+        });
+        {% elif is_binary %}
         return decisions[0] > 0 ? 1 : 0;
         {% else %}
         var classIdx = 0;
@@ -91,7 +95,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("Predicted class: #" + prediction);
+    console.log("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" + prediction);
     {% if with_proba %}
 
     // Get class probabilities:

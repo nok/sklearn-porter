@@ -11,7 +11,7 @@ from scipy.sparse import csr_matrix
 # scikit-learn
 from sklearn import preprocessing
 from sklearn.base import BaseEstimator
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_iris, make_multilabel_classification
 from sklearn.ensemble import (
     AdaBoostClassifier,
     ExtraTreesClassifier,
@@ -392,6 +392,30 @@ def test_linear_svc_without_intercept(binary: bool):
     assert orig_est.intercept_ == 0.0
     model_data = Estimator(orig_est)._estimator.model_data
     assert model_data['inters'] == (0.0 if binary else [0.0, 0.0, 0.0])
+
+
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize(
+    'orig_est',
+    [RidgeClassifier(), MLPClassifier(max_iter=20, random_state=0)],
+    ids=lambda x: type(x).__name__,
+)
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_multilabel_classifier(
+    orig_est: RidgeClassifier | MLPClassifier, language: str, template: str
+):
+    """Test the port of classifiers fitted on a label indicator matrix."""
+    if not can(orig_est, language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+    x, y = make_multilabel_classification(n_classes=3, random_state=0)
+    orig_est.fit(X=x, y=y)
+    est = Estimator(orig_est, language=language, template=template)
+    assert est._estimator.meta_info['is_multilabel']
+    output = est.port()
+    # The multilabel variant predicts one binary value per label:
+    est._estimator.meta_info['is_multilabel'] = False
+    assert est.port() != output
 
 
 @pytest.mark.parametrize(

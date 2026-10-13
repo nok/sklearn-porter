@@ -100,6 +100,11 @@ var {{ class_name }} = function(jsonFile) {
 
     this.predict = function(neurons) {
         var lastLayer = this.feedForward(neurons);
+        {% if is_multilabel %}
+        return lastLayer.map(function(output) {
+            return output > .5 ? 1 : 0;
+        });
+        {% else %}
         if (lastLayer.length === 1) {
             if (lastLayer[0] > .5) {
                 return 1;
@@ -108,6 +113,7 @@ var {{ class_name }} = function(jsonFile) {
         } else {
             return _findMax(lastLayer);
         }
+        {% endif %}
     };
 };
 
@@ -133,7 +139,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("Predicted class: #" + prediction);
+    console.log("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" + prediction);
 
     // Get class probabilities:
     var probabilities = clf.predictProba(features);

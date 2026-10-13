@@ -76,10 +76,16 @@ class {{ class_name }} {
 
     public function predict($features) {
         $outputs = $this->feedForward($features);
+        {% if is_multilabel %}
+        return array_map(function ($output) {
+            return $output > .5 ? 1 : 0;
+        }, $outputs);
+        {% else %}
         if (count($outputs) == 1) {
             return $outputs[0] > .5 ? 1 : 0;
         }
         return $this->findMax($outputs);
+        {% endif %}
     }
 
     public function predictProba($features) {
@@ -117,7 +123,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    fwrite(STDOUT, "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multilabel else 'strval($prediction)' }} . "\n");
 
     // Get class probabilities:
     $probabilities = $clf->predictProba($features);
