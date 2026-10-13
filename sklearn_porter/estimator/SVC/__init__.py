@@ -1,9 +1,9 @@
-import warnings
 from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
 
 from loguru import logger as L
+from scipy.sparse import issparse
 
 # scikit-learn
 from sklearn.svm import SVC as SVCClass
@@ -72,13 +72,10 @@ class SVC(EstimatorBase, EstimatorApiABC):
             msg = f'The passed kernel `{params["kernel"]}` is not supported.'
             raise exception.NotSupportedYetError(msg)
 
-        msg = (
-            'In some rare cases the regression tests of ported support '
-            'vector machines failed significantly. Because of that we '
-            'recommend to evaluate the ported estimator by using the '
-            '`test` method.'
-        )
-        warnings.warn(msg, exception.QualityWarning, stacklevel=2)
+        # The ported estimators return the first class among tied classes:
+        if params['break_ties']:
+            msg = 'The parameter `break_ties=True` is not supported.'
+            raise exception.NotSupportedYetError(msg)
 
         # Use the computed gamma value (e.g. of 'scale' or 'auto'):
         gamma = float(est._gamma)
@@ -86,10 +83,17 @@ class SVC(EstimatorBase, EstimatorApiABC):
         # Prepare intercepts and coefficients:
         inters = est._intercept_
         coeffs = est.dual_coef_
+        vectors = est.support_vectors_
+
+        # Estimators fitted on sparse data store sparse matrices:
+        if issparse(coeffs):
+            coeffs = coeffs.toarray()
+        if issparse(vectors):
+            vectors = vectors.toarray()
 
         self.model_data = dict(
             weights=est.n_support_.tolist(),
-            vectors=est.support_vectors_.tolist(),
+            vectors=vectors.tolist(),
             coeffs=coeffs.tolist(),
             inters=inters.tolist(),
             kernel=params['kernel'],
@@ -102,7 +106,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
         self.meta_info = dict(
             n_classes=len(est.classes_),
-            n_features=len(est.support_vectors_[0]),
+            n_features=len(self.model_data['vectors'][0]),
             n_weights=len(self.model_data['weights']),
             n_vectors=len(self.model_data['vectors']),
             n_coeffs=len(self.model_data['coeffs']),

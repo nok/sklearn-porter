@@ -1,10 +1,6 @@
 from sklearn_porter import enums as enum
 
 
-class QualityWarning(Warning):
-    pass
-
-
 class NotFittedEstimatorError(Exception):
     def __init__(self, message: str):
         self.message = (
