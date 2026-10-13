@@ -35,7 +35,13 @@ class {{ class_name }}
 			sum = 0.0
 			for j in 0 ... @probs[i].length
 				delta = Math.log(1.0 - Math.exp(@probs[i][j]))
-				sum += (features[j] > 0 ? 1.0 : 0.0) * (@probs[i][j] - delta) + delta
+				{% if binarize %}
+				# Binarize the feature with the threshold:
+				feature = features[j] > {{ threshold }} ? 1.0 : 0.0
+				{% else %}
+				feature = features[j]
+				{% endif %}
+				sum += feature * (@probs[i][j] - delta) + delta
 			end
 			likelihoods[i] = @priors[i] + sum
 		end

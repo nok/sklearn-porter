@@ -42,9 +42,13 @@ class {{ class_name }} {
         int i, j;
         double sum;
 
+        {% if binarize %}
+        // Binarize a copy of the features with the threshold:
+        features = features.clone();
         for (j = 0; j < nFeatures; j++) {
-            features[j] = features[j] > 0 ? 1 : 0;
+            features[j] = features[j] > {{ threshold }} ? 1 : 0;
         }
+        {% endif %}
         for (i = 0; i < nClasses; i++) {
             for (j = 0; j < nFeatures; j++) {
                 deltas[i][j] = Math.log(1 - Math.exp(this.probs[i][j]));

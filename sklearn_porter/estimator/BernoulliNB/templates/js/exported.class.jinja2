@@ -25,14 +25,18 @@ var {{ class_name }} = function(jsonFile) {
         return max + Math.log(sum);
     };
 
-    var _compute = function(features, priors, probs) {
+    var _compute = function(features, priors, probs, binarize, threshold) {
         var i, j, sum;
         var nClasses = probs.length,
             nFeatures = probs[0].length;
         var deltas = new Array(nClasses),
             jll = new Array(nClasses);
-        for (j = 0; j < nFeatures; j++) {
-            features[j] = features[j] > 0 ? 1 : 0;
+        if (binarize) {
+            // Binarize a copy of the features with the threshold:
+            features = features.slice();
+            for (j = 0; j < nFeatures; j++) {
+                features[j] = features[j] > threshold ? 1 : 0;
+            }
         }
         for (i = 0; i < nClasses; i++) {
             deltas[i] = new Array(nFeatures);
@@ -61,11 +65,11 @@ var {{ class_name }} = function(jsonFile) {
     };
 
     this.predict = function(features) {
-        return _findMax(_compute(features, this.data.priors, this.data.probs));
+        return _findMax(_compute(features, this.data.priors, this.data.probs, this.data.binarize, this.data.threshold));
     };
 
     this.predictProba = function(features) {
-        var jll = _compute(features, this.data.priors, this.data.probs);
+        var jll = _compute(features, this.data.priors, this.data.probs, this.data.binarize, this.data.threshold);
         var sum = _logSumExp(jll);
         for (i = 0; i < jll.length; i++) {
             jll[i] = Math.exp(jll[i] - sum);

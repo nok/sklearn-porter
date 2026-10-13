@@ -33,12 +33,18 @@ double log_sum_exp(double nums[N_CLASSES]) {
 
 void compute(double *likelihoods, double features[N_FEATURES]) {
     int i, j;
-    double delta, sum;
+    double delta, sum, feature;
     for (i = 0; i < N_CLASSES; i++) {
         sum = 0.;
         for (j = 0; j < N_FEATURES; j++) {
             delta = log(1. - exp(probs[i][j]));
-            sum += (features[j] > 0 ? 1. : 0.) * (probs[i][j] - delta) + delta;
+            {% if binarize %}
+            /* Binarize the feature with the threshold: */
+            feature = features[j] > {{ threshold }} ? 1. : 0.;
+            {% else %}
+            feature = features[j];
+            {% endif %}
+            sum += feature * (probs[i][j] - delta) + delta;
         }
         likelihoods[i] = priors[i] + sum;
     }

@@ -70,9 +70,16 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
+        # The features are binarized with the threshold `binarize`, with
+        # `binarize=None` the features are expected to be binary already:
+        binarize = est.binarize is not None
+        threshold = float(est.binarize) if binarize else 0.0
+
         self.model_data = dict(
             priors=est.class_log_prior_.tolist(),  # class_log_prior
             probs=est.feature_log_prob_.tolist(),  # feature_log_prob
+            binarize=binarize,  # whether to binarize the features
+            threshold=threshold,  # only used with `binarize`
         )
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
@@ -164,6 +171,8 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             dict(
                 priors=priors_str,
                 probs=probs_str,
+                binarize=self.model_data['binarize'],
+                threshold=converter(self.model_data['threshold']),
             )
         )
 
