@@ -1,8 +1,16 @@
 import numpy as np
-from sklearn.datasets import load_iris
+import pytest
+from sklearn.datasets import (
+    load_breast_cancer,
+    load_diabetes,
+    load_iris,
+    make_multilabel_classification,
+)
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import RidgeClassifier
+from sklearn.neural_network import MLPClassifier, MLPRegressor
 
-from sklearn_porter.utils import get_thresholds
+from sklearn_porter.utils import get_thresholds, is_multilabel
 
 
 def test_thresholds_of_trees_in_double_precision():
@@ -50,3 +58,29 @@ def test_thresholds_of_trees_with_features_on_thresholds():
                         if expected
                         else t.children_right[node]
                     )
+
+
+@pytest.mark.parametrize(
+    'estimator',
+    [RidgeClassifier(), MLPClassifier(max_iter=20, random_state=0)],
+    ids=lambda x: type(x).__name__,
+)
+@pytest.mark.parametrize('target', ['binary', 'multiclass', 'multilabel'])
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_is_multilabel(estimator, target: str):
+    """Test the detection of classifiers fitted on a label indicator matrix."""
+    if target == 'binary':
+        x, y = load_breast_cancer(return_X_y=True)
+    elif target == 'multiclass':
+        x, y = load_iris(return_X_y=True)
+    else:
+        x, y = make_multilabel_classification(n_classes=3, random_state=0)
+    estimator.fit(x, y)
+    assert is_multilabel(estimator) == (target == 'multilabel')
+
+
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_is_multilabel_without_label_binarizer():
+    """Test the detection with an estimator without label binarizer."""
+    x, y = load_diabetes(return_X_y=True)
+    assert not is_multilabel(MLPRegressor(max_iter=20).fit(x, y))

@@ -3,7 +3,7 @@
 {% block content %}
 import java.io.File;
 import java.io.FileNotFoundException;
-{% if (is_test or to_json) and with_proba %}
+{% if ((is_test or to_json) and with_proba) or is_multilabel %}
 import java.util.Arrays;
 {% endif %}
 import java.util.Scanner;
@@ -36,9 +36,15 @@ class {{ class_name }} {
         return decisions;
     }
 
-    public int predict(double[] features) {
+    public {{ 'int[]' if is_multilabel else 'int' }} predict(double[] features) {
         double[] decisions = this.decisionFunction(features);
-        {% if is_binary %}
+        {% if is_multilabel %}
+int[] labels = new int[decisions.length];
+        for (int i = 0, l = decisions.length; i < l; i++) {
+            labels[i] = decisions[i] > 0 ? 1 : 0;
+        }
+        return labels;
+        {% elif is_binary %}
         return decisions[0] > 0 ? 1 : 0;
         {% else %}
         int classIdx = 0;
@@ -94,17 +100,17 @@ class {{ class_name }} {
 
         {% if is_test or to_json %}
         // Get JSON:
-        int prediction = clf.predict(features);
+        {{ 'int[]' if is_multilabel else 'int' }} prediction = clf.predict(features);
         {% if with_proba %}
         double[] probabilities = clf.predictProba(features);
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + Arrays.toString(probabilities) + "}");
+        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }} + ", \"predict_proba\": " + Arrays.toString(probabilities) + "}");
         {% else %}
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }} + "}");
         {% endif %}
         {% else %}
         // Get class prediction:
-        int prediction = clf.predict(features);
-        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {{ 'int[]' if is_multilabel else 'int' }} prediction = clf.predict(features);
+        System.out.println("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }});
         {% if with_proba %}
 
         // Get class probabilities:

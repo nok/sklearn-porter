@@ -25,7 +25,9 @@ class {{ class_name }}
 
 	def predict(features)
 		decisions = decision_function features
-		{% if is_binary %}
+		{% if is_multilabel %}
+decisions.map { |decision| decision > 0 ? 1 : 0 }
+		{% elif is_binary %}
 		decisions[0] > 0 ? 1 : 0
 		{% else %}
 		class_idx = 0
@@ -79,7 +81,7 @@ if __FILE__ == $0
 	{% else %}
 	# Get class prediction:
 	prediction = clf.predict features
-	puts "Predicted class: ##{prediction}"
+	puts "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}#{prediction}"
 	{% if with_proba %}
 
 	# Get class probabilities:

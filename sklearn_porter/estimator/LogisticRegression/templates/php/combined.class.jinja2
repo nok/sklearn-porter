@@ -18,7 +18,11 @@ class {{ class_name }} {
 
     public static function predict($features) {
         $decisions = {{ class_name }}::decisionFunction($features);
-        {% if is_binary %}
+        {% if is_multilabel %}
+return array_map(function ($decision) {
+            return $decision > 0 ? 1 : 0;
+        }, $decisions);
+        {% elif is_binary %}
         return $decisions[0] > 0 ? 1 : 0;
         {% else %}
         $classIdx = 0;
@@ -76,7 +80,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = {{ class_name }}::predict($features);
-    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    fwrite(STDOUT, "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multilabel else 'strval($prediction)' }} . "\n");
     {% if with_proba %}
 
     // Get class probabilities:

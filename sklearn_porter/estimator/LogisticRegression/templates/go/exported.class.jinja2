@@ -20,7 +20,7 @@ type {{ class_name }} struct {
 
 {% if is_test or to_json %}
 type Response struct {
-	Predict int `json:"predict"`
+	Predict {{ '[]int' if is_multilabel else 'int' }} `json:"predict"`
 	{% if with_proba %}
 	PredictProba []float64 `json:"predict_proba"`
 	{% endif %}
@@ -38,9 +38,17 @@ func (clf {{ class_name }}) DecisionFunction(features []float64) []float64 {
 	return decisions
 }
 
-func (clf {{ class_name }}) Predict(features []float64) int {
+func (clf {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multilabel else 'int' }} {
 	decisions := clf.DecisionFunction(features)
-	{% if is_binary %}
+	{% if is_multilabel %}
+	labels := make([]int, len(decisions))
+	for i := 0; i < len(decisions); i++ {
+		if decisions[i] > 0 {
+			labels[i] = 1
+		}
+	}
+	return labels
+	{% elif is_binary %}
 	if decisions[0] > 0 {
 		return 1
 	}
@@ -119,7 +127,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
-	fmt.Printf("Predicted class: #%d\n", prediction)
+	fmt.Printf("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}%v\n", prediction)
 	{% if with_proba %}
 
 	// Get class probabilities:

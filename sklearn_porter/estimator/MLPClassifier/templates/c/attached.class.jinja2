@@ -95,6 +95,18 @@ int n_classes() {
     return layers[N_LAYERS - 1] == 1 ? 2 : layers[N_LAYERS - 1];
 }
 
+{% if is_multilabel %}
+/* Predict the labels, each one is 1 if its probability is greater than .5: */
+void predict(int *labels, double features[N_FEATURES]) {
+    int i;
+    int n_outputs = layers[N_LAYERS - 1];
+    double *outputs = feed_forward(features);
+    for (i = 0; i < n_outputs; i++) {
+        labels[i] = outputs[i] > .5 ? 1 : 0;
+    }
+    free(outputs);
+}
+{% else %}
 int predict(double features[N_FEATURES]) {
     int n_outputs = layers[N_LAYERS - 1];
     double *outputs = feed_forward(features);
@@ -102,6 +114,7 @@ int predict(double features[N_FEATURES]) {
     free(outputs);
     return prediction;
 }
+{% endif %}
 
 void predict_proba(double *result, double features[N_FEATURES]) {
     int i, n_outputs = layers[N_LAYERS - 1];
@@ -134,7 +147,20 @@ int main(int argc, const char *argv[]) {
     /* Get JSON: */
     double probabilities[n_classes()];
     predict_proba(probabilities, features);
+    {% if is_multilabel %}
+    int labels[n_classes()];
+    predict(labels, features);
+    printf("{\"predict\": [");
+    for (int i = 0; i < n_classes(); i++) {
+        printf("%d", labels[i]);
+        if (i < (n_classes() - 1)) {
+            printf(",");
+        }
+    }
+    printf("], \"predict_proba\": [");
+    {% else %}
     printf("{\"predict\": %d, \"predict_proba\": [", predict(features));
+    {% endif %}
     for (int i = 0; i < n_classes(); i++) {
         printf("%.17g", probabilities[i]);
         if (i < (n_classes() - 1)) {
@@ -144,7 +170,15 @@ int main(int argc, const char *argv[]) {
     printf("]}");
     {% else %}
     /* Get class prediction: */
+    {% if is_multilabel %}
+    int labels[n_classes()];
+    predict(labels, features);
+    for (int i = 0; i < n_classes(); i++) {
+        printf("Predicted label #%d: %d\n", i, labels[i]);
+    }
+    {% else %}
     printf("Predicted class: #%d\n", predict(features));
+    {% endif %}
 
     /* Get class probabilities: */
     double probabilities[n_classes()];
