@@ -158,6 +158,7 @@ porter port estimator.joblib -l js -t attached | npx terser --compress -o estima
 
 - The ported classifiers return the index of the predicted class instead of its label. The predictions only match those of scikit-learn if the labels are `0, 1, …, n_classes - 1`, so encode other labels (e.g. `1..3`, `-1/+1` or strings) with a [`LabelEncoder`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html) before training.
 - [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html) with `break_ties=True` can't be ported and raise a `NotSupportedYetError`.
+- [KNeighborsClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html) can only be ported with `weights='uniform'` and the metrics `minkowski` (e.g. `euclidean` or `manhattan`), `chebyshev`, `cosine` and `hamming`. If several neighbors have the same distance to a sample (which is common with `hamming`), the ported estimator picks the first ones in the order of the training data, scikit-learn may pick others and predict a different class. Other metrics (e.g. `canberra` or a callable) and the weighted Minkowski distance (`metric_params={'w': ...}`) raise a `NotSupportedYetError`.
 
 
 ## Contributing

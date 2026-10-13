@@ -394,6 +394,57 @@ def test_linear_svc_without_intercept(binary: bool):
     assert model_data['inters'] == (0.0 if binary else [0.0, 0.0, 0.0])
 
 
+@pytest.mark.parametrize(
+    ('params', 'metric', 'power'),
+    [
+        (dict(), 'minkowski', 2),
+        (dict(metric='euclidean'), 'minkowski', 2),
+        (dict(metric='l2'), 'minkowski', 2),
+        (dict(p=1), 'minkowski', 1),
+        (dict(metric='manhattan'), 'minkowski', 1),
+        (dict(metric='cityblock'), 'minkowski', 1),
+        (dict(metric='l1'), 'minkowski', 1),
+        (dict(p=3), 'minkowski', 3),
+        (dict(p=0.5), 'minkowski', 0.5),
+        (dict(metric_params={'p': 3}), 'minkowski', 3),
+        (dict(metric='chebyshev'), 'chebyshev', 2),
+        (dict(metric='infinity'), 'chebyshev', 2),
+        (dict(p=np.inf), 'chebyshev', 2),
+        (dict(metric='cosine'), 'cosine', 2),
+        (dict(metric='hamming'), 'hamming', 2),
+    ],
+    ids=lambda x: str(x).replace(' ', ''),
+)
+def test_k_neighbors_classifier_with_supported_metric(
+    params: dict, metric: str, power: float
+):
+    """Test the metric and the power of the ported distance."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = KNeighborsClassifier(**params).fit(X=x, y=y)
+    model_data = Estimator(orig_est)._estimator.model_data
+    assert model_data['metric'] == metric
+    assert model_data['power'] == power
+
+
+@pytest.mark.parametrize(
+    ('params', 'match'),
+    [
+        (dict(metric='canberra'), 'canberra'),
+        (dict(metric=lambda a, b: np.abs(a - b).sum()), '<lambda>'),
+        (dict(metric_params={'w': [1.0, 2.0, 3.0, 4.0]}), 'weighted'),
+    ],
+    ids=['canberra', 'callable', 'weighted'],
+)
+def test_k_neighbors_classifier_with_unsupported_metric(
+    params: dict, match: str
+):
+    """Test the rejection of metrics which aren't ported."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = KNeighborsClassifier(**params).fit(X=x, y=y)
+    with pytest.raises(exception.NotSupportedYetError, match=match):
+        Estimator(orig_est)
+
+
 @pytest.mark.regression
 @pytest.mark.parametrize(
     'x',

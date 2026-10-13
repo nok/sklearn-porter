@@ -10,11 +10,12 @@ class {{ class_name }}
 
 	INF = +1.0/0.0
 
-	def initialize (x, y, k, n, power)
+	def initialize (x, y, k, n, metric, power)
 		@x = x
 		@y = y
 		@k = k
 		@n = n
+		@metric = metric
 		@power = power
 	end
 
@@ -26,29 +27,44 @@ class {{ class_name }}
 		idx
 	end
 
-	def _compute (temp, cand, q)
-        dist = 0.0
-        for i in 0 ... temp.length
-            diff = (temp[i] - cand[i]).abs
-            if q == 1
-                dist += diff
-            elsif q == 2
-                dist += diff * diff
-            elsif q == INF
-                if diff > dist
-                    dist = diff
-                end
-            else
-                dist += diff ** q
-            end
-        end
-        if q == 1 || q == INF
-            dist
-        elsif q == 2
-            Math.sqrt dist
-        else
-            dist ** (1.0 / q)
-        end
+	# Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
+	def _compute (temp, cand, metric, q)
+		if metric == 'chebyshev'
+			return (0 ... temp.length).map { |i| (temp[i] - cand[i]).abs }.max
+		end
+		if metric == 'cosine'
+			dot, norm_temp, norm_cand = 0.0, 0.0, 0.0
+			for i in 0 ... temp.length
+				dot += temp[i] * cand[i]
+				norm_temp += temp[i] * temp[i]
+				norm_cand += cand[i] * cand[i]
+			end
+			# The distance to a zero vector is 1 like in scikit-learn:
+			return 1.0 if norm_temp == 0 || norm_cand == 0
+			dist = 1.0 - dot / (Math.sqrt(norm_temp) * Math.sqrt(norm_cand))
+			return [[dist, 0.0].max, 2.0].min
+		end
+		if metric == 'hamming'
+			return (0 ... temp.length).count { |i| temp[i] != cand[i] }.to_f / temp.length
+		end
+		dist = 0.0
+		for i in 0 ... temp.length
+			diff = (temp[i] - cand[i]).abs
+			if q == 1
+				dist += diff
+			elsif q == 2
+				dist += diff * diff
+			else
+				dist += diff ** q
+			end
+		end
+		if q == 1
+			dist
+		elsif q == 2
+			Math.sqrt dist
+		else
+			dist ** (1.0 / q)
+		end
 	end
 
 	def predict (features)
@@ -62,7 +78,7 @@ class {{ class_name }}
             class_idx = 0
             min_dist = INF
             for i in 0 ... @y.length
-                dist = _compute @x[i], features, @power
+                dist = _compute @x[i], features, @metric, @power
                 if dist <= min_dist
                     min_dist = dist
                     class_idx = @y[i]
@@ -72,7 +88,7 @@ class {{ class_name }}
         else
             dists = []
             for i in 0 ... @y.length
-                dist = _compute @x[i], features, @power
+                dist = _compute @x[i], features, @metric, @power
                 dists.push [@y[i], dist]
             end
             dists.sort! { |a, b| a[1] <=> b[1] }
@@ -101,7 +117,7 @@ if __FILE__ == $0
 	{{ y }}
 
 	# Estimator:
-	clf = {{ class_name }}.new X, y, {{ k }}, {{ n }}, {{ power }}
+	clf = {{ class_name }}.new X, y, {{ k }}, {{ n }}, '{{ metric }}', {{ power }}
 
 	{% if is_test or to_json %}
 	# Get JSON:

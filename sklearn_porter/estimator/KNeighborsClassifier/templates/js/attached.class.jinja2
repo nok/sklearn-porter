@@ -1,12 +1,13 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-var {{ class_name }} = function(X, y, k, n, power) {
+var {{ class_name }} = function(X, y, k, n, metric, power) {
 
     this.X = X;
     this.y = y;
     this.k = k;
     this.n = n;
+    this.metric = metric;
     this.power = power;
 
     var Neighbor = function(y, dist) {
@@ -22,29 +23,53 @@ var {{ class_name }} = function(X, y, k, n, power) {
         return idx;
     };
 
-    var compute = function(temp, cand, q) {  // minkowski distance
-        var dist = 0., diff;
-        for (var i = 0, l = temp.length; i < l; i++) {
+    // Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
+    var compute = function(temp, cand, metric, q) {
+        var dist = 0., diff, i, l = temp.length;
+        if (metric === 'chebyshev') {
+            for (i = 0; i < l; i++) {
+                dist = Math.max(dist, Math.abs(temp[i] - cand[i]));
+            }
+            return dist;
+        }
+        if (metric === 'cosine') {
+            var dot = 0., normTemp = 0., normCand = 0.;
+            for (i = 0; i < l; i++) {
+                dot += temp[i] * cand[i];
+                normTemp += temp[i] * temp[i];
+                normCand += cand[i] * cand[i];
+            }
+            // The distance to a zero vector is 1 like in scikit-learn:
+            if (normTemp === 0 || normCand === 0) {
+                return 1.;
+            }
+            dist = 1. - dot / (Math.sqrt(normTemp) * Math.sqrt(normCand));
+            return Math.min(Math.max(dist, 0.), 2.);
+        }
+        if (metric === 'hamming') {
+            for (i = 0; i < l; i++) {
+                if (temp[i] !== cand[i]) {
+                    dist += 1.;
+                }
+            }
+            return dist / l;
+        }
+        for (i = 0; i < l; i++) {
             diff = Math.abs(temp[i] - cand[i]);
             if (q === 1) {
                 dist += diff;
             } else if (q === 2) {
-                dist += diff*diff;
-            } else if (q === Number.POSITIVE_INFINITY) {
-                if (diff > dist) {
-                    dist = diff;
-                }
+                dist += diff * diff;
             } else {
                 dist += Math.pow(diff, q);
             }
         }
-        if (q === 1 || q === Number.POSITIVE_INFINITY) {
+        if (q === 1) {
             return dist;
         } else if (q === 2) {
             return Math.sqrt(dist);
-        } else {
-            return Math.pow(dist, 1. / q);
         }
+        return Math.pow(dist, 1. / q);
     };
 
     this.predict = function(features) {
@@ -59,7 +84,7 @@ var {{ class_name }} = function(X, y, k, n, power) {
             var classIdx = 0,
                 minDist = Number.POSITIVE_INFINITY;
             for (i = 0; i < this.y.length; i++) {
-                dist = compute(this.X[i], features, this.power);
+                dist = compute(this.X[i], features, this.metric, this.power);
                 if (dist <= minDist) {
                     minDist = dist;
                     classIdx = this.y[i];
@@ -69,7 +94,7 @@ var {{ class_name }} = function(X, y, k, n, power) {
         } else {
             var dists = [];
             for (i = 0; i < this.y.length; i++) {
-                dist = compute(this.X[i], features, this.power);
+                dist = compute(this.X[i], features, this.metric, this.power);
                 dists.push(new Neighbor(this.y[i], dist));
             }
             dists.sort(function compare(n1, n2) {
@@ -109,7 +134,7 @@ var main = function () {
     {{ y }}
 
     // Estimator:
-    var clf = new {{ class_name }}(X, y, {{ k }}, {{ n }}, {{ power }});
+    var clf = new {{ class_name }}(X, y, {{ k }}, {{ n }}, "{{ metric }}", {{ power }});
 
     {% if is_test or to_json %}
     // Get JSON:

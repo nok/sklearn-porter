@@ -20,6 +20,7 @@ class {{ class_name }} {
         private int[] y;
         private int k;
         private int n;
+        private String metric;
         private double power;
     }
 
@@ -48,30 +49,54 @@ class {{ class_name }} {
         return idx;
     }
 
-    private static double compute(double[] temp, double[] cand, double q) {
+    // Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
+    private static double compute(double[] temp, double[] cand, String metric, double q) {
         double dist = 0.;
         double diff;
+        if (metric.equals("chebyshev")) {
+            for (int i = 0, l = temp.length; i < l; i++) {
+                dist = Math.max(dist, Math.abs(temp[i] - cand[i]));
+            }
+            return dist;
+        }
+        if (metric.equals("cosine")) {
+            double dot = 0., normTemp = 0., normCand = 0.;
+            for (int i = 0, l = temp.length; i < l; i++) {
+                dot += temp[i] * cand[i];
+                normTemp += temp[i] * temp[i];
+                normCand += cand[i] * cand[i];
+            }
+            // The distance to a zero vector is 1 like in scikit-learn:
+            if (normTemp == 0. || normCand == 0.) {
+                return 1.;
+            }
+            dist = 1. - dot / (Math.sqrt(normTemp) * Math.sqrt(normCand));
+            return Math.min(Math.max(dist, 0.), 2.);
+        }
+        if (metric.equals("hamming")) {
+            for (int i = 0, l = temp.length; i < l; i++) {
+                if (temp[i] != cand[i]) {
+                    dist += 1.;
+                }
+            }
+            return dist / temp.length;
+        }
         for (int i = 0, l = temp.length; i < l; i++) {
             diff = Math.abs(temp[i] - cand[i]);
             if (q == 1) {
                 dist += diff;
             } else if (q == 2) {
                 dist += diff * diff;
-            } else if (q == Double.POSITIVE_INFINITY) {
-                if (diff > dist) {
-                    dist = diff;
-                }
             } else {
                 dist += Math.pow(diff, q);
             }
         }
-        if (q == 1 || q == Double.POSITIVE_INFINITY) {
+        if (q == 1) {
             return dist;
         } else if (q == 2) {
             return Math.sqrt(dist);
-        } else {
-            return Math.pow(dist, 1. / q);
         }
+        return Math.pow(dist, 1. / q);
     }
 
     public int predict(double[] features) {
@@ -86,7 +111,7 @@ class {{ class_name }} {
         if (this.clf.k == 1) {
             double minDist = Double.POSITIVE_INFINITY;
             for (int i = 0; i < this.clf.y.length; i++) {
-                dist = {{ class_name }}.compute(this.clf.X[i], features, this.clf.power);
+                dist = {{ class_name }}.compute(this.clf.X[i], features, this.clf.metric, this.clf.power);
                 if (dist <= minDist) {
                     minDist = dist;
                     classIdx = this.clf.y[i];
@@ -96,7 +121,7 @@ class {{ class_name }} {
         } else {
             ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
             for (int i = 0; i < this.clf.y.length; i++) {
-                dist = {{ class_name }}.compute(this.clf.X[i], features, this.clf.power);
+                dist = {{ class_name }}.compute(this.clf.X[i], features, this.clf.metric, this.clf.power);
                 dists.add(new Neighbor(clf.y[i], dist));
             }
             Collections.sort(dists, new Comparator<Neighbor>() {

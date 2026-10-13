@@ -4,11 +4,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <math.h>
+#include <string.h>
 
 #define N_FEATURES {{ n_features }}
 #define N_CLASSES {{ n_classes }}
 #define N_TEMPLATES {{ n_templates }}
 #define K {{ k }}
+#define METRIC "{{ metric }}"
 #define POWER {{ power }}
 
 
@@ -39,31 +41,60 @@ int compare(const void *a, const void *b) {
     return n1->index - n2->index;
 }
 
-double compute(const double *temp, const double *cand, double q) {
+/* Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`: */
+double compute(const double *temp, const double *cand, const char *metric, double q) {
     int i;
     double dist = 0.;
     double diff;
+    if (strcmp(metric, "chebyshev") == 0) {
+        for (i = 0; i < N_FEATURES; i++) {
+            diff = fabs(temp[i] - cand[i]);
+            if (diff > dist) {
+                dist = diff;
+            }
+        }
+        return dist;
+    }
+    if (strcmp(metric, "cosine") == 0) {
+        double dot = 0.;
+        double norm_temp = 0.;
+        double norm_cand = 0.;
+        for (i = 0; i < N_FEATURES; i++) {
+            dot += temp[i] * cand[i];
+            norm_temp += temp[i] * temp[i];
+            norm_cand += cand[i] * cand[i];
+        }
+        /* The distance to a zero vector is 1 like in scikit-learn: */
+        if (norm_temp == 0. || norm_cand == 0.) {
+            return 1.;
+        }
+        dist = 1. - dot / (sqrt(norm_temp) * sqrt(norm_cand));
+        return dist < 0. ? 0. : (dist > 2. ? 2. : dist);
+    }
+    if (strcmp(metric, "hamming") == 0) {
+        for (i = 0; i < N_FEATURES; i++) {
+            if (temp[i] != cand[i]) {
+                dist += 1.;
+            }
+        }
+        return dist / N_FEATURES;
+    }
     for (i = 0; i < N_FEATURES; i++) {
         diff = fabs(temp[i] - cand[i]);
         if (q == 1) {
             dist += diff;
         } else if (q == 2) {
             dist += diff * diff;
-        } else if (q == INFINITY) {
-            if (diff > dist) {
-                dist = diff;
-            }
         } else {
             dist += pow(diff, q);
         }
     }
-    if (q == 1 || q == INFINITY) {
+    if (q == 1) {
         return dist;
     } else if (q == 2) {
         return sqrt(dist);
-    } else {
-        return pow(dist, 1. / q);
     }
+    return pow(dist, 1. / q);
 }
 
 void predict_proba(double *result, double features[N_FEATURES]) {
@@ -71,7 +102,7 @@ void predict_proba(double *result, double features[N_FEATURES]) {
     Neighbor *neighbors = malloc(N_TEMPLATES * sizeof(Neighbor));
     for (i = 0; i < N_TEMPLATES; i++) {
         neighbors[i].index = i;
-        neighbors[i].dist = compute(X[i], features, POWER);
+        neighbors[i].dist = compute(X[i], features, METRIC, POWER);
     }
     qsort(neighbors, N_TEMPLATES, sizeof(Neighbor), compare);
     for (i = 0; i < N_CLASSES; i++) {
