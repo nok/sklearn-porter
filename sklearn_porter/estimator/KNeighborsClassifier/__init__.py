@@ -2,6 +2,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
 
+import numpy as np
 from loguru import logger as L
 
 # scikit-learn
@@ -67,11 +68,39 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             msg = 'Only `uniform` weights are supported.'
             raise exception.NotSupportedYetError(msg)
 
+        # The effective metric and its parameters contain the used distance,
+        # e.g. `manhattan` for `p=1` or `{'p': 3}` from `metric_params`. The
+        # ported estimators support the metrics `minkowski`, `chebyshev`,
+        # `cosine` and `hamming`. The power is only used by the Minkowski
+        # distance, the other metrics keep the default power (`p=2`):
+        metric = est.effective_metric_
+        metric_params = est.effective_metric_params_
+        power = 2
+        if metric in ('euclidean', 'l2'):
+            metric = 'minkowski'
+        elif metric in ('manhattan', 'cityblock', 'l1'):
+            metric, power = 'minkowski', 1
+        elif metric == 'minkowski' and np.isfinite(metric_params['p']):
+            power = metric_params['p']
+        elif metric in ('minkowski', 'infinity'):  # e.g. `minkowski`, `p=inf`
+            metric = 'chebyshev'
+        elif metric not in ('chebyshev', 'cosine', 'hamming'):
+            name = getattr(metric, '__name__', metric)
+            msg = (
+                f'The metric `{name}` is not supported, only the metrics '
+                '`minkowski` (e.g. `euclidean` or `manhattan`), `chebyshev`, '
+                '`cosine` and `hamming`.'
+            )
+            raise exception.NotSupportedYetError(msg)
+        if metric_params.get('w') is not None:
+            msg = 'The weighted Minkowski distance (`w`) is not supported.'
+            raise exception.NotSupportedYetError(msg)
+
         self.meta_info = dict(
             n_classes=len(est.classes_),
             n_templates=len(est._fit_X),
             n_features=len(est._fit_X[0]),
-            metric=est.metric,
+            metric=metric,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
@@ -81,7 +110,8 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             y=est._y.astype(int).tolist(),  # ty: ignore[unresolved-attribute]
             k=est.n_neighbors,  # number of relevant neighbors
             n=len(est.classes_),  # number of classes
-            power=est.p,
+            metric=metric,  # `minkowski`, `chebyshev`, `cosine` or `hamming`
+            power=power,  # only used by `minkowski`
         )
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
@@ -166,10 +196,6 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             type=tpl_int, name='y', values=', '.join(y_val), n=len(y_val)
         )
 
-        power = self.model_data['power']
-        if language is enum.Language.C and power == float('inf'):
-            power = 'INFINITY'
-
         tpl_class = tpls.get_template('attached.class')
         plas.update(
             dict(
@@ -177,7 +203,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
                 y=y_str,
                 k=self.model_data['k'],
                 n=self.model_data['n'],
-                power=power,
+                power=self.model_data['power'],
             )
         )
         out_class = tpl_class.render(**plas)
