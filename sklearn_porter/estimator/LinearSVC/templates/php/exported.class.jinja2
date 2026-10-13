@@ -3,6 +3,10 @@
 {% block content %}
 class {{ class_name }} {
 
+    private $data;
+    private $coeffs;
+    private $inters;
+
     public function __construct($path) {
         $this->data = json_decode(file_get_contents($path, true), true);
         $this->coeffs = $this->data['coeffs'];

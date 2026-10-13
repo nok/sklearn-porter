@@ -3,6 +3,12 @@
 {% block content %}
 class {{ class_name }} {
 
+    private $lefts;
+    private $rights;
+    private $thresholds;
+    private $indices;
+    private $classes;
+
     public function __construct($lefts, $rights, $thresholds, $indices, $classes) {
         $this->lefts = $lefts;
         $this->rights = $rights;

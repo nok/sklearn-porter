@@ -3,6 +3,18 @@
 {% block content %}
 class {{ class_name }} {
 
+    private $data;
+    private $nClasses;
+    private $classes;
+    private $vectors;
+    private $coeffs;
+    private $inters;
+    private $weights;
+    private $kernel;
+    private $gamma;
+    private $coef0;
+    private $degree;
+
     public function __construct($path) {
         $this->data = json_decode(file_get_contents($path, true), true);
 
