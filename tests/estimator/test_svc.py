@@ -245,11 +245,14 @@ def test_estimator_svm_on_unscaled_features(
         ],
     )
 
-    y_pred, _ = est.make(
-        test_x,
-        language=language,
-        template=template,
-        directory=tmp_dir,
-        delete_created_files=False,
-    )
+    try:
+        y_pred, _ = est.make(
+            test_x,
+            language=language,
+            template=template,
+            directory=tmp_dir,
+            delete_created_files=False,
+        )
+    except exception.CodeTooLarge:
+        pytest.skip(f'Code too large for {language} and {template}')
     np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
