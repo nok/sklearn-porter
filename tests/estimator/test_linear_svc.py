@@ -25,16 +25,19 @@ pytestmark = pytest.mark.regression
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 @pytest.mark.parametrize('loss', ['hinge', 'squared_hinge'])
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
+@pytest.mark.parametrize('fit_intercept', [True, False])
 def test_estimator_linear_svc(
     tmp_root_dir: Path,
     dataset: Dataset,
     template: str,
     language: str,
     loss: str,
+    fit_intercept: bool,
 ):
     """Test and compare different linear support vector classifiers."""
     orig_est = LinearSVC(
         loss=loss,
+        fit_intercept=fit_intercept,
         random_state=1,
         max_iter=10,
     )
@@ -59,6 +62,7 @@ def test_estimator_linear_svc(
             ('language', language),
             ('template', template),
             ('loss', loss),
+            ('fit_intercept', str(fit_intercept)),
         ],
     )
 

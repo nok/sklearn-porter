@@ -21,10 +21,10 @@
 {{ inters }}
 {{ weights }}
 
-int predict (float features[]) {
+int predict (double features[]) {
     int i, j, k, d, l;
-    float kernels[N_VECTORS];
-    float kernel;
+    double kernels[N_VECTORS];
+    double kernel;
     switch (KERNEL_TYPE) {
         case 'l':
             // <x,x'>
@@ -93,7 +93,7 @@ int predict (float features[]) {
             kernels[i] = -kernels[i];
         }
 
-        float decision = 0.;
+        double decision = 0.;
         for (k = starts[1]; k < ends[1]; k++) {
             decision += kernels[k] * coeffs[0][k];
         }
@@ -109,8 +109,8 @@ int predict (float features[]) {
 
     }
 
-    float decisions[N_INTERS];
-    float tmp;
+    double decisions[N_INTERS];
+    double tmp;
     for (i = 0, d = 0, l = N_WEIGHTS; i < l; i++) {
         for (j = i + 1; j < l; j++) {
             tmp = 0.;
@@ -155,7 +155,7 @@ int predict (float features[]) {
 int main(int argc, const char *argv[]) {
 
     /* Features: */
-    float features[argc-1];
+    double features[argc-1];
     int i;
     for (int i = 1; i < argc; i++) {
         features[i-1] = atof(argv[i]);

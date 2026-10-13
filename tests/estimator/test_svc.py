@@ -198,3 +198,61 @@ def test_estimator_svm_with_gamma_scale_on_unscaled_features(
         delete_created_files=False,
     )
     assert score == 1.0
+
+
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
+@pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
+@pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
+def test_estimator_svm_on_unscaled_features(
+    tmp_root_dir: Path,
+    orig_est: type,
+    dataset: Dataset,
+    template: str,
+    language: str,
+    kernel: str,
+):
+    """Test the precision of SVMs on unscaled features (e.g. breast_cancer)."""
+    # Limit the iterations, because libsvm may not converge (e.g. `poly`):
+    orig_est = orig_est(kernel=kernel, max_iter=100_000, random_state=1)
+
+    if not can(orig_est, language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+
+    # Estimator:
+    # Large and small feature values require double precision:
+    x, y = dataset.data, dataset.target
+    try:
+        orig_est.fit(X=x, y=y)
+    except ValueError as e:
+        pytest.skip(str(e))  # e.g. "specified nu is infeasible"
+    est = Estimator(orig_est)
+
+    # Samples:
+    test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
+
+    # Directory:
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'estimator_svm_on_unscaled_features'),
+            ('estimator', type(orig_est).__name__),
+            ('dataset', dataset.name),
+            ('language', language),
+            ('template', template),
+            ('kernel', kernel),
+        ],
+    )
+
+    try:
+        y_pred, _ = est.make(
+            test_x,
+            language=language,
+            template=template,
+            directory=tmp_dir,
+            delete_created_files=False,
+        )
+    except exception.CodeTooLarge:
+        pytest.skip(f'Code too large for {language} and {template}')
+    np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))

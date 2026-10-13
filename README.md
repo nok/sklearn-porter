@@ -151,7 +151,6 @@ porter port estimator.joblib -l js -t attached | npx terser --compress -o estima
 ## Known Issues
 
 - Only the final estimator of a [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) is ported. Preprocessing steps like a [`StandardScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) are silently dropped, so you have to apply them to the input data of the ported estimator yourself. Otherwise, the predictions differ from those of the pipeline.
-- The ported support vector machines, [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html), can make different predictions from the original estimators in rare cases. Therefore, sklearn-porter raises a `QualityWarning` for them; check the ported estimator with the `test` function.
 - The [AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) is ported with the `SAMME` algorithm, because scikit-learn removed the `SAMME.R` algorithm.
 
 

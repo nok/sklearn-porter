@@ -2,6 +2,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
 
+import numpy as np
 from loguru import logger as L
 
 # scikit-learn
@@ -63,8 +64,12 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
                 self.estimator_name
             ) from None
 
+        # Without `fit_intercept` the intercept is the scalar `0.0`:
+        coeffs = est.coef_
+        inters = np.broadcast_to(est.intercept_, (len(coeffs),))
+
         self.meta_info = dict(
-            n_features=len(est.coef_[0]),
+            n_features=len(coeffs[0]),
             n_classes=len(est.classes_),
             is_binary=len(est.classes_) == 2,
         )
@@ -73,11 +78,11 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
 
         if self.meta_info['is_binary']:
             self.model_data = dict(
-                coeffs=est.coef_[0].tolist(), inters=est.intercept_[0].tolist()
+                coeffs=coeffs[0].tolist(), inters=inters[0].tolist()
             )
         else:
             self.model_data = dict(
-                coeffs=est.coef_.tolist(), inters=est.intercept_.tolist()
+                coeffs=coeffs.tolist(), inters=inters.tolist()
             )
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
