@@ -32,7 +32,7 @@ def joblib_model_path(
     fitted_tree: DecisionTreeClassifier,
 ) -> Path:
     fpath = tmp_path_factory.mktemp('estimators') / 'estimator.joblib'
-    dump(fitted_tree, str(fpath), compress=0)
+    dump(fitted_tree, str(fpath))
     return fpath
 
 

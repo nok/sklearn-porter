@@ -132,7 +132,7 @@ First, save the trained estimator to a file (see [model persistence](https://sci
 ```python
 from joblib import dump
 
-dump(clf, 'estimator.joblib', compress=0)
+dump(clf, 'estimator.joblib')
 ```
 
 Then port the saved estimator with the `port` subcommand:
