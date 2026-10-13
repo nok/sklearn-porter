@@ -9,7 +9,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
 
 Use the generated code to make predictions where Python isn't available or is too heavy, e.g. on embedded systems, in web browsers or in existing applications. The ported estimators make the same predictions as the original scikit-learn estimators.
 
-Navigation: [Installation](#installation) • [Support](#support) • [Usage](#usage) • [CLI](#cli) • [Known Issues](#known-issues) • [Contributing](#contributing) • [Citation](#citation) • [License](#license)
+Navigation: [Installation](#installation) • [Support](#support) • [Usage](#usage) • [CLI](#cli) • [Limitations](#limitations) • [Known Issues](#known-issues) • [Contributing](#contributing) • [Citation](#citation) • [License](#license)
 
 
 ## Installation
@@ -148,10 +148,16 @@ porter port estimator.joblib -l js -t attached | npx terser --compress -o estima
 ```
 
 
-## Known Issues
+## Limitations
 
 - Only the final estimator of a [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) is ported. Preprocessing steps like a [`StandardScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) are silently dropped, so you have to apply them to the input data of the ported estimator yourself. Otherwise, the predictions differ from those of the pipeline.
-- The [AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html) is ported with the `SAMME` algorithm, because scikit-learn removed the `SAMME.R` algorithm.
+- Java limits the bytecode of a method to 64 KB. Large estimators ported to Java with the `attached` or `combined` template can therefore fail to compile with a `code too large` error. Use the `exported` template instead.
+
+
+## Known Issues
+
+- The ported classifiers return the index of the predicted class instead of its label. The predictions only match those of scikit-learn if the labels are `0, 1, …, n_classes - 1`, so encode other labels (e.g. `1..3`, `-1/+1` or strings) with a [`LabelEncoder`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html) before training.
+- [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html) with `break_ties=True` can't be ported and raise a `NotSupportedYetError`.
 
 
 ## Contributing
