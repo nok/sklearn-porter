@@ -16,7 +16,11 @@ from sklearn_porter.estimator.DecisionTreeClassifier import (
     DecisionTreeClassifier,
 )
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_thresholds
+from sklearn_porter.utils import (
+    get_thresholds,
+    has_missing_go_to_left,
+    missing_name,
+)
 
 
 class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
@@ -95,6 +99,9 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
             rights=est.tree_.children_right.tolist(),
             thresholds=get_thresholds(est.tree_),
             indices=est.tree_.feature.tolist(),
+            # Samples with missing values (NaN) go to the left child if 1,
+            # otherwise to the right child:
+            missing_go_to_left=est.tree_.missing_go_to_left.tolist(),
             values=est.tree_.value[:, :, 0].tolist(),
         )
         L.info(f'Model data (keys): {self.model_data.keys()}')
@@ -141,6 +148,9 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
             )
         )
         plas.update(self.meta_info)
+        plas.update(
+            has_missing_go_to_left=has_missing_go_to_left(self.model_data)
+        )
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
@@ -175,6 +185,14 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
                 values=', '.join(vals),
                 n=len(vals),
             )
+
+        missing_val = list(map(str, self.model_data['missing_go_to_left']))
+        plas['missing_go_to_left'] = tpl_arr_1.render(
+            type=tpl_int,
+            name=missing_name(language),
+            values=', '.join(missing_val),
+            n=len(missing_val),
+        )
 
         thresholds_val = list(map(converter, self.model_data['thresholds']))
         plas['thresholds'] = tpl_arr_1.render(

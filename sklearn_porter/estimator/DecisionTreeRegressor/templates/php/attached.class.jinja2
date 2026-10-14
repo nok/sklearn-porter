@@ -7,13 +7,15 @@ class {{ class_name }} {
     private $rights;
     private $thresholds;
     private $indices;
+    private $missing_go_to_left;
     private $values;
 
-    public function __construct($lefts, $rights, $thresholds, $indices, $values) {
+    public function __construct($lefts, $rights, $thresholds, $indices, $missing_go_to_left, $values) {
         $this->lefts = $lefts;
         $this->rights = $rights;
         $this->thresholds = $thresholds;
         $this->indices = $indices;
+        $this->missing_go_to_left = $missing_go_to_left;
         $this->values = $values;
     }
 
@@ -21,7 +23,7 @@ class {{ class_name }} {
     public function predict($features) {
         $node = 0;
         while ($this->lefts[$node] != -1) {
-            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
                 $node = $this->lefts[$node];
             } else {
                 $node = $this->rights[$node];
@@ -40,7 +42,9 @@ if ($argc > 1) {
 
     // Features:
     array_shift($argv);
-    $features = array_map('floatval', $argv);
+    $features = array_map(function ($value) {
+        return strtolower($value) === 'nan' ? NAN : floatval($value);
+    }, $argv);
     if (count($features) != {{ n_features }}) {
         fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
         exit(1);
@@ -51,10 +55,11 @@ if ($argc > 1) {
     {{ rights }}
     {{ thresholds }}
     {{ indices }}
+    {{ missing_go_to_left }}
     {{ values }}
 
     // Estimator:
-    $reg = new {{ class_name }}($lefts, $rights, $thresholds, $indices, $values);
+    $reg = new {{ class_name }}($lefts, $rights, $thresholds, $indices, $missing_go_to_left, $values);
 
     {% if is_test or to_json %}
     // Get JSON:

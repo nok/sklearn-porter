@@ -24,6 +24,7 @@ from sklearn_porter.utils import (
     get_class_fractions,
     get_output_classes,
     get_thresholds,
+    has_missing_go_to_left,
 )
 
 
@@ -112,6 +113,9 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                     thresholds=get_thresholds(e.tree_),
                     classes=get_class_fractions(e.tree_),
                     indices=e.tree_.feature.tolist(),
+                    # Samples with missing values (NaN) go to the left child
+                    # if 1, otherwise to the right child:
+                    missing_go_to_left=e.tree_.missing_go_to_left.tolist(),
                 )
             )
         L.info(f'Model data (keys): {self.model_data.keys()}')
@@ -157,6 +161,11 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             )
         )
         plas.update(self.meta_info)
+        plas.update(
+            has_missing_go_to_left=any(
+                map(has_missing_go_to_left, self.model_data['estimators'])
+            )
+        )
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
@@ -266,6 +275,9 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                     rights=', '.join(map(str, tree['rights'])),
                     thresholds=', '.join(map(converter, tree['thresholds'])),
                     indices=', '.join(map(str, tree['indices'])),
+                    missing_go_to_left=', '.join(
+                        map(str, tree['missing_go_to_left'])
+                    ),
                     classes=[
                         ', '.join(map(converter, c)) for c in tree['classes']
                     ],
@@ -327,6 +339,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             model_data['thresholds'],
             model_data['classes'],
             model_data['indices'],
+            model_data['missing_go_to_left'],
             0,
             1,
         )
@@ -351,6 +364,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         threshold: list,
         value: list,
         features: list,
+        missing_go_to_left: list,
         node: int,
         depth: int,
     ):
@@ -375,6 +389,8 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             The label or class.
         features : list
             The feature values.
+        missing_go_to_left : list
+            Whether samples with missing values (NaN) go to the left child.
         node : list
             The current node.
         depth : list
@@ -394,6 +410,11 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             if language is enum.Language.PHP:
                 val_a = '$' + val_a
             val_b = converter(threshold[node])
+            # Missing values (NaN) go to the right child by default, because
+            # all comparisons with NaN are false:
+            if missing_go_to_left[node]:
+                val_isnan = tpls.get_template('isnan').render(a=val_a)
+                val_b = f'{val_b} || {val_isnan}'
             tpl_if = tpls.get_template('if')
             out_if = tpl_if.render(a=val_a, op='<=', b=val_b)
             if node != 0:
@@ -410,6 +431,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                     threshold,
                     value,
                     features,
+                    missing_go_to_left,
                     left_nodes[node],
                     depth + 1,
                 )
@@ -429,6 +451,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                     threshold,
                     value,
                     features,
+                    missing_go_to_left,
                     right_nodes[node],
                     depth + 1,
                 )

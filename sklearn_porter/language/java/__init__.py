@@ -24,6 +24,8 @@ class Java(LanguageABC):
         'if':           'if ({{ a }} {{ op }} {{ b }}) {',
         'else':         '} else {',
         'endif':        '}',
+        # NaN check (e.g. of missing values):
+        'isnan':        'Double.isNaN({{ a }})',
 
         # Basics:
         'indent':       '    ',

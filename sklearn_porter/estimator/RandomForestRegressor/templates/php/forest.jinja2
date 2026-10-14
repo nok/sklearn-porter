@@ -8,7 +8,7 @@ public function __construct($model) {
 private static function compute($tree, $features) {
     $node = 0;
     while ($tree['lefts'][$node] != -1) {
-        if ($features[$tree['indices'][$node]] <= $tree['thresholds'][$node]) {
+        if ($features[$tree['indices'][$node]] <= $tree['thresholds'][$node] || ($tree['missing_go_to_left'][$node] == 1 && is_nan($features[$tree['indices'][$node]]))) {
             $node = $tree['lefts'][$node];
         } else {
             $node = $tree['rights'][$node];

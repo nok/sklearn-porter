@@ -1,6 +1,8 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
+#include <math.h>
+
 #define N_FEATURES {{ n_features }}
 #define N_OUTPUTS {{ n_outputs }}
 
@@ -9,6 +11,7 @@ int *lefts;
 int *rights;
 double *thresholds;
 int *indices;
+int *missing_go_to_left;
 double **values;
 
 void load(const char *path) {
@@ -17,6 +20,7 @@ void load(const char *path) {
     rights = json_ints(json_get(data, "rights"));
     thresholds = json_doubles(json_get(data, "thresholds"));
     indices = json_ints(json_get(data, "indices"));
+    missing_go_to_left = json_ints(json_get(data, "missing_go_to_left"));
     values = json_doubles_2d(json_get(data, "values"));
     json_free(data);
 }
@@ -25,7 +29,7 @@ void load(const char *path) {
 double *predict(double features[N_FEATURES]) {
     int node = 0;
     while (lefts[node] != -1) {
-        if (features[indices[node]] <= thresholds[node]) {
+        if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
             node = lefts[node];
         } else {
             node = rights[node];

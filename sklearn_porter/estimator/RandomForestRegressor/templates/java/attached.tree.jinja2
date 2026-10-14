@@ -4,6 +4,7 @@ private static Tree tree{{ index }}() {
         new int[] {{ '{' }}{{ rights }}{{ '}' }},
         new double[] {{ '{' }}{{ thresholds }}{{ '}' }},
         new int[] {{ '{' }}{{ indices }}{{ '}' }},
+        new int[] {{ '{' }}{{ missing_go_to_left }}{{ '}' }},
         new double[][] {{ '{' }}{% for v in values %}{{ '{' }}{{ v }}{{ '}' }}{% if not loop.last %}, {% endif %}{% endfor %}{{ '}' }}
     );
 }

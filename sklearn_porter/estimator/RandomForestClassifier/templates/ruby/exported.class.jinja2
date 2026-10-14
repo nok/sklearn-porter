@@ -8,11 +8,12 @@ class {{ class_name }}
 
 	class Tree
 
-		def initialize(lefts, rights, thresholds, indices, classes)
+		def initialize(lefts, rights, thresholds, indices, missing_go_to_left, classes)
 			@lefts = lefts
 			@rights = rights
 			@thresholds = thresholds
 			@indices = indices
+			@missing_go_to_left = missing_go_to_left
 			@classes = classes
 		end
 
@@ -43,7 +44,7 @@ class {{ class_name }}
 		def compute(features)
 			node = 0
 			while @thresholds[node] != -2
-				if features[@indices[node]] <= @thresholds[node]
+				if features[@indices[node]] <= @thresholds[node] || (@missing_go_to_left[node] == 1 && features[@indices[node]].nan?)
 					node = @lefts[node]
 				else
 					node = @rights[node]
@@ -57,7 +58,7 @@ class {{ class_name }}
 	def initialize(path)
 		model = JSON.parse(File.read(path))
 		@forest = model.map do |tree|
-			Tree.new(tree['lefts'], tree['rights'], tree['thresholds'], tree['indices'], tree['classes'])
+			Tree.new(tree['lefts'], tree['rights'], tree['thresholds'], tree['indices'], tree['missing_go_to_left'], tree['classes'])
 		end
 	end
 
@@ -124,7 +125,7 @@ if __FILE__ == $0
 	model_data = ARGV.shift
 
 	# Features:
-	features = ARGV.collect(&:to_f)
+	features = ARGV.collect { |value| value.downcase == 'nan' ? Float::NAN : value.to_f }
 
 	# Estimator:
 	clf = {{ class_name }}.new model_data

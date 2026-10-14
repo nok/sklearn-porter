@@ -6,7 +6,7 @@ end
 def self.compute(tree, features)
 	node = 0
 	while tree['lefts'][node] != -1
-		if features[tree['indices'][node]] <= tree['thresholds'][node]
+		if features[tree['indices'][node]] <= tree['thresholds'][node] || (tree['missing_go_to_left'][node] == 1 && features[tree['indices'][node]].nan?)
 			node = tree['lefts'][node]
 		else
 			node = tree['rights'][node]

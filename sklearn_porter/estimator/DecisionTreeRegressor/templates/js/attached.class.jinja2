@@ -1,18 +1,19 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-var {{ class_name }} = function(lefts, rights, thresholds, indices, values) {
+var {{ class_name }} = function(lefts, rights, thresholds, indices, missingGoToLeft, values) {
 
     this.lefts = lefts;
     this.rights = rights;
     this.thresholds = thresholds;
     this.indices = indices;
+    this.missingGoToLeft = missingGoToLeft;
     this.values = values;
 
     this.predict = function(features) {
         var node = 0;
         while (this.lefts[node] !== -1) {
-            if (features[this.indices[node]] <= this.thresholds[node]) {
+            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] === 1 && isNaN(features[this.indices[node]]))) {
                 node = this.lefts[node];
             } else {
                 node = this.rights[node];
@@ -49,10 +50,11 @@ var main = function () {
     {{ rights }}
     {{ thresholds }}
     {{ indices }}
+    {{ missing_go_to_left }}
     {{ values }}
 
     // Estimator:
-    var reg = new {{ class_name }}(lefts, rights, thresholds, indices, values);
+    var reg = new {{ class_name }}(lefts, rights, thresholds, indices, missingGoToLeft, values);
 
     {% if is_test or to_json %}
     // Get JSON:

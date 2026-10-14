@@ -18,6 +18,8 @@ from sklearn_porter.utils import (
     get_class_fractions,
     get_output_classes,
     get_thresholds,
+    has_missing_go_to_left,
+    missing_name,
 )
 
 
@@ -99,6 +101,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             rights=est.tree_.children_right.tolist(),
             thresholds=get_thresholds(est.tree_),
             indices=est.tree_.feature.tolist(),
+            # Samples with missing values (NaN) go to the left child if 1,
+            # otherwise to the right child:
+            missing_go_to_left=est.tree_.missing_go_to_left.tolist(),
             classes=get_class_fractions(est.tree_),
         )
         L.info(f'Model data (keys): {self.model_data.keys()}')
@@ -145,6 +150,9 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             )
         )
         plas.update(self.meta_info)
+        plas.update(
+            has_missing_go_to_left=has_missing_go_to_left(self.model_data)
+        )
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
@@ -212,12 +220,21 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             m=len(classes_val[0]),
         )
 
+        missing_val = list(map(str, self.model_data['missing_go_to_left']))
+        missing_str = tpl_arr_1.render(
+            type=tpl_int,
+            name=missing_name(language),
+            values=', '.join(missing_val),
+            n=len(missing_val),
+        )
+
         plas.update(
             dict(
                 lefts=lefts_str,
                 rights=rights_str,
                 thresholds=thresholds_str,
                 indices=indices_str,
+                missing_go_to_left=missing_str,
                 classes=classes_str,
             )
         )
@@ -278,6 +295,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             self.model_data['thresholds'],
             self.model_data[self.LEAF_DATA],
             self.model_data['indices'],
+            self.model_data['missing_go_to_left'],
             0,
             n_indents,
         )
@@ -292,6 +310,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         threshold: list,
         value: list,
         features: list,
+        missing_go_to_left: list,
         node: int,
         depth: int,
     ):
@@ -316,6 +335,8 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             The label or class.
         features : list
             The feature values.
+        missing_go_to_left : list
+            Whether samples with missing values (NaN) go to the left child.
         node : list
             The current node.
         depth : list
@@ -333,6 +354,11 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             if language is enum.Language.PHP:
                 val_a = '$' + val_a
             val_b = converter(threshold[node])
+            # Missing values (NaN) go to the right child by default, because
+            # all comparisons with NaN are false:
+            if missing_go_to_left[node]:
+                val_isnan = tpls.get_template('isnan').render(a=val_a)
+                val_b = f'{val_b} || {val_isnan}'
             tpl_if = tpls.get_template('if')
             out_if = tpl_if.render(a=val_a, op='<=', b=val_b)
             out_if = indent(out_if, depth * out_indent)
@@ -348,6 +374,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
                     threshold,
                     value,
                     features,
+                    missing_go_to_left,
                     left_nodes[node],
                     depth + 1,
                 )
@@ -367,6 +394,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
                     threshold,
                     value,
                     features,
+                    missing_go_to_left,
                     right_nodes[node],
                     depth + 1,
                 )

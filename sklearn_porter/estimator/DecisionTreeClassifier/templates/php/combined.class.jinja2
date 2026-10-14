@@ -95,16 +95,18 @@ if ($argc > 1) {
 
     // Features:
     array_shift($argv);
-    $features = $argv;
+    $features = array_map(function ($value) {
+        return strtolower($value) === 'nan' ? NAN : floatval($value);
+    }, $argv);
 
     {% if is_test or to_json %}
     // Get JSON:
-    $prediction = {{ class_name }}::predict($argv);
+    $prediction = {{ class_name }}::predict($features);
     $probabilities = {{ class_name }}::predictProba($features);
     fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
     {% else %}
     // Get class prediction:
-    $prediction = {{ class_name }}::predict($argv);
+    $prediction = {{ class_name }}::predict($features);
     fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
 
     // Get class probabilities:

@@ -2,6 +2,7 @@
 
 {% block content %}
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -17,6 +18,8 @@ class {{ class_name }} {
         private int[] rights;
         private double[] thresholds;
         private int[] indices;
+        @SerializedName("missing_go_to_left")
+        private int[] missingGoToLeft;
         private double[][] classes;
     }
     private Tree tree;
@@ -95,7 +98,7 @@ class {{ class_name }} {
 
     private {{ 'int[]' if is_multi_output else 'int' }} predict(double[] features, int node) {
         if (this.tree.thresholds[node] != -2) {
-            if (features[this.tree.indices[node]] <= this.tree.thresholds[node]) {
+            if (features[this.tree.indices[node]] <= this.tree.thresholds[node] || (this.tree.missingGoToLeft[node] == 1 && Double.isNaN(features[this.tree.indices[node]]))) {
                 return predict(features, this.tree.lefts[node]);
             } else {
                 return predict(features, this.tree.rights[node]);
@@ -110,7 +113,7 @@ class {{ class_name }} {
 
     private {{ 'double[][]' if is_multi_output else 'double[]' }} predictProba(double[] features, int node) {
         if (this.tree.thresholds[node] != -2) {
-            if (features[this.tree.indices[node]] <= this.tree.thresholds[node]) {
+            if (features[this.tree.indices[node]] <= this.tree.thresholds[node] || (this.tree.missingGoToLeft[node] == 1 && Double.isNaN(features[this.tree.indices[node]]))) {
                 return predictProba(features, this.tree.lefts[node]);
             } else {
                 return predictProba(features, this.tree.rights[node]);
@@ -132,7 +135,7 @@ class {{ class_name }} {
         // Features:
         double[] features = new double[args.length-1];
         for (int i = 1, l = args.length; i < l; i++) {
-            features[i - 1] = Double.parseDouble(args[i]);
+            features[i - 1] = args[i].equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(args[i]);
         }
 
         // Model data:

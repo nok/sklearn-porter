@@ -17,6 +17,7 @@ typedef struct {
     int *rights;
     double *thresholds;
     int *indices;
+    int *missing_go_to_left;
     double *classes; /* shape: (n_nodes * N_CLASSES) */
 } Tree;
 
@@ -46,6 +47,7 @@ void load(const char *path) {
         trees[i].rights = json_ints(json_get(tree, "rights"));
         trees[i].thresholds = json_doubles(json_get(tree, "thresholds"));
         trees[i].indices = json_ints(json_get(tree, "indices"));
+        trees[i].missing_go_to_left = json_ints(json_get(tree, "missing_go_to_left"));
         trees[i].classes = flatten(json_get(tree, "classes"));
     }
     json_free(data);
@@ -114,7 +116,7 @@ void norm_vals(double *result, const double *nums) {
 void compute(double *result, const Tree *tree, double features[N_FEATURES]) {
     int node = 0;
     while (tree->thresholds[node] != -2) {
-        if (features[tree->indices[node]] <= tree->thresholds[node]) {
+        if (features[tree->indices[node]] <= tree->thresholds[node] || (tree->missing_go_to_left[node] && isnan(features[tree->indices[node]]))) {
             node = tree->lefts[node];
         } else {
             node = tree->rights[node];

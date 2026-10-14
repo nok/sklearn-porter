@@ -8,11 +8,12 @@ require 'json'
 {% endif %}
 class {{ class_name }}
 
-	def initialize(lefts, rights, thresholds, indices, values)
+	def initialize(lefts, rights, thresholds, indices, missing_go_to_left, values)
 		@lefts = lefts
 		@rights = rights
 		@thresholds = thresholds
 		@indices = indices
+		@missing_go_to_left = missing_go_to_left
 		@values = values
 	end
 
@@ -20,7 +21,7 @@ class {{ class_name }}
 	def predict(features)
 		node = 0
 		while @lefts[node] != -1
-			if features[@indices[node]] <= @thresholds[node]
+			if features[@indices[node]] <= @thresholds[node] || (@missing_go_to_left[node] == 1 && features[@indices[node]].nan?)
 				node = @lefts[node]
 			else
 				node = @rights[node]
@@ -41,17 +42,18 @@ if __FILE__ == $0
 	end
 
 	# Features:
-	features = ARGV.collect(&:to_f)
+	features = ARGV.collect { |value| value.downcase == 'nan' ? Float::NAN : value.to_f }
 
 	# Model data:
 	{{ lefts }}
 	{{ rights }}
 	{{ thresholds }}
 	{{ indices }}
+	{{ missing_go_to_left }}
 	{{ values }}
 
 	# Estimator:
-	reg = {{ class_name }}.new lefts, rights, thresholds, indices, values
+	reg = {{ class_name }}.new lefts, rights, thresholds, indices, missing_go_to_left, values
 
 	{% if is_test or to_json %}
 	# Get JSON:

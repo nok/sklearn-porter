@@ -8,6 +8,9 @@ import (
 	"encoding/json"
 	{% endif %}
 	"fmt"
+	{% if has_missing_go_to_left %}
+	"math"
+	{% endif %}
 	"os"
 	"strconv"
 )

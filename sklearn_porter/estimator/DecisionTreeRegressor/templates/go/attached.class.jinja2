@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	{% endif %}
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 )
@@ -22,6 +23,7 @@ type {{ class_name }} struct {
 	Rights []int
 	Thresholds []float64
 	Indices []int
+	MissingGoToLeft []int
 	Values [][]float64
 }
 
@@ -29,7 +31,7 @@ type {{ class_name }} struct {
 func (reg {{ class_name }}) Predict(features []float64) []float64 {
 	node := 0
 	for reg.Lefts[node] != -1 {
-		if features[reg.Indices[node]] <= reg.Thresholds[node] {
+		if features[reg.Indices[node]] <= reg.Thresholds[node] || (reg.MissingGoToLeft[node] == 1 && math.IsNaN(features[reg.Indices[node]])) {
 			node = reg.Lefts[node]
 		} else {
 			node = reg.Rights[node]
@@ -58,10 +60,11 @@ func main() {
 	{{ rights }}
 	{{ thresholds }}
 	{{ indices }}
+	{{ missing_go_to_left }}
 	{{ values }}
 
 	// Estimator:
-	reg := {{ class_name }}{lefts, rights, thresholds, indices, values}
+	reg := {{ class_name }}{lefts, rights, thresholds, indices, missingGoToLeft, values}
 
 	{% if is_test or to_json %}
 	// Get JSON:

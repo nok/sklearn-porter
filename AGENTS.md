@@ -88,6 +88,10 @@ table.
   (`sklearn_porter.utils.get_class_fractions()`). Don't round them to class
   counts, otherwise the probabilities of trees fitted with `sample_weight` or
   `class_weight` differ.
+- scikit-learn routes missing values (NaN) of every tree via
+  `tree_.missing_go_to_left`, even if the tree was fitted without missing
+  values. The tree templates check `isnan` only for splits which send missing
+  values to the left child, because all comparisons with NaN are false.
 - `Estimator` converts the sparse matrices of a fitted estimator (e.g. after a
   fit on sparse data or `sparsify()`) to dense arrays before the model data is
   extracted (`sklearn_porter.utils.densify()`), so the estimator classes don't

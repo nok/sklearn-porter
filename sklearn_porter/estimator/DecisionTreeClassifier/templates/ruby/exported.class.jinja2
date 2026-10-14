@@ -13,6 +13,7 @@ class {{ class_name }}
 		@rights = @data['rights']
 		@thresholds = @data['thresholds']
 		@indices = @data['indices']
+		@missing_go_to_left = @data['missing_go_to_left']
 		@classes = @data['classes']
 	end
 
@@ -76,7 +77,7 @@ class {{ class_name }}
 
 	def _compute (features, node, post)
 		if @thresholds[node] != -2
-			if features[@indices[node]] <= @thresholds[node]
+			if features[@indices[node]] <= @thresholds[node] || (@missing_go_to_left[node] == 1 && features[@indices[node]].nan?)
 				return _compute features, @lefts[node], post
 			else
 				return _compute features, @rights[node], post
@@ -104,7 +105,7 @@ if __FILE__ == $0
 	modelData = ARGV.shift
 
 	# Features:
-	features = ARGV.collect(&:to_f)
+	features = ARGV.collect { |value| value.downcase == 'nan' ? Float::NAN : value.to_f }
 
 	# Estimator:
 	clf = {{ class_name }}.new modelData

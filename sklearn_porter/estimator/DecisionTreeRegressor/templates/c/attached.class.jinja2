@@ -3,6 +3,7 @@
 {% block content %}
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 #define N_FEATURES {{ n_features }}
 #define N_OUTPUTS {{ n_outputs }}
@@ -12,13 +13,14 @@
 {{ rights }}
 {{ thresholds }}
 {{ indices }}
+{{ missing_go_to_left }}
 {{ values }}
 
 /* Find the leaf and return its predicted values: */
 double *predict(double features[N_FEATURES]) {
     int node = 0;
     while (lefts[node] != -1) {
-        if (features[indices[node]] <= thresholds[node]) {
+        if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
             node = lefts[node];
         } else {
             node = rights[node];

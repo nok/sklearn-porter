@@ -21,6 +21,8 @@ class Ruby(LanguageABC):
         'if':           'if {{ a }} {{ op }} {{ b }}',
         'else':         'else',
         'endif':        'end',
+        # NaN check (e.g. of missing values):
+        'isnan':        '{{ a }}.nan?',
 
         # Basics:
         'indent':       '    ',
