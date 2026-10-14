@@ -34,7 +34,7 @@ class {{ class_name }} {
         // Features:
         double[] features = new double[args.length];
         for (int i = 0, l = args.length; i < l; i++) {
-            features[i] = Double.parseDouble(args[i]);
+            features[i] = args[i].equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(args[i]);
         }
 
         double[] prediction = {{ class_name }}.predict(features);

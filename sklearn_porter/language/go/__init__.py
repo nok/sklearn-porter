@@ -22,6 +22,8 @@ class Go(LanguageABC):
         'if':           'if {{ a }} {{ op }} {{ b }} {',
         'else':         '} else {',
         'endif':        '}',
+        # NaN check (e.g. of missing values):
+        'isnan':        'math.IsNaN({{ a }})',
 
         # Basics:
         'indent':       '\t',

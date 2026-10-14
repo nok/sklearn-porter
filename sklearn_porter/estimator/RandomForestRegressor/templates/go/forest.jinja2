@@ -7,6 +7,7 @@ type {{ class_name }}Tree struct {
 	Rights []int `json:"rights"`
 	Thresholds []float64 `json:"thresholds"`
 	Indices []int `json:"indices"`
+	MissingGoToLeft []int `json:"missing_go_to_left"`
 	Values [][]float64 `json:"values"`
 }
 
@@ -14,7 +15,7 @@ type {{ class_name }}Tree struct {
 func (tree {{ class_name }}Tree) Compute(features []float64) []float64 {
 	node := 0
 	for tree.Lefts[node] != -1 {
-		if features[tree.Indices[node]] <= tree.Thresholds[node] {
+		if features[tree.Indices[node]] <= tree.Thresholds[node] || (tree.MissingGoToLeft[node] == 1 && math.IsNaN(features[tree.Indices[node]])) {
 			node = tree.Lefts[node]
 		} else {
 			node = tree.Rights[node]

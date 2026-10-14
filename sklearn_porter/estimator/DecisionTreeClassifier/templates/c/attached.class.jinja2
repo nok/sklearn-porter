@@ -19,6 +19,7 @@ int output_classes[N_OUTPUTS] = { {{ output_classes | join(', ') }} };
 {{ rights }}
 {{ thresholds }}
 {{ indices }}
+{{ missing_go_to_left }}
 {{ classes }}
 
 {% if is_multi_output %}
@@ -84,7 +85,7 @@ void norm_vals(double *result, double nums[N_CLASSES]) {
 {% if is_multi_output %}
 void predict(int *result, double features[N_FEATURES], int node) {
     if (thresholds[node] != -2) {
-        if (features[indices[node]] <= thresholds[node]) {
+        if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
             predict(result, features, lefts[node]);
             return;
         } else {
@@ -97,7 +98,7 @@ void predict(int *result, double features[N_FEATURES], int node) {
 {% else %}
 int predict(double features[N_FEATURES], int node) {
     if (thresholds[node] != -2) {
-        if (features[indices[node]] <= thresholds[node]) {
+        if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
             return predict(features, lefts[node]);
         } else {
             return predict(features, rights[node]);
@@ -109,7 +110,7 @@ int predict(double features[N_FEATURES], int node) {
 
 void predict_proba({{ 'double **result' if is_multi_output else 'double *result' }}, double features[N_FEATURES], int node) {
     if (thresholds[node] != -2) {
-        if (features[indices[node]] <= thresholds[node]) {
+        if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
             predict_proba(result, features, lefts[node]);
         } else {
             predict_proba(result, features, rights[node]);

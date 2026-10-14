@@ -418,6 +418,52 @@ def test_linear_svc_without_intercept(binary: bool):
     assert model_data['inters'] == (0.0 if binary else [0.0, 0.0, 0.0])
 
 
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        DecisionTreeClassifier(random_state=0),
+        DecisionTreeRegressor(random_state=0),
+        RandomForestClassifier(n_estimators=3, random_state=0),
+        RandomForestRegressor(n_estimators=3, random_state=0),
+        ExtraTreesClassifier(n_estimators=3, random_state=0),
+        ExtraTreesRegressor(n_estimators=3, random_state=0),
+    ],
+    ids=lambda x: type(x).__name__,
+)
+def test_tree_routing_of_missing_values(orig_est):
+    """Test the routing of missing values (NaN) in the ported trees."""
+    x, y = load_iris(return_X_y=True)
+    orig_est.fit(X=x, y=y)
+    est = Estimator(orig_est)
+    model_data = est._estimator.model_data
+    trees = getattr(orig_est, 'estimators_', [orig_est])
+    data = model_data.get('estimators', [model_data])
+    n_checks = 0
+    for tree, tree_data in zip(trees, data, strict=True):
+        expected = tree.tree_.missing_go_to_left.tolist()
+        assert tree_data['missing_go_to_left'] == expected
+        is_split = tree.tree_.children_left != -1
+        n_checks += int(tree.tree_.missing_go_to_left[is_split].sum())
+    assert n_checks > 0
+    # Only the splits which send missing values to the left child check
+    # the features for missing values:
+    assert est.port(language='c', template='combined').count('isnan(') == (
+        n_checks
+    )
+    assert '"math"' in est.port(language='go', template='combined')
+
+
+def test_tree_without_routing_of_missing_values_to_the_left():
+    """Test a tree which sends all missing values to the right child."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = DecisionTreeRegressor(max_depth=1).fit(X=x, y=y)
+    assert not orig_est.tree_.missing_go_to_left[0]
+    est = Estimator(orig_est)
+    assert 'isnan(' not in est.port(language='c', template='combined')
+    # Go doesn't compile with unused imports:
+    assert '"math"' not in est.port(language='go', template='combined')
+
+
 SPARSIFIABLE_CLASSIFIERS = [
     LinearSVC(random_state=0),
     LogisticRegression(max_iter=1000),

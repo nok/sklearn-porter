@@ -8,6 +8,7 @@ class {{ class_name }} {
     private $rights;
     private $thresholds;
     private $indices;
+    private $missing_go_to_left;
     private $classes;
 
     public function __construct($path) {
@@ -17,6 +18,7 @@ class {{ class_name }} {
         $this->rights = $this->data['rights'];
         $this->thresholds = $this->data['thresholds'];
         $this->indices = $this->data['indices'];
+        $this->missing_go_to_left = $this->data['missing_go_to_left'];
         $this->classes = $this->data['classes'];
     }
 
@@ -92,7 +94,7 @@ class {{ class_name }} {
     public function predict($features) {
         $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
         if ($this->thresholds[$node] != -2) {
-            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
                 return $this->predict($features, $this->lefts[$node]);
             } else {
                 return $this->predict($features, $this->rights[$node]);
@@ -104,7 +106,7 @@ class {{ class_name }} {
     public function predictProba($features) {
         $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
         if ($this->thresholds[$node] != -2) {
-            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
                 return $this->predictProba($features, $this->lefts[$node]);
             } else {
                 return $this->predictProba($features, $this->rights[$node]);
@@ -122,7 +124,9 @@ if ($argc > 1) {
     $path = array_shift($argv);
 
     // Features:
-    $features = $argv;
+    $features = array_map(function ($value) {
+        return strtolower($value) === 'nan' ? NAN : floatval($value);
+    }, $argv);
 
     // Estimator:
     $clf = new {{ class_name }}($path);

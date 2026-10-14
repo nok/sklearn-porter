@@ -2,6 +2,7 @@
 
 {% block content %}
 import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -21,6 +22,8 @@ class {{ class_name }} {
         private int[] rights;
         private double[] thresholds;
         private int[] indices;
+        @SerializedName("missing_go_to_left")
+        private int[] missingGoToLeft;
         private double[][] values;
     }
 
@@ -30,7 +33,7 @@ class {{ class_name }} {
         TreeData[] data = new Gson().fromJson(jsonStr, TreeData[].class);
         Tree[] forest = new Tree[data.length];
         for (int i = 0; i < data.length; i++) {
-            forest[i] = new Tree(data[i].lefts, data[i].rights, data[i].thresholds, data[i].indices, data[i].values);
+            forest[i] = new Tree(data[i].lefts, data[i].rights, data[i].thresholds, data[i].indices, data[i].missingGoToLeft, data[i].values);
         }
         return forest;
     }
@@ -44,7 +47,7 @@ class {{ class_name }} {
         // Features:
         double[] features = new double[args.length - 1];
         for (int i = 1, l = args.length; i < l; i++) {
-            features[i - 1] = Double.parseDouble(args[i]);
+            features[i - 1] = args[i].equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(args[i]);
         }
 
         // Estimator:

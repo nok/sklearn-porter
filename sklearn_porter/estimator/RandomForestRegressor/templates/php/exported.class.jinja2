@@ -18,7 +18,9 @@ if ($argc > 1) {
     $model = json_decode(file_get_contents($path), true);
 
     // Features:
-    $features = array_map('floatval', $argv);
+    $features = array_map(function ($value) {
+        return strtolower($value) === 'nan' ? NAN : floatval($value);
+    }, $argv);
     if (count($features) != {{ n_features }}) {
         fwrite(STDERR, "You have to pass the path to the model data and {{ n_features }} features.\n");
         exit(1);

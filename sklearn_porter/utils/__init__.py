@@ -57,6 +57,46 @@ def is_multilabel(estimator) -> bool:
     return y_type.startswith('multilabel')
 
 
+def missing_name(language) -> str:
+    """
+    Get the name of the variable `missing_go_to_left` of trees.
+
+    Parameters
+    ----------
+    language : Language
+        The target programming language.
+
+    Returns
+    -------
+    The name in the naming convention of the language.
+    """
+    if language.value.KEY in ('go', 'java', 'js'):
+        return 'missingGoToLeft'
+    return 'missing_go_to_left'
+
+
+def has_missing_go_to_left(tree_data: dict) -> bool:
+    """
+    Check whether any split of a tree sends missing values to the left child.
+
+    Parameters
+    ----------
+    tree_data : dict
+        The model data of a tree with the keys `lefts` and
+        `missing_go_to_left`.
+
+    Returns
+    -------
+    Whether the ported tree has to check features for missing values (NaN).
+    """
+    return any(
+        missing and left != -1
+        for missing, left in zip(
+            tree_data['missing_go_to_left'], tree_data['lefts'], strict=True
+        )
+    )
+
+
 def get_output_classes(estimator) -> list:
     """
     Get the number of classes per output of a fitted classifier.

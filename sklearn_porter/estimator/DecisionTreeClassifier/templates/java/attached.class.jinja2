@@ -11,13 +11,15 @@ class {{ class_name }} {
     private int[] rights;
     private double[] thresholds;
     private int[] indices;
+    private int[] missingGoToLeft;
     private double[][] classes;
 
-    public {{ class_name }}(int[] lefts, int[] rights, double[] thresholds, int[] indices, double[][] classes) {
+    public {{ class_name }}(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[][] classes) {
         this.lefts = lefts;
         this.rights = rights;
         this.thresholds = thresholds;
         this.indices = indices;
+        this.missingGoToLeft = missingGoToLeft;
         this.classes = classes;
     }
 
@@ -90,7 +92,7 @@ class {{ class_name }} {
 
     private {{ 'int[]' if is_multi_output else 'int' }} predict(double[] features, int node) {
         if (this.thresholds[node] != -2) {
-            if (features[this.indices[node]] <= this.thresholds[node]) {
+            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
                 return predict(features, this.lefts[node]);
             } else {
                 return predict(features, this.rights[node]);
@@ -105,7 +107,7 @@ class {{ class_name }} {
 
     private {{ 'double[][]' if is_multi_output else 'double[]' }} predictProba(double[] features, int node) {
         if (this.thresholds[node] != -2) {
-            if (features[this.indices[node]] <= this.thresholds[node]) {
+            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
                 return this.predictProba(features, this.lefts[node]);
             } else {
                 return this.predictProba(features, this.rights[node]);
@@ -127,7 +129,7 @@ class {{ class_name }} {
         // Features:
         double[] features = new double[args.length];
         for (int i = 0, l = args.length; i < l; i++) {
-            features[i] = Double.parseDouble(args[i]);
+            features[i] = args[i].equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(args[i]);
         }
 
         // Model data:
@@ -135,10 +137,11 @@ class {{ class_name }} {
         {{ rights }}
         {{ thresholds }}
         {{ indices }}
+        {{ missing_go_to_left }}
         {{ classes }}
 
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}(lefts, rights, thresholds, indices, classes);
+        {{ class_name }} clf = new {{ class_name }}(lefts, rights, thresholds, indices, missingGoToLeft, classes);
 
         {% if is_test or to_json %}
         // Get JSON:

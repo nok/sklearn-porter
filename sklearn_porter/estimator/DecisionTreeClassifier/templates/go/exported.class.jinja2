@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"strconv"
 )
@@ -16,6 +17,7 @@ type {{ class_name }} struct {
 	Rights []int `json:"rights"`
 	Thresholds []float64 `json:"thresholds"`
 	Indices []int `json:"indices"`
+	MissingGoToLeft []int `json:"missing_go_to_left"`
 	Classes [][]float64 `json:"classes"`
 }
 
@@ -101,7 +103,7 @@ func normVals(nums []float64) []float64 {
 
 func (dtc {{ class_name }}) predict(features []float64, node int) {{ '[]int' if is_multi_output else 'int' }} {
 	if dtc.Thresholds[node] != -2 {
-		if features[dtc.Indices[node]] <= dtc.Thresholds[node] {
+		if features[dtc.Indices[node]] <= dtc.Thresholds[node] || (dtc.MissingGoToLeft[node] == 1 && math.IsNaN(features[dtc.Indices[node]])) {
 			return dtc.predict(features, dtc.Lefts[node])
 		} else {
 			return dtc.predict(features, dtc.Rights[node])
@@ -116,7 +118,7 @@ func (dtc {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multi_o
 
 func (dtc {{ class_name }}) predictProba(features []float64, node int) {{ '[][]float64' if is_multi_output else '[]float64' }} {
 	if dtc.Thresholds[node] != -2 {
-		if features[dtc.Indices[node]] <= dtc.Thresholds[node] {
+		if features[dtc.Indices[node]] <= dtc.Thresholds[node] || (dtc.MissingGoToLeft[node] == 1 && math.IsNaN(features[dtc.Indices[node]])) {
 			return dtc.predictProba(features, dtc.Lefts[node])
 		} else {
 			return dtc.predictProba(features, dtc.Rights[node])

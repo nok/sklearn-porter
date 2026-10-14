@@ -20,6 +20,8 @@ class PHP(LanguageABC):
         'if':           'if ({{ a }} {{ op }} {{ b }}) {',
         'else':         '} else {',
         'endif':        '}',
+        # NaN check (e.g. of missing values):
+        'isnan':        'is_nan({{ a }})',
 
         # Basics:
         'indent':       '    ',

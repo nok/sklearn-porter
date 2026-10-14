@@ -20,6 +20,7 @@ typedef struct {
     int *rights;
     double *thresholds;
     int *indices;
+    int *missing_go_to_left;
     double *classes; /* shape: (n_nodes * N_CLASSES) */
 } Tree;
 
@@ -28,7 +29,7 @@ typedef struct {
 
 Tree trees[N_ESTIMATORS] = {
 {% for i in range(n_estimators) %}
-    {lefts_{{ i }}, rights_{{ i }}, thresholds_{{ i }}, indices_{{ i }}, classes_{{ i }}}{% if not loop.last %},{% endif %}
+    {lefts_{{ i }}, rights_{{ i }}, thresholds_{{ i }}, indices_{{ i }}, missing_go_to_left_{{ i }}, classes_{{ i }}}{% if not loop.last %},{% endif %}
 
 {% endfor %}
 };
@@ -96,7 +97,7 @@ void norm_vals(double *result, const double *nums) {
 void compute(double *result, const Tree *tree, double features[N_FEATURES]) {
     int node = 0;
     while (tree->thresholds[node] != -2) {
-        if (features[tree->indices[node]] <= tree->thresholds[node]) {
+        if (features[tree->indices[node]] <= tree->thresholds[node] || (tree->missing_go_to_left[node] && isnan(features[tree->indices[node]]))) {
             node = tree->lefts[node];
         } else {
             node = tree->rights[node];

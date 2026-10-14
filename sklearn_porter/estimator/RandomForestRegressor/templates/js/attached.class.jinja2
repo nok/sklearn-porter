@@ -3,18 +3,19 @@
 {% block content %}
 var {{ class_name }} = function(modelData) {
 
-    var Tree = function(lefts, rights, thresholds, indices, values) {
+    var Tree = function(lefts, rights, thresholds, indices, missingGoToLeft, values) {
         this.lefts = lefts;
         this.rights = rights;
         this.thresholds = thresholds;
         this.indices = indices;
+        this.missingGoToLeft = missingGoToLeft;
         this.values = values;
 
         // Find the leaf and return its predicted values:
         this.compute = function(features) {
             var node = 0;
             while (this.lefts[node] !== -1) {
-                if (features[this.indices[node]] <= this.thresholds[node]) {
+                if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] === 1 && isNaN(features[this.indices[node]]))) {
                     node = this.lefts[node];
                 } else {
                     node = this.rights[node];
@@ -28,7 +29,7 @@ var {{ class_name }} = function(modelData) {
     for (var i = 0, il = modelData.length; i < il; i++) {
         this.forest.push(new Tree(
             modelData[i]['lefts'], modelData[i]['rights'],
-            modelData[i]['thresholds'], modelData[i]['indices'],
+            modelData[i]['thresholds'], modelData[i]['indices'], modelData[i]['missing_go_to_left'],
             modelData[i]['values']
         ));
     }

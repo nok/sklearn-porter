@@ -3,13 +3,15 @@ private static class Tree {
     private int[] rights;
     private double[] thresholds;
     private int[] indices;
+    private int[] missingGoToLeft;
     private double[][] values;
 
-    private Tree(int[] lefts, int[] rights, double[] thresholds, int[] indices, double[][] values) {
+    private Tree(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[][] values) {
         this.lefts = lefts;
         this.rights = rights;
         this.thresholds = thresholds;
         this.indices = indices;
+        this.missingGoToLeft = missingGoToLeft;
         this.values = values;
     }
 
@@ -17,7 +19,7 @@ private static class Tree {
     private double[] compute(double[] features) {
         int node = 0;
         while (this.lefts[node] != -1) {
-            if (features[this.indices[node]] <= this.thresholds[node]) {
+            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
                 node = this.lefts[node];
             } else {
                 node = this.rights[node];

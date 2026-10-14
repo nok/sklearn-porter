@@ -6,6 +6,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
 	"strconv"
 )
@@ -15,6 +16,7 @@ type {{ class_name }} struct {
 	Rights []int `json:"rights"`
 	Thresholds []float64 `json:"thresholds"`
 	Indices []int `json:"indices"`
+	MissingGoToLeft []int `json:"missing_go_to_left"`
 	Values [][]float64 `json:"values"`
 }
 
@@ -28,7 +30,7 @@ type Response struct {
 func (reg {{ class_name }}) Predict(features []float64) []float64 {
 	node := 0
 	for reg.Lefts[node] != -1 {
-		if features[reg.Indices[node]] <= reg.Thresholds[node] {
+		if features[reg.Indices[node]] <= reg.Thresholds[node] || (reg.MissingGoToLeft[node] == 1 && math.IsNaN(features[reg.Indices[node]])) {
 			node = reg.Lefts[node]
 		} else {
 			node = reg.Rights[node]

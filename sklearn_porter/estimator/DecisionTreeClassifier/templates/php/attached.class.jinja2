@@ -7,13 +7,15 @@ class {{ class_name }} {
     private $rights;
     private $thresholds;
     private $indices;
+    private $missing_go_to_left;
     private $classes;
 
-    public function __construct($lefts, $rights, $thresholds, $indices, $classes) {
+    public function __construct($lefts, $rights, $thresholds, $indices, $missing_go_to_left, $classes) {
         $this->lefts = $lefts;
         $this->rights = $rights;
         $this->thresholds = $thresholds;
         $this->indices = $indices;
+        $this->missing_go_to_left = $missing_go_to_left;
         $this->classes = $classes;
     }
 
@@ -89,7 +91,7 @@ class {{ class_name }} {
     public function predict($features) {
         $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
         if ($this->thresholds[$node] != -2) {
-            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
                 return $this->predict($features, $this->lefts[$node]);
             } else {
                 return $this->predict($features, $this->rights[$node]);
@@ -101,7 +103,7 @@ class {{ class_name }} {
     public function predictProba($features) {
         $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
         if ($this->thresholds[$node] != -2) {
-            if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
+            if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
                 return $this->predictProba($features, $this->lefts[$node]);
             } else {
                 return $this->predictProba($features, $this->rights[$node]);
@@ -116,17 +118,20 @@ if ($argc > 1) {
 
     // Features:
     array_shift($argv);
-    $features = $argv;
+    $features = array_map(function ($value) {
+        return strtolower($value) === 'nan' ? NAN : floatval($value);
+    }, $argv);
 
     // Model data:
     {{ lefts }}
     {{ rights }}
     {{ thresholds }}
     {{ indices }}
+    {{ missing_go_to_left }}
     {{ classes }}
 
     // Estimator:
-    $clf = new {{ class_name }}($lefts, $rights, $thresholds, $indices, $classes);
+    $clf = new {{ class_name }}($lefts, $rights, $thresholds, $indices, $missing_go_to_left, $classes);
 
     {% if is_test or to_json %}
     // Get JSON:

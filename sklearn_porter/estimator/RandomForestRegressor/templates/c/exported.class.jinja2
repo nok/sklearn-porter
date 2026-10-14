@@ -1,6 +1,8 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
+#include <math.h>
+
 #define N_FEATURES {{ n_features }}
 #define N_OUTPUTS {{ n_outputs }}
 
@@ -9,6 +11,7 @@ typedef struct {
     int *rights;
     double *thresholds;
     int *indices;
+    int *missing_go_to_left;
     double *values; /* shape: (n_nodes * N_OUTPUTS) */
 } Tree;
 
@@ -38,6 +41,7 @@ void load(const char *path) {
         trees[i].rights = json_ints(json_get(tree, "rights"));
         trees[i].thresholds = json_doubles(json_get(tree, "thresholds"));
         trees[i].indices = json_ints(json_get(tree, "indices"));
+        trees[i].missing_go_to_left = json_ints(json_get(tree, "missing_go_to_left"));
         trees[i].values = flatten(json_get(tree, "values"));
     }
     json_free(data);
@@ -47,7 +51,7 @@ void load(const char *path) {
 const double *compute(const Tree *tree, double features[N_FEATURES]) {
     int node = 0;
     while (tree->lefts[node] != -1) {
-        if (features[tree->indices[node]] <= tree->thresholds[node]) {
+        if (features[tree->indices[node]] <= tree->thresholds[node] || (tree->missing_go_to_left[node] && isnan(features[tree->indices[node]]))) {
             node = tree->lefts[node];
         } else {
             node = tree->rights[node];

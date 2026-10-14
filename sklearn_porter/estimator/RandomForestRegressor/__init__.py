@@ -25,7 +25,7 @@ from sklearn_porter.estimator.DecisionTreeRegressor import (
 )
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_thresholds
+from sklearn_porter.utils import get_thresholds, has_missing_go_to_left
 
 
 class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
@@ -116,6 +116,9 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
                     rights=e.tree_.children_right.tolist(),
                     thresholds=get_thresholds(e.tree_),
                     indices=e.tree_.feature.tolist(),
+                    # Samples with missing values (NaN) go to the left child
+                    # if 1, otherwise to the right child:
+                    missing_go_to_left=e.tree_.missing_go_to_left.tolist(),
                     values=e.tree_.value[:, :, 0].tolist(),
                 )
                 for e in est.estimators_
@@ -164,6 +167,11 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
             )
         )
         plas.update(self.meta_info)
+        plas.update(
+            has_missing_go_to_left=any(
+                map(has_missing_go_to_left, self.model_data['estimators'])
+            )
+        )
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
@@ -196,6 +204,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
                 tree['thresholds'],
                 tree['values'],
                 tree['indices'],
+                tree['missing_go_to_left'],
                 0,
                 1,
             )
@@ -244,6 +253,9 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
                             map(converter, tree['thresholds'])
                         ),
                         indices=', '.join(map(str, tree['indices'])),
+                        missing_go_to_left=', '.join(
+                            map(str, tree['missing_go_to_left'])
+                        ),
                         values=[
                             ', '.join(map(converter, v)) for v in tree['values']
                         ],

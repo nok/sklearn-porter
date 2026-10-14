@@ -11,12 +11,13 @@ var {{ class_name }} = function(jsonFile) {
     this.rights = this.data.rights;
     this.thresholds = this.data.thresholds;
     this.indices = this.data.indices;
+    this.missingGoToLeft = this.data.missing_go_to_left;
     this.values = this.data.values;
 
     this.predict = function(features) {
         var node = 0;
         while (this.lefts[node] !== -1) {
-            if (features[this.indices[node]] <= this.thresholds[node]) {
+            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] === 1 && isNaN(features[this.indices[node]]))) {
                 node = this.lefts[node];
             } else {
                 node = this.rights[node];

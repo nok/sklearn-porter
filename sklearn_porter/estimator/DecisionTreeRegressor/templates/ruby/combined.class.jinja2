@@ -26,7 +26,7 @@ if __FILE__ == $0
 	end
 
 	# Features:
-	features = ARGV.collect(&:to_f)
+	features = ARGV.collect { |value| value.downcase == 'nan' ? Float::NAN : value.to_f }
 
 	{% if is_test or to_json %}
 	# Get JSON:

@@ -18,6 +18,7 @@ from sklearn_porter.utils import (
     get_class_fractions,
     get_output_classes,
     get_thresholds,
+    has_missing_go_to_left,
     is_multilabel,
 )
 
@@ -164,3 +165,12 @@ def test_densify_dense_estimator():
     x, y = load_iris(return_X_y=True)
     est = KNeighborsClassifier().fit(x, y)
     assert densify(est) is est
+
+
+def test_has_missing_go_to_left():
+    """Test the detection of splits which send missing values to the left."""
+    # Node 0 is a split, nodes 1 and 2 are leaves:
+    tree_data = dict(lefts=[1, -1, -1], missing_go_to_left=[0, 1, 1])
+    assert not has_missing_go_to_left(tree_data)
+    tree_data['missing_go_to_left'] = [1, 0, 0]
+    assert has_missing_go_to_left(tree_data)
