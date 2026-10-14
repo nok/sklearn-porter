@@ -24,6 +24,8 @@ class Go(LanguageABC):
         'endif':        '}',
         # NaN check (e.g. of missing values):
         'isnan':        'math.IsNaN({{ a }})',
+        # Positive infinity (e.g. of thresholds):
+        'inf':          'math.Inf(1)',
 
         # Basics:
         'indent':       '\t',

@@ -1,6 +1,5 @@
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps
 
 from jinja2 import Environment
 from loguru import logger as L
@@ -25,7 +24,13 @@ from sklearn_porter.estimator.DecisionTreeRegressor import (
 )
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_thresholds, has_missing_go_to_left
+from sklearn_porter.utils import (
+    dump_model_data,
+    get_thresholds,
+    has_infinite_thresholds,
+    has_missing_go_to_left,
+    with_infinity,
+)
 
 
 class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
@@ -170,18 +175,25 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         plas.update(
             has_missing_go_to_left=any(
                 map(has_missing_go_to_left, self.model_data['estimators'])
-            )
+            ),
+            has_infinite_thresholds=any(
+                map(has_infinite_thresholds, self.model_data['estimators'])
+            ),
         )
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
+
+        # Trees fitted on data with missing values (NaN) can have infinite
+        # thresholds, which are written as literals of the language:
+        converter = with_infinity(converter, tpls.get_template('inf').render())
         trees = self.model_data['estimators']
 
         # Make 'exported' variant:
         if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            model_data = dumps(trees, separators=(',', ':'))
+            model_data = dump_model_data(trees)
             return out_class, model_data
 
         # Make 'attached' variant:
@@ -264,7 +276,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
             return '\n'.join(out_trees)
 
         tpl_init = tpls.get_template('init')
-        value = dumps(trees, separators=(',', ':'))
+        value = dump_model_data(trees)
         if language is enum.Language.PHP:
             value = f"json_decode('{value}', true)"
         elif language is enum.Language.GO:

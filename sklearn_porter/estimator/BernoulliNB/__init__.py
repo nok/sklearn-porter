@@ -2,6 +2,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
 
+import numpy as np
 from loguru import logger as L
 
 # scikit-learn
@@ -62,6 +63,18 @@ class BernoulliNB(EstimatorBase, EstimatorApiABC):
             raise exception.NotFittedEstimatorError(
                 self.estimator_name
             ) from None
+
+        # Feature probabilities of 0 or 1 (e.g. with `alpha=0`) lead to
+        # infinite log probabilities, with which scikit-learn computes
+        # undefined (NaN) joint log likelihoods:
+        log_probs = np.asarray(est.feature_log_prob_)
+        is_finite = np.isfinite(log_probs).all() and (log_probs != 0).all()
+        if not is_finite or not np.isfinite(est.class_log_prior_).all():
+            msg = (
+                'Feature or class probabilities of 0 or 1 (e.g. with '
+                '`alpha=0`) are not supported, use `alpha > 0` instead.'
+            )
+            raise exception.NotSupportedYetError(msg)
 
         self.meta_info = dict(
             n_features=len(est.feature_log_prob_[0]),

@@ -23,6 +23,8 @@ class Ruby(LanguageABC):
         'endif':        'end',
         # NaN check (e.g. of missing values):
         'isnan':        '{{ a }}.nan?',
+        # Positive infinity (e.g. of thresholds):
+        'inf':          'Float::INFINITY',
 
         # Basics:
         'indent':       '    ',

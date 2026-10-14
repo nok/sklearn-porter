@@ -22,6 +22,8 @@ class PHP(LanguageABC):
         'endif':        '}',
         # NaN check (e.g. of missing values):
         'isnan':        'is_nan({{ a }})',
+        # Positive infinity (e.g. of thresholds):
+        'inf':          'INF',
 
         # Basics:
         'indent':       '    ',

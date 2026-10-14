@@ -15,11 +15,14 @@ from sklearn.tree import DecisionTreeClassifier
 
 from sklearn_porter.utils import (
     densify,
+    dump_model_data,
     get_class_fractions,
     get_output_classes,
     get_thresholds,
+    has_infinite_thresholds,
     has_missing_go_to_left,
     is_multilabel,
+    with_infinity,
 )
 
 
@@ -174,3 +177,18 @@ def test_has_missing_go_to_left():
     assert not has_missing_go_to_left(tree_data)
     tree_data['missing_go_to_left'] = [1, 0, 0]
     assert has_missing_go_to_left(tree_data)
+
+
+def test_infinite_values():
+    """Test the conversion of infinite values to literals and JSON."""
+    convert = with_infinity(str, 'INFINITY')
+    assert convert(np.inf) == 'INFINITY'
+    assert convert(-np.inf) == '-INFINITY'
+    assert convert(np.float64(1.5)) == '1.5'
+    assert convert(2) == '2'
+    # JSON doesn't support infinite values, but most parsers read numbers
+    # which are too large for a double as infinite values:
+    data = dict(thresholds=[np.inf, -np.inf, 1.5])
+    assert dump_model_data(data) == '{"thresholds":[1e999,-1e999,1.5]}'
+    assert has_infinite_thresholds(data)
+    assert not has_infinite_thresholds(dict(thresholds=[-2.0, 1.5]))

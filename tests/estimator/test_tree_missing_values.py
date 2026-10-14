@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 
 # scikit-learn
+from sklearn.base import is_classifier
 from sklearn.datasets import load_diabetes
 from sklearn.ensemble import (
     ExtraTreesClassifier,
@@ -130,30 +131,34 @@ def test_tree_regressor_with_missing_values(
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 @pytest.mark.parametrize(
-    'orig_est',
-    [
-        ExtraTreesClassifier(n_estimators=5, max_depth=5, random_state=0),
-        ExtraTreesRegressor(n_estimators=5, max_depth=5, random_state=0),
-    ],
-    ids=lambda x: type(x).__name__,
+    'orig_est', CLASSIFIERS + REGRESSORS, ids=lambda x: type(x).__name__
 )
-def test_extra_trees_fitted_with_missing_values(
+def test_tree_fitted_with_missing_values(
     tmp_root_dir: Path,
     orig_est,
     language: str,
     template: str,
 ):
-    """Test extra trees which were fitted on data with missing values."""
+    """Test trees which were fitted on data with missing values."""
     if not can(orig_est, language, template, 'predict'):
         pytest.skip('Skip unsupported estimator/language/template combination')
 
-    # The random splitter doesn't create splits with infinite thresholds:
     x, y = load_diabetes(return_X_y=True)
-    if isinstance(orig_est, ExtraTreesClassifier):
-        y = (y > np.median(y)).astype(int)
+    if is_classifier(orig_est):
+        y = np.digitize(y, np.quantile(y, [0.33, 0.66]))
     orig_est.fit(X=with_missing_values(x), y=y)
-    test_x = with_missing_values(x[:150], seed=1)
 
+    # The best splitter (not the random splitter of extra trees) separates
+    # the samples with missing values with an infinite threshold:
+    trees = getattr(orig_est, 'estimators_', [orig_est])
+    thresholds = np.concatenate([t.tree_.threshold for t in trees])
+    is_extra = isinstance(orig_est, (ExtraTreesClassifier, ExtraTreesRegressor))
+    assert np.isinf(thresholds).any() != is_extra
+
+    test_x = with_missing_values(x[:150], seed=1)
     name = f'{type(orig_est).__name__}_fitted'
     y_pred, _ = make(orig_est, test_x, tmp_root_dir, name, language, template)
-    np.testing.assert_allclose(y_pred, orig_est.predict(test_x), rtol=1e-9)
+    if is_classifier(orig_est):
+        np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
+    else:
+        np.testing.assert_allclose(y_pred, orig_est.predict(test_x), rtol=1e-9)

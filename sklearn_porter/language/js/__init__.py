@@ -23,6 +23,8 @@ class JavaScript(LanguageABC):
         'endif':        '}',
         # NaN check (e.g. of missing values):
         'isnan':        'isNaN({{ a }})',
+        # Positive infinity (e.g. of thresholds):
+        'inf':          'Infinity',
 
         # Basics:
         'indent':       '    ',

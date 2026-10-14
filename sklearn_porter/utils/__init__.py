@@ -1,5 +1,8 @@
+from collections.abc import Callable
 from copy import copy
+from json import dumps
 from logging import ERROR
+from math import isinf
 
 import numpy as np
 from scipy.sparse import issparse
@@ -55,6 +58,73 @@ def is_multilabel(estimator) -> bool:
     binarizer = getattr(estimator, '_label_binarizer', None)
     y_type = getattr(binarizer, 'y_type_', '')
     return y_type.startswith('multilabel')
+
+
+def has_infinite_thresholds(tree_data: dict) -> bool:
+    """
+    Check whether a tree has splits with an infinite threshold.
+
+    Trees fitted on data with missing values (NaN) can split the samples
+    with missing values from all other samples with the threshold `inf`.
+
+    Parameters
+    ----------
+    tree_data : dict
+        The model data of a tree with the key `thresholds`.
+
+    Returns
+    -------
+    Whether the tree has infinite thresholds.
+    """
+    return any(isinf(t) for t in tree_data['thresholds'])
+
+
+def with_infinity(
+    converter: Callable[[object], str], infinity: str
+) -> Callable[[object], str]:
+    """
+    Extend a number converter by the infinity literal of a language.
+
+    Parameters
+    ----------
+    converter : Callable[[object], str]
+        The number converter.
+    infinity : str
+        The literal of positive infinity, e.g. `INFINITY` in C.
+
+    Returns
+    -------
+    The converter which converts infinite values to the literal.
+    """
+
+    def convert(value: object) -> str:
+        if isinstance(value, float) and isinf(value):
+            return infinity if value > 0 else f'-{infinity}'
+        return converter(value)
+
+    return convert
+
+
+def dump_model_data(model_data: object) -> str:
+    """
+    Dump model data as JSON.
+
+    JSON doesn't support infinite values, so they are written as numbers
+    which are too large for a double (`1e999` and `-1e999`). The JSON
+    parsers of the supported languages read them as infinite values,
+    except Go, which needs a special number type.
+
+    Parameters
+    ----------
+    model_data : object
+        The model data.
+
+    Returns
+    -------
+    The model data as JSON string.
+    """
+    out = dumps(model_data, separators=(',', ':'))
+    return out.replace('Infinity', '1e999')
 
 
 def missing_name(language) -> str:

@@ -92,6 +92,10 @@ table.
   `tree_.missing_go_to_left`, even if the tree was fitted without missing
   values. The tree templates check `isnan` only for splits which send missing
   values to the left child, because all comparisons with NaN are false.
+- Trees fitted on data with missing values can have infinite thresholds. The
+  tree estimators write them as literals of the language (`with_infinity()`,
+  template `inf`) and as `1e999` in JSON (`dump_model_data()`); Go parses them
+  with a custom `UnmarshalJSON` (`has_infinite_thresholds`).
 - `Estimator` converts the sparse matrices of a fitted estimator (e.g. after a
   fit on sparse data or `sparsify()`) to dense arrays before the model data is
   extracted (`sklearn_porter.utils.densify()`), so the estimator classes don't
