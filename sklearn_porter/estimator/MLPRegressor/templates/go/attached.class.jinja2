@@ -62,7 +62,16 @@ func (reg {{ class_name }}) feedForward(features []float64) []float64 {
 }
 
 func (reg {{ class_name }}) Predict(features []float64) []float64 {
+{% if output_activation == 'exp' %}
+	var outputs = reg.feedForward(features)
+	// The output activation `exp` of the loss `poisson`:
+	for i := range outputs {
+		outputs[i] = math.Exp(outputs[i])
+	}
+	return outputs
+{% else %}
 	return reg.feedForward(features)
+{% endif %}
 }
 
 func main() {

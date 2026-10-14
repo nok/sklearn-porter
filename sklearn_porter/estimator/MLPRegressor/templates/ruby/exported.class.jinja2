@@ -43,6 +43,10 @@ class {{ class_name }}
 
 	def predict(features)
 		outputs = _feed_forward(features)
+{% if output_activation == 'exp' %}
+		# The output activation `exp` of the loss `poisson`:
+		outputs = outputs.map { |x| Math.exp(x) }
+{% endif %}
 		if outputs.length == 1
 			return outputs[0]
 		end

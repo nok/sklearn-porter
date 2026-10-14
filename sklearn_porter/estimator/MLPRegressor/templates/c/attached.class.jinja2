@@ -73,7 +73,17 @@ double *feed_forward(double features[N_FEATURES]) {
 
 /* Predict the output values; the caller has to free the result: */
 double *predict(double features[N_FEATURES]) {
+{% if output_activation == 'exp' %}
+    int i;
+    double *outputs = feed_forward(features);
+    /* The output activation `exp` of the loss `poisson`: */
+    for (i = 0; i < layers[N_LAYERS - 1]; i++) {
+        outputs[i] = exp(outputs[i]);
+    }
+    return outputs;
+{% else %}
     return feed_forward(features);
+{% endif %}
 }
 
 int main(int argc, const char *argv[]) {
