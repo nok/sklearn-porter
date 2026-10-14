@@ -15,7 +15,7 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import (
-    get_class_counts,
+    get_class_fractions,
     get_output_classes,
     get_thresholds,
 )
@@ -83,7 +83,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         output_classes = get_output_classes(est)
         self.meta_info = dict(
             n_features=est.n_features_in_,
-            # The class counts (or probabilities) of all outputs are
+            # The class fractions (or probabilities) of all outputs are
             # concatenated, `output_classes` defines their segments:
             n_classes=sum(output_classes),
             n_outputs=len(output_classes),
@@ -99,7 +99,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             rights=est.tree_.children_right.tolist(),
             thresholds=get_thresholds(est.tree_),
             indices=est.tree_.feature.tolist(),
-            classes=get_class_counts(est.tree_),
+            classes=get_class_fractions(est.tree_),
         )
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
@@ -197,13 +197,15 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(indices_val),
         )
 
-        classes_val = [list(map(str, e)) for e in self.model_data['classes']]
+        classes_val = [
+            list(map(converter, e)) for e in self.model_data['classes']
+        ]
         classes_str = [', '.join(e) for e in classes_val]
         classes_str = ', '.join(
             [tpl_in_brackets.render(value=e) for e in classes_str]
         )
         classes_str = tpl_arr_2.render(
-            type=tpl_int,
+            type=tpl_double,
             name='classes',
             values=classes_str,
             n=len(classes_val),
@@ -399,13 +401,13 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         converter
             The number converter.
         value : list
-            The class counts of the leaf.
+            The class fractions of the leaf.
         depth : list
             The tree depth.
 
         Returns
         -------
-        The assignments of the class counts of a single leaf.
+        The assignments of the class fractions of a single leaf.
         """
         out_indent = tpls.get_template('indent').render()
         clazzes = []
@@ -415,8 +417,8 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         tpl = indent(tpl, depth * out_indent)
 
         for i, rate in enumerate(value):
-            if int(rate) > 0:
-                clazz = tpl.format(i, rate)
+            if rate > 0:
+                clazz = tpl.format(i, converter(rate))
                 clazz = '\n' + clazz
                 clazzes.append(clazz)
 

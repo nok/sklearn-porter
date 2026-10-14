@@ -41,7 +41,7 @@ class {{ class_name }} {
 
 {% if is_multi_output %}
     // Normalize the values of each output:
-    private static double[] normVals(int[] nums) {
+    private static double[] normVals(double[] nums) {
         double[] result = new double[nums.length];
         int offset = 0;
         for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
@@ -57,7 +57,7 @@ class {{ class_name }} {
         return result;
     }
 {% else %}
-    private static double[] normVals(int[] nums) {
+    private static double[] normVals(double[] nums) {
         double[] result = new double[nums.length];
         double sum = 0.;
         for (int i = 0; i < nums.length; i++) {

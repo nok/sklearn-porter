@@ -7,8 +7,8 @@ import java.util.Arrays;
 {% endif %}
 class {{ class_name }} {
 
-    public static int[] compute(double[] features) {
-        int[] classes = new int[{{ n_classes }}];
+    public static double[] compute(double[] features) {
+        double[] classes = new double[{{ n_classes }}];
         {{ tree | indent(4, True) }}
         return classes;
     }
@@ -18,7 +18,7 @@ class {{ class_name }} {
     private static final int[] OUTPUT_CLASSES = { {{ output_classes | join(', ') }} };
 
     // Find the class with the maximum value of each output:
-    private static int[] findMax(int[] nums) {
+    private static int[] findMax(double[] nums) {
         int[] result = new int[OUTPUT_CLASSES.length];
         int offset = 0;
         for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
@@ -32,7 +32,7 @@ class {{ class_name }} {
         return result;
     }
 {% else %}
-    private static int findMax(int[] nums) {
+    private static int findMax(double[] nums) {
         int idx = 0;
         for (int i = 0; i < nums.length; i++) {
             idx = nums[i] > nums[idx] ? i : idx;
@@ -43,7 +43,7 @@ class {{ class_name }} {
 
 {% if is_multi_output %}
     // Normalize the values of each output:
-    private static double[][] normVals(int[] nums) {
+    private static double[][] normVals(double[] nums) {
         double[][] result = new double[OUTPUT_CLASSES.length][];
         int offset = 0;
         for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
@@ -60,7 +60,7 @@ class {{ class_name }} {
         return result;
     }
 {% else %}
-    private static double[] normVals(int[] nums) {
+    private static double[] normVals(double[] nums) {
         int i = 0, l = nums.length;
         double[] result = new double[l];
         double sum = 0.;

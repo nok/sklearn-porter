@@ -21,7 +21,7 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import (
-    get_class_counts,
+    get_class_fractions,
     get_output_classes,
     get_thresholds,
 )
@@ -92,7 +92,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         self.meta_info = dict(
             n_estimators=est.n_estimators,
             n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
-            # The class counts (or probabilities) of all outputs are
+            # The class fractions (or probabilities) of all outputs are
             # concatenated, `output_classes` defines their segments:
             n_classes=sum(output_classes),
             n_outputs=len(output_classes),
@@ -110,7 +110,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                     lefts=e.tree_.children_left.tolist(),
                     rights=e.tree_.children_right.tolist(),
                     thresholds=get_thresholds(e.tree_),
-                    classes=get_class_counts(e.tree_),
+                    classes=get_class_fractions(e.tree_),
                     indices=e.tree_.feature.tolist(),
                 )
             )
@@ -266,7 +266,9 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                     rights=', '.join(map(str, tree['rights'])),
                     thresholds=', '.join(map(converter, tree['thresholds'])),
                     indices=', '.join(map(str, tree['indices'])),
-                    classes=[', '.join(map(str, c)) for c in tree['classes']],
+                    classes=[
+                        ', '.join(map(converter, c)) for c in tree['classes']
+                    ],
                     weight=converter(tree['weight'])
                     if 'weight' in tree
                     else None,
@@ -443,8 +445,8 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             tpl = indent(tpl, depth * out_indent)
 
             for i, rate in enumerate(value[node]):
-                if int(rate) > 0:
-                    clazz = tpl.format(i, rate)
+                if rate > 0:
+                    clazz = tpl.format(i, converter(rate))
                     clazz = '\n' + clazz
                     clazzes.append(clazz)
 

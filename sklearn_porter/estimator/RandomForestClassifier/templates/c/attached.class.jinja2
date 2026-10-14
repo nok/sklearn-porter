@@ -20,7 +20,7 @@ typedef struct {
     int *rights;
     double *thresholds;
     int *indices;
-    int *classes; /* shape: (n_nodes * N_CLASSES) */
+    double *classes; /* shape: (n_nodes * N_CLASSES) */
 } Tree;
 
 
@@ -60,7 +60,7 @@ int find_max(double nums[N_CLASSES]) {
 
 {% if is_multi_output %}
 /* Normalize the values of each output: */
-void norm_vals(double *result, const int *nums) {
+void norm_vals(double *result, const double *nums) {
     int i, j, offset = 0;
     double sum;
     for (j = 0; j < N_OUTPUTS; j++) {
@@ -75,7 +75,7 @@ void norm_vals(double *result, const int *nums) {
     }
 }
 {% else %}
-void norm_vals(double *result, const int *nums) {
+void norm_vals(double *result, const double *nums) {
     int i;
     double sum = 0.;
     for (i = 0; i < N_CLASSES; i++) {

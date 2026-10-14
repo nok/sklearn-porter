@@ -51,13 +51,15 @@ def get_output_classes(estimator) -> list:
     return [len(classes)]
 
 
-def get_class_counts(tree) -> list:
+def get_class_fractions(tree) -> list:
     """
-    Get the weighted number of samples per class and node of a fitted tree.
+    Get the (weighted) fractions of the classes per node of a fitted tree.
 
     Since scikit-learn v1.4 `tree_.value` contains the class fractions of
-    classifiers instead of the absolute class counts, but all templates
-    expect integer counts. The counts of multiple outputs are concatenated.
+    classifiers, which scikit-learn uses to predict the probabilities. They
+    must not be rounded to class counts, because the samples can be weighted
+    (e.g. by `sample_weight` or `class_weight`). The fractions of multiple
+    outputs are concatenated.
 
     Parameters
     ----------
@@ -66,14 +68,12 @@ def get_class_counts(tree) -> list:
 
     Returns
     -------
-    The class counts of shape (n_nodes, sum of the classes of all outputs).
+    The class fractions of shape (n_nodes, sum of the classes of all outputs).
     """
     # The values are padded to the maximum number of classes of all outputs:
-    fractions = np.hstack(
+    return np.hstack(
         [tree.value[:, i, :n] for i, n in enumerate(tree.n_classes)]
-    )
-    counts = fractions * tree.weighted_n_node_samples[:, None]
-    return np.rint(counts).astype(int).tolist()
+    ).tolist()
 
 
 def get_thresholds(tree) -> list:

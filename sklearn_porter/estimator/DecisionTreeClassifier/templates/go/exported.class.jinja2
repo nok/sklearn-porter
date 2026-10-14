@@ -16,7 +16,7 @@ type {{ class_name }} struct {
 	Rights []int `json:"rights"`
 	Thresholds []float64 `json:"thresholds"`
 	Indices []int `json:"indices"`
-	Classes [][]int `json:"classes"`
+	Classes [][]float64 `json:"classes"`
 }
 
 {% if is_test or to_json %}
@@ -31,7 +31,7 @@ type Response struct {
 var outputClasses = []int{ {{ output_classes | join(', ') }} }
 
 // Find the class with the maximum value of each output:
-func findMax(nums []int) []int {
+func findMax(nums []float64) []int {
 	result := make([]int, len(outputClasses))
 	offset := 0
 	for j, n := range outputClasses {
@@ -45,7 +45,7 @@ func findMax(nums []int) []int {
 	return result
 }
 {% else %}
-func findMax(nums []int) int {
+func findMax(nums []float64) int {
 	var idx = 0
 	for i := 0; i < len(nums); i++ {
 		if nums[i] > nums[idx] {
@@ -58,11 +58,11 @@ func findMax(nums []int) int {
 
 {% if is_multi_output %}
 // Normalize the values of each output:
-func normVals(nums []int) [][]float64 {
+func normVals(nums []float64) [][]float64 {
 	result := make([][]float64, len(outputClasses))
 	offset := 0
 	for j, n := range outputClasses {
-		sum := 0
+		sum := 0.0
 		for i := 0; i < n; i++ {
 			sum += nums[offset+i]
 		}
@@ -79,9 +79,9 @@ func normVals(nums []int) [][]float64 {
 	return result
 }
 {% else %}
-func normVals(nums []int) []float64 {
+func normVals(nums []float64) []float64 {
 	var l = len(nums)
-	var sum = 0
+	var sum = 0.0
 	for i := 0; i < l; i++ {
 		sum += nums[i]
 	}
