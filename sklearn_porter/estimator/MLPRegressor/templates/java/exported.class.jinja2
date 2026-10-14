@@ -76,7 +76,16 @@ class {{ class_name }} {
     }
 
     public double[] predict(double[] features) {
+{% if output_activation == 'exp' %}
+        double[] outputs = this.feedForward(features);
+        // The output activation `exp` of the loss `poisson`:
+        for (int i = 0; i < outputs.length; i++) {
+            outputs[i] = Math.exp(outputs[i]);
+        }
+        return outputs;
+{% else %}
         return this.feedForward(features);
+{% endif %}
     }
 
     public static void main(String[] args) throws FileNotFoundException {

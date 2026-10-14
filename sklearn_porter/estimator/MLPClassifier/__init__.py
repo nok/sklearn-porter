@@ -93,6 +93,10 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         if self.estimator_name == 'MLPClassifier':
             self.model_data['output_activation'] = est.out_activation_
 
+        # The output activation of the classifiers (`logistic` or `softmax`)
+        # and regressors (`identity` or `exp` with `loss='poisson'`):
+        self.output_activation = est.out_activation_
+
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
@@ -133,6 +137,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             dict(
                 class_name=class_name,
                 to_json=to_json,
+                output_activation=self.output_activation,
             )
         )
         plas.update(self.meta_info)
@@ -193,7 +198,6 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
                     bias=bias_str,
                     n_layers=len(layers_val),
                     hidden_activation=self.model_data['hidden_activation'],
-                    output_activation=self.model_data.get('output_activation'),
                 )
             )
             tpl_class = tpls.get_template('attached.class')
@@ -242,7 +246,6 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
                 weights=weights_str,
                 bias=bias_str,
                 hidden_activation=self.model_data['hidden_activation'],
-                output_activation=self.model_data.get('output_activation'),
             )
         )
 

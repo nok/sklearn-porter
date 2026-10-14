@@ -11,7 +11,11 @@ from scipy.sparse import csr_matrix, issparse
 # scikit-learn
 from sklearn import preprocessing
 from sklearn.base import BaseEstimator, clone
-from sklearn.datasets import load_iris, make_multilabel_classification
+from sklearn.datasets import (
+    load_diabetes,
+    load_iris,
+    make_multilabel_classification,
+)
 from sklearn.ensemble import (
     AdaBoostClassifier,
     ExtraTreesClassifier,
@@ -943,6 +947,57 @@ def test_regressions_of_regressors(
         delete_created_files=False,
     )
     assert score == 1.0
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('n_outputs', [1, 2])
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_mlp_regressor_with_poisson_loss(
+    tmp_root_dir: Path, n_outputs: int, language: str, template: str
+):
+    """Test the output activation `exp` of a MLPRegressor with the loss
+    `poisson`."""
+    x, y = load_diabetes(return_X_y=True)
+    if n_outputs == 2:
+        y = np.column_stack((y, y / 2.0 + 1.0))
+    orig_est = MLPRegressor(
+        loss='poisson', hidden_layer_sizes=(10,), max_iter=300, random_state=0
+    ).fit(X=x, y=y)
+    assert orig_est.out_activation_ == 'exp'
+
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'mlp_regressor_with_poisson_loss'),
+            ('n_outputs', str(n_outputs)),
+            ('language', language),
+            ('template', template),
+        ],
+    )
+    test_x = x[:100]
+    y_pred, _ = Estimator(orig_est).make(
+        test_x,
+        language=language,
+        template=template,
+        directory=tmp_dir,
+        delete_created_files=False,
+    )
+    np.testing.assert_allclose(
+        y_pred.astype(float), orig_est.predict(test_x), rtol=1e-6
+    )
+
+
+def test_mlp_regressor_with_unsupported_output_activation():
+    """Test the rejection of unknown output activations of a MLPRegressor."""
+    x, y = load_diabetes(return_X_y=True)
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore', ConvergenceWarning)
+        orig_est = MLPRegressor(max_iter=5, random_state=0).fit(X=x, y=y)
+    orig_est.out_activation_ = 'tanh'
+    with pytest.raises(exception.NotSupportedYetError, match='activation'):
+        Estimator(orig_est)
 
 
 @pytest.mark.regression

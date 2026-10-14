@@ -85,6 +85,12 @@ var {{ class_name }} = function(hidden, layers, weights, bias) {
 
     this.predict = function(neurons) {
         var lastLayer = this.feedForward(neurons);
+{% if output_activation == 'exp' %}
+        // The output activation `exp` of the loss `poisson`:
+        for (var i = 0; i < lastLayer.length; i++) {
+            lastLayer[i] = Math.exp(lastLayer[i]);
+        }
+{% endif %}
         if (lastLayer.length === 1) {
             return lastLayer[0];
         }

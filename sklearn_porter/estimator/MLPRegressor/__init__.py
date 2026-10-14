@@ -56,4 +56,13 @@ class MLPRegressor(MLPClassifier, EstimatorBase):
             estimator_name = estimator.__class__.__qualname__
             raise exception.NotFittedEstimatorError(estimator_name) from None
 
+        # The ported regressors support the output activations `identity`
+        # and `exp` (with `loss='poisson'`):
+        if estimator.out_activation_ not in ('identity', 'exp'):
+            msg = (
+                f'The output activation `{estimator.out_activation_}` is not '
+                'supported, only `identity` and `exp`.'
+            )
+            raise exception.NotSupportedYetError(msg)
+
         super().__init__(estimator)

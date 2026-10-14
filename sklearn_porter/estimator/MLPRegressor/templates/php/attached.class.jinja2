@@ -53,6 +53,10 @@ class {{ class_name }} {
 
     public function predict($features) {
         $outputs = $this->feedForward($features);
+{% if output_activation == 'exp' %}
+        // The output activation `exp` of the loss `poisson`:
+        $outputs = array_map('exp', $outputs);
+{% endif %}
         if (count($outputs) == 1) {
             return $outputs[0];
         }
