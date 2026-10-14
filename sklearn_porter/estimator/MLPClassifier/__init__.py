@@ -66,14 +66,11 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
                 self.estimator_name
             ) from None
 
-        # Architecture:
+        # Architecture: the sizes of the layers come from the shapes of the
+        # fitted weights, because `hidden_layer_sizes` can be changed after
+        # the fit (e.g. with `set_params`):
         n_inputs = len(est.coefs_[0])
-        n_outputs = est.n_outputs_
-        n_hidden_layers = est.hidden_layer_sizes
-        if isinstance(n_hidden_layers, int):
-            n_hidden_layers = [n_hidden_layers]
-        n_hidden_layers = list(n_hidden_layers)
-        layers = [n_inputs] + n_hidden_layers + [n_outputs]
+        layers = [n_inputs] + [len(c[0]) for c in est.coefs_]
 
         self.meta_info = dict(
             n_features=n_inputs,
