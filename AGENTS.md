@@ -83,9 +83,11 @@ table.
 ## scikit-learn specifics
 
 - Use only public scikit-learn imports (e.g. `from sklearn.tree import ...`).
-- Since scikit-learn 1.4 `tree_.value` contains class fractions; use
-  `sklearn_porter.utils.get_class_counts()` to get the integer class counts
-  which the tree templates expect.
+- Since scikit-learn 1.4 `tree_.value` contains the (weighted) class
+  fractions; the tree templates use them directly as floating point numbers
+  (`sklearn_porter.utils.get_class_fractions()`). Don't round them to class
+  counts, otherwise the probabilities of trees fitted with `sample_weight` or
+  `class_weight` differ.
 - AdaBoostClassifier is ported with the SAMME algorithm (`SAMME.R` was removed
   from scikit-learn).
 

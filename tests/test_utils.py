@@ -13,7 +13,7 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.tree import DecisionTreeClassifier
 
 from sklearn_porter.utils import (
-    get_class_counts,
+    get_class_fractions,
     get_output_classes,
     get_thresholds,
     is_multilabel,
@@ -113,15 +113,33 @@ def test_output_classes(estimator, multi_output: bool):
     assert get_output_classes(estimator) == ([3, 2, 4] if multi_output else [3])
 
 
-def test_class_counts_of_multi_output_tree():
-    """Test the concatenated class counts of a multi-output tree."""
+def test_class_fractions_of_multi_output_tree():
+    """Test the concatenated class fractions of a multi-output tree."""
     x, y = load_iris(return_X_y=True)
     y = multi_output_target(x, y)
     tree = DecisionTreeClassifier(max_depth=3, random_state=0).fit(x, y).tree_
-    counts = np.array(get_class_counts(tree))
-    assert counts.shape == (tree.node_count, 3 + 2 + 4)
-    # The counts of each output sum up to the number of samples per node:
+    fractions = np.array(get_class_fractions(tree))
+    assert fractions.shape == (tree.node_count, 3 + 2 + 4)
+    # The fractions of each output sum up to 1:
     for start, end in [(0, 3), (3, 5), (5, 9)]:
-        np.testing.assert_array_equal(
-            counts[:, start:end].sum(axis=1), tree.n_node_samples
-        )
+        np.testing.assert_allclose(fractions[:, start:end].sum(axis=1), 1)
+
+
+@pytest.mark.parametrize(
+    'params',
+    [
+        dict(sample_weight=np.linspace(0.1, 3.0, 150)),
+        dict(class_weight={0: 1.0, 1: 3.3, 2: 0.7}),
+    ],
+    ids=['sample_weight', 'class_weight'],
+)
+def test_class_fractions_of_weighted_tree(params: dict):
+    """Test the unrounded class fractions of a tree with weighted samples."""
+    x, y = load_iris(return_X_y=True)
+    sample_weight = params.pop('sample_weight', None)
+    est = DecisionTreeClassifier(max_depth=3, random_state=0, **params)
+    est.fit(x, y, sample_weight=sample_weight)
+    fractions = np.array(get_class_fractions(est.tree_))
+    # The fractions of the leaves are the probabilities of scikit-learn:
+    leaves = est.apply(x)
+    np.testing.assert_allclose(fractions[leaves], est.predict_proba(x))

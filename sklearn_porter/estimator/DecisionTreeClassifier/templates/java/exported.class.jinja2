@@ -17,7 +17,7 @@ class {{ class_name }} {
         private int[] rights;
         private double[] thresholds;
         private int[] indices;
-        private int[][] classes;
+        private double[][] classes;
     }
     private Tree tree;
 
@@ -31,7 +31,7 @@ class {{ class_name }} {
     private static final int[] OUTPUT_CLASSES = { {{ output_classes | join(', ') }} };
 
     // Find the class with the maximum value of each output:
-    private int[] findMax(int[] nums) {
+    private int[] findMax(double[] nums) {
         int[] result = new int[OUTPUT_CLASSES.length];
         int offset = 0;
         for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
@@ -45,7 +45,7 @@ class {{ class_name }} {
         return result;
     }
 {% else %}
-    private int findMax(int[] nums) {
+    private int findMax(double[] nums) {
         int idx = 0;
         for (int i = 0; i < nums.length; i++) {
             idx = nums[i] > nums[idx] ? i : idx;
@@ -56,7 +56,7 @@ class {{ class_name }} {
 
 {% if is_multi_output %}
     // Normalize the values of each output:
-    private double[][] normVals(int[] nums) {
+    private double[][] normVals(double[] nums) {
         double[][] result = new double[OUTPUT_CLASSES.length][];
         int offset = 0;
         for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
@@ -73,7 +73,7 @@ class {{ class_name }} {
         return result;
     }
 {% else %}
-    private double[] normVals(int[] nums) {
+    private double[] normVals(double[] nums) {
         int i = 0, l = nums.length;
         double[] result = new double[l];
         double sum = 0.;
