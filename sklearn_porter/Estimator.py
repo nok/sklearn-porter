@@ -6,6 +6,7 @@ from importlib import import_module
 from json import JSONDecodeError, loads
 from os import cpu_count, environ, remove
 from pathlib import Path
+from shlex import quote
 from shutil import rmtree, which
 from subprocess import STDOUT, CalledProcessError, check_output, run
 from sys import platform, stdout, version_info
@@ -472,24 +473,23 @@ class Estimator:
         cmd = language.value.CMD_EXECUTE
         cmd_args = {}
 
+        paths_to_check = []
         if language in (enum.Language.C, enum.Language.GO):
-            cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
+            dest_path = str(src_path.parent / src_path.stem)
+            cmd_args['dest_path'] = quote(dest_path)
+            paths_to_check.append(dest_path)
         elif language is enum.Language.JAVA:
             if bool(class_paths):
-                cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
-            cmd_args['dest_path'] = str(src_path.stem)
+                cmd_args['class_path'] = '-cp ' + quote(':'.join(class_paths))
+            cmd_args['dest_path'] = quote(src_path.stem)
         elif language in (
             enum.Language.JS,
             enum.Language.PHP,
             enum.Language.RUBY,
         ):
-            cmd_args['src_path'] = str(src_path)
+            cmd_args['src_path'] = quote(str(src_path))
+            paths_to_check.append(str(src_path))
 
-        paths_to_check = [
-            cmd_args[key]
-            for key in ('src_path', 'dest_path')
-            if key in cmd_args
-        ]
         for path_to_check in paths_to_check:
             for _ in range(10):
                 try:
@@ -504,7 +504,7 @@ class Estimator:
         L.info(f'Execution command: `{cmd}`')
 
         # Model data:
-        json_path = ' ' if not data_path else ' ' + str(data_path) + ' '
+        json_path = ' ' if not data_path else ' ' + quote(str(data_path)) + ' '
 
         # Features:
         if not isinstance(x, np.ndarray):
@@ -598,13 +598,13 @@ class Estimator:
         cmd_args = {}
 
         if language in (enum.Language.C, enum.Language.GO):
-            cmd_args['src_path'] = str(src_path)
-            cmd_args['dest_path'] = str(src_path.parent / src_path.stem)
+            cmd_args['src_path'] = quote(str(src_path))
+            cmd_args['dest_path'] = quote(str(src_path.parent / src_path.stem))
             created_files.append(src_path.parent / src_path.stem)
 
         elif language is enum.Language.JAVA:
-            cmd_args['src_path'] = str(src_path)
-            cmd_args['dest_dir'] = f'-d {src_path.parent}'
+            cmd_args['src_path'] = quote(str(src_path))
+            cmd_args['dest_dir'] = '-d ' + quote(str(src_path.parent))
             class_paths.append(str(src_path.parent))
             created_files.append(src_path.parent / (src_path.stem + '.class'))
 
@@ -627,7 +627,7 @@ class Estimator:
                     class_paths.append(str(path))
 
             if bool(class_paths):
-                cmd_args['class_path'] = '-cp ' + ':'.join(class_paths)
+                cmd_args['class_path'] = '-cp ' + quote(':'.join(class_paths))
 
         cmd = cmd.format(**cmd_args)
         L.info(f'Compilation command: `{cmd}`')
