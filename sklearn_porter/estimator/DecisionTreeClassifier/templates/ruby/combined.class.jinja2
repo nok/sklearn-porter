@@ -59,7 +59,7 @@ class {{ class_name }}
 			end
 		else
 			for i in 0 ... nums.length
-				result[i] = nums[i] / sum
+				result[i] = nums[i].to_f / sum
 			end
 		end
 		result
