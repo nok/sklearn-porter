@@ -14,7 +14,11 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_class_counts, get_thresholds
+from sklearn_porter.utils import (
+    get_class_counts,
+    get_output_classes,
+    get_thresholds,
+)
 
 
 class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
@@ -76,9 +80,15 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             ) from None
 
         # Extract and save meta information:
+        output_classes = get_output_classes(est)
         self.meta_info = dict(
             n_features=est.n_features_in_,
-            n_classes=len(est.classes_),
+            # The class counts (or probabilities) of all outputs are
+            # concatenated, `output_classes` defines their segments:
+            n_classes=sum(output_classes),
+            n_outputs=len(output_classes),
+            output_classes=output_classes,
+            is_multi_output=len(output_classes) > 1,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

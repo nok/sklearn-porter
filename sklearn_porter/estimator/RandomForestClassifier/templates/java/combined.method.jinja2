@@ -12,10 +12,16 @@ private static double[] compute(double[] features) {
     return probas;
 }
 
+{% if is_multi_output %}
+public static double[][] predictProba(double[] features) {
+    return {{ class_name }}.splitOutputs({{ class_name }}.compute(features));
+}
+{% else %}
 public static double[] predictProba(double[] features) {
     return {{ class_name }}.compute(features);
 }
+{% endif %}
 
-public static int predict(double[] features) {
+public static {{ 'int[]' if is_multi_output else 'int' }} predict(double[] features) {
     return {{ class_name }}.findMax({{ class_name }}.predictProba(features));
 }

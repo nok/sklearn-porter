@@ -27,13 +27,37 @@ def is_multilabel(estimator) -> bool:
     return y_type.startswith('multilabel')
 
 
+def get_output_classes(estimator) -> list:
+    """
+    Get the number of classes per output of a fitted classifier.
+
+    Multi-output classifiers (e.g. a DecisionTreeClassifier fitted on a target
+    with several columns) store the classes of each output in a list. The
+    ported multi-output classifiers concatenate the class counts (or
+    probabilities) of all outputs, so this list defines their segments.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The fitted classifier.
+
+    Returns
+    -------
+    The number of classes per output, e.g. `[3]` for a single output.
+    """
+    classes = estimator.classes_
+    if isinstance(classes, list):
+        return [len(c) for c in classes]
+    return [len(classes)]
+
+
 def get_class_counts(tree) -> list:
     """
     Get the weighted number of samples per class and node of a fitted tree.
 
     Since scikit-learn v1.4 `tree_.value` contains the class fractions of
     classifiers instead of the absolute class counts, but all templates
-    expect integer counts.
+    expect integer counts. The counts of multiple outputs are concatenated.
 
     Parameters
     ----------
@@ -42,9 +66,12 @@ def get_class_counts(tree) -> list:
 
     Returns
     -------
-    The class counts of shape (n_nodes, n_classes).
+    The class counts of shape (n_nodes, sum of the classes of all outputs).
     """
-    fractions = tree.value[:, 0, :]
+    # The values are padded to the maximum number of classes of all outputs:
+    fractions = np.hstack(
+        [tree.value[:, i, :n] for i, n in enumerate(tree.n_classes)]
+    )
     counts = fractions * tree.weighted_n_node_samples[:, None]
     return np.rint(counts).astype(int).tolist()
 

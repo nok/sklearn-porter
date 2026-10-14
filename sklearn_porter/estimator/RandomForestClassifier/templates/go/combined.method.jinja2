@@ -1,5 +1,16 @@
 {{ methods }}
 
+{% if is_multi_output %}
+func PredictProba(features []float64) [][]float64 {
+	var probas = make([]float64, {{ n_classes }})
+	var temp []float64
+	{{ method_calls }}
+	for i := 0; i < {{ n_classes }}; i++ {
+		probas[i] /= {{ n_estimators }}
+	}
+	return splitOutputs(probas)
+}
+{% else %}
 func PredictProba(features []float64) []float64 {
 	var probas = make([]float64, {{ n_classes }})
 	var temp []float64
@@ -9,7 +20,8 @@ func PredictProba(features []float64) []float64 {
 	}
 	return probas
 }
+{% endif %}
 
-func Predict(features []float64) int {
+func Predict(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
 	return findMax(PredictProba(features))
 }

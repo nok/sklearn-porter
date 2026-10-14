@@ -22,6 +22,34 @@ class {{ class_name }} {
         $this->power = $this->data['power'];
     }
 
+{% if is_multi_output %}
+    // The classes of all outputs are concatenated, these are their numbers:
+    const OUTPUT_CLASSES = [{{ output_classes | join(', ') }}];
+
+    // Find the class with the maximum probability of each output:
+    private function findMax($nums) {
+        $result = [];
+        foreach ($nums as $probas) {
+            $idx = 0;
+            for ($i = 1; $i < count($probas); $i++) {
+                $idx = $probas[$i] > $probas[$idx] ? $i : $idx;
+            }
+            $result[] = $idx;
+        }
+        return $result;
+    }
+
+    // Split the concatenated values into the values of each output:
+    private function splitOutputs($nums) {
+        $result = [];
+        $offset = 0;
+        foreach (self::OUTPUT_CLASSES as $n) {
+            $result[] = array_slice($nums, $offset, $n);
+            $offset += $n;
+        }
+        return $result;
+    }
+{% else %}
     private function findMax($nums) {
         $i = 0; $l = count($nums); $idx = 0;
         for (; $i < $l; $i++) {
@@ -29,6 +57,7 @@ class {{ class_name }} {
         }
         return $idx;
     }
+{% endif %}
 
     // Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
     private function compute($temp, $cand, $metric, $q) {
@@ -85,6 +114,29 @@ class {{ class_name }} {
         return $this->findMax($classProbas);
     }
 
+{% if is_multi_output %}
+    public function predictProba($features) {
+        $classProbas = array_fill(0, $this->n, 0);
+        $dists = array();
+        for ($i = 0; $i < count($this->X); $i++) {
+            // The neighbors store the index of the sample:
+            $dist = $this->compute($this->X[$i], $features, $this->metric, $this->power);
+            $dists[] = array($i, $dist);
+        }
+        usort($dists, function ($a, $b) { return $a[1] <=> $b[1]; });
+        // Each neighbor votes for one class of each output:
+        $nOutputs = intdiv(count($this->y), count($this->X));
+        for ($i = 0; $i < $this->k; $i++) {
+            for ($j = 0; $j < $nOutputs; $j++) {
+                $classProbas[$this->y[$dists[$i][0] * $nOutputs + $j]] += 1;
+            }
+        }
+        for ($i = 0; $i < $this->n; $i++) {
+            $classProbas[$i] /= $this->k;
+        }
+        return $this->splitOutputs($classProbas);
+    }
+{% else %}
     public function predictProba($features) {
         $classProbas = array_fill(0, $this->n, 0);
         if ($this->k == 1) {
@@ -114,6 +166,7 @@ class {{ class_name }} {
         }
         return $classProbas;
     }
+{% endif %}
 
 }
 
@@ -137,12 +190,12 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
 
     // Get class probabilities:
     $probabilities = $clf->predictProba($features);
     for ($i = 0; $i < count($probabilities); $i++) {
-        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+        fwrite(STDOUT, "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}" . strval($i) . " = " . {{ "implode(', ', $probabilities[$i])" if is_multi_output else 'strval($probabilities[$i])' }} . "\n");
     }
     {% endif %}
 }

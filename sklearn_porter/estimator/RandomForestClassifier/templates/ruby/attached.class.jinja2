@@ -16,6 +16,21 @@ class {{ class_name }}
 			@classes = classes
 		end
 
+{% if is_multi_output %}
+		# Normalize the values of each output:
+		def _norm_vals(nums)
+			result = []
+			offset = 0
+			OUTPUT_CLASSES.each do |n|
+				sum = nums[offset, n].sum.to_f
+				for i in offset ... offset + n
+					result[i] = sum == 0 ? 1.0 / n : nums[i] / sum
+				end
+				offset += n
+			end
+			result
+		end
+{% else %}
 		def _norm_vals(nums)
 			sum = nums.sum.to_f
 			if sum == 0
@@ -23,6 +38,7 @@ class {{ class_name }}
 			end
 			nums.map { |num| num / sum }
 		end
+{% endif %}
 
 		def compute(features)
 			node = 0
@@ -44,6 +60,25 @@ class {{ class_name }}
 		end
 	end
 
+{% if is_multi_output %}
+	# The classes of all outputs are concatenated, these are their numbers:
+	OUTPUT_CLASSES = [{{ output_classes | join(', ') }}]
+
+	# Find the class with the maximum probability of each output:
+	def _find_max(nums)
+		nums.map { |probas| probas.index(probas.max) }
+	end
+
+	# Split the concatenated values into the values of each output:
+	def _split_outputs(nums)
+		offset = 0
+		OUTPUT_CLASSES.map do |n|
+			probas = nums[offset, n]
+			offset += n
+			probas
+		end
+	end
+{% else %}
 	def _find_max(nums)
 		idx = 0
 		for i in 0 ... nums.length
@@ -51,7 +86,18 @@ class {{ class_name }}
 		end
 		idx
 	end
+{% endif %}
 
+{% if is_multi_output %}
+	def predict_proba(features)
+		probas = nil
+		@forest.each do |tree|
+			temp = tree.compute(features)
+			probas = probas.nil? ? temp : probas.zip(temp).map { |a, b| a + b }
+		end
+		_split_outputs(probas.map { |proba| proba / @forest.length })
+	end
+{% else %}
 	def predict_proba(features)
 		probas = nil
 		@forest.each do |tree|
@@ -60,6 +106,7 @@ class {{ class_name }}
 		end
 		probas.map { |proba| proba / @forest.length }
 	end
+{% endif %}
 
 	def predict(features)
 		_find_max(predict_proba(features))
@@ -89,12 +136,12 @@ if __FILE__ == $0
 	{% else %}
 	# Get class prediction:
 	prediction = clf.predict features
-	puts "Predicted class: ##{prediction}"
+	puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}#{prediction}"
 
 	# Get class probabilities:
 	probabilities = clf.predict_proba features
 	for i in 0 ... probabilities.length
-		puts "Probability of class ##{i} : #{probabilities[i]}"
+		puts "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}#{i} : #{probabilities[i]}"
 	end
 	{% endif %}
 end

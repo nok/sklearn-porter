@@ -17,6 +17,25 @@ class {{ class_name }} {
         $this->classes = $classes;
     }
 
+{% if is_multi_output %}
+    // The classes of all outputs are concatenated, these are their numbers:
+    const OUTPUT_CLASSES = [{{ output_classes | join(', ') }}];
+
+    // Find the class with the maximum value of each output:
+    private function findMax($nums) {
+        $result = [];
+        $offset = 0;
+        foreach (self::OUTPUT_CLASSES as $n) {
+            $idx = 0;
+            for ($i = 1; $i < $n; $i++) {
+                $idx = $nums[$offset + $i] > $nums[$offset + $idx] ? $i : $idx;
+            }
+            $result[] = $idx;
+            $offset += $n;
+        }
+        return $result;
+    }
+{% else %}
     private function findMax($nums) {
         $i = 0; $l = count($nums); $idx = 0;
         for (; $i < $l; $i++) {
@@ -24,7 +43,28 @@ class {{ class_name }} {
         }
         return $idx;
     }
+{% endif %}
 
+{% if is_multi_output %}
+    // Normalize the values of each output:
+    private function normVals($nums) {
+        $result = [];
+        $offset = 0;
+        foreach (self::OUTPUT_CLASSES as $n) {
+            $sum = 0.;
+            for ($i = 0; $i < $n; $i++) {
+                $sum += $nums[$offset + $i];
+            }
+            $probas = [];
+            for ($i = 0; $i < $n; $i++) {
+                $probas[] = $sum == 0 ? 1. / $n : $nums[$offset + $i] / $sum;
+            }
+            $result[] = $probas;
+            $offset += $n;
+        }
+        return $result;
+    }
+{% else %}
     private function normVals($nums) {
         $i = 0; $l = count($nums);
         $result = [];
@@ -44,6 +84,7 @@ class {{ class_name }} {
         }
         return $result;
     }
+{% endif %}
 
     public function predict($features) {
         $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
@@ -95,12 +136,12 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
 
     // Get class probabilities:
     $probabilities = $clf->predictProba($features);
     for ($i = 0; $i < count($probabilities); $i++) {
-        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+        fwrite(STDOUT, "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}" . strval($i) . " = " . {{ "implode(', ', $probabilities[$i])" if is_multi_output else 'strval($probabilities[$i])' }} . "\n");
     }
     {% endif %}
 

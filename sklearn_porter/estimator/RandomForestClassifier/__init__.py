@@ -20,7 +20,11 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_class_counts, get_thresholds
+from sklearn_porter.utils import (
+    get_class_counts,
+    get_output_classes,
+    get_thresholds,
+)
 
 
 class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
@@ -84,10 +88,16 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             raise exception.NotFittedEstimatorError(self.estimator_name)
 
         # Extract and save meta information:
+        output_classes = get_output_classes(est)
         self.meta_info = dict(
             n_estimators=est.n_estimators,
-            n_classes=est.n_classes_,
             n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
+            # The class counts (or probabilities) of all outputs are
+            # concatenated, `output_classes` defines their segments:
+            n_classes=sum(output_classes),
+            n_outputs=len(output_classes),
+            output_classes=output_classes,
+            is_multi_output=len(output_classes) > 1,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

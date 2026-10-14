@@ -1,7 +1,15 @@
 {{ methods }}
 
+{% if is_multi_output %}
+def predict_proba(features)
+    probas = Array.new({{ n_classes }}, 0.0)
+    {{ method_calls }}
+    _split_outputs(probas.map { |proba| proba / {{ n_estimators }} })
+end
+{% else %}
 def predict_proba(features)
     probas = Array.new({{ n_classes }}, 0.0)
     {{ method_calls }}
     probas.map { |proba| proba / {{ n_estimators }} }
 end
+{% endif %}
