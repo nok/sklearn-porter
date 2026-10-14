@@ -180,6 +180,21 @@ def test_file_handling(fitted_tree, tmp_root_dir):
     assert len(os.listdir(str(tmp_dir_keep))) == 2
 
 
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+def test_make_in_directory_with_special_characters(
+    fitted_tree, tmp_root_dir: Path, language: str, template: str
+):
+    """Test the quoting of the paths in the shell commands."""
+    x = load_iris().data
+    directory = tmp_root_dir / f"{language} {template} (a&b) $x 'q';"
+    directory.mkdir(parents=True)
+    est = Estimator(fitted_tree, language=language, template=template)
+    y_pred, _ = est.make(x[:5], n_jobs=False, directory=directory)
+    np.testing.assert_array_equal(y_pred, fitted_tree.predict(x[:5]))
+
+
 def test_list_of_regressors():
     """Test and compare list of regressors."""
     regressors = sorted(
@@ -365,6 +380,15 @@ def test_svm_with_break_ties(orig_est: type):
     x, y = load_iris(return_X_y=True)
     orig_est = orig_est(break_ties=True).fit(X=x, y=y)
     with pytest.raises(exception.NotSupportedYetError, match='break_ties'):
+        Estimator(orig_est)
+
+
+@pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
+def test_svm_with_precomputed_kernel(orig_est: type):
+    """Test the rejection of the kernel `precomputed`, which isn't ported."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = orig_est(kernel='precomputed').fit(X=x @ x.T, y=y)
+    with pytest.raises(exception.NotSupportedYetError, match='precomputed'):
         Estimator(orig_est)
 
 

@@ -74,10 +74,6 @@ def test_estimator_linear_svc(
             directory=tmp_dir,
             delete_created_files=False,
         )
-    except exception.NotSupportedYetError as e:
-        if 'template' == 'precomputed':
-            msg = 'The passed kernel `precomputed` is not supported.'
-            assert msg in str(e)
     except exception.CodeTooLarge:
         msg = (
             'Code too large for the combination: '
