@@ -17,6 +17,15 @@ this._compute = function(features) {
     return probas;
 }
 
+{% if is_multi_output %}
+this.predict = function(features) {
+    return _findMax(this.predictProba(features));
+};
+
+this.predictProba = function(features) {
+    return _splitOutputs(this._compute(features));
+};
+{% else %}
 this.predict = function(features) {
     return _findMax(this._compute(features));
 };
@@ -24,3 +33,4 @@ this.predict = function(features) {
 this.predictProba = function(features) {
     return this._compute(features);
 };
+{% endif %}

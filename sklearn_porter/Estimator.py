@@ -409,9 +409,8 @@ class Estimator:
         shell_executable: str = '/bin/bash',
         **kwargs,
     ) -> (
-        tuple[np.int64, np.ndarray]
-        | tuple[np.ndarray, np.ndarray]
-        | tuple[np.ndarray, None]
+        tuple[np.int64, np.ndarray | None]
+        | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
     ):
         """
         Make predictions with transpiled estimators locally.
@@ -531,7 +530,19 @@ class Estimator:
             with ThreadPoolExecutor(n_jobs) as executor:
                 y = list(executor.map(calls, x))
         y = list(zip(*y, strict=False))
-        y = list(map(np.array, y))
+        y_pred = np.array(y[0])
+        y_proba: np.ndarray | list[np.ndarray] | None = None
+        if len(y) > 1:
+            if self._estimator.meta_info.get('is_multi_output'):
+                # Multi-output classifiers return the probabilities of each
+                # output (with different numbers of classes), so create one
+                # array per output like scikit-learn:
+                n_outputs = len(y[1][0])
+                y_proba = [
+                    np.array([p[i] for p in y[1]]) for i in range(n_outputs)
+                ]
+            else:
+                y_proba = np.array(y[1])
 
         # Delete generated files finally:
         if delete_created_files:
@@ -541,14 +552,11 @@ class Estimator:
             if temp_dir:
                 rmtree(temp_dir, ignore_errors=True)
 
-        if len(y) == 1:  # predict
-            if len(y[0]) == 1:
-                return y[0][0], None
-            return y[0], None
-        else:
-            if len(y[0]) == 1:  # predict, predict_proba
-                return y[0][0], y[1][0]
-            return y[0], y[1]
+        if len(y_pred) == 1:  # a single sample
+            if isinstance(y_proba, list):  # multiple outputs
+                return y_pred[0], [p[0] for p in y_proba]
+            return y_pred[0], None if y_proba is None else y_proba[0]
+        return y_pred, y_proba
 
     @staticmethod
     def _check_dependencies(language: enum.Language):
@@ -698,6 +706,11 @@ class Estimator:
                 is_close = is_close.all(axis=1)
             score = is_close.mean() if normalize else is_close.sum()
             return float(score)
+        if np.ndim(y_true) > 1:  # multiple outputs or labels
+            is_equal = (y_true == np.reshape(y_pred, np.shape(y_true))).all(
+                axis=1
+            )
+            return float(is_equal.mean() if normalize else is_equal.sum())
         return float(accuracy_score(y_true, y_pred, normalize=normalize))
 
     @staticmethod
@@ -991,9 +1004,8 @@ def make(
     check_dependencies: bool = True,
     shell_executable: str = '/bin/bash',
 ) -> (
-    tuple[np.int64, np.ndarray]
-    | tuple[np.ndarray, np.ndarray]
-    | tuple[np.ndarray, None]
+    tuple[np.int64, np.ndarray | None]
+    | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
 ):
     return Estimator(
         estimator,

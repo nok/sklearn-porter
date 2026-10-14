@@ -12,6 +12,30 @@ var {{ class_name }} = function(jsonFile) {
         this.dist = dist;
     };
 
+{% if is_multi_output %}
+    // The classes of all outputs are concatenated, these are their numbers:
+    var outputClasses = [{{ output_classes | join(', ') }}];
+
+    // Find the class with the maximum probability of each output:
+    var _findMax = function(probas) {
+        return probas.map(function(nums) {
+            var idx = 0;
+            for (var i = 1; i < nums.length; i++) {
+                idx = nums[i] > nums[idx] ? i : idx;
+            }
+            return idx;
+        });
+    };
+    // Split the concatenated values into the values of each output:
+    var _splitOutputs = function(nums) {
+        var result = [], offset = 0;
+        outputClasses.forEach(function(n) {
+            result.push(nums.slice(offset, offset + n));
+            offset += n;
+        });
+        return result;
+    };
+{% else %}
     var _findMax = function(nums) {
         var idx = 0;
         for (var i = 0, l = nums.length; i < l; i++) {
@@ -19,6 +43,7 @@ var {{ class_name }} = function(jsonFile) {
         }
         return idx;
     };
+{% endif %}
 
     // Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
     var _compute = function(temp, cand, metric, q) {
@@ -69,6 +94,30 @@ var {{ class_name }} = function(jsonFile) {
         return Math.pow(dist, 1. / q);
     };
 
+{% if is_multi_output %}
+    this.predictProba = function(features) {
+        var classProbas = new Array(this.data.n).fill(0);
+        var i, j, dists = [];
+        for (i = 0; i < this.data.X.length; i++) {
+            // The neighbors store the index of the sample:
+            dists.push(new Neighbor(i, _compute(this.data.X[i], features, this.data.metric, this.data.power)));
+        }
+        dists.sort(function compare(n1, n2) {
+            return n1.dist - n2.dist;
+        });
+        // Each neighbor votes for one class of each output:
+        var nOutputs = this.data.y.length / this.data.X.length;
+        for (i = 0; i < this.data.k; i++) {
+            for (j = 0; j < nOutputs; j++) {
+                classProbas[this.data.y[dists[i].y * nOutputs + j]] += 1;
+            }
+        }
+        for (i = 0; i < this.data.n; i++) {
+            classProbas[i] /= this.data.k;
+        }
+        return _splitOutputs(classProbas);
+    };
+{% else %}
     this.predictProba = function(features) {
         var classProbas = new Array(this.data.n).fill(0);
         var i, dist;
@@ -101,6 +150,7 @@ var {{ class_name }} = function(jsonFile) {
         }
         return classProbas;
     };
+{% endif %}
 
     this.predict = function(features) {
         return _findMax(this.predictProba(features));
@@ -129,12 +179,12 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("Predicted class: #" + prediction);
+    console.log("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" + prediction);
 
     // Get class probabilities:
     var probabilities = clf.predictProba(features);
     for (var i = 0; i < probabilities.length; i++) {
-        console.log("Probability of class #" + i + " : " + probabilities[i]);
+        console.log("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}" + i + " : " + probabilities[i]);
     }
     {% endif %}
 }

@@ -1,5 +1,15 @@
 {{ methods }}
 
+{% if is_multi_output %}
+public function predictProba($features) {
+    $probas = array_fill(0, {{ n_classes }}, 0.);
+    {{ method_calls }}
+    for ($i = 0; $i < {{ n_classes }}; $i++) {
+        $probas[$i] /= {{ n_estimators }};
+    }
+    return $this->splitOutputs($probas);
+}
+{% else %}
 public function predictProba($features) {
     $probas = array_fill(0, {{ n_classes }}, 0.);
     {{ method_calls }}
@@ -8,6 +18,7 @@ public function predictProba($features) {
     }
     return $probas;
 }
+{% endif %}
 
 public function predict($features) {
     return $this->findMax($this->predictProba($features));

@@ -13,6 +13,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.utils import get_output_classes
 
 
 class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
@@ -96,8 +97,14 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             msg = 'The weighted Minkowski distance (`w`) is not supported.'
             raise exception.NotSupportedYetError(msg)
 
+        # The class votes of all outputs are concatenated, `output_classes`
+        # defines their segments:
+        output_classes = get_output_classes(est)
         self.meta_info = dict(
-            n_classes=len(est.classes_),
+            n_classes=sum(output_classes),
+            n_outputs=len(output_classes),
+            output_classes=output_classes,
+            is_multi_output=len(output_classes) > 1,
             n_templates=len(est._fit_X),
             n_features=len(est._fit_X[0]),
             metric=metric,
@@ -105,11 +112,18 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
+        # The classes of multiple outputs are concatenated, so the indices of
+        # the classes of all outputs of a sample are stored one after another:
+        y = est._y.astype(int)  # ty: ignore[unresolved-attribute]
+        if y.ndim > 1:
+            offsets = np.cumsum([0] + output_classes[:-1])
+            y = (y + offsets).ravel()
+
         self.model_data = dict(
             X=est._fit_X.tolist(),
-            y=est._y.astype(int).tolist(),  # ty: ignore[unresolved-attribute]
+            y=y.tolist(),
             k=est.n_neighbors,  # number of relevant neighbors
-            n=len(est.classes_),  # number of classes
+            n=sum(output_classes),  # number of classes (of all outputs)
             metric=metric,  # `minkowski`, `chebyshev`, `cosine` or `hamming`
             power=power,  # only used by `minkowski`
         )

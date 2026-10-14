@@ -9,6 +9,24 @@ var {{ class_name }} = function(lefts, rights, thresholds, indices, classes) {
     this.indices = indices;
     this.classes = classes;
 
+{% if is_multi_output %}
+    // The classes of all outputs are concatenated, these are their numbers:
+    var outputClasses = [{{ output_classes | join(', ') }}];
+
+    // Find the class with the maximum value of each output:
+    var _findMax = function(nums) {
+        var result = [], offset = 0;
+        outputClasses.forEach(function(n) {
+            var idx = 0;
+            for (var i = 1; i < n; i++) {
+                idx = nums[offset + i] > nums[offset + idx] ? i : idx;
+            }
+            result.push(idx);
+            offset += n;
+        });
+        return result;
+    };
+{% else %}
     var _findMax = function(nums) {
         var i = 0, l = nums.length, idx = 0;
         for (; i < l; i++) {
@@ -16,7 +34,26 @@ var {{ class_name }} = function(lefts, rights, thresholds, indices, classes) {
         }
         return idx;
     };
+{% endif %}
 
+{% if is_multi_output %}
+    // Normalize the values of each output:
+    var _normVals = function(nums) {
+        var result = [], offset = 0;
+        outputClasses.forEach(function(n) {
+            var i, sum = 0., probas = [];
+            for (i = 0; i < n; i++) {
+                sum += nums[offset + i];
+            }
+            for (i = 0; i < n; i++) {
+                probas.push(sum === 0 ? 1. / n : nums[offset + i] / sum);
+            }
+            result.push(probas);
+            offset += n;
+        });
+        return result;
+    };
+{% else %}
     var _normVals = function(nums) {
         var i, l = nums.length,
             result = [],
@@ -35,6 +72,7 @@ var {{ class_name }} = function(lefts, rights, thresholds, indices, classes) {
         }
         return result;
     };
+{% endif %}
 
     this._compute = function(features, node, post) {
         node = (typeof node !== 'undefined') ? node : 0;
@@ -94,12 +132,12 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("Predicted class: #" + prediction);
+    console.log("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" + prediction);
 
     // Get class probabilities:
     var probabilities = clf.predictProba(features);
     for (var i = 0; i < probabilities.length; i++) {
-        console.log("Probability of class #" + i + " : " + probabilities[i]);
+        console.log("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}" + i + " : " + probabilities[i]);
     }
     {% endif %}
 }

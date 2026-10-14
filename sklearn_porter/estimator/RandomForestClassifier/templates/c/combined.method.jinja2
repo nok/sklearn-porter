@@ -1,6 +1,8 @@
 {{ methods }}
 
-void predict_proba(double *probas, double features[N_FEATURES]) {
+{% if is_multi_output %}
+/* Predict the concatenated class probabilities of all outputs: */
+void predict_proba_concatenated(double *probas, double features[N_FEATURES]) {
     int j;
     double temp[N_CLASSES];
     for (j = 0; j < N_CLASSES; j++) {
@@ -12,8 +14,42 @@ void predict_proba(double *probas, double features[N_FEATURES]) {
     }
 }
 
+/* Predict the class probabilities of each output: */
+void predict_proba(double *result[N_OUTPUTS], double features[N_FEATURES]) {
+    int i, j, offset = 0;
+    double probabilities[N_CLASSES];
+    predict_proba_concatenated(probabilities, features);
+    for (j = 0; j < N_OUTPUTS; j++) {
+        for (i = 0; i < output_classes[j]; i++) {
+            result[j][i] = probabilities[offset + i];
+        }
+        offset += output_classes[j];
+    }
+}
+{% else %}
+void predict_proba(double *probas, double features[N_FEATURES]) {
+    int j;
+    double temp[N_CLASSES];
+    for (j = 0; j < N_CLASSES; j++) {
+        probas[j] = 0.;
+    }
+    {{ method_calls }}
+    for (j = 0; j < N_CLASSES; j++) {
+        probas[j] /= N_ESTIMATORS;
+    }
+}
+{% endif %}
+
+{% if is_multi_output %}
+void predict(int *result, double features[N_FEATURES]) {
+    double probas[N_CLASSES];
+    predict_proba_concatenated(probas, features);
+    find_max(result, probas);
+}
+{% else %}
 int predict(double features[N_FEATURES]) {
     double probas[N_CLASSES];
     predict_proba(probas, features);
     return find_max(probas);
 }
+{% endif %}

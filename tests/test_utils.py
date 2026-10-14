@@ -8,9 +8,16 @@ from sklearn.datasets import (
 )
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import RidgeClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.tree import DecisionTreeClassifier
 
-from sklearn_porter.utils import get_thresholds, is_multilabel
+from sklearn_porter.utils import (
+    get_class_counts,
+    get_output_classes,
+    get_thresholds,
+    is_multilabel,
+)
 
 
 def test_thresholds_of_trees_in_double_precision():
@@ -84,3 +91,37 @@ def test_is_multilabel_without_label_binarizer():
     """Test the detection with an estimator without label binarizer."""
     x, y = load_diabetes(return_X_y=True)
     assert not is_multilabel(MLPRegressor(max_iter=20).fit(x, y))
+
+
+def multi_output_target(x: np.ndarray, y: np.ndarray) -> np.ndarray:
+    """Create a target with three outputs and 3, 2 and 4 classes."""
+    return np.c_[y, x[:, 0] > 5.8, np.digitize(x[:, 2], [2, 4, 5.5])]
+
+
+@pytest.mark.parametrize(
+    'estimator',
+    [DecisionTreeClassifier(random_state=0), KNeighborsClassifier()],
+    ids=lambda x: type(x).__name__,
+)
+@pytest.mark.parametrize('multi_output', [False, True], ids=['single', 'multi'])
+def test_output_classes(estimator, multi_output: bool):
+    """Test the number of classes per output of a classifier."""
+    x, y = load_iris(return_X_y=True)
+    if multi_output:
+        y = multi_output_target(x, y)
+    estimator.fit(x, y)
+    assert get_output_classes(estimator) == ([3, 2, 4] if multi_output else [3])
+
+
+def test_class_counts_of_multi_output_tree():
+    """Test the concatenated class counts of a multi-output tree."""
+    x, y = load_iris(return_X_y=True)
+    y = multi_output_target(x, y)
+    tree = DecisionTreeClassifier(max_depth=3, random_state=0).fit(x, y).tree_
+    counts = np.array(get_class_counts(tree))
+    assert counts.shape == (tree.node_count, 3 + 2 + 4)
+    # The counts of each output sum up to the number of samples per node:
+    for start, end in [(0, 3), (3, 5), (5, 9)]:
+        np.testing.assert_array_equal(
+            counts[:, start:end].sum(axis=1), tree.n_node_samples
+        )

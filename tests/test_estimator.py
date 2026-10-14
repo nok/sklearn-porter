@@ -398,6 +398,48 @@ def test_linear_svc_without_intercept(binary: bool):
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
 @pytest.mark.parametrize(
     'orig_est',
+    [
+        DecisionTreeClassifier(max_depth=3, random_state=0),
+        RandomForestClassifier(n_estimators=3, max_depth=3, random_state=0),
+        ExtraTreesClassifier(n_estimators=3, max_depth=3, random_state=0),
+        KNeighborsClassifier(),
+    ],
+    ids=lambda x: type(x).__name__,
+)
+def test_multi_output_classifier(orig_est, language: str, template: str):
+    """Test the port of classifiers fitted on a target with several outputs."""
+    if not can(orig_est, language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+    x, y = load_iris(return_X_y=True)
+    y = np.c_[y, x[:, 0] > 5.8, np.digitize(x[:, 2], [2, 4, 5.5])]
+    orig_est.fit(X=x, y=y)
+    est = Estimator(orig_est, language=language, template=template)
+    meta_info = est._estimator.meta_info
+    assert meta_info['is_multi_output']
+    assert meta_info['output_classes'] == [3, 2, 4]
+    assert meta_info['n_classes'] == 9
+    output = est.port()
+    # The multi-output variant predicts one class per output:
+    est._estimator.meta_info['is_multi_output'] = False
+    assert est.port() != output
+
+
+def test_multi_output_k_neighbors_classifier_targets():
+    """Test the concatenated classes of the samples of a KNN classifier."""
+    x, y = load_iris(return_X_y=True)
+    y = np.c_[y, x[:, 0] > 5.8]
+    orig_est = KNeighborsClassifier().fit(X=x, y=y)
+    model_data = Estimator(orig_est)._estimator.model_data
+    # The classes of the second output start at the offset 3:
+    expected = np.c_[y[:, 0], y[:, 1] + 3].ravel()
+    np.testing.assert_array_equal(model_data['y'], expected)
+    assert model_data['n'] == 3 + 2
+
+
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize(
+    'orig_est',
     [RidgeClassifier(), MLPClassifier(max_iter=20, random_state=0)],
     ids=lambda x: type(x).__name__,
 )

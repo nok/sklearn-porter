@@ -49,6 +49,8 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 
 The classifiers `RidgeClassifier` and `MLPClassifier` also support multilabel classification, i.e. if they were fitted on a label indicator matrix, the ported `predict` returns one binary value per label.
 
+The classifiers `DecisionTreeClassifier`, `RandomForestClassifier`, `ExtraTreesClassifier` and `KNeighborsClassifier` also support multi-output classification, i.e. if they were fitted on a target with several columns, the ported `predict` returns one class per output. Like in scikit-learn, the ported `predict_proba` returns the class probabilities of each output.
+
 #### Regressors
 
 - [tree.DecisionTreeRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.tree.DecisionTreeRegressor.html)

@@ -24,8 +24,8 @@ type {{ class_name }} struct {
 
 {% if is_test or to_json %}
 type Response struct {
-	Predict int `json:"predict"`
-	PredictProba []float64 `json:"predict_proba"`
+	Predict {{ '[]int' if is_multi_output else 'int' }} `json:"predict"`
+	PredictProba {{ '[][]float64' if is_multi_output else '[]float64' }} `json:"predict_proba"`
 }
 
 {% endif %}
@@ -34,6 +34,34 @@ type Distance struct {
 	Value float64
 }
 
+{% if is_multi_output %}
+// The classes of all outputs are concatenated, these are their numbers:
+var outputClasses = []int{ {{ output_classes | join(', ') }} }
+
+// Find the class with the maximum probability of each output:
+func (knn {{ class_name }}) FindMax(probas [][]float64) []int {
+	result := make([]int, len(probas))
+	for j, nums := range probas {
+		for i := 1; i < len(nums); i++ {
+			if nums[i] > nums[result[j]] {
+				result[j] = i
+			}
+		}
+	}
+	return result
+}
+
+// Split the concatenated values into the values of each output:
+func splitOutputs(nums []float64) [][]float64 {
+	result := make([][]float64, len(outputClasses))
+	offset := 0
+	for j, n := range outputClasses {
+		result[j] = nums[offset : offset+n]
+		offset += n
+	}
+	return result
+}
+{% else %}
 func (knn {{ class_name }}) FindMax(nums []float64) int {
 	var idx = 0
 	for i := 0; i < len(nums); i++ {
@@ -43,6 +71,7 @@ func (knn {{ class_name }}) FindMax(nums []float64) int {
 	}
 	return idx
 }
+{% endif %}
 
 // Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
 func (knn {{ class_name }}) Compute(temp []float64, cand []float64, metric string, power float64) float64 {
@@ -94,10 +123,36 @@ func (knn {{ class_name }}) Compute(temp []float64, cand []float64, metric strin
 	return math.Pow(dist, 1.0/power)
 }
 
-func (knn {{ class_name }}) Predict(features []float64) int {
+func (knn {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
 	return knn.FindMax(knn.PredictProba(features))
 }
 
+{% if is_multi_output %}
+func (knn {{ class_name }}) PredictProba(features []float64) [][]float64 {
+	var classProbas = make([]float64, knn.N)
+	nSamples := len(knn.X)
+	indices := make([]int, nSamples)
+	dists := make([]float64, nSamples)
+	for i := 0; i < nSamples; i++ {
+		indices[i] = i
+		dists[i] = knn.Compute(knn.X[i], features, knn.Metric, knn.Power)
+	}
+	sort.SliceStable(indices, func(a, b int) bool {
+		return dists[indices[a]] < dists[indices[b]]
+	})
+	// Each neighbor votes for one class of each output:
+	nOutputs := len(knn.Y) / nSamples
+	for i := 0; i < knn.K; i++ {
+		for j := 0; j < nOutputs; j++ {
+			classProbas[knn.Y[indices[i]*nOutputs+j]] += 1
+		}
+	}
+	for i := 0; i < knn.N; i++ {
+		classProbas[i] /= float64(knn.K)
+	}
+	return splitOutputs(classProbas)
+}
+{% else %}
 func (knn {{ class_name }}) PredictProba(features []float64) []float64 {
 	var classProbas = make([]float64, knn.N)
 	if knn.K == 1 {
@@ -130,6 +185,7 @@ func (knn {{ class_name }}) PredictProba(features []float64) []float64 {
 	}
 	return classProbas
 }
+{% endif %}
 
 func main() {
 
@@ -162,10 +218,10 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
-	fmt.Printf("Predicted class: #%d\n", prediction)
+	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}%v\n", prediction)
 	probabilities := clf.PredictProba(features)
 	for i, probability := range probabilities {
-		fmt.Printf("Probability of class #%d : %f\n", i, probability)
+		fmt.Printf("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}%d : %f\n", i, probability)
 	}
 	{% endif %}
 

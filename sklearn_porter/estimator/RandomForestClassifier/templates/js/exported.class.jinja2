@@ -14,6 +14,23 @@ var {{ class_name }} = function(jsonFile) {
         this.indices = indices;
         this.classes = classes;
 
+{% if is_multi_output %}
+        // Normalize the values of each output:
+        var _normVals = function(nums) {
+            var result = [], offset = 0;
+            outputClasses.forEach(function(n) {
+                var i, sum = 0.;
+                for (i = offset; i < offset + n; i++) {
+                    sum += nums[i];
+                }
+                for (i = offset; i < offset + n; i++) {
+                    result[i] = sum === 0 ? 1. / n : nums[i] / sum;
+                }
+                offset += n;
+            });
+            return result;
+        };
+{% else %}
         var _normVals = function(nums) {
             var i, il = nums.length;
             var result = [], sum = 0.;
@@ -31,6 +48,7 @@ var {{ class_name }} = function(jsonFile) {
             }
             return result;
         };
+{% endif %}
 
         this._compute = function(features, node) {
             while (this.thresholds[node] !== -2) {
@@ -55,6 +73,30 @@ var {{ class_name }} = function(jsonFile) {
         ));
     }
 
+{% if is_multi_output %}
+    // The classes of all outputs are concatenated, these are their numbers:
+    var outputClasses = [{{ output_classes | join(', ') }}];
+
+    // Find the class with the maximum probability of each output:
+    var _findMax = function(probas) {
+        return probas.map(function(nums) {
+            var idx = 0;
+            for (var i = 1; i < nums.length; i++) {
+                idx = nums[i] > nums[idx] ? i : idx;
+            }
+            return idx;
+        });
+    };
+    // Split the concatenated values into the values of each output:
+    var _splitOutputs = function(nums) {
+        var result = [], offset = 0;
+        outputClasses.forEach(function(n) {
+            result.push(nums.slice(offset, offset + n));
+            offset += n;
+        });
+        return result;
+    };
+{% else %}
     var _findMax = function(nums) {
         var idx = 0;
         for (var i = 0, il = nums.length; i < il; i++) {
@@ -62,6 +104,7 @@ var {{ class_name }} = function(jsonFile) {
         }
         return idx;
     };
+{% endif %}
 
     this._compute = function(features) {
         var nTrees = that.forest.length,
@@ -80,9 +123,15 @@ var {{ class_name }} = function(jsonFile) {
         return probas;
     }
 
+{% if is_multi_output %}
+    this.predictProba = function(features) {
+        return _splitOutputs(that._compute(features));
+    };
+{% else %}
     this.predictProba = function(features) {
         return that._compute(features);
     };
+{% endif %}
 
     this.predict = function(features) {
         return _findMax(that.predictProba(features));
@@ -112,12 +161,12 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("Predicted class: #" + prediction);
+    console.log("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" + prediction);
 
     // Get class probabilities:
     var probabilities = clf.predictProba(features);
     for (var i = 0; i < probabilities.length; i++) {
-        console.log("Probability of class #" + i + " : " + probabilities[i]);
+        console.log("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}" + i + " : " + probabilities[i]);
     }
     {% endif %}
 }

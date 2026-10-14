@@ -1,7 +1,7 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-{% if is_test or to_json %}
+{% if is_test or to_json or is_multi_output %}
 import java.util.Arrays;
 
 {% endif %}
@@ -41,6 +41,33 @@ class {{ class_name }} {
         this.forest = forest;
     }
 
+{% if is_multi_output %}
+    // The classes of all outputs are concatenated, these are their numbers:
+    private static final int[] OUTPUT_CLASSES = { {{ output_classes | join(', ') }} };
+
+    // Find the class with the maximum probability of each output:
+    private static int[] findMax(double[][] probas) {
+        int[] result = new int[probas.length];
+        for (int j = 0; j < probas.length; j++) {
+            for (int i = 1; i < probas[j].length; i++) {
+                if (probas[j][i] > probas[j][result[j]]) {
+                    result[j] = i;
+                }
+            }
+        }
+        return result;
+    }
+    // Split the concatenated values into the values of each output:
+    private static double[][] splitOutputs(double[] nums) {
+        double[][] result = new double[OUTPUT_CLASSES.length][];
+        int offset = 0;
+        for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
+            result[j] = Arrays.copyOfRange(nums, offset, offset + OUTPUT_CLASSES[j]);
+            offset += OUTPUT_CLASSES[j];
+        }
+        return result;
+    }
+{% else %}
     private static int findMax(double[] nums) {
         int idx = 0;
         for (int i = 1; i < nums.length; i++) {
@@ -48,7 +75,26 @@ class {{ class_name }} {
         }
         return idx;
     }
+{% endif %}
 
+{% if is_multi_output %}
+    // Normalize the values of each output:
+    private static double[] normVals(int[] nums) {
+        double[] result = new double[nums.length];
+        int offset = 0;
+        for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
+            double sum = 0.;
+            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
+                sum += nums[i];
+            }
+            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
+                result[i] = sum == 0 ? 1. / OUTPUT_CLASSES[j] : nums[i] / sum;
+            }
+            offset += OUTPUT_CLASSES[j];
+        }
+        return result;
+    }
+{% else %}
     private static double[] normVals(int[] nums) {
         double[] result = new double[nums.length];
         double sum = 0.;
@@ -66,7 +112,23 @@ class {{ class_name }} {
         }
         return result;
     }
+{% endif %}
 
+{% if is_multi_output %}
+    public double[][] predictProba(double[] features) {
+        double[] probas = new double[{{ n_classes }}];
+        for (Tree tree : this.forest) {
+            double[] temp = tree.compute(features);
+            for (int i = 0; i < probas.length; i++) {
+                probas[i] += temp[i];
+            }
+        }
+        for (int i = 0; i < probas.length; i++) {
+            probas[i] /= this.forest.length;
+        }
+        return splitOutputs(probas);
+    }
+{% else %}
     public double[] predictProba(double[] features) {
         double[] probas = new double[{{ n_classes }}];
         for (Tree tree : this.forest) {
@@ -80,8 +142,9 @@ class {{ class_name }} {
         }
         return probas;
     }
+{% endif %}
 
-    public int predict(double[] features) {
+    public {{ 'int[]' if is_multi_output else 'int' }} predict(double[] features) {
         return findMax(this.predictProba(features));
     }
 
@@ -111,18 +174,18 @@ class {{ class_name }} {
 
         {% if is_test or to_json %}
         // Get JSON:
-        int prediction = clf.predict(features);
-        double[] probabilities = clf.predictProba(features);
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
+        {{ 'int[]' if is_multi_output else 'int' }} prediction = clf.predict(features);
+        {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.predictProba(features);
+        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multi_output else 'String.valueOf(prediction)' }} + ", \"predict_proba\": " + String.join(",", {{ 'Arrays.deepToString(probabilities)' if is_multi_output else 'Arrays.toString(probabilities)' }}) + "}");
         {% else %}
         // Get class prediction:
-        int prediction = clf.predict(features);
-        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {{ 'int[]' if is_multi_output else 'int' }} prediction = clf.predict(features);
+        System.out.println("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" + {{ 'Arrays.toString(prediction)' if is_multi_output else 'String.valueOf(prediction)' }});
 
         // Get class probabilities:
-        double[] probabilities = clf.predictProba(features);
+        {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.predictProba(features);
         for (int i = 0; i < probabilities.length; i++) {
-            System.out.println("Probability of class #" + i + " : " + String.valueOf(probabilities[i]));
+            System.out.println("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}" + i + " : " + {{ 'Arrays.toString(probabilities[i])' if is_multi_output else 'String.valueOf(probabilities[i])' }});
         }
         {% endif %}
 

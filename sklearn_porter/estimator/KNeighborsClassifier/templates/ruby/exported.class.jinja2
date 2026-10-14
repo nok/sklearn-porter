@@ -19,6 +19,25 @@ class {{ class_name }}
 		@power = @data['power']
 	end
 
+{% if is_multi_output %}
+	# The classes of all outputs are concatenated, these are their numbers:
+	OUTPUT_CLASSES = [{{ output_classes | join(', ') }}]
+
+	# Find the class with the maximum probability of each output:
+	def _find_max (nums)
+		nums.map { |probas| probas.index(probas.max) }
+	end
+
+	# Split the concatenated values into the values of each output:
+	def _split_outputs(nums)
+		offset = 0
+		OUTPUT_CLASSES.map do |n|
+			probas = nums[offset, n]
+			offset += n
+			probas
+		end
+	end
+{% else %}
 	def _find_max (nums)
 		idx = 0
 		for i in 0 ... nums.length
@@ -26,6 +45,7 @@ class {{ class_name }}
 		end
 		idx
 	end
+{% endif %}
 
 	# Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
 	def _compute (temp, cand, metric, q)
@@ -72,6 +92,21 @@ class {{ class_name }}
         _find_max probas
 	end
 
+{% if is_multi_output %}
+	def predict_proba (features)
+		class_probas = Array.new(@n, 0.0)
+		# The neighbors are the indices of the samples sorted by their distance:
+		dists = (0 ... @x.length).sort_by { |i| [_compute(@x[i], features, @metric, @power), i] }
+		# Each neighbor votes for one class of each output:
+		n_outputs = @y.length / @x.length
+		for i in 0 ... @k
+			for j in 0 ... n_outputs
+				class_probas[@y[dists[i] * n_outputs + j]] += 1
+			end
+		end
+		_split_outputs(class_probas.map { |p| p / @k })
+	end
+{% else %}
 	def predict_proba (features)
         class_probas = Array.new(@n, 0.0)
         if @k == 1
@@ -101,6 +136,7 @@ class {{ class_name }}
         end
         class_probas
 	end
+{% endif %}
 
 end
 
@@ -126,12 +162,12 @@ if __FILE__ == $0
 	{% else %}
 	# Get class prediction:
 	prediction = clf.predict features
-	puts "Predicted class: ##{prediction}"
+	puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}#{prediction}"
 
 	# Get class probabilities:
 	probabilities = clf.predict_proba features
 	for i in 0 ... probabilities.length
-		puts "Probability of class ##{i} : #{probabilities[i]}"
+		puts "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}#{i} : #{probabilities[i]}"
 	end
 	{% endif %}
 end
