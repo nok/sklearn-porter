@@ -1,6 +1,5 @@
 from collections.abc import Callable
 from copy import deepcopy
-from json import dumps
 from textwrap import indent
 
 from jinja2 import Environment
@@ -17,9 +16,12 @@ from sklearn_porter.estimator.DecisionTreeClassifier import (
 )
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import (
+    dump_model_data,
     get_thresholds,
+    has_infinite_thresholds,
     has_missing_go_to_left,
     missing_name,
+    with_infinity,
 )
 
 
@@ -149,17 +151,22 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
         )
         plas.update(self.meta_info)
         plas.update(
-            has_missing_go_to_left=has_missing_go_to_left(self.model_data)
+            has_missing_go_to_left=has_missing_go_to_left(self.model_data),
+            has_infinite_thresholds=has_infinite_thresholds(self.model_data),
         )
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
 
+        # Trees fitted on data with missing values (NaN) can have infinite
+        # thresholds, which are written as literals of the language:
+        converter = with_infinity(converter, tpls.get_template('inf').render())
+
         # Make 'exported' variant:
         if template == enum.Template.EXPORTED:
             tpl_class = tpls.get_template('exported.class')
             out_class = tpl_class.render(**plas)
-            model_data = dumps(self.model_data, separators=(',', ':'))
+            model_data = dump_model_data(self.model_data)
             return out_class, model_data
 
         # Make 'combined' variant:

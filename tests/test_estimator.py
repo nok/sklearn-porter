@@ -464,6 +464,64 @@ def test_tree_without_routing_of_missing_values_to_the_left():
     assert '"math"' not in est.port(language='go', template='combined')
 
 
+@pytest.mark.parametrize(
+    'language, literal',
+    [
+        ('c', 'INFINITY'),
+        ('go', 'math.Inf(1)'),
+        ('java', 'Double.POSITIVE_INFINITY'),
+        ('js', 'Infinity'),
+        ('php', 'INF'),
+        ('ruby', 'Float::INFINITY'),
+    ],
+)
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        DecisionTreeClassifier(random_state=0),
+        RandomForestRegressor(n_estimators=3, random_state=0),
+    ],
+    ids=lambda x: type(x).__name__,
+)
+def test_tree_with_infinite_thresholds(orig_est, language: str, literal: str):
+    """Test the infinite thresholds of trees fitted with missing values."""
+    x, y = load_iris(return_X_y=True)
+    x[np.random.RandomState(0).rand(*x.shape) < 0.2] = np.nan
+    orig_est.fit(X=x, y=y)
+    trees = getattr(orig_est, 'estimators_', [orig_est])
+    assert any(np.isinf(t.tree_.threshold).any() for t in trees)
+    est = Estimator(orig_est, language=language)
+    assert literal in est.port(template='combined')
+    _, model_data = est.port(template='exported')
+    assert 'Infinity' not in model_data
+    assert '1e999' in model_data
+    if language == 'go':
+        # Go can't parse `1e999` with encoding/json by default:
+        out, _ = est.port(template='exported')
+        assert 'UnmarshalJSON' in out
+
+
+def test_tree_without_infinite_thresholds_in_go():
+    """Test that the Go code of common trees doesn't change."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = DecisionTreeClassifier(random_state=0).fit(X=x, y=y)
+    out, model_data = Estimator(orig_est, language='go').port(
+        template='exported'
+    )
+    assert 'UnmarshalJSON' not in out
+    assert '1e999' not in model_data
+
+
+def test_bernoulli_nb_with_infinite_log_probabilities():
+    """Test the rejection of feature probabilities of 0 or 1."""
+    x, y = load_iris(return_X_y=True)
+    x = (x > x.mean(axis=0)).astype(float)
+    orig_est = BernoulliNB(alpha=0.0).fit(X=x, y=y)
+    assert not np.isfinite(orig_est.feature_log_prob_).all()
+    with pytest.raises(exception.NotSupportedYetError, match='alpha'):
+        Estimator(orig_est)
+
+
 SPARSIFIABLE_CLASSIFIERS = [
     LinearSVC(random_state=0),
     LogisticRegression(max_iter=1000),

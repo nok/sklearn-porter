@@ -24,6 +24,8 @@ class C(LanguageABC):
         'endif':        '}',
         # NaN check (e.g. of missing values):
         'isnan':        'isnan({{ a }})',
+        # Positive infinity (e.g. of thresholds):
+        'inf':          'INFINITY',
 
         # Basics:
         'indent':       '    ',

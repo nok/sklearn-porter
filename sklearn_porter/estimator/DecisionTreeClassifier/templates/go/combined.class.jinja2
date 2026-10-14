@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	{% endif %}
 	"fmt"
-	{% if has_missing_go_to_left %}
+	{% if has_missing_go_to_left or has_infinite_thresholds %}
 	"math"
 	{% endif %}
 	"os"

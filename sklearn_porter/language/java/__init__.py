@@ -26,6 +26,8 @@ class Java(LanguageABC):
         'endif':        '}',
         # NaN check (e.g. of missing values):
         'isnan':        'Double.isNaN({{ a }})',
+        # Positive infinity (e.g. of thresholds):
+        'inf':          'Double.POSITIVE_INFINITY',
 
         # Basics:
         'indent':       '    ',

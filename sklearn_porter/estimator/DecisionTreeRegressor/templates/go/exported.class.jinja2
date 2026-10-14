@@ -19,6 +19,28 @@ type {{ class_name }} struct {
 	MissingGoToLeft []int `json:"missing_go_to_left"`
 	Values [][]float64 `json:"values"`
 }
+{% if has_infinite_thresholds %}
+
+// UnmarshalJSON parses the infinite thresholds `1e999` and `-1e999`, which
+// encoding/json rejects:
+func (reg *{{ class_name }}) UnmarshalJSON(data []byte) error {
+	type plain {{ class_name }}
+	var aux struct {
+		*plain
+		Thresholds []json.Number `json:"thresholds"`
+	}
+	aux.plain = (*plain)(reg)
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	reg.Thresholds = make([]float64, len(aux.Thresholds))
+	for i, threshold := range aux.Thresholds {
+		// ParseFloat returns ±Inf (and a range error) for these values:
+		reg.Thresholds[i], _ = strconv.ParseFloat(string(threshold), 64)
+	}
+	return nil
+}
+{% endif %}
 
 {% if is_test or to_json %}
 type Response struct {
