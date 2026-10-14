@@ -17,6 +17,7 @@ from time import sleep
 # Additional installed modules:
 import numpy as np
 from loguru import logger as L
+from scipy.sparse import issparse
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -55,7 +56,7 @@ from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter import meta
-from sklearn_porter.utils import options
+from sklearn_porter.utils import densify, options
 
 
 @decorator.aliased
@@ -330,7 +331,13 @@ class Estimator:
         clazzes = {clazz.__name__: clazz for clazz in clazzes}
         if name in clazzes and isinstance(est, clazzes[name]):
             module = import_module(f'sklearn_porter.estimator.{name}')
-            return getattr(module, name)(est)
+            # Read the model data from dense arrays, because the ported
+            # estimators don't support sparse matrices:
+            ported_est = getattr(module, name)(densify(est))
+            # Keep the original estimator for the predictions of scikit-learn
+            # (e.g. SVMs fitted on sparse data need sparse support vectors):
+            ported_est.estimator = est
+            return ported_est
 
         msg = f'The passed estimator `{name}` is not supported.'
         raise exception.NotSupportedYetError(msg)
@@ -507,7 +514,9 @@ class Estimator:
         json_path = ' ' if not data_path else ' ' + quote(str(data_path)) + ' '
 
         # Features:
-        if not isinstance(x, np.ndarray):
+        if issparse(x):
+            x = x.toarray()  # ty: ignore[unresolved-attribute]
+        elif not isinstance(x, np.ndarray):
             x = np.array(x)
         if x.ndim == 1:
             x = x[np.newaxis, :]

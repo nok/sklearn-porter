@@ -88,6 +88,11 @@ table.
   (`sklearn_porter.utils.get_class_fractions()`). Don't round them to class
   counts, otherwise the probabilities of trees fitted with `sample_weight` or
   `class_weight` differ.
+- `Estimator` converts the sparse matrices of a fitted estimator (e.g. after a
+  fit on sparse data or `sparsify()`) to dense arrays before the model data is
+  extracted (`sklearn_porter.utils.densify()`), so the estimator classes don't
+  need to check for sparse matrices themselves. The passed estimator remains
+  unchanged and is used for the predictions of scikit-learn.
 - AdaBoostClassifier is ported with the SAMME algorithm (`SAMME.R` was removed
   from scikit-learn).
 

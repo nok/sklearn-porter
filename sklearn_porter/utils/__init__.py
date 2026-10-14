@@ -1,8 +1,38 @@
+from copy import copy
 from logging import ERROR
 
 import numpy as np
+from scipy.sparse import issparse
 
 options = {'logging.level': ERROR}
+
+
+def densify(estimator):
+    """
+    Convert the sparse matrices of a fitted estimator to dense arrays.
+
+    Estimators which were fitted on sparse data (e.g. `SVC` or
+    `KNeighborsClassifier`) or converted with `sparsify()` (e.g.
+    `LogisticRegression`) store sparse matrices, but the ported estimators
+    need dense arrays. The passed estimator remains unchanged.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The fitted estimator.
+
+    Returns
+    -------
+    A shallow copy of the estimator with dense arrays instead of sparse
+    matrices, or the estimator itself if it doesn't store sparse matrices.
+    """
+    sparse = {k: v for k, v in vars(estimator).items() if issparse(v)}
+    if not sparse:
+        return estimator
+    estimator = copy(estimator)
+    for key, value in sparse.items():
+        setattr(estimator, key, value.toarray())
+    return estimator
 
 
 def is_multilabel(estimator) -> bool:
