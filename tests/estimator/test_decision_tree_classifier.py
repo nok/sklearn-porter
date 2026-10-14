@@ -61,7 +61,7 @@ def test_estimator_decision_tree_classifier(
     )
 
     try:
-        score = est.test(
+        y_pred, y_proba = est.make(
             test_x,
             language=language,
             template=template,
@@ -77,4 +77,8 @@ def test_estimator_decision_tree_classifier(
     except Exception as e:
         pytest.fail('Unexpected exception ... ' + str(e))
     else:
-        assert score == 1.0
+        np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
+        # The leaves are impure because of `max_leaf_nodes`:
+        np.testing.assert_allclose(
+            y_proba, orig_est.predict_proba(test_x), rtol=0, atol=1e-5
+        )
