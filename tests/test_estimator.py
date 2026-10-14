@@ -989,6 +989,27 @@ def test_mlp_regressor_with_poisson_loss(
     )
 
 
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        MLPClassifier(hidden_layer_sizes=(5, 4), max_iter=5, random_state=0),
+        MLPRegressor(hidden_layer_sizes=(5, 4), max_iter=5, random_state=0),
+    ],
+    ids=lambda x: type(x).__name__,
+)
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_mlp_layers_from_fitted_weights(orig_est: MLPClassifier | MLPRegressor):
+    """Test the sizes of the layers of a MLP whose `hidden_layer_sizes`
+    were changed after the fit."""
+    x, y = load_iris(return_X_y=True)
+    orig_est.fit(X=x, y=y)
+    orig_est.set_params(hidden_layer_sizes=(3,))
+    n_outputs = 3 if isinstance(orig_est, MLPClassifier) else 1
+    model_data = Estimator(orig_est)._estimator.model_data
+    assert model_data['layers'] == [5, 4, n_outputs]
+    assert all(isinstance(n, int) for n in model_data['layers'])
+
+
 def test_mlp_regressor_with_unsupported_output_activation():
     """Test the rejection of unknown output activations of a MLPRegressor."""
     x, y = load_diabetes(return_X_y=True)
