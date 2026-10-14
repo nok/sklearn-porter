@@ -3,7 +3,6 @@ from copy import deepcopy
 from json import dumps
 
 from loguru import logger as L
-from scipy.sparse import issparse
 
 # scikit-learn
 from sklearn.svm import SVC as SVCClass
@@ -84,12 +83,6 @@ class SVC(EstimatorBase, EstimatorApiABC):
         inters = est._intercept_
         coeffs = est.dual_coef_
         vectors = est.support_vectors_
-
-        # Estimators fitted on sparse data store sparse matrices:
-        if issparse(coeffs):
-            coeffs = coeffs.toarray()
-        if issparse(vectors):
-            vectors = vectors.toarray()
 
         self.model_data = dict(
             weights=est.n_support_.tolist(),

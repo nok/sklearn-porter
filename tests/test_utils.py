@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from scipy.sparse import csr_matrix, issparse
 from sklearn.datasets import (
     load_breast_cancer,
     load_diabetes,
@@ -13,6 +14,7 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.tree import DecisionTreeClassifier
 
 from sklearn_porter.utils import (
+    densify,
     get_class_fractions,
     get_output_classes,
     get_thresholds,
@@ -143,3 +145,22 @@ def test_class_fractions_of_weighted_tree(params: dict):
     # The fractions of the leaves are the probabilities of scikit-learn:
     leaves = est.apply(x)
     np.testing.assert_allclose(fractions[leaves], est.predict_proba(x))
+
+
+def test_densify_sparse_estimator():
+    """Test the conversion of the sparse matrices of a fitted estimator."""
+    x, y = load_iris(return_X_y=True)
+    est = KNeighborsClassifier().fit(csr_matrix(x), y)
+    dense = densify(est)
+    assert dense is not est
+    assert not issparse(dense._fit_X)
+    np.testing.assert_array_equal(dense._fit_X, x)
+    # The passed estimator remains unchanged:
+    assert issparse(est._fit_X)
+
+
+def test_densify_dense_estimator():
+    """Test an estimator without sparse matrices, which isn't copied."""
+    x, y = load_iris(return_X_y=True)
+    est = KNeighborsClassifier().fit(x, y)
+    assert densify(est) is est

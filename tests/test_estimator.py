@@ -6,11 +6,11 @@ from subprocess import run
 
 import numpy as np
 import pytest
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_matrix, issparse
 
 # scikit-learn
 from sklearn import preprocessing
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, clone
 from sklearn.datasets import load_iris, make_multilabel_classification
 from sklearn.ensemble import (
     AdaBoostClassifier,
@@ -416,6 +416,81 @@ def test_linear_svc_without_intercept(binary: bool):
     assert orig_est.intercept_ == 0.0
     model_data = Estimator(orig_est)._estimator.model_data
     assert model_data['inters'] == (0.0 if binary else [0.0, 0.0, 0.0])
+
+
+SPARSIFIABLE_CLASSIFIERS = [
+    LinearSVC(random_state=0),
+    LogisticRegression(max_iter=1000),
+    SGDClassifier(random_state=0),
+    Perceptron(random_state=0),
+]
+
+
+@pytest.mark.parametrize(
+    'orig_est', SPARSIFIABLE_CLASSIFIERS, ids=lambda x: type(x).__name__
+)
+@pytest.mark.parametrize('binary', [True, False], ids=['binary', 'multi'])
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_sparsified_linear_classifier(orig_est, binary: bool):
+    """Test the model data of a classifier with sparse coefficients."""
+    x, y = load_iris(return_X_y=True)
+    if binary:
+        y = (y > 0).astype(int)
+    orig_est = clone(orig_est).fit(X=x, y=y)
+    dense_est = Estimator(orig_est)._estimator
+    orig_est.sparsify()
+    est = Estimator(orig_est)
+    sparse_est = est._estimator
+    assert sparse_est.model_data == dense_est.model_data
+    assert sparse_est.meta_info == dense_est.meta_info
+    # The passed estimator remains unchanged:
+    assert est.estimator is orig_est
+    assert issparse(orig_est.coef_)
+
+
+def test_knn_fitted_on_sparse_data():
+    """Test the model data of a KNeighborsClassifier fitted on sparse data."""
+    x, y = load_iris(return_X_y=True)
+    dense_est = Estimator(KNeighborsClassifier().fit(X=x, y=y))._estimator
+    sparse_fit = KNeighborsClassifier().fit(X=csr_matrix(x), y=y)
+    est = Estimator(sparse_fit)
+    sparse_est = est._estimator
+    assert sparse_est.model_data == dense_est.model_data
+    assert sparse_est.meta_info == dense_est.meta_info
+    # The passed estimator remains unchanged:
+    assert est.estimator is sparse_fit
+    assert issparse(sparse_fit._fit_X)
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize(
+    'orig_est',
+    [*SPARSIFIABLE_CLASSIFIERS, KNeighborsClassifier()],
+    ids=lambda x: type(x).__name__,
+)
+@pytest.mark.parametrize('binary', [True, False], ids=['binary', 'multi'])
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_classifier_with_sparse_data(
+    orig_est, binary: bool, language: str, template: str
+):
+    """Test the port of classifiers with sparse coefficients or samples."""
+    if not can(orig_est, language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+    x, y = load_iris(return_X_y=True)
+    if binary:
+        y = (y > 0).astype(int)
+    if isinstance(orig_est, KNeighborsClassifier):
+        orig_est = clone(orig_est).fit(X=csr_matrix(x), y=y)
+    else:
+        orig_est = clone(orig_est).fit(X=x, y=y).sparsify()
+    est = Estimator(orig_est, language=language, template=template)
+    # The ported estimator also accepts sparse samples:
+    x_test = csr_matrix(x[::5])
+    y_pred, _ = est.make(x_test, n_jobs=False)
+    np.testing.assert_array_equal(y_pred, orig_est.predict(x_test))
+    assert est.test(x_test, n_jobs=False) == 1.0
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
