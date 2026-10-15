@@ -9,7 +9,7 @@ Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) e
 
 Use the generated code to make predictions where Python isn't available or is too heavy, e.g. on embedded systems, in web browsers or in existing applications. The ported estimators make the same predictions as the original scikit-learn estimators.
 
-Navigation: [Installation](#installation) • [Support](#support) • [Usage](#usage) • [CLI](#cli) • [Limitations](#limitations) • [Known Issues](#known-issues) • [Contributing](#contributing) • [Citation](#citation) • [License](#license)
+Navigation: [Installation](#installation) • [Support](#support) • [Usage](#usage) • [CLI](#cli) • [Documentation](#documentation) • [Contributing](#contributing) • [Citation](#citation) • [License](#license)
 
 
 ## Installation
@@ -46,10 +46,6 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 - [naive_bayes.BernoulliNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html)
 - [naive_bayes.GaussianNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html)
 - [neural_network.MLPClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPClassifier.html)
-
-The classifiers `RidgeClassifier` and `MLPClassifier` also support multilabel classification, i.e. if they were fitted on a label indicator matrix, the ported `predict` returns one binary value per label.
-
-The classifiers `DecisionTreeClassifier`, `RandomForestClassifier`, `ExtraTreesClassifier` and `KNeighborsClassifier` also support multi-output classification, i.e. if they were fitted on a target with several columns, the ported `predict` returns one class per output. Like in scikit-learn, the ported `predict_proba` returns the class probabilities of each output.
 
 #### Regressors
 
@@ -152,20 +148,13 @@ porter port estimator.joblib -l js -t attached | npx terser --compress -o estima
 ```
 
 
-## Limitations
+## Documentation
 
-- Only the final estimator of a [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) is ported. Preprocessing steps like a [`StandardScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) are silently dropped, so you have to apply them to the input data of the ported estimator yourself. Otherwise, the predictions differ from those of the pipeline.
-- Java limits the bytecode of a method to 64 KB. Large estimators ported to Java with the `attached` or `combined` template can therefore fail to compile with a `code too large` error. Use the `exported` template instead.
-- Sparse matrices are always converted to dense arrays, because the ported estimators only support dense data. This applies to estimators fitted on sparse data (e.g. [`SVC`](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) or [`KNeighborsClassifier`](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html)), to estimators converted with `sparsify()` (e.g. [`LogisticRegression`](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.LogisticRegression.html)) and to the samples passed to `make()` and `test()`. With many features (e.g. text features of a `TfidfVectorizer`) the dense model data, the ported source code and the exported JSON file can get very large, so make sure that enough memory (RAM) and disk space are available, both for porting and for compiling and running the ported estimator.
+Read these pages before you use a ported estimator in production:
 
-
-## Known Issues
-
-- The ported classifiers return the index of the predicted class instead of its label. The predictions only match those of scikit-learn if the labels are `0, 1, …, n_classes - 1`, so encode other labels (e.g. `1..3`, `-1/+1` or strings) with a [`LabelEncoder`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html) before training.
-- [BernoulliNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html) with feature or class probabilities of 0 or 1 (e.g. with `alpha=0`) can't be ported and raises a `NotSupportedYetError`, because scikit-learn itself computes undefined (`NaN`) joint log likelihoods with them.
-- [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html) with `break_ties=True` can't be ported and raise a `NotSupportedYetError`.
-- [KNeighborsClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html) can only be ported with `weights='uniform'` and the metrics `minkowski` (e.g. `euclidean` or `manhattan`), `chebyshev`, `cosine` and `hamming`. Other metrics (e.g. `canberra` or a callable) and the weighted Minkowski distance (`metric_params={'w': ...}`) raise a `NotSupportedYetError`.
-- [KNeighborsClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html) can predict different classes and probabilities than scikit-learn if several training samples have the same distance as the `n_neighbors`-th nearest neighbor (a tie). The ported estimator picks the first of these samples in the order of the training data. scikit-learn picks them depending on its internal search: the `algorithm` (`brute`, `kd_tree` or `ball_tree`, chosen automatically with `'auto'`), the `leaf_size` and the order of the computations. So `predict` and `predict_proba` can differ for samples with ties and match for all other samples. Ties are common with the metrics `hamming`, `chebyshev` and `manhattan` and with few features or discrete feature values (e.g. integers). They can't be detected when the estimator is ported, because they depend on the input samples. Use `test()` with representative samples to check how often the predictions match.
+- [Estimator Notes](https://github.com/nok/sklearn-porter/blob/main/docs/estimator-notes.md): multilabel and multi-output classification and the parameters of single estimators which can't be ported or which can lead to different predictions.
+- [Limitations](https://github.com/nok/sklearn-porter/blob/main/docs/limitations.md): pipelines, the size of Java methods and sparse data.
+- [Known Issues](https://github.com/nok/sklearn-porter/blob/main/docs/known-issues.md): the ported classifiers return class indices instead of labels.
 
 
 ## Contributing
