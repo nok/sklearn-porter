@@ -39,6 +39,8 @@ code must predict exactly the same classes as the original estimator.
   `tests/conftest.py`.
 - `README.md` is the user documentation (also shown on PyPI, so use absolute
   links there), `CONTRIBUTING.md` the developer documentation.
+- `docs/`: further user documentation linked from the README
+  (`estimator-notes.md`, `limitations.md`, `known-issues.md`).
 - `examples/basics/index.pct.py`: example notebook in jupytext format; the
   `.ipynb` file is generated.
 
