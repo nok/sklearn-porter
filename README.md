@@ -73,6 +73,7 @@ The template defines how the model data is stored in the generated code:
 
 ## Usage
 
+<!-- fmt:off -->
 ```python
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
@@ -88,9 +89,7 @@ output = port(clf, language='js', template='attached')
 print(output)
 
 # 3. Save the ported classifier to files:
-src_path, json_path = save(
-    clf, language='js', template='exported', directory='/tmp'
-)
+src_path, json_path = save(clf, language='js', template='exported', directory='/tmp')
 print(src_path, json_path)
 
 # 4. Make predictions with the ported classifier:
@@ -102,6 +101,7 @@ print(y_classes, y_probas)
 score = test(clf, X[:10], language='js', template='exported')
 print(score)
 ```
+<!-- fmt:on -->
 
 Steps 4 and 5 require a compiler or interpreter for the target language (e.g. `node` for JavaScript).
 
