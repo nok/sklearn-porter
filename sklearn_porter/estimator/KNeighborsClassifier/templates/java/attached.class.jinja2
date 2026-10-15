@@ -162,7 +162,7 @@ class {{ class_name }} {
             double minDist = Double.POSITIVE_INFINITY;
             for (int i = 0; i < this.y.length; i++) {
                 dist = {{ class_name }}.compute(this.X[i], features, this.metric, this.power);
-                if (dist <= minDist) {
+                if (dist < minDist) {
                     minDist = dist;
                     classIdx = y[i];
                 }

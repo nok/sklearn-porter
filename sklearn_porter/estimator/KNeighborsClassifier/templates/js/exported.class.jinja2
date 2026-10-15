@@ -7,9 +7,10 @@ var fs = require('fs');
 var {{ class_name }} = function(jsonFile) {
     this.data = JSON.parse(fs.readFileSync(jsonFile));
 
-    var Neighbor = function(y, dist) {
+    var Neighbor = function(y, dist, index) {
         this.y = y;
         this.dist = dist;
+        this.index = index;
     };
 
 {% if is_multi_output %}
@@ -121,12 +122,12 @@ var {{ class_name }} = function(jsonFile) {
     this.predictProba = function(features) {
         var classProbas = new Array(this.data.n).fill(0);
         var i, dist;
-        if (this.data.nNeighbors === 1) {
+        if (this.data.k === 1) {
             var classIdx = 0,
                 minDist = Number.POSITIVE_INFINITY;
-            for (i = 0; i < this.data.size; i++) {
+            for (i = 0; i < this.data.X.length; i++) {
                 dist = _compute(this.data.X[i], features, this.data.metric, this.data.power);
-                if (dist <= minDist) {
+                if (dist < minDist) {
                     minDist = dist;
                     classIdx = this.data.y[i];
                 }
@@ -136,10 +137,14 @@ var {{ class_name }} = function(jsonFile) {
             var dists = [];
             for (i = 0; i < this.data.X.length; i++) {
                 dist = _compute(this.data.X[i], features, this.data.metric, this.data.power);
-                dists.push(new Neighbor(this.data.y[i], dist));
+                dists.push(new Neighbor(this.data.y[i], dist, i));
             }
+            // Sort the neighbors by distance and index (stable):
             dists.sort(function compare(n1, n2) {
-                return (n1.dist < n2.dist) ? -1 : 1;
+                if (n1.dist !== n2.dist) {
+                    return n1.dist < n2.dist ? -1 : 1;
+                }
+                return n1.index - n2.index;
             });
             for (i = 0; i < this.data.k; i++) {
                 classProbas[dists[i].y] += 1;

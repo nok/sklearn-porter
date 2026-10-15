@@ -114,7 +114,7 @@ class {{ class_name }}
             min_dist = INF
             for i in 0 ... @y.length
                 dist = _compute @x[i], features, @metric, @power
-                if dist <= min_dist
+                if dist < min_dist
                     min_dist = dist
                     class_idx = @y[i]
                 end
@@ -124,9 +124,10 @@ class {{ class_name }}
             dists = []
             for i in 0 ... @y.length
                 dist = _compute @x[i], features, @metric, @power
-                dists.push [@y[i], dist]
+                dists.push [@y[i], dist, i]
             end
-            dists.sort! { |a, b| a[1] <=> b[1] }
+            # Sort the neighbors by distance and index (stable):
+            dists.sort_by! { |neighbor| [neighbor[1], neighbor[2]] }
             for i in 0 ... @k
                 class_probas[dists[i][0]] += 1
             end
