@@ -110,7 +110,8 @@ class {{ class_name }} {
         }
         this.clf.network[this.clf.network.length - 1] = this.compute(this.clf.output, this.clf.network[this.clf.network.length - 1]);
         this.resetNetwork();
-        return this.clf.network[this.clf.network.length - 1];
+        // Return a copy, the next prediction overwrites the network:
+        return this.clf.network[this.clf.network.length - 1].clone();
     }
 
     public {{ 'int[]' if is_multilabel else 'int' }} predict(double[] neurons) {
