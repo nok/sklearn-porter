@@ -162,3 +162,62 @@ def test_estimator_k_neighbors_classifier_with_hamming_metric(
         warnings.warn(msg, stacklevel=2)
     else:
         assert score == 1.0
+
+
+@pytest.mark.parametrize('template', ['attached', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('n_outputs', [1, 2])
+@pytest.mark.parametrize('n_neighbors', [1, 5])
+def test_estimator_k_neighbors_classifier_with_tied_neighbors(
+    tmp_root_dir: Path,
+    n_neighbors: int,
+    n_outputs: int,
+    language: str,
+    template: str,
+):
+    """Test the tied neighbors of k-Neighbors classifiers: of several
+    training samples with the same distance, the ported estimators pick the
+    first ones in the order of the training data (in all languages)."""
+    # Discrete features, so many training samples have the same distance:
+    rng = np.random.RandomState(0)
+    x = rng.randint(3, size=(120, 2)).astype(float)
+    y = rng.randint(3, size=(120, n_outputs))
+    test_x = rng.randint(3, size=(40, 2)).astype(float)
+    orig_est = KNeighborsClassifierClass(n_neighbors=n_neighbors)
+    orig_est.fit(X=x, y=y if n_outputs > 1 else y.ravel())
+
+    # Expected class probabilities: the votes of the first `n_neighbors`
+    # training samples, sorted (stable) by their distances:
+    dists = np.sqrt(((test_x[:, None, :] - x[None, :, :]) ** 2).sum(axis=2))
+    neighbors = np.argsort(dists, axis=1, kind='stable')[:, :n_neighbors]
+    exp_probas = [
+        np.array([np.bincount(y[n, j], minlength=3) for n in neighbors])
+        / n_neighbors
+        for j in range(n_outputs)
+    ]
+    exp_classes = np.column_stack([p.argmax(axis=1) for p in exp_probas])
+
+    # Directory:
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'estimator_k_neighbors_classifier_with_tied_neighbors'),
+            ('language', language),
+            ('template', template),
+            ('n_neighbors', str(n_neighbors)),
+            ('n_outputs', str(n_outputs)),
+        ],
+    )
+
+    y_classes, y_probas = Estimator(orig_est).make(
+        test_x,
+        language=language,
+        template=template,
+        directory=tmp_dir,
+        delete_created_files=False,
+    )
+    if n_outputs == 1:
+        y_classes, y_probas = np.asarray(y_classes)[:, None], [y_probas]
+    np.testing.assert_array_equal(y_classes, exp_classes)
+    for y_proba, exp_proba in zip(y_probas, exp_probas, strict=True):
+        np.testing.assert_allclose(y_proba, exp_proba)

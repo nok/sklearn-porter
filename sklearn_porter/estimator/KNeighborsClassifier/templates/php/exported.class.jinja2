@@ -144,7 +144,7 @@ class {{ class_name }} {
             $minDist = INF;
             for ($i = 0; $i < count($this->y); $i++) {
                 $dist = $this->compute($this->X[$i], $features, $this->metric, $this->power);
-                if ($dist <= $minDist) {
+                if ($dist < $minDist) {
                     $minDist = $dist;
                     $classIdx = $this->y[$i];
                 }
@@ -154,9 +154,10 @@ class {{ class_name }} {
             $dists = array();
             for ($i = 0; $i < count($this->y); $i++) {
                 $dist = $this->compute($this->X[$i], $features, $this->metric, $this->power);
-                $dists[] = array($this->y[$i], $dist);
+                $dists[] = array($this->y[$i], $dist, $i);
             }
-            usort($dists, function ($a, $b) { return $a[1] < $b[1] ? -1 : 1; } );
+            // Sort the neighbors by distance and index (stable):
+            usort($dists, function ($a, $b) { return [$a[1], $a[2]] <=> [$b[1], $b[2]]; });
             for ($i = 0; $i < $this->k; $i++) {
                 $classProbas[$dists[$i][0]] += 1;
             }
