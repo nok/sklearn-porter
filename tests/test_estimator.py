@@ -1021,6 +1021,79 @@ def test_mlp_regressor_with_unsupported_output_activation():
         Estimator(orig_est)
 
 
+@pytest.mark.parametrize('n_estimators', [3, 12])
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        RandomForestClassifier(n_estimators=6, max_depth=3, random_state=0),
+        ExtraTreesClassifier(n_estimators=6, max_depth=3, random_state=0),
+    ],
+    ids=lambda x: type(x).__name__,
+)
+def test_forest_n_estimators_from_fitted_trees(
+    orig_est: RandomForestClassifier | ExtraTreesClassifier, n_estimators: int
+):
+    """Test the number of trees of a forest whose `n_estimators` was changed
+    after the fit."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = clone(orig_est).fit(X=x, y=y)
+    orig_est.set_params(n_estimators=n_estimators)
+    est = Estimator(orig_est)._estimator
+    assert est.meta_info['n_estimators'] == 6
+    assert len(est.model_data['estimators']) == 6
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('n_estimators', [3, 12])
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        RandomForestClassifier(n_estimators=6, max_depth=3, random_state=0),
+        ExtraTreesClassifier(n_estimators=6, max_depth=3, random_state=0),
+    ],
+    ids=lambda x: type(x).__name__,
+)
+def test_forest_with_changed_n_estimators(
+    tmp_root_dir: Path,
+    orig_est: RandomForestClassifier | ExtraTreesClassifier,
+    n_estimators: int,
+    language: str,
+    template: str,
+):
+    """Test the predictions of a forest whose `n_estimators` was changed
+    after the fit."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = clone(orig_est).fit(X=x, y=y)
+    orig_est.set_params(n_estimators=n_estimators)
+
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'forest_with_changed_n_estimators'),
+            ('estimator', type(orig_est).__name__),
+            ('n_estimators', str(n_estimators)),
+            ('language', language),
+            ('template', template),
+        ],
+    )
+    try:
+        y_pred, y_proba = Estimator(orig_est).make(
+            x,
+            language=language,
+            template=template,
+            directory=tmp_dir,
+            delete_created_files=False,
+        )
+    except (exception.CodeTooLarge, exception.TooManyConstants) as e:
+        pytest.skip(str(e))
+    np.testing.assert_array_equal(y_pred, orig_est.predict(x))
+    np.testing.assert_allclose(
+        y_proba, orig_est.predict_proba(x), rtol=1e-6, atol=1e-8
+    )
+
+
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)

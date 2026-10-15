@@ -80,20 +80,26 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
 
+        # Is the estimator fitted?
+        try:
+            est.estimators_
+        except AttributeError:
+            raise exception.NotFittedEstimatorError(
+                self.estimator_name
+            ) from None
+
         # Check type of base estimators:
         if not isinstance(est.estimator_, DecisionTreeClassifier):
             name = est.estimator_.__class__.__qualname__
             msg = f'The used base estimator `{name}` is not supported yet.'
             raise exception.NotSupportedYetError(msg)
 
-        # Check number of base estimators:
-        if not estimator.n_estimators > 0:
-            raise exception.NotFittedEstimatorError(self.estimator_name)
-
         # Extract and save meta information:
         output_classes = get_output_classes(est)
         self.meta_info = dict(
-            n_estimators=est.n_estimators,
+            # The number of fitted trees, because `n_estimators` can be
+            # changed after the fit (e.g. with `set_params`):
+            n_estimators=len(est.estimators_),
             n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
             # The class fractions (or probabilities) of all outputs are
             # concatenated, `output_classes` defines their segments:
