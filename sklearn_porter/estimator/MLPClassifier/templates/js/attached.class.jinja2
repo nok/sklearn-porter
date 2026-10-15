@@ -82,7 +82,8 @@ var {{ class_name }} = function(hidden, output, layers, weights, bias) {
         }
         this.network[this.network.length - 1] = compute(this.output, this.network[this.network.length - 1]);
         this.resetNetwork();
-        return this.network[this.network.length - 1];
+        // Return a copy, the next prediction overwrites the network:
+        return this.network[this.network.length - 1].slice();
     };
 
     this.predict = function(neurons) {

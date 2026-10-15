@@ -86,7 +86,8 @@ var {{ class_name }} = function(jsonFile) {
         }
         this.data.network[this.data.network.length - 1] = _compute(this.data.output_activation, this.data.network[this.data.network.length - 1]);
         this._resetNetwork();
-        return this.data.network[this.data.network.length - 1];
+        // Return a copy, the next prediction overwrites the network:
+        return this.data.network[this.data.network.length - 1].slice();
     };
 
     this.predictProba = function(neurons) {

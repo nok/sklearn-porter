@@ -80,7 +80,8 @@ var {{ class_name }} = function(hidden, layers, weights, bias) {
             }
         }
         this.resetNetwork();
-        return this.network[this.network.length - 1];
+        // Return a copy, the next prediction overwrites the network:
+        return this.network[this.network.length - 1].slice();
     };
 
     this.predict = function(neurons) {
