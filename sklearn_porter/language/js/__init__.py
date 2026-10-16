@@ -11,7 +11,7 @@ class JavaScript(LanguageABC):
     CMD_COMPILE = None
 
     # node estimator.js <args>
-    CMD_EXECUTE = 'node {src_path}'
+    CMD_EXECUTE = ['node', '{src_path}']
 
     # fmt: off
     TEMPLATES = {

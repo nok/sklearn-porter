@@ -13,9 +13,12 @@ class LanguageABC(ABC):
     DEPENDENCIES: ClassVar[list[str]]
     # The suffix of the generated source files:
     SUFFIX: ClassVar[str]
-    # The command to compile the generated source code (if required):
-    CMD_COMPILE: ClassVar[str | None]
-    # The command to execute (the compiled) source code:
-    CMD_EXECUTE: ClassVar[str]
+    # The command (program and arguments) to compile the generated source
+    # code (if required), the arguments can contain placeholders like
+    # `{src_path}`:
+    CMD_COMPILE: ClassVar[list[str] | None]
+    # The command (program and arguments) to execute (the compiled) source
+    # code, the features are appended as further arguments:
+    CMD_EXECUTE: ClassVar[list[str]]
     # The basic templates of the programming language:
     TEMPLATES: ClassVar[dict[str, str]]

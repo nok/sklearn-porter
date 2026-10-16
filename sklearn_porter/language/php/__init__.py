@@ -11,7 +11,7 @@ class PHP(LanguageABC):
     CMD_COMPILE = None
 
     # php -f Estimator.php -- <args>
-    CMD_EXECUTE = 'php -f {src_path} --'
+    CMD_EXECUTE = ['php', '-f', '{src_path}', '--']
 
     # fmt: off
     TEMPLATES = {

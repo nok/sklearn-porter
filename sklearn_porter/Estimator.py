@@ -1,12 +1,12 @@
 import urllib.request
+import warnings
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 from importlib import import_module
 from json import JSONDecodeError, loads
-from os import cpu_count, environ, remove
+from os import cpu_count, environ, pathsep, remove
 from pathlib import Path
-from shlex import quote
+from shlex import join
 from shutil import rmtree, which
 from subprocess import STDOUT, CalledProcessError, check_output, run
 from sys import platform, stdout, version_info
@@ -414,7 +414,6 @@ class Estimator:
         directory: str | Path | None = None,
         delete_created_files: bool = True,
         check_dependencies: bool = True,
-        shell_executable: str = '/bin/bash',
         **kwargs,
     ) -> (
         tuple[np.int64, np.ndarray | None]
@@ -435,15 +434,26 @@ class Estimator:
             Whether to delete the generated files finally or not.
         check_dependencies : bool (default: True)
             Check whether all required applications are in the PATH or not.
-        shell_executable : str (default: '/bin/bash')
-            The shell which should be used for the Popen system calls.
         kwargs
 
         Returns
         -------
         Return the predictions and probabilities.
+
+        Warns
+        -----
+        UserWarning
+            On Windows, because the compilation and execution of the ported
+            estimators isn't tested on Windows.
         """
         self._check_kwargs(kwargs)
+        if _is_windows():
+            warnings.warn(
+                'The compilation and execution of the ported estimators '
+                "with `make()` and `test()` isn't tested on Windows.",
+                UserWarning,
+                stacklevel=2,
+            )
         if check_dependencies:
             self._check_dependencies(self._language)
 
@@ -477,24 +487,22 @@ class Estimator:
         self._compile(src_path, class_paths, created_files, language, template)
 
         # Execution:
-        cmd = language.value.CMD_EXECUTE
         cmd_args = {}
 
         paths_to_check = []
         if language in (enum.Language.C, enum.Language.GO):
-            dest_path = str(src_path.parent / src_path.stem)
-            cmd_args['dest_path'] = quote(dest_path)
+            dest_path = str(_get_binary_path(src_path))
+            cmd_args['dest_path'] = dest_path
             paths_to_check.append(dest_path)
         elif language is enum.Language.JAVA:
-            if bool(class_paths):
-                cmd_args['class_path'] = '-cp ' + quote(':'.join(class_paths))
-            cmd_args['dest_path'] = quote(src_path.stem)
+            cmd_args['class_path'] = pathsep.join(class_paths)
+            cmd_args['class_name'] = src_path.stem
         elif language in (
             enum.Language.JS,
             enum.Language.PHP,
             enum.Language.RUBY,
         ):
-            cmd_args['src_path'] = quote(str(src_path))
+            cmd_args['src_path'] = str(src_path)
             paths_to_check.append(str(src_path))
 
         for path_to_check in paths_to_check:
@@ -507,11 +515,12 @@ class Estimator:
                     fp.close()
                     break
 
-        cmd = cmd.format(**cmd_args)
-        L.info(f'Execution command: `{cmd}`')
+        cmd = [arg.format(**cmd_args) for arg in language.value.CMD_EXECUTE]
+        L.info(f'Execution command: `{join(cmd)}`')
 
         # Model data:
-        json_path = ' ' if not data_path else ' ' + quote(str(data_path)) + ' '
+        if data_path:
+            cmd.append(str(data_path))
 
         # Features:
         if issparse(x):
@@ -522,22 +531,21 @@ class Estimator:
             x = x[np.newaxis, :]
         x = x.tolist()
 
-        # Command:
-        x = [cmd + json_path + ' '.join(list(map(str, e))) for e in x]
-        calls = partial(_system_call, executable=shell_executable)
+        # Commands (program, arguments and features):
+        x = [cmd + list(map(str, e)) for e in x]
 
         if isinstance(n_jobs, int) and n_jobs <= 1:
             n_jobs = False
 
         if not n_jobs:
-            y = list(map(calls, x))
+            y = list(map(_system_call, x))
         else:
             if isinstance(n_jobs, bool) or not isinstance(n_jobs, int):
                 n_jobs = cpu_count() or 1
             # Threads are sufficient, because they only wait for the
             # subprocesses which execute the ported estimator:
             with ThreadPoolExecutor(n_jobs) as executor:
-                y = list(executor.map(calls, x))
+                y = list(executor.map(_system_call, x))
         y = list(zip(*y, strict=False))
         y_pred = np.array(y[0])
         y_proba: np.ndarray | list[np.ndarray] | None = None
@@ -569,7 +577,6 @@ class Estimator:
 
     @staticmethod
     def _check_dependencies(language: enum.Language):
-        # is_windows = platform in ('cygwin', 'win32', 'win64')
         for app in language.value.DEPENDENCIES:
             if not which(app):
                 msg = f'Required dependency `{app}` is missing.'
@@ -599,21 +606,20 @@ class Estimator:
         template
             The requested template.
         """
-        cmd = language.value.CMD_COMPILE
-
-        if not cmd:
+        if not language.value.CMD_COMPILE:
             return
 
         cmd_args = {}
 
         if language in (enum.Language.C, enum.Language.GO):
-            cmd_args['src_path'] = quote(str(src_path))
-            cmd_args['dest_path'] = quote(str(src_path.parent / src_path.stem))
-            created_files.append(src_path.parent / src_path.stem)
+            dest_path = _get_binary_path(src_path)
+            cmd_args['src_path'] = str(src_path)
+            cmd_args['dest_path'] = str(dest_path)
+            created_files.append(dest_path)
 
         elif language is enum.Language.JAVA:
-            cmd_args['src_path'] = quote(str(src_path))
-            cmd_args['dest_dir'] = '-d ' + quote(str(src_path.parent))
+            cmd_args['src_path'] = str(src_path)
+            cmd_args['dest_dir'] = str(src_path.parent)
             class_paths.append(str(src_path.parent))
             created_files.append(src_path.parent / (src_path.stem + '.class'))
 
@@ -635,23 +641,19 @@ class Estimator:
                         created_files.append(path)
                     class_paths.append(str(path))
 
-            if bool(class_paths):
-                cmd_args['class_path'] = '-cp ' + quote(':'.join(class_paths))
+            cmd_args['class_path'] = pathsep.join(class_paths)
 
-        cmd = cmd.format(**cmd_args)
-        L.info(f'Compilation command: `{cmd}`')
+        cmd = [arg.format(**cmd_args) for arg in language.value.CMD_COMPILE]
+        L.info(f'Compilation command: `{join(cmd)}`')
 
         try:
-            check_output(
-                cmd,
-                shell=True,
-                text=True,
-                stderr=STDOUT,
-                executable='/bin/bash',
-            )
+            check_output(cmd, text=True, stderr=STDOUT)
+        except OSError as e:  # e.g. a missing compiler
+            msg = f'Command "{join(cmd)}" failed: {e}'
+            raise exception.CompilationFailed(msg) from None
         except CalledProcessError as e:
             msg = (
-                f'Command "{e.cmd}" return with error '
+                f'Command "{join(cmd)}" return with error '
                 f'(code {e.returncode}):\n\n{e.output}'
             )
             if language is enum.Language.JAVA:
@@ -799,16 +801,28 @@ def _get_qualname(obj: object):
     return obj.__class__.__module__ + '.' + obj.__class__.__qualname__
 
 
-def _system_call(cmd: str, executable='/bin/bash', n_retries: int = 3):
+def _is_windows() -> bool:
+    return platform == 'win32'
+
+
+def _get_binary_path(src_path: Path) -> Path:
+    """Get the path of the compiled binary of a C or Go source file."""
+    suffix = '.exe' if _is_windows() else ''
+    return src_path.parent / (src_path.stem + suffix)
+
+
+def _system_call(cmd: list[str], n_retries: int = 3):
     """
     Separate helper function for parallel system calls.
 
+    The command is executed directly without a shell, so the arguments
+    (e.g. paths with spaces or special characters) don't need any quoting
+    and the calls work on all platforms.
+
     Parameters
     ----------
-    cmd : str
-        The command for the system call.
-    executable : str (default: '/bin/bash')
-        The shell which should be used for the system call.
+    cmd : list of str
+        The program and its arguments.
     n_retries : int (default: 3)
         The number of retries after a failed call.
 
@@ -821,21 +835,21 @@ def _system_call(cmd: str, executable='/bin/bash', n_retries: int = 3):
     ExecutionFailed
         If the call failed or didn't return valid JSON on every attempt.
     """
+    proc_stdout = proc_stderr = ''
     for attempt in range(n_retries + 1):
         if attempt:
             sleep(0.1 * 2**attempt)
-        proc = run(
-            cmd,
-            shell=True,
-            capture_output=True,
-            text=True,
-            executable=executable,
-        )
+        try:
+            proc = run(cmd, capture_output=True, text=True)
+        except OSError as e:  # e.g. a missing or busy executable
+            error = f'{type(e).__name__}: {e}'
+            continue
+        proc_stdout, proc_stderr = proc.stdout, proc.stderr
         if proc.returncode != 0:
             error = f'Exit code {proc.returncode}'
             continue
         try:
-            out = loads(proc.stdout)
+            out = loads(proc_stdout)
         except JSONDecodeError as e:
             error = f'Invalid JSON ({e})'
             continue
@@ -844,8 +858,8 @@ def _system_call(cmd: str, executable='/bin/bash', n_retries: int = 3):
             result.append(out.get('predict_proba'))
         return result
     msg = (
-        f'Command `{cmd}` failed after {n_retries + 1} attempts.\n'
-        f'{error}\n\nstdout:\n{proc.stdout}\nstderr:\n{proc.stderr}'
+        f'Command `{join(cmd)}` failed after {n_retries + 1} attempts.\n'
+        f'{error}\n\nstdout:\n{proc_stdout}\nstderr:\n{proc_stderr}'
     )
     raise exception.ExecutionFailed(msg)
 
@@ -1011,7 +1025,6 @@ def make(
     directory: str | Path | None = None,
     delete_created_files: bool = True,
     check_dependencies: bool = True,
-    shell_executable: str = '/bin/bash',
 ) -> (
     tuple[np.int64, np.ndarray | None]
     | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
@@ -1028,7 +1041,6 @@ def make(
         directory=directory,
         delete_created_files=delete_created_files,
         check_dependencies=check_dependencies,
-        shell_executable=shell_executable,
     )
 
 

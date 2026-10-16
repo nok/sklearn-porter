@@ -8,13 +8,18 @@ class Java(LanguageABC):
     DEPENDENCIES = ['java', 'javac']
     SUFFIX = 'java'
 
-    # javac {class_path} tmp/Estimator.java
-    # class_path = '-cp ./gson.jar'
-    CMD_COMPILE = 'javac {class_path} {dest_dir} {src_path}'
+    # javac -cp tmp:gson.jar -d tmp tmp/Estimator.java
+    CMD_COMPILE = [
+        'javac',
+        '-cp',
+        '{class_path}',
+        '-d',
+        '{dest_dir}',
+        '{src_path}',
+    ]
 
-    # java {class_path} Estimator <args>
-    # class_path = '-cp ./gson.jar:./tmp'
-    CMD_EXECUTE = 'java {class_path} {dest_path}'
+    # java -cp tmp:gson.jar Estimator <args>
+    CMD_EXECUTE = ['java', '-cp', '{class_path}', '{class_name}']
 
     # fmt: off
     TEMPLATES = {
