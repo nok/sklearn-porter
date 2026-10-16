@@ -4,9 +4,10 @@
 import com.google.gson.Gson;
 import com.google.gson.annotations.SerializedName;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.util.Scanner;
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 {% if is_test or to_json %}
 import java.util.Arrays;
 {% endif %}
@@ -24,9 +25,10 @@ class {{ class_name }} {
     }
     private Tree tree;
 
-    public {{ class_name }}(String file) throws FileNotFoundException {
-        String jsonStr = new Scanner(new File(file)).useDelimiter("\\Z").next();
-        this.tree = new Gson().fromJson(jsonStr, Tree.class);
+    public {{ class_name }}(String file) throws IOException {
+        try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
+            this.tree = new Gson().fromJson(reader, Tree.class);
+        }
     }
 
     // Find the leaf and return its predicted values:
@@ -42,7 +44,7 @@ class {{ class_name }} {
         return this.tree.values[node].clone();
     }
 
-    public static void main(String[] args) throws FileNotFoundException {
+    public static void main(String[] args) throws IOException {
         int nFeatures = {{ n_features }};
         if (args.length != (nFeatures + 1) || !args[0].endsWith(".json")) {
             throw new IllegalArgumentException("You have to pass the path to the exported model data and " +  String.valueOf(nFeatures) + " features.");
