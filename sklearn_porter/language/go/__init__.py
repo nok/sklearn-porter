@@ -9,10 +9,10 @@ class Go(LanguageABC):
     SUFFIX = 'go'
 
     # go build -o tmp/estimator tmp/estimator.go
-    CMD_COMPILE = 'go build -o {dest_path} {src_path}'
+    CMD_COMPILE = ['go', 'build', '-o', '{dest_path}', '{src_path}']
 
     # tmp/estimator <args>
-    CMD_EXECUTE = '{dest_path}'
+    CMD_EXECUTE = ['{dest_path}']
 
     # fmt: off
     TEMPLATES = {

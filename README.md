@@ -153,7 +153,7 @@ porter port estimator.joblib -l js -t attached | npx terser --compress -o estima
 Read these pages before you use a ported estimator in production:
 
 - [Estimator Notes](https://github.com/nok/sklearn-porter/blob/main/docs/estimator-notes.md): multilabel and multi-output classification and the parameters of single estimators which can't be ported or which can lead to different predictions.
-- [Limitations](https://github.com/nok/sklearn-porter/blob/main/docs/limitations.md): pipelines, the size of Java methods and sparse data.
+- [Limitations](https://github.com/nok/sklearn-porter/blob/main/docs/limitations.md): pipelines, the size of Java methods, sparse data and Windows.
 - [Known Issues](https://github.com/nok/sklearn-porter/blob/main/docs/known-issues.md): the ported classifiers return class indices instead of labels.
 
 

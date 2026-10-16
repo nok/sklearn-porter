@@ -9,10 +9,10 @@ class C(LanguageABC):
     SUFFIX = 'c'
 
     # gcc tmp/estimator.c -std=c99 -lm -o tmp/estimator
-    CMD_COMPILE = 'gcc {src_path} -std=c99 -lm -o {dest_path}'
+    CMD_COMPILE = ['gcc', '{src_path}', '-std=c99', '-lm', '-o', '{dest_path}']
 
     # tmp/estimator <args>
-    CMD_EXECUTE = '{dest_path}'
+    CMD_EXECUTE = ['{dest_path}']
 
     # fmt: off
     TEMPLATES = {

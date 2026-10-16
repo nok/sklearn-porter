@@ -1,8 +1,9 @@
 import os
 import warnings
 from collections.abc import Callable
+from importlib import import_module
 from pathlib import Path
-from subprocess import run
+from subprocess import CompletedProcess, run
 
 import numpy as np
 import pytest
@@ -69,6 +70,9 @@ from tests.utils import (
     drop_neighbor_ties,
     fs_mkdir,
 )
+
+# The module itself (the package exports the class of the same name):
+ESTIMATOR_MODULE = import_module('sklearn_porter.Estimator')
 
 
 def test_unsupported_estimator():
@@ -190,13 +194,104 @@ def test_file_handling(fitted_tree, tmp_root_dir):
 def test_make_in_directory_with_special_characters(
     fitted_tree, tmp_root_dir: Path, language: str, template: str
 ):
-    """Test the quoting of the paths in the shell commands."""
+    """Test paths with spaces and shell characters in the system calls."""
     x = load_iris().data
     directory = tmp_root_dir / f"{language} {template} (a&b) $x 'q';"
     directory.mkdir(parents=True)
     est = Estimator(fitted_tree, language=language, template=template)
     y_pred, _ = est.make(x[:5], n_jobs=False, directory=directory)
     np.testing.assert_array_equal(y_pred, fitted_tree.predict(x[:5]))
+
+
+@pytest.mark.parametrize('method', ['make', 'test'])
+@pytest.mark.parametrize('platform', ['win32', 'linux', 'darwin'])
+def test_warning_on_windows(
+    fitted_tree, monkeypatch: pytest.MonkeyPatch, method: str, platform: str
+):
+    """Test the warning of `make()` and `test()` on Windows (#77)."""
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'platform', platform)
+    monkeypatch.setenv('PATH', '')  # stop at the missing dependencies
+    est = Estimator(fitted_tree, language='c')
+    with warnings.catch_warnings(record=True) as records:
+        warnings.simplefilter('always')
+        with pytest.raises(RuntimeError, match='Required dependency'):
+            getattr(est, method)(load_iris().data[:3])
+    messages = [str(r.message) for r in records if r.category is UserWarning]
+    is_windows = platform == 'win32'
+    assert any('Windows' in m for m in messages) is is_windows
+
+
+@pytest.mark.parametrize(
+    'language, template',
+    [('c', 'attached'), ('go', 'exported'), ('java', 'exported')],
+)
+def test_system_calls_on_windows(
+    fitted_tree,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    language: str,
+    template: str,
+):
+    """Test the commands of the system calls on Windows (#77)."""
+    tmp_path = tmp_path.resolve()  # like the paths of `make()`
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'platform', 'win32')
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'pathsep', ';')
+    monkeypatch.setenv('SKLEARN_PORTER_PYTEST_GSON_PATH', 'gson.jar')
+
+    compile_cmds, execute_cmds = [], []
+
+    def check_output(cmd: list[str], **kwargs) -> str:
+        compile_cmds.append(cmd)
+        if language in ('c', 'go'):
+            Path(cmd[cmd.index('-o') + 1]).touch()  # the binary
+        return ''
+
+    def run(cmd: list[str], **kwargs) -> CompletedProcess:
+        execute_cmds.append(cmd)
+        return CompletedProcess(cmd, 0, stdout='{"predict": 0}', stderr='')
+
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'check_output', check_output)
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run)
+
+    est = Estimator(fitted_tree, language=language, template=template)
+    with pytest.warns(UserWarning, match='Windows'):
+        est.make(
+            [[1.0, 2.0, 3.0, 4.0]], check_dependencies=False, directory=tmp_path
+        )
+
+    assert len(compile_cmds) == len(execute_cmds) == 1
+    compile_cmd, execute_cmd = compile_cmds[0], execute_cmds[0]
+    assert execute_cmd[-4:] == ['1.0', '2.0', '3.0', '4.0']
+    if language in ('c', 'go'):
+        binary = str(tmp_path / 'DecisionTreeClassifier.exe')
+        assert compile_cmd[compile_cmd.index('-o') + 1] == binary
+        assert execute_cmd[0] == binary
+    else:
+        class_path = f'{tmp_path};gson.jar'
+        assert compile_cmd[:3] == ['javac', '-cp', class_path]
+        assert execute_cmd[:4] == [
+            'java',
+            '-cp',
+            class_path,
+            'DecisionTreeClassifier',
+        ]
+    if template == 'exported':
+        json_path = str(tmp_path / 'DecisionTreeClassifier.json')
+        assert execute_cmd[-5] == json_path
+
+
+def test_missing_compiler(fitted_tree, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv('PATH', '')
+    est = Estimator(fitted_tree, language='c')
+    with pytest.raises(exception.CompilationFailed, match='gcc'):
+        est.make(load_iris().data[:3], check_dependencies=False)
+
+
+def test_missing_interpreter(fitted_tree, monkeypatch: pytest.MonkeyPatch):
+    monkeypatch.setenv('PATH', '')
+    est = Estimator(fitted_tree, language='js')
+    with pytest.raises(exception.ExecutionFailed, match='FileNotFoundError'):
+        est.make(load_iris().data[:3], check_dependencies=False, n_jobs=False)
 
 
 def test_list_of_regressors():
