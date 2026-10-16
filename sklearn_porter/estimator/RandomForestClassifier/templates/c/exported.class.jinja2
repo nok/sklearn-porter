@@ -18,24 +18,12 @@ typedef struct {
     double *thresholds;
     int *indices;
     int *missing_go_to_left;
-    double *classes; /* shape: (n_nodes * N_CLASSES) */
+    double *classes; /* shape: (n_leaves * N_CLASSES) */
 } Tree;
 
 
 int n_estimators;
 Tree *trees;
-
-/* Copy the class fractions of all nodes to a flat array: */
-double *flatten(JsonValue *classes) {
-    int i, j;
-    double *result = malloc(classes->length * N_CLASSES * sizeof(double));
-    for (i = 0; i < classes->length; i++) {
-        for (j = 0; j < N_CLASSES; j++) {
-            result[i * N_CLASSES + j] = classes->items[i]->items[j]->number;
-        }
-    }
-    return result;
-}
 
 void load(const char *path) {
     JsonValue *data = json_read(path);
@@ -48,7 +36,7 @@ void load(const char *path) {
         trees[i].thresholds = json_doubles(json_get(tree, "thresholds"));
         trees[i].indices = json_ints(json_get(tree, "indices"));
         trees[i].missing_go_to_left = json_ints(json_get(tree, "missing_go_to_left"));
-        trees[i].classes = flatten(json_get(tree, "classes"));
+        trees[i].classes = json_doubles(json_get(tree, "classes"));
     }
     json_free(data);
 }
@@ -115,14 +103,14 @@ void norm_vals(double *result, const double *nums) {
 
 void compute(double *result, const Tree *tree, double features[N_FEATURES]) {
     int node = 0;
-    while (tree->thresholds[node] != -2) {
+    while (node >= 0) {
         if (features[tree->indices[node]] <= tree->thresholds[node] || (tree->missing_go_to_left[node] && isnan(features[tree->indices[node]]))) {
             node = tree->lefts[node];
         } else {
             node = tree->rights[node];
         }
     }
-    norm_vals(result, tree->classes + node * N_CLASSES);
+    norm_vals(result, tree->classes + (-node - 1) * N_CLASSES);
 }
 
 {% if is_multi_output %}

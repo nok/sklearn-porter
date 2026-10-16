@@ -8,7 +8,7 @@ type {{ class_name }}Tree struct {
 	Thresholds []float64 `json:"thresholds"`
 	Indices []int `json:"indices"`
 	MissingGoToLeft []int `json:"missing_go_to_left"`
-	Values [][]float64 `json:"values"`
+	Values []float64 `json:"values"`
 }
 {% if has_infinite_thresholds %}
 
@@ -36,14 +36,14 @@ func (tree *{{ class_name }}Tree) UnmarshalJSON(data []byte) error {
 // Find the leaf and return its predicted values:
 func (tree {{ class_name }}Tree) Compute(features []float64) []float64 {
 	node := 0
-	for tree.Lefts[node] != -1 {
+	for node >= 0 {
 		if features[tree.Indices[node]] <= tree.Thresholds[node] || (tree.MissingGoToLeft[node] == 1 && math.IsNaN(features[tree.Indices[node]])) {
 			node = tree.Lefts[node]
 		} else {
 			node = tree.Rights[node]
 		}
 	}
-	return tree.Values[node]
+	return tree.Values[(-node-1)*{{ n_outputs }} : -node*{{ n_outputs }}]
 }
 
 // Average the predicted values of all trees:

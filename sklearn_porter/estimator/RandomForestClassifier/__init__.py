@@ -22,8 +22,9 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import (
     dump_model_data,
     get_class_fractions,
+    get_leaf_values,
     get_output_classes,
-    get_thresholds,
+    get_tree_data,
     has_infinite_thresholds,
     has_missing_go_to_left,
     with_infinity,
@@ -112,20 +113,14 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         # Extract and save model data:
-        self.model_data['estimators'] = []
-        for e in est.estimators_:
-            self.model_data['estimators'].append(
-                dict(
-                    lefts=e.tree_.children_left.tolist(),
-                    rights=e.tree_.children_right.tolist(),
-                    thresholds=get_thresholds(e.tree_),
-                    classes=get_class_fractions(e.tree_),
-                    indices=e.tree_.feature.tolist(),
-                    # Samples with missing values (NaN) go to the left child
-                    # if 1, otherwise to the right child:
-                    missing_go_to_left=e.tree_.missing_go_to_left.tolist(),
-                )
-            )
+        # The splits and the class fractions of the leaves of each tree
+        # (see `get_tree_data()`). Samples with missing values (NaN) go to
+        # the left child if `missing_go_to_left` is 1, otherwise to the
+        # right child:
+        self.model_data['estimators'] = [
+            get_tree_data(e.tree_, get_class_fractions(e.tree_), 'classes')
+            for e in est.estimators_
+        ]
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
@@ -293,9 +288,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                     missing_go_to_left=', '.join(
                         map(str, tree['missing_go_to_left'])
                     ),
-                    classes=[
-                        ', '.join(map(converter, c)) for c in tree['classes']
-                    ],
+                    classes=', '.join(map(converter, tree['classes'])),
                     weight=converter(tree['weight'])
                     if 'weight' in tree
                     else None,
@@ -352,7 +345,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             model_data['lefts'],
             model_data['rights'],
             model_data['thresholds'],
-            model_data['classes'],
+            get_leaf_values(model_data, 'classes'),
             model_data['indices'],
             model_data['missing_go_to_left'],
             0,
@@ -395,20 +388,20 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         converter
             The number converter.
         left_nodes : list
-            The left children node.
+            The left children of the splits.
         right_nodes : list
-            The left children node.
+            The right children of the splits.
         threshold : list
-            The decision thresholds.
+            The decision thresholds of the splits.
         value : list
-            The label or class.
+            The class fractions of the leaves.
         features : list
-            The feature values.
+            The feature indices of the splits.
         missing_go_to_left : list
             Whether samples with missing values (NaN) go to the left child.
-        node : list
-            The current node.
-        depth : list
+        node : int
+            The current node, a split `i` or a leaf `-i - 1`.
+        depth : int
             The tree depth.
 
         Returns
@@ -417,7 +410,11 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         """
         out = ''
         out_indent = tpls.get_template('indent').render()
-        if threshold[node] != -2.0:
+        # A tree with a single leaf has a split whose children are both
+        # this leaf (see `get_tree_data()`):
+        if node >= 0 and left_nodes[node] == right_nodes[node]:
+            node = left_nodes[node]
+        if node >= 0:
             if node != 0:
                 out += '\n'
 
@@ -436,40 +433,38 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                 out_if = indent(out_if, depth * out_indent)
             out += out_if
 
-            if left_nodes[node] != -1.0:
-                out += self._create_tree(
-                    tpls,
-                    language,
-                    converter,
-                    left_nodes,
-                    right_nodes,
-                    threshold,
-                    value,
-                    features,
-                    missing_go_to_left,
-                    left_nodes[node],
-                    depth + 1,
-                )
+            out += self._create_tree(
+                tpls,
+                language,
+                converter,
+                left_nodes,
+                right_nodes,
+                threshold,
+                value,
+                features,
+                missing_go_to_left,
+                left_nodes[node],
+                depth + 1,
+            )
 
             out += '\n'
             out_else = tpls.get_template('else').render()
             out_else = indent(out_else, depth * out_indent)
             out += out_else
 
-            if right_nodes[node] != -1.0:
-                out += self._create_tree(
-                    tpls,
-                    language,
-                    converter,
-                    left_nodes,
-                    right_nodes,
-                    threshold,
-                    value,
-                    features,
-                    missing_go_to_left,
-                    right_nodes[node],
-                    depth + 1,
-                )
+            out += self._create_tree(
+                tpls,
+                language,
+                converter,
+                left_nodes,
+                right_nodes,
+                threshold,
+                value,
+                features,
+                missing_go_to_left,
+                right_nodes[node],
+                depth + 1,
+            )
 
             out += '\n'
             out_endif = tpls.get_template('endif').render()
@@ -482,7 +477,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
                 tpl = '$' + tpl
             tpl = indent(tpl, depth * out_indent)
 
-            for i, rate in enumerate(value[node]):
+            for i, rate in enumerate(value[-node - 1]):
                 if rate > 0:
                     clazz = tpl.format(i, converter(rate))
                     clazz = '\n' + clazz

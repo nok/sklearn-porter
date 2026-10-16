@@ -29,14 +29,14 @@ class {{ class_name }}
 
 		def compute(features)
 			node = 0
-			while @thresholds[node] != -2
+			while node >= 0
 				if features[@indices[node]] <= @thresholds[node]
 					node = @lefts[node]
 				else
 					node = @rights[node]
 				end
 			end
-			_find_max(@classes[node])
+			_find_max(@classes[(-node - 1) * {{ n_classes }}, {{ n_classes }}])
 		end
 
 	end
@@ -56,7 +56,7 @@ class {{ class_name }}
 	end
 
 	def predict_proba(features)
-		n_classes = @forest[0].classes[0].length
+		n_classes = {{ n_classes }}
 		probas = Array.new(n_classes, 0.0)
 		sum_weights = 0.0
 		# Weighted votes of all trees (SAMME):

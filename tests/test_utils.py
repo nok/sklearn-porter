@@ -11,14 +11,16 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import RidgeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from sklearn_porter.utils import (
     densify,
     dump_model_data,
     get_class_fractions,
+    get_leaf_values,
     get_output_classes,
     get_thresholds,
+    get_tree_data,
     has_infinite_thresholds,
     has_missing_go_to_left,
     is_multilabel,
@@ -172,11 +174,67 @@ def test_densify_dense_estimator():
 
 def test_has_missing_go_to_left():
     """Test the detection of splits which send missing values to the left."""
-    # Node 0 is a split, nodes 1 and 2 are leaves:
-    tree_data = dict(lefts=[1, -1, -1], missing_go_to_left=[0, 1, 1])
-    assert not has_missing_go_to_left(tree_data)
-    tree_data['missing_go_to_left'] = [1, 0, 0]
-    assert has_missing_go_to_left(tree_data)
+    # The model data contains only the splits:
+    assert not has_missing_go_to_left(dict(missing_go_to_left=[0, 0]))
+    assert has_missing_go_to_left(dict(missing_go_to_left=[0, 1]))
+
+
+def _find_leaf(tree_data: dict, x: np.ndarray) -> int:
+    """Find the leaf of a sample like the ported trees."""
+    node = 0
+    while node >= 0:
+        is_left = x[tree_data['indices'][node]] <= tree_data['thresholds'][node]
+        node = tree_data['lefts' if is_left else 'rights'][node]
+    return -node - 1
+
+
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        DecisionTreeClassifier(max_depth=3, random_state=0),
+        DecisionTreeClassifier(random_state=0),
+        DecisionTreeRegressor(random_state=0),
+    ],
+    ids=['shallow', 'deep', 'regressor'],
+)
+def test_tree_data(orig_est):
+    """Test the compact model data of a tree, which contains only the
+    splits and the values of the leaves."""
+    x, y = load_iris(return_X_y=True)
+    tree = orig_est.fit(x, y).tree_
+    values = tree.value.reshape(tree.node_count, -1)
+    tree_data = get_tree_data(tree, values, 'values')
+    is_split = tree.children_left != -1
+    assert len(tree_data['lefts']) == is_split.sum()
+    assert len(tree_data['values']) == tree.n_leaves * values.shape[1]
+    # Each leaf is referenced by exactly one split:
+    refs = sorted(tree_data['lefts'] + tree_data['rights'])
+    assert refs[: tree.n_leaves] == list(range(-tree.n_leaves, 0))
+    # The ported trees find the same leaves as scikit-learn:
+    leaf_values = get_leaf_values(tree_data, 'values')
+    assert len(leaf_values) == tree.n_leaves
+    expected = values[tree.apply(x.astype(np.float32))]
+    found = [leaf_values[_find_leaf(tree_data, sample)] for sample in x]
+    np.testing.assert_array_equal(found, expected)
+
+
+def test_tree_data_of_single_leaf():
+    """Test the compact model data of a tree which consists of a leaf."""
+    x, _ = load_iris(return_X_y=True)
+    tree = DecisionTreeClassifier().fit(x, np.zeros(len(x))).tree_
+    assert tree.node_count == 1
+    tree_data = get_tree_data(tree, get_class_fractions(tree), 'classes')
+    # A split whose children are both the leaf, so no array is empty:
+    assert tree_data == dict(
+        lefts=[-1],
+        rights=[-1],
+        thresholds=[0.0],
+        indices=[0],
+        missing_go_to_left=[0],
+        classes=[1.0],
+    )
+    assert get_leaf_values(tree_data, 'classes') == [[1.0]]
+    assert _find_leaf(tree_data, x[0]) == 0
 
 
 def test_infinite_values():

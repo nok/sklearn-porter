@@ -152,19 +152,14 @@ def has_missing_go_to_left(tree_data: dict) -> bool:
     Parameters
     ----------
     tree_data : dict
-        The model data of a tree with the keys `lefts` and
-        `missing_go_to_left`.
+        The model data of a tree with the key `missing_go_to_left`, which
+        contains only the splits, see `get_tree_data()`.
 
     Returns
     -------
     Whether the ported tree has to check features for missing values (NaN).
     """
-    return any(
-        missing and left != -1
-        for missing, left in zip(
-            tree_data['missing_go_to_left'], tree_data['lefts'], strict=True
-        )
-    )
+    return any(tree_data['missing_go_to_left'])
 
 
 def get_output_classes(estimator) -> list:
@@ -257,3 +252,75 @@ def _to_double_threshold(threshold: float) -> float:
     if np.float32(midpoint) == v:
         return midpoint
     return float(np.nextafter(midpoint, -np.inf))
+
+
+def get_tree_data(tree, values, key: str) -> dict:
+    """
+    Get the model data of a fitted tree in a compact format.
+
+    The arrays of the tree contain only the splits (inner nodes). The
+    children of a split refer to another split by its index `i >= 0` or to
+    a leaf by `-i - 1`, e.g. `-1` refers to the first leaf. The values of
+    all leaves are concatenated, so the values of leaf `i` start at
+    `i * n_values`. A tree which consists of a single leaf gets a split
+    whose children are both this leaf, so the arrays are never empty.
+
+    Parameters
+    ----------
+    tree : sklearn.tree._tree.Tree
+        The fitted tree structure, e.g. `estimator.tree_`.
+    values : array-like of shape (n_nodes, n_values)
+        The values of all nodes, e.g. the class fractions.
+    key : str
+        The key of the values of the leaves, e.g. `classes`.
+
+    Returns
+    -------
+    The model data with the keys `lefts`, `rights`, `thresholds`,
+    `indices`, `missing_go_to_left` and `key`.
+    """
+    is_leaf = tree.children_left == -1
+    is_split = ~is_leaf
+    leaf_values = np.asarray(values)[is_leaf].ravel().tolist()
+    if not is_split.any():
+        return {
+            'lefts': [-1],
+            'rights': [-1],
+            'thresholds': [0.0],
+            'indices': [0],
+            'missing_go_to_left': [0],
+            key: leaf_values,
+        }
+    # The references of all nodes, splits by `i` and leaves by `-i - 1`:
+    refs = np.where(is_leaf, -np.cumsum(is_leaf), np.cumsum(is_split) - 1)
+    thresholds = np.asarray(get_thresholds(tree))
+    return {
+        'lefts': refs[tree.children_left[is_split]].tolist(),
+        'rights': refs[tree.children_right[is_split]].tolist(),
+        'thresholds': thresholds[is_split].tolist(),
+        'indices': tree.feature[is_split].tolist(),
+        'missing_go_to_left': tree.missing_go_to_left[is_split].tolist(),
+        key: leaf_values,
+    }
+
+
+def get_leaf_values(tree_data: dict, key: str) -> list:
+    """
+    Split the concatenated values of the leaves of a compact tree.
+
+    Parameters
+    ----------
+    tree_data : dict
+        The model data of a tree, see `get_tree_data()`.
+    key : str
+        The key of the values of the leaves, e.g. `classes`.
+
+    Returns
+    -------
+    The values of each leaf.
+    """
+    values = tree_data[key]
+    # Each leaf is referenced once, the last one by `-n_leaves`:
+    n_leaves = -min(tree_data['lefts'] + tree_data['rights'])
+    n_values = len(values) // n_leaves
+    return [values[i * n_values : (i + 1) * n_values] for i in range(n_leaves)]

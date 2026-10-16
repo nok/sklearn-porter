@@ -43,14 +43,14 @@ class {{ class_name }}
 
 		def compute(features)
 			node = 0
-			while @thresholds[node] != -2
+			while node >= 0
 				if features[@indices[node]] <= @thresholds[node] || (@missing_go_to_left[node] == 1 && features[@indices[node]].nan?)
 					node = @lefts[node]
 				else
 					node = @rights[node]
 				end
 			end
-			_norm_vals(@classes[node])
+			_norm_vals(@classes[(-node - 1) * {{ n_classes }}, {{ n_classes }}])
 		end
 
 	end

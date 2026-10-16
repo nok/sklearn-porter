@@ -14,7 +14,7 @@ typedef struct {
     int *rights;
     double *thresholds;
     int *indices;
-    double *classes; /* shape: (n_nodes * N_CLASSES) */
+    double *classes; /* shape: (n_leaves * N_CLASSES) */
     double weight;
 } Tree;
 
@@ -39,14 +39,14 @@ int find_max(const double nums[N_CLASSES]) {
 
 int compute(const Tree *tree, double features[N_FEATURES]) {
     int node = 0;
-    while (tree->thresholds[node] != -2) {
+    while (node >= 0) {
         if (features[tree->indices[node]] <= tree->thresholds[node]) {
             node = tree->lefts[node];
         } else {
             node = tree->rights[node];
         }
     }
-    return find_max(tree->classes + node * N_CLASSES);
+    return find_max(tree->classes + (-node - 1) * N_CLASSES);
 }
 
 void predict_proba(double *probas, double features[N_FEATURES]) {

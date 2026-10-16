@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-{% if is_test or to_json or is_multi_output %}
 import java.util.Arrays;
-{% endif %}
 
 class {{ class_name }} {
 
@@ -21,7 +19,7 @@ class {{ class_name }} {
         private int[] indices;
         @SerializedName("missing_go_to_left")
         private int[] missingGoToLeft;
-        private double[][] classes;
+        private double[] classes;
     }
     private Tree tree;
 
@@ -99,14 +97,14 @@ class {{ class_name }} {
 {% endif %}
 
     private {{ 'int[]' if is_multi_output else 'int' }} predict(double[] features, int node) {
-        if (this.tree.thresholds[node] != -2) {
+        if (node >= 0) {
             if (features[this.tree.indices[node]] <= this.tree.thresholds[node] || (this.tree.missingGoToLeft[node] == 1 && Double.isNaN(features[this.tree.indices[node]]))) {
                 return predict(features, this.tree.lefts[node]);
             } else {
                 return predict(features, this.tree.rights[node]);
             }
         }
-        return findMax(this.tree.classes[node]);
+        return findMax(Arrays.copyOfRange(this.tree.classes, (-node - 1) * {{ n_classes }}, -node * {{ n_classes }}));
     }
 
     public {{ 'int[]' if is_multi_output else 'int' }} predict(double[] features) {
@@ -114,14 +112,14 @@ class {{ class_name }} {
     }
 
     private {{ 'double[][]' if is_multi_output else 'double[]' }} predictProba(double[] features, int node) {
-        if (this.tree.thresholds[node] != -2) {
+        if (node >= 0) {
             if (features[this.tree.indices[node]] <= this.tree.thresholds[node] || (this.tree.missingGoToLeft[node] == 1 && Double.isNaN(features[this.tree.indices[node]]))) {
                 return predictProba(features, this.tree.lefts[node]);
             } else {
                 return predictProba(features, this.tree.rights[node]);
             }
         }
-        return normVals(this.tree.classes[node]);
+        return normVals(Arrays.copyOfRange(this.tree.classes, (-node - 1) * {{ n_classes }}, -node * {{ n_classes }}));
     }
 
     public {{ 'double[][]' if is_multi_output else 'double[]' }} predictProba (double[] features) {

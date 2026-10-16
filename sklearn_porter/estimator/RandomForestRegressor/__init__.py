@@ -26,7 +26,8 @@ from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import (
     dump_model_data,
-    get_thresholds,
+    get_leaf_values,
+    get_tree_data,
     has_infinite_thresholds,
     has_missing_go_to_left,
     with_infinity,
@@ -114,18 +115,13 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         # scikit-learn sums up the predictions of all trees in their order
         # and divides the sum by the number of trees. The ported estimators
         # do the same to get exactly the same results.
+        # The model data of each tree contains the splits and the values of
+        # the leaves (see `get_tree_data()`). Samples with missing values
+        # (NaN) go to the left child if `missing_go_to_left` is 1, otherwise
+        # to the right child:
         self.model_data = dict(
             estimators=[
-                dict(
-                    lefts=e.tree_.children_left.tolist(),
-                    rights=e.tree_.children_right.tolist(),
-                    thresholds=get_thresholds(e.tree_),
-                    indices=e.tree_.feature.tolist(),
-                    # Samples with missing values (NaN) go to the left child
-                    # if 1, otherwise to the right child:
-                    missing_go_to_left=e.tree_.missing_go_to_left.tolist(),
-                    values=e.tree_.value[:, :, 0].tolist(),
-                )
+                get_tree_data(e.tree_, e.tree_.value[:, :, 0], 'values')
                 for e in est.estimators_
             ]
         )
@@ -214,7 +210,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
                 tree['lefts'],
                 tree['rights'],
                 tree['thresholds'],
-                tree['values'],
+                get_leaf_values(tree, 'values'),
                 tree['indices'],
                 tree['missing_go_to_left'],
                 0,
@@ -268,9 +264,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
                         missing_go_to_left=', '.join(
                             map(str, tree['missing_go_to_left'])
                         ),
-                        values=[
-                            ', '.join(map(converter, v)) for v in tree['values']
-                        ],
+                        values=', '.join(map(converter, tree['values'])),
                     )
                 )
             return '\n'.join(out_trees)

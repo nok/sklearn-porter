@@ -19,14 +19,14 @@
 /* Find the leaf and return its predicted values: */
 double *predict(double features[N_FEATURES]) {
     int node = 0;
-    while (lefts[node] != -1) {
+    while (node >= 0) {
         if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
             node = lefts[node];
         } else {
             node = rights[node];
         }
     }
-    return values[node];
+    return &values[(-node - 1) * N_OUTPUTS];
 }
 
 int main(int argc, const char *argv[]) {

@@ -1,10 +1,9 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-{% if is_test or to_json or is_multi_output %}
 import java.util.Arrays;
 
-{% endif %}
+
 class {{ class_name }} {
 
     private int[] lefts;
@@ -12,9 +11,9 @@ class {{ class_name }} {
     private double[] thresholds;
     private int[] indices;
     private int[] missingGoToLeft;
-    private double[][] classes;
+    private double[] classes;
 
-    public {{ class_name }}(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[][] classes) {
+    public {{ class_name }}(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[] classes) {
         this.lefts = lefts;
         this.rights = rights;
         this.thresholds = thresholds;
@@ -91,14 +90,14 @@ class {{ class_name }} {
 {% endif %}
 
     private {{ 'int[]' if is_multi_output else 'int' }} predict(double[] features, int node) {
-        if (this.thresholds[node] != -2) {
+        if (node >= 0) {
             if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
                 return predict(features, this.lefts[node]);
             } else {
                 return predict(features, this.rights[node]);
             }
         }
-        return findMax(this.classes[node]);
+        return findMax(Arrays.copyOfRange(this.classes, (-node - 1) * {{ n_classes }}, -node * {{ n_classes }}));
     }
 
     public {{ 'int[]' if is_multi_output else 'int' }} predict(double[] features) {
@@ -106,14 +105,14 @@ class {{ class_name }} {
     }
 
     private {{ 'double[][]' if is_multi_output else 'double[]' }} predictProba(double[] features, int node) {
-        if (this.thresholds[node] != -2) {
+        if (node >= 0) {
             if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
                 return this.predictProba(features, this.lefts[node]);
             } else {
                 return this.predictProba(features, this.rights[node]);
             }
         }
-        return normVals(this.classes[node]);
+        return normVals(Arrays.copyOfRange(this.classes, (-node - 1) * {{ n_classes }}, -node * {{ n_classes }}));
     }
 
     public {{ 'double[][]' if is_multi_output else 'double[]' }} predictProba (double[] features) {

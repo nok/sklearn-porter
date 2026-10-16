@@ -15,7 +15,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_thresholds
+from sklearn_porter.utils import get_leaf_values, get_tree_data
 
 
 class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
@@ -87,18 +87,15 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
+        # The splits and the class fractions of the leaves of each tree
+        # (see `get_tree_data()`) and its weight:
         self.model_data['estimators'] = []
         for e, weight in estimators:
-            self.model_data['estimators'].append(
-                dict(
-                    lefts=e.tree_.children_left.tolist(),
-                    rights=e.tree_.children_right.tolist(),
-                    thresholds=get_thresholds(e.tree_),
-                    classes=[c[0] for c in e.tree_.value.tolist()],
-                    indices=e.tree_.feature.tolist(),
-                    weight=float(weight),
-                )
-            )
+            tree_data = get_tree_data(e.tree_, e.tree_.value[:, 0], 'classes')
+            # AdaBoostClassifier doesn't accept missing values (NaN):
+            del tree_data['missing_go_to_left']
+            tree_data['weight'] = float(weight)
+            self.model_data['estimators'].append(tree_data)
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
@@ -256,9 +253,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
                     rights=', '.join(map(str, tree['rights'])),
                     thresholds=', '.join(map(converter, tree['thresholds'])),
                     indices=', '.join(map(str, tree['indices'])),
-                    classes=[
-                        ', '.join(map(converter, c)) for c in tree['classes']
-                    ],
+                    classes=', '.join(map(converter, tree['classes'])),
                     weight=converter(tree['weight']),
                 )
                 trees.append(tpl_tree.render(index=idx, **values))
@@ -313,7 +308,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             model_data['lefts'],
             model_data['rights'],
             model_data['thresholds'],
-            model_data['classes'],
+            get_leaf_values(model_data, 'classes'),
             model_data['indices'],
             0,
             1,
@@ -354,18 +349,18 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         converter
             The number converter.
         left_nodes : list
-            The left children node.
+            The left children of the splits.
         right_nodes : list
-            The left children node.
+            The right children of the splits.
         threshold : list
-            The decision thresholds.
+            The decision thresholds of the splits.
         value : list
-            The label or class.
+            The class fractions of the leaves.
         features : list
-            The feature values.
-        node : list
-            The current node.
-        depth : list
+            The feature indices of the splits.
+        node : int
+            The current node, a split `i` or a leaf `-i - 1`.
+        depth : int
             The tree depth.
 
         Returns
@@ -374,7 +369,11 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         """
         out = ''
         out_indent = tpls.get_template('indent').render()
-        if threshold[node] != -2.0:
+        # A tree with a single leaf has a split whose children are both
+        # this leaf (see `get_tree_data()`):
+        if node >= 0 and left_nodes[node] == right_nodes[node]:
+            node = left_nodes[node]
+        if node >= 0:
             if node != 0:
                 out += '\n'
 
@@ -388,38 +387,36 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
                 out_if = indent(out_if, depth * out_indent)
             out += out_if
 
-            if left_nodes[node] != -1.0:
-                out += self._create_tree(
-                    tpls,
-                    language,
-                    converter,
-                    left_nodes,
-                    right_nodes,
-                    threshold,
-                    value,
-                    features,
-                    left_nodes[node],
-                    depth + 1,
-                )
+            out += self._create_tree(
+                tpls,
+                language,
+                converter,
+                left_nodes,
+                right_nodes,
+                threshold,
+                value,
+                features,
+                left_nodes[node],
+                depth + 1,
+            )
 
             out += '\n'
             out_else = tpls.get_template('else').render()
             out_else = indent(out_else, depth * out_indent)
             out += out_else
 
-            if right_nodes[node] != -1.0:
-                out += self._create_tree(
-                    tpls,
-                    language,
-                    converter,
-                    left_nodes,
-                    right_nodes,
-                    threshold,
-                    value,
-                    features,
-                    right_nodes[node],
-                    depth + 1,
-                )
+            out += self._create_tree(
+                tpls,
+                language,
+                converter,
+                left_nodes,
+                right_nodes,
+                threshold,
+                value,
+                features,
+                right_nodes[node],
+                depth + 1,
+            )
 
             out += '\n'
             out_endif = tpls.get_template('endif').render()
@@ -431,7 +428,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             if language is enum.Language.PHP:
                 tpl = '$' + tpl
             tpl = indent(tpl, depth * out_indent)
-            for i, rate in enumerate(value[node]):
+            for i, rate in enumerate(value[-node - 1]):
                 if rate > 0:
                     clazz = tpl.format(i, rate)
                     clazz = '\n' + clazz

@@ -27,7 +27,7 @@ type {{ class_name }}Tree struct {
 	Rights []int `json:"rights"`
 	Thresholds []float64 `json:"thresholds"`
 	Indices []int `json:"indices"`
-	Classes [][]float64 `json:"classes"`
+	Classes []float64 `json:"classes"`
 	Weight float64 `json:"weight"`
 }
 
@@ -43,18 +43,18 @@ func findMax(nums []float64) int {
 
 func (tree {{ class_name }}Tree) Compute(features []float64) int {
 	var node = 0
-	for tree.Thresholds[node] != -2 {
+	for node >= 0 {
 		if features[tree.Indices[node]] <= tree.Thresholds[node] {
 			node = tree.Lefts[node]
 		} else {
 			node = tree.Rights[node]
 		}
 	}
-	return findMax(tree.Classes[node])
+	return findMax(tree.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
 }
 
 func (forest {{ class_name }}) PredictProba(features []float64) []float64 {
-	var nClasses = len(forest.Trees[0].Classes[0])
+	var nClasses = {{ n_classes }}
 	var probas = make([]float64, nClasses)
 	var sumWeights, sum float64
 	// Weighted votes of all trees (SAMME):

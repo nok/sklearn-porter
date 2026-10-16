@@ -24,14 +24,14 @@ var {{ class_name }} = function(modelData) {
         };
 
         this._compute = function(features, node) {
-            while (this.thresholds[node] !== -2) {
+            while (node >= 0) {
                 if (features[this.indices[node]] <= this.thresholds[node]) {
                     node = this.lefts[node];
                 } else {
                     node = this.rights[node];
                 }
             }
-            return _findMax(this.classes[node]);
+            return _findMax(this.classes.slice((-node - 1) * {{ n_classes }}, -node * {{ n_classes }}));
         };
     };
 
@@ -54,7 +54,7 @@ var {{ class_name }} = function(modelData) {
 
     this._compute = function(features) {
         var nTrees = that.forest.length,
-            nClasses = that.forest[0].classes[0].length;
+            nClasses = {{ n_classes }};
         var probas = new Array(nClasses).fill(0.);
         var sumWeights = 0., sum = 0.;
         var i, j;

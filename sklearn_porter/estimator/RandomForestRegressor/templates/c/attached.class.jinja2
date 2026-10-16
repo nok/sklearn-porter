@@ -15,7 +15,7 @@ typedef struct {
     double *thresholds;
     int *indices;
     int *missing_go_to_left;
-    double *values; /* shape: (n_nodes * N_OUTPUTS) */
+    double *values; /* shape: (n_leaves * N_OUTPUTS) */
 } Tree;
 
 
@@ -31,14 +31,14 @@ Tree trees[N_ESTIMATORS] = {
 /* Find the leaf and return its predicted values: */
 const double *compute(const Tree *tree, double features[N_FEATURES]) {
     int node = 0;
-    while (tree->lefts[node] != -1) {
+    while (node >= 0) {
         if (features[tree->indices[node]] <= tree->thresholds[node] || (tree->missing_go_to_left[node] && isnan(features[tree->indices[node]]))) {
             node = tree->lefts[node];
         } else {
             node = tree->rights[node];
         }
     }
-    return tree->values + node * N_OUTPUTS;
+    return tree->values + (-node - 1) * N_OUTPUTS;
 }
 
 /* Average the predicted values of all trees: */

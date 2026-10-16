@@ -93,26 +93,26 @@ class {{ class_name }} {
 
     public function predict($features) {
         $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
-        if ($this->thresholds[$node] != -2) {
+        if ($node >= 0) {
             if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
                 return $this->predict($features, $this->lefts[$node]);
             } else {
                 return $this->predict($features, $this->rights[$node]);
             }
         }
-        return $this->findMax($this->classes[$node]);
+        return $this->findMax(array_slice($this->classes, (-$node - 1) * {{ n_classes }}, {{ n_classes }}));
     }
 
     public function predictProba($features) {
         $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
-        if ($this->thresholds[$node] != -2) {
+        if ($node >= 0) {
             if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
                 return $this->predictProba($features, $this->lefts[$node]);
             } else {
                 return $this->predictProba($features, $this->rights[$node]);
             }
         }
-        return $this->normVals($this->classes[$node]);
+        return $this->normVals(array_slice($this->classes, (-$node - 1) * {{ n_classes }}, {{ n_classes }}));
     }
 
 }

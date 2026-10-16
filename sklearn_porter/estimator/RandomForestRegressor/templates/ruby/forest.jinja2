@@ -2,26 +2,26 @@ def initialize(model)
 	@forest = model
 end
 
-# Find the leaf and return its predicted values:
+# Find the leaf and return the index of its first predicted value:
 def self.compute(tree, features)
 	node = 0
-	while tree['lefts'][node] != -1
+	while node >= 0
 		if features[tree['indices'][node]] <= tree['thresholds'][node] || (tree['missing_go_to_left'][node] == 1 && features[tree['indices'][node]].nan?)
 			node = tree['lefts'][node]
 		else
 			node = tree['rights'][node]
 		end
 	end
-	tree['values'][node]
+	(-node - 1) * {{ n_outputs }}
 end
 
 # Average the predicted values of all trees:
 def predict(features)
 	values = Array.new({{ n_outputs }}, 0.0)
 	@forest.each do |tree|
-		temp = {{ class_name }}.compute(tree, features)
+		start = {{ class_name }}.compute(tree, features)
 		for j in 0 ... values.length
-			values[j] += temp[j]
+			values[j] += tree['values'][start + j]
 		end
 	end
 	for j in 0 ... values.length

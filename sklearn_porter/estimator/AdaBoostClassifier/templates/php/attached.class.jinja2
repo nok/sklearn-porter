@@ -26,7 +26,7 @@ namespace {
         }
 
         public function predictProba($features) {
-            $nClasses = count($this->forest[0]->classes[0]);
+            $nClasses = {{ n_classes }};
             $probas = array_fill(0, $nClasses, 0.);
             $sumWeights = 0.;
             $sum = 0.;
@@ -74,14 +74,14 @@ namespace {{ class_name }} {
 
         public function compute($features) {
             $node = 0;
-            while ($this->thresholds[$node] != -2) {
+            while ($node >= 0) {
                 if ($features[$this->indices[$node]] <= $this->thresholds[$node]) {
                     $node = $this->lefts[$node];
                 } else {
                     $node = $this->rights[$node];
                 }
             }
-            return \{{ class_name }}::findMax($this->classes[$node]);
+            return \{{ class_name }}::findMax(array_slice($this->classes, (-$node - 1) * {{ n_classes }}, {{ n_classes }}));
         }
     }
 }

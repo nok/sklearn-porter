@@ -5,6 +5,6 @@ private static Tree tree{{ index }}() {
         new double[] {{ '{' }}{{ thresholds }}{{ '}' }},
         new int[] {{ '{' }}{{ indices }}{{ '}' }},
         new int[] {{ '{' }}{{ missing_go_to_left }}{{ '}' }},
-        new double[][] {{ '{' }}{% for c in classes %}{{ '{' }}{{ c }}{{ '}' }}{% if not loop.last %}, {% endif %}{% endfor %}{{ '}' }}
+        new double[] {{ '{' }}{{ classes }}{{ '}' }}
     );
 }

@@ -22,14 +22,14 @@ class {{ class_name }} {
     // Find the leaf and return its predicted values:
     public function predict($features) {
         $node = 0;
-        while ($this->lefts[$node] != -1) {
+        while ($node >= 0) {
             if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
                 $node = $this->lefts[$node];
             } else {
                 $node = $this->rights[$node];
             }
         }
-        $values = $this->values[$node];
+        $values = array_slice($this->values, (-$node - 1) * {{ n_outputs }}, {{ n_outputs }});
         if (count($values) == 1) {
             return $values[0];
         }

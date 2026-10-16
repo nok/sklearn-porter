@@ -28,7 +28,7 @@ type {{ class_name }}Tree struct {
 	Thresholds []float64 `json:"thresholds"`
 	Indices []int `json:"indices"`
 	MissingGoToLeft []int `json:"missing_go_to_left"`
-	Classes [][]float64 `json:"classes"`
+	Classes []float64 `json:"classes"`
 }
 {% if has_infinite_thresholds %}
 
@@ -135,17 +135,14 @@ func (tree {{ class_name }}Tree) NormVals(nums []float64) []float64 {
 {% endif %}
 
 func (tree {{ class_name }}Tree) Compute(features []float64, node int) []float64 {
-	for {
-		if tree.Thresholds[node] != -2 {
-			if features[tree.Indices[node]] <= tree.Thresholds[node] || (tree.MissingGoToLeft[node] == 1 && math.IsNaN(features[tree.Indices[node]])) {
-				node = tree.Lefts[node]
-			} else {
-				node = tree.Rights[node]
-			}
+	for node >= 0 {
+		if features[tree.Indices[node]] <= tree.Thresholds[node] || (tree.MissingGoToLeft[node] == 1 && math.IsNaN(features[tree.Indices[node]])) {
+			node = tree.Lefts[node]
 		} else {
-			return tree.NormVals(tree.Classes[node])
+			node = tree.Rights[node]
 		}
 	}
+	return tree.NormVals(tree.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
 }
 
 func (forest {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
@@ -154,7 +151,7 @@ func (forest {{ class_name }}) Predict(features []float64) {{ '[]int' if is_mult
 
 {% if is_multi_output %}
 func (forest {{ class_name }}) PredictProba(features []float64) [][]float64 {
-	var nClasses = len(forest.Trees[0].Classes[0])
+	var nClasses = {{ n_classes }}
 	var nTrees = len(forest.Trees)
 	var classProbas = make([]float64, nClasses)
 	for _, tree := range forest.Trees {
@@ -170,7 +167,7 @@ func (forest {{ class_name }}) PredictProba(features []float64) [][]float64 {
 }
 {% else %}
 func (forest {{ class_name }}) PredictProba(features []float64) []float64 {
-	var nClasses = len(forest.Trees[0].Classes[0])
+	var nClasses = {{ n_classes }}
 	var nTrees = len(forest.Trees)
 	var classProbas = make([]float64, nClasses)
 	for _, tree := range forest.Trees {

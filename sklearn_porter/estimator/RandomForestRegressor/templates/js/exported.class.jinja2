@@ -15,17 +15,17 @@ var {{ class_name }} = function(jsonFile) {
         this.missingGoToLeft = missingGoToLeft;
         this.values = values;
 
-        // Find the leaf and return its predicted values:
+        // Find the leaf and return the index of its first predicted value:
         this.compute = function(features) {
             var node = 0;
-            while (this.lefts[node] !== -1) {
+            while (node >= 0) {
                 if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] === 1 && isNaN(features[this.indices[node]]))) {
                     node = this.lefts[node];
                 } else {
                     node = this.rights[node];
                 }
             }
-            return this.values[node];
+            return (-node - 1) * {{ n_outputs }};
         };
     };
 
@@ -45,9 +45,9 @@ var {{ class_name }} = function(jsonFile) {
         var values = new Array(nOutputs).fill(0);
         var i, j;
         for (i = 0; i < nTrees; i++) {
-            var temp = this.forest[i].compute(features);
+            var start = this.forest[i].compute(features);
             for (j = 0; j < nOutputs; j++) {
-                values[j] += temp[j];
+                values[j] += this.forest[i].values[start + j];
             }
         }
         for (j = 0; j < nOutputs; j++) {

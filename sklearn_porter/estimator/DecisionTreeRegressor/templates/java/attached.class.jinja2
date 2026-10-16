@@ -1,10 +1,9 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-{% if is_test or to_json %}
 import java.util.Arrays;
 
-{% endif %}
+
 class {{ class_name }} {
 
     private int[] lefts;
@@ -12,9 +11,9 @@ class {{ class_name }} {
     private double[] thresholds;
     private int[] indices;
     private int[] missingGoToLeft;
-    private double[][] values;
+    private double[] values;
 
-    public {{ class_name }}(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[][] values) {
+    public {{ class_name }}(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[] values) {
         this.lefts = lefts;
         this.rights = rights;
         this.thresholds = thresholds;
@@ -26,14 +25,14 @@ class {{ class_name }} {
     // Find the leaf and return its predicted values:
     public double[] predict(double[] features) {
         int node = 0;
-        while (this.lefts[node] != -1) {
+        while (node >= 0) {
             if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
                 node = this.lefts[node];
             } else {
                 node = this.rights[node];
             }
         }
-        return this.values[node].clone();
+        return Arrays.copyOfRange(this.values, (-node - 1) * {{ n_outputs }}, -node * {{ n_outputs }});
     }
 
     public static void main(String[] args) {

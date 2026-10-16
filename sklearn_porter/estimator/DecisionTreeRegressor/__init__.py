@@ -17,7 +17,7 @@ from sklearn_porter.estimator.DecisionTreeClassifier import (
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import (
     dump_model_data,
-    get_thresholds,
+    get_tree_data,
     has_infinite_thresholds,
     has_missing_go_to_left,
     missing_name,
@@ -96,15 +96,12 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
         # (n_nodes, n_outputs, 1), e.g. the (weighted) mean of the targets
         # (`squared_error`, `friedman_mse`, `poisson`) or the (weighted)
         # median of the targets (`absolute_error`).
-        self.model_data = dict(
-            lefts=est.tree_.children_left.tolist(),
-            rights=est.tree_.children_right.tolist(),
-            thresholds=get_thresholds(est.tree_),
-            indices=est.tree_.feature.tolist(),
-            # Samples with missing values (NaN) go to the left child if 1,
-            # otherwise to the right child:
-            missing_go_to_left=est.tree_.missing_go_to_left.tolist(),
-            values=est.tree_.value[:, :, 0].tolist(),
+        # The model data contains the splits and the values of the leaves
+        # (see `get_tree_data()`). Samples with missing values (NaN) go to
+        # the left child if `missing_go_to_left` is 1, otherwise to the
+        # right child:
+        self.model_data = get_tree_data(
+            est.tree_, est.tree_.value[:, :, 0], 'values'
         )
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
@@ -181,8 +178,6 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
         tpl_int = tpls.get_template('int').render()
         tpl_double = tpls.get_template('double').render()
         tpl_arr_1 = tpls.get_template('arr[]')
-        tpl_arr_2 = tpls.get_template('arr[][]')
-        tpl_in_brackets = tpls.get_template('in_brackets')
 
         for name in ('lefts', 'rights', 'indices'):
             vals = list(map(str, self.model_data[name]))
@@ -209,18 +204,12 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
             n=len(thresholds_val),
         )
 
-        values_val = [
-            list(map(converter, e)) for e in self.model_data['values']
-        ]
-        values_str = ', '.join(
-            [tpl_in_brackets.render(value=', '.join(e)) for e in values_val]
-        )
-        plas['values'] = tpl_arr_2.render(
+        values_val = list(map(converter, self.model_data['values']))
+        plas['values'] = tpl_arr_1.render(
             type=tpl_double,
             name='values',
-            values=values_str,
+            values=', '.join(values_val),
             n=len(values_val),
-            m=len(values_val[0]),
         )
 
         tpl_class = tpls.get_template('attached.class')

@@ -21,26 +21,27 @@ class {{ class_name }} {
         private int[] rights;
         private double[] thresholds;
         private int[] indices;
-        private double[][] classes;
+        private double[] classes;
         private double weight;
 
-        private int findMax(double[] nums) {
+        // Find the class with the maximum fraction of the leaf values from `start` on:
+        private int findMax(int start) {
             int idx = 0;
-            for (int i = 0; i < nums.length; i++) {
-                idx = nums[i] > nums[idx] ? i : idx;
+            for (int i = 1; i < {{ n_classes }}; i++) {
+                idx = this.classes[start + i] > this.classes[start + idx] ? i : idx;
             }
             return idx;
         }
 
         private int compute(double[] features, int node) {
-            while (this.thresholds[node] != -2) {
+            while (node >= 0) {
                 if (features[this.indices[node]] <= this.thresholds[node]) {
                     node = this.lefts[node];
                 } else {
                     node = this.rights[node];
                 }
             }
-            return this.findMax(this.classes[node]);
+            return this.findMax((-node - 1) * {{ n_classes }});
         }
 
         private int compute(double[] features) {
@@ -59,7 +60,7 @@ class {{ class_name }} {
             this.forest = gson.fromJson(reader, listType);
         }
         this.nEstimators = this.forest.size();
-        this.nClasses = this.forest.get(0).classes[0].length;
+        this.nClasses = {{ n_classes }};
     }
 
     private int findMax(double[] nums) {
