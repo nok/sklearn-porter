@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
@@ -11,6 +12,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type {{ class_name }} struct {
@@ -74,21 +76,9 @@ func (reg {{ class_name }}) Predict(features []float64) []float64 {
 {% endif %}
 }
 
+{% include 'samples' %}
+
 func main() {
-
-	if len(os.Args) != {{ n_features + 1 }} {
-		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features.")
-		os.Exit(1)
-	}
-
-	// Features:
-	var features []float64
-	for _, arg := range os.Args[1:] {
-		if n, err := strconv.ParseFloat(arg, 64); err == nil {
-			features = append(features, n)
-		}
-	}
-
 	// Model data:
 	{{ layers }}
 	{{ weights }}
@@ -97,23 +87,26 @@ func main() {
 	// Estimator:
 	reg := {{ class_name }}{layers, weights, bias, "{{ hidden_activation }}"}
 
-	{% if is_test or to_json %}
-	// Get JSON:
-	prediction := reg.Predict(features)
-	var res []byte
-	if len(prediction) == 1 {
-		res, _ = json.Marshal(&Response{Predict: prediction[0]})
-	} else {
-		res, _ = json.Marshal(&Response{Predict: prediction})
-	}
-	fmt.Println(string(res))
-	{% else %}
-	// Get predicted values:
-	prediction := reg.Predict(features)
-	for i, value := range prediction {
-		fmt.Printf("Predicted value #%d : %v\n", i, value)
-	}
-	{% endif %}
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		prediction := reg.Predict(features)
+		var res []byte
+		if len(prediction) == 1 {
+			res, _ = json.Marshal(&Response{Predict: prediction[0]})
+		} else {
+			res, _ = json.Marshal(&Response{Predict: prediction})
+		}
+		fmt.Println(string(res))
+		{% else %}
+		// Get predicted values:
+		prediction := reg.Predict(features)
+		for i, value := range prediction {
+			fmt.Printf("Predicted value #%d : %v\n", i, value)
+		}
+		{% endif %}
+	})
 
 }
 {% endblock %}

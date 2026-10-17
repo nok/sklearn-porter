@@ -115,12 +115,9 @@ class {{ class_name }}
 end
 
 if __FILE__ == $0
-	if ARGV.length != {{ n_features }}
-		raise "You have to pass {{ n_features }} features."
-	end
-
-	# Features:
-	features = ARGV.collect { |value| value.downcase == 'nan' ? Float::NAN : value.to_f }
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
 
 	# Model data:
 	{{ lefts }}
@@ -133,21 +130,24 @@ if __FILE__ == $0
 	# Estimator:
 	clf = {{ class_name }}.new lefts, rights, thresholds, indices, missing_go_to_left, classes
 
-	{% if is_test or to_json %}
-	# Get JSON:
-	prediction = clf.predict features
-	probabilities = clf.predict_proba features
-	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
-	{% else %}
-	# Get class prediction:
-	prediction = clf.predict features
-	puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}#{prediction}"
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		{% if is_test or to_json %}
+		# Get JSON:
+		prediction = clf.predict features
+		probabilities = clf.predict_proba features
+		puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+		{% else %}
+		# Get class prediction:
+		prediction = clf.predict features
+		puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}#{prediction}"
 
-	# Get class probabilities:
-	probabilities = clf.predict_proba features
-	for i in 0 ... probabilities.length
-		puts "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}#{i} : #{probabilities[i]}"
+		# Get class probabilities:
+		probabilities = clf.predict_proba features
+		for i in 0 ... probabilities.length
+			puts "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}#{i} : #{probabilities[i]}"
+		end
+		{% endif %}
 	end
-	{% endif %}
 end
 {% endblock %}

@@ -9,28 +9,27 @@ class {{ class_name }} {
 
 }
 
-if ($argc > 1) {
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
 
-    // Features:
     array_shift($argv);
-    $features = array_map(function ($value) {
-        return strtolower($value) === 'nan' ? NAN : floatval($value);
-    }, $argv);
-    if (count($features) != {{ n_features }}) {
-        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
-        exit(1);
-    }
 
     // Model data:
     {{ model }}
 
     // Estimator:
     $reg = new {{ class_name }}($model);
-    $prediction = $reg->predict($features);
 
-    {% filter indent(4, True) %}
-    {% include 'output' %}
-    {% endfilter %}
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        $prediction = $reg->predict($features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
 
 }
 {% endblock %}

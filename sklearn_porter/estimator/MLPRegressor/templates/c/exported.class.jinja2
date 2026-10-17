@@ -130,47 +130,46 @@ double *predict(double features[N_FEATURES]) {
 {% endif %}
 }
 
-int main(int argc, const char *argv[]) {
+{% include 'samples' %}
 
-    if (argc != N_FEATURES + 2) {
-        fprintf(stderr, "You have to pass the path to the model data and %d features.\n", N_FEATURES);
+int main(int argc, const char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "You have to pass the path to the model data.\n");
         return 1;
     }
 
     /* Model data: */
     load(argv[1]);
 
-    /* Features: */
+    /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
-    for (int i = 2; i < argc; i++) {
-        features[i-2] = atof(argv[i]);
-    }
+    while (read_features(features, argc, argv, 2)) {
+        int n_outputs = layers[n_layers - 1];
+        double *prediction = predict(features);
 
-    int n_outputs = layers[n_layers - 1];
-    double *prediction = predict(features);
-
-    {% if is_test or to_json %}
-    /* Get JSON: */
-    if (n_outputs == 1) {
-        printf("{\"predict\": %.17g}", prediction[0]);
-    } else {
-        printf("{\"predict\": [");
-        for (int i = 0; i < n_outputs; i++) {
-            printf("%.17g", prediction[i]);
-            if (i < (n_outputs - 1)) {
-                printf(",");
+        {% if is_test or to_json %}
+        /* Get JSON: */
+        if (n_outputs == 1) {
+            printf("{\"predict\": %.17g}\n", prediction[0]);
+        } else {
+            printf("{\"predict\": [");
+            for (int i = 0; i < n_outputs; i++) {
+                printf("%.17g", prediction[i]);
+                if (i < (n_outputs - 1)) {
+                    printf(",");
+                }
             }
+            printf("]}\n");
         }
-        printf("]}");
-    }
-    {% else %}
-    /* Get predicted values: */
-    for (int i = 0; i < n_outputs; i++) {
-        printf("Predicted value #%d: %.17g\n", i, prediction[i]);
-    }
-    {% endif %}
+        {% else %}
+        /* Get predicted values: */
+        for (int i = 0; i < n_outputs; i++) {
+            printf("Predicted value #%d: %.17g\n", i, prediction[i]);
+        }
+        {% endif %}
 
-    free(prediction);
+        free(prediction);
+    }
 
     return 0;
 }

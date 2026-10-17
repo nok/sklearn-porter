@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#define N_FEATURES {{ n_features }}
 
 {{ coeffs }}
 {{ inters }}
@@ -46,26 +47,24 @@ Label predict(double features[]) {
     return labels[predict_index(features)];
 }
 
+{% include 'samples' %}
+
 int main(int argc, const char *argv[]) {
-
-    /* Features: */
-    double features[argc-1];
-    int i;
-    for (int i = 1; i < argc; i++) {
-        features[i-1] = atof(argv[i]);
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        {% if is_test or to_json %}
+        /* Get JSON: */
+        printf("{\"predict\": ");
+        print_label(predict(features));
+        printf(" }\n");
+        {% else %}
+        /* Get class prediction: */
+        printf("Predicted class: ");
+        print_label(predict(features));
+        printf("\n");
+        {% endif %}
     }
-
-    {% if is_test or to_json %}
-    /* Get JSON: */
-    printf("{\"predict\": ");
-    print_label(predict(features));
-    printf(" }");
-    {% else %}
-    /* Get class prediction: */
-    printf("Predicted class: ");
-    print_label(predict(features));
-    printf("\n");
-    {% endif %}
 
     return 0;
 }

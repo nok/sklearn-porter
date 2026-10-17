@@ -66,16 +66,11 @@ class {{ class_name }} {
         return LABELS[this.predictIndex(features)];
     }
 
-    public static void main(String[] args) throws IOException {
-        int nFeatures = {{ n_features }};
-        if (args.length != (nFeatures + 1) || !args[0].endsWith(".json")) {
-            throw new IllegalArgumentException("You have to pass the path to the exported model data and " +  String.valueOf(nFeatures) + " features.");
-        }
+{% include 'samples' %}
 
-        // Features:
-        double[] features = new double[args.length-1];
-        for (int i = 1, l = args.length; i < l; i++) {
-            features[i - 1] = Double.parseDouble(args[i]);
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
         }
 
         // Model data:
@@ -84,15 +79,18 @@ class {{ class_name }} {
         // Estimator:
         {{ class_name }} clf = new {{ class_name }}(modelData);
 
-        {% if is_test or to_json %}
-        // Get JSON:
-        {{ label_type }} prediction = clf.predict(features);
-        System.out.println("{\"predict\": " + toJson(prediction) + "}");
-        {% else %}
-        // Get class prediction:
-        {{ label_type }} prediction = clf.predict(features);
-        System.out.println("Predicted class: " + prediction);
-        {% endif %}
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            {% if is_test or to_json %}
+            // Get JSON:
+            {{ label_type }} prediction = clf.predict(features);
+            System.out.println("{\"predict\": " + toJson(prediction) + "}");
+            {% else %}
+            // Get class prediction:
+            {{ label_type }} prediction = clf.predict(features);
+            System.out.println("Predicted class: " + prediction);
+            {% endif %}
+        }
 
     }
 }

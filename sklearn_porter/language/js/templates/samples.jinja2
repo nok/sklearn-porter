@@ -1,0 +1,18 @@
+// Read the features of one sample from the arguments or of several samples
+// (one per line) from the standard input:
+var readSamples = function (args) {
+    var lines = args.length > 0 ? [args.join(' ')] : require('fs').readFileSync(0, 'utf8').split('\n');
+    var samples = [];
+    for (var i = 0; i < lines.length; i++) {
+        var line = lines[i].trim();
+        if (line.length === 0) {
+            continue;
+        }
+        var values = line.split(/\s+/);
+        if (values.length !== {{ n_features }}) {
+            throw new Error("You have to pass {{ n_features }} features per sample.");
+        }
+        samples.push(values.map(parseFloat));
+    }
+    return samples;
+};

@@ -14,6 +14,8 @@ Usage:
         $ gcc {{ class_name }}.c -std=c99 -lm -o {{ class_name }}
     2. Execute a prediction:
         $ ./{{ class_name }} {{ class_name }}.json feature_1 ... feature_{{ n_features }}
+    3. Execute the predictions of several samples (one per line):
+        $ ./{{ class_name }} {{ class_name }}.json < samples.txt
 */
 #include <ctype.h>
 #include <stdio.h>

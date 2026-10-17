@@ -1,6 +1,6 @@
 {% if is_test or to_json %}
 // Get JSON:
-fwrite(STDOUT, json_encode(array("predict" => $prediction)));
+fwrite(STDOUT, json_encode(array("predict" => $prediction)) . "\n");
 {% else %}
 // Get predicted values:
 if (is_array($prediction)) {

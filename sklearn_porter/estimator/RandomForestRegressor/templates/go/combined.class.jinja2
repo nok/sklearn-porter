@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
@@ -13,6 +14,7 @@ import (
 	{% endif %}
 	"os"
 	"strconv"
+	"strings"
 )
 
 {% if is_test or to_json %}
@@ -39,26 +41,17 @@ func Predict(features []float64) []float64 {
 	return values
 }
 
+{% include 'samples' %}
+
 func main() {
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		prediction := Predict(features)
 
-	if len(os.Args) != {{ n_features + 1 }} {
-		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features.")
-		os.Exit(1)
-	}
-
-	// Features:
-	var features []float64
-	for _, arg := range os.Args[1:] {
-		if n, err := strconv.ParseFloat(arg, 64); err == nil {
-			features = append(features, n)
-		}
-	}
-
-	prediction := Predict(features)
-
-	{% filter indent('\t', True) %}
-	{% include 'output' %}
-	{% endfilter %}
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	})
 
 }
 {% endblock %}

@@ -82,46 +82,40 @@ Label predict(double features[N_FEATURES]) {
     return labels[predict_index(features)];
 }
 
+{% include 'samples' %}
+
 int main(int argc, const char *argv[]) {
-
-    if (argc != N_FEATURES + 1) {
-        fprintf(stderr, "You have to pass %d features.\n", N_FEATURES);
-        return 1;
-    }
-
-    /* Features: */
+    /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
-    for (int i = 1; i < argc; i++) {
-        features[i-1] = atof(argv[i]);
-    }
-
-    {% if is_test or to_json %}
-    /* Get JSON: */
-    double probabilities[N_CLASSES];
-    predict_proba(probabilities, features);
-    printf("{\"predict\": ");
-    print_label(predict(features));
-    printf(", \"predict_proba\": [");
-    for (int i = 0; i < N_CLASSES; i++) {
-        printf("%.17g", probabilities[i]);
-        if (i < (N_CLASSES - 1)) {
-            printf(",");
+    while (read_features(features, argc, argv, 1)) {
+        {% if is_test or to_json %}
+        /* Get JSON: */
+        double probabilities[N_CLASSES];
+        predict_proba(probabilities, features);
+        printf("{\"predict\": ");
+        print_label(predict(features));
+        printf(", \"predict_proba\": [");
+        for (int i = 0; i < N_CLASSES; i++) {
+            printf("%.17g", probabilities[i]);
+            if (i < (N_CLASSES - 1)) {
+                printf(",");
+            }
         }
-    }
-    printf("]}");
-    {% else %}
-    /* Get class prediction: */
-    printf("Predicted class: ");
-    print_label(predict(features));
-    printf("\n");
+        printf("]}\n");
+        {% else %}
+        /* Get class prediction: */
+        printf("Predicted class: ");
+        print_label(predict(features));
+        printf("\n");
 
-    /* Get class probabilities: */
-    double probabilities[N_CLASSES];
-    predict_proba(probabilities, features);
-    for (int i = 0; i < N_CLASSES; i++) {
-        printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+        /* Get class probabilities: */
+        double probabilities[N_CLASSES];
+        predict_proba(probabilities, features);
+        for (int i = 0; i < N_CLASSES; i++) {
+            printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+        }
+        {% endif %}
     }
-    {% endif %}
 
     return 0;
 }

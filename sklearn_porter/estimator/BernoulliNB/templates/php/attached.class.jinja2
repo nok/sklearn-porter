@@ -68,15 +68,12 @@ class {{ class_name }} {
 
 }
 
-if ($argc > 1) {
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
 
-    // Features:
     array_shift($argv);
-    $features = array_map('floatval', $argv);
-    if (count($features) != {{ n_features }}) {
-        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
-        exit(1);
-    }
 
     // Model data:
     {{ priors }}
@@ -85,22 +82,25 @@ if ($argc > 1) {
     // Estimator:
     $clf = new {{ class_name }}($priors, $probs);
 
-    {% if is_test or to_json %}
-    // Get JSON:
-    $prediction = $clf->predict($features);
-    $probabilities = $clf->predictProba($features);
-    fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)));
-    {% else %}
-    // Get class prediction:
-    $prediction = $clf->predict($features);
-    fwrite(STDOUT, "Predicted class: " . strval($prediction) . "\n");
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        {% if is_test or to_json %}
+        // Get JSON:
+        $prediction = $clf->predict($features);
+        $probabilities = $clf->predictProba($features);
+        fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)) . "\n");
+        {% else %}
+        // Get class prediction:
+        $prediction = $clf->predict($features);
+        fwrite(STDOUT, "Predicted class: " . strval($prediction) . "\n");
 
-    // Get class probabilities:
-    $probabilities = $clf->predictProba($features);
-    for ($i = 0; $i < count($probabilities); $i++) {
-        fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+        // Get class probabilities:
+        $probabilities = $clf->predictProba($features);
+        for ($i = 0; $i < count($probabilities); $i++) {
+            fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+        }
+        {% endif %}
     }
-    {% endif %}
 
 }
 {% endblock %}

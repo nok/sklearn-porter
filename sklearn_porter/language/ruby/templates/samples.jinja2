@@ -1,0 +1,11 @@
+# Read the features of one sample from the arguments or of several samples
+# (one per line) from the standard input:
+def read_samples (args)
+	lines = args.empty? ? STDIN.each_line : [args.join(' ')]
+	lines.each do |line|
+		values = line.split
+		next if values.empty?
+		raise "You have to pass {{ n_features }} features per sample." if values.length != {{ n_features }}
+		yield values.collect { |value| value.downcase == 'nan' ? Float::NAN : value.to_f }
+	end
+end

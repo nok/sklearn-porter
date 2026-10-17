@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
   {% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
@@ -11,6 +12,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 )
 
 {% include 'labels' %}
@@ -151,16 +153,9 @@ func (dtc {{ class_name }}) PredictProba(features []float64) {{ '[][]float64' if
 	return dtc.predictProba(features, 0)
 }
 
+{% include 'samples' %}
+
 func main() {
-
-	// Features:
-	var features []float64
-	for _, arg := range os.Args[1:] {
-		if n, err := strconv.ParseFloat(arg, 64); err == nil {
-			features = append(features, n)
-		}
-	}
-
 	// Model data:
 	{{ lefts }}
 	{{ rights }}
@@ -172,23 +167,26 @@ func main() {
 	// Estimator:
 	clf := {{ class_name }}{lefts, rights, thresholds, indices, missingGoToLeft, classes}
 
-	{% if is_test or to_json %}
-	// Get JSON:
-	prediction := clf.Predict(features)
-	probabilities := clf.PredictProba(features)
-	res, _ := json.Marshal(&response{Predict: prediction, PredictProba: probabilities})
-	fmt.Println(string(res))
-	{% else %}
-	// Get class prediction:
-	prediction := clf.Predict(features)
-	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}%v\n", prediction)
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		prediction := clf.Predict(features)
+		probabilities := clf.PredictProba(features)
+		res, _ := json.Marshal(&response{Predict: prediction, PredictProba: probabilities})
+		fmt.Println(string(res))
+		{% else %}
+		// Get class prediction:
+		prediction := clf.Predict(features)
+		fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}%v\n", prediction)
 
-	// Get class probabilities:
-	probabilities := clf.PredictProba(features)
-	for i := 0; i < len(probabilities); i++ {
-		fmt.Printf("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}%d : %.f\n", i, probabilities[i])
-	}
-	{% endif %}
+		// Get class probabilities:
+		probabilities := clf.PredictProba(features)
+		for i := 0; i < len(probabilities); i++ {
+			fmt.Printf("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}%d : %.f\n", i, probabilities[i])
+		}
+		{% endif %}
+	})
 
 }
 {% endblock %}

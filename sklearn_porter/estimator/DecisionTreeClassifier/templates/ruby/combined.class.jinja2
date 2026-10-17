@@ -101,28 +101,28 @@ class {{ class_name }}
 end
 
 if __FILE__ == $0
-	if ARGV.length != {{ n_features }}
-		raise "You have to pass {{ n_features }} features."
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		{% if is_test or to_json %}
+		# Get JSON:
+		prediction = {{ class_name }}.predict features
+		probabilities = {{ class_name }}.predict_proba features
+		puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+		{% else %}
+		# Get class prediction:
+		prediction = {{ class_name }}.predict features
+		puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}#{prediction}"
+
+		# Get class probabilities:
+		probabilities = {{ class_name }}.predict_proba features
+		for i in 0 ... probabilities.length
+			puts "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}#{i} : #{probabilities[i]}"
+		end
+		{% endif %}
 	end
-
-	# Features:
-	features = ARGV.collect { |value| value.downcase == 'nan' ? Float::NAN : value.to_f }
-
-	{% if is_test or to_json %}
-	# Get JSON:
-	prediction = {{ class_name }}.predict features
-	probabilities = {{ class_name }}.predict_proba features
-	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
-	{% else %}
-	# Get class prediction:
-	prediction = {{ class_name }}.predict features
-	puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}#{prediction}"
-
-	# Get class probabilities:
-	probabilities = {{ class_name }}.predict_proba features
-	for i in 0 ... probabilities.length
-		puts "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}#{i} : #{probabilities[i]}"
-	end
-	{% endif %}
 end
 {% endblock %}

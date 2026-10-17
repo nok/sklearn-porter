@@ -1,3 +1,4 @@
+import json
 import os
 import warnings
 from collections.abc import Callable
@@ -238,7 +239,7 @@ def test_system_calls_on_windows(
     monkeypatch.setattr(ESTIMATOR_MODULE, 'pathsep', ';')
     monkeypatch.setenv('SKLEARN_PORTER_PYTEST_GSON_PATH', 'gson.jar')
 
-    compile_cmds, execute_cmds = [], []
+    compile_cmds, execute_cmds, inputs = [], [], []
 
     def check_output(cmd: list[str], **kwargs) -> str:
         compile_cmds.append(cmd)
@@ -248,7 +249,8 @@ def test_system_calls_on_windows(
 
     def run(cmd: list[str], **kwargs) -> CompletedProcess:
         execute_cmds.append(cmd)
-        return CompletedProcess(cmd, 0, stdout='{"predict": 0}', stderr='')
+        inputs.append(kwargs.get('input'))
+        return CompletedProcess(cmd, 0, stdout='{"predict": 0}\n', stderr='')
 
     monkeypatch.setattr(ESTIMATOR_MODULE, 'check_output', check_output)
     monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run)
@@ -261,7 +263,8 @@ def test_system_calls_on_windows(
 
     assert len(compile_cmds) == len(execute_cmds) == 1
     compile_cmd, execute_cmd = compile_cmds[0], execute_cmds[0]
-    assert execute_cmd[-4:] == ['1.0', '2.0', '3.0', '4.0']
+    # The features are passed to the standard input:
+    assert inputs == ['1.0 2.0 3.0 4.0\n']
     if language in ('c', 'go'):
         binary = str(tmp_path / 'DecisionTreeClassifier.exe')
         assert compile_cmd[compile_cmd.index('-o') + 1] == binary
@@ -277,7 +280,114 @@ def test_system_calls_on_windows(
         ]
     if template == 'exported':
         json_path = str(tmp_path / 'DecisionTreeClassifier.json')
-        assert execute_cmd[-5] == json_path
+        assert execute_cmd[-1] == json_path
+
+
+@pytest.mark.parametrize(
+    'n_samples, n_jobs, n_batches',
+    [(3, 4, 1), (250, False, 1), (250, 1, 1), (250, 4, 2), (1000, 4, 4)],
+)
+def test_make_in_batches(
+    fitted_tree,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    n_samples: int,
+    n_jobs: bool | int,
+    n_batches: int,
+):
+    """Test the batches of samples which are passed to the processes."""
+    inputs = []
+
+    def run(cmd: list[str], **kwargs) -> CompletedProcess:
+        inputs.append(kwargs['input'])
+        n = kwargs['input'].count('\n')
+        stdout = '{"predict": 0, "predict_proba": [1, 0, 0]}\n' * n
+        return CompletedProcess(cmd, 0, stdout=stdout, stderr='')
+
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run)
+
+    x = np.arange(n_samples * 4, dtype=float).reshape(n_samples, 4)
+    est = Estimator(fitted_tree, language='js')
+    y_pred, y_proba = est.make(
+        x, n_jobs=n_jobs, check_dependencies=False, directory=tmp_path
+    )
+    assert len(inputs) == n_batches
+    # The batches contain all samples in their order, one sample per line:
+    lines = ''.join(inputs).splitlines()
+    assert lines == [' '.join(map(str, e)) for e in x.tolist()]
+    assert y_pred.shape == (n_samples,)
+    assert y_proba.shape == (n_samples, 3)
+
+
+def test_make_with_missing_results(
+    fitted_tree, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    """Test the failure if the ported estimator returns too few results."""
+
+    def run(cmd: list[str], **kwargs) -> CompletedProcess:
+        return CompletedProcess(cmd, 0, stdout='{"predict": 0}\n', stderr='')
+
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run)
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'sleep', lambda _: None)
+    est = Estimator(fitted_tree, language='js')
+    with pytest.raises(exception.ExecutionFailed, match='1 results of 3'):
+        est.make(
+            load_iris().data[:3], check_dependencies=False, directory=tmp_path
+        )
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+def test_make_with_samples_as_arguments(
+    fitted_tree,
+    tmp_root_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    language: str,
+    template: str,
+):
+    """Test the features of one sample as arguments of the ported estimator."""
+    cmds = []
+
+    def run_and_record(cmd: list[str], **kwargs) -> CompletedProcess:
+        cmds.append(cmd)
+        return run(cmd, **kwargs)
+
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run_and_record)
+
+    x = load_iris().data[::15]
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'make_with_samples_as_arguments'),
+            ('language', language),
+            ('template', template),
+        ],
+    )
+    est = Estimator(fitted_tree, language=language, template=template)
+    y_pred, y_proba = est.make(x, directory=tmp_dir, delete_created_files=False)
+    assert len(cmds) == 1  # one process predicts all samples
+    cmd = cmds[0]
+
+    for features, pred, proba in zip(x.tolist(), y_pred, y_proba, strict=True):
+        args = list(map(str, features))
+        proc = run(
+            cmd + args, capture_output=True, encoding='utf-8', check=True
+        )
+        out = json.loads(proc.stdout)
+        assert out['predict'] == pred
+        np.testing.assert_allclose(out['predict_proba'], proba, atol=1e-6)
+
+    # Empty lines and additional whitespace between the features:
+    samples = '\n  ' + '  '.join(map(str, x[0])) + ' \t\n\n'
+    proc = run(cmd, input=samples, capture_output=True, encoding='utf-8')
+    assert proc.returncode == 0
+    outs = [json.loads(line) for line in proc.stdout.splitlines() if line]
+    assert [out['predict'] for out in outs] == [y_pred[0]]
+
+    # A sample with the wrong number of features:
+    proc = run(cmd, input='1.0 2.0\n', capture_output=True, encoding='utf-8')
+    assert proc.returncode != 0
 
 
 def test_missing_compiler(fitted_tree, monkeypatch: pytest.MonkeyPatch):

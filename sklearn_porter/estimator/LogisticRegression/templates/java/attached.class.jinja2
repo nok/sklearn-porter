@@ -79,18 +79,9 @@ int[] labels = new int[decisions.length];
     }
     {% endif %}
 
+{% include 'samples' %}
+
     public static void main(String[] args) {
-        int nFeatures = {{ n_features }};
-        if (args.length != nFeatures) {
-            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
-        }
-
-        // Features:
-        double[] features = new double[args.length];
-        for (int i = 0, l = args.length; i < l; i++) {
-            features[i] = Double.parseDouble(args[i]);
-        }
-
         // Model data:
         {{ coeffs }}
         {{ inters }}
@@ -98,28 +89,31 @@ int[] labels = new int[decisions.length];
         // Estimator:
         {{ class_name }} clf = new {{ class_name }}(coeffs, inters);
 
-        {% if is_test or to_json %}
-        // Get JSON:
-        {{ 'int[]' if is_multilabel else label_type }} prediction = clf.predict(features);
-        {% if with_proba %}
-        double[] probabilities = clf.predictProba(features);
-        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'toJson(prediction)' }} + ", \"predict_proba\": " + Arrays.toString(probabilities) + "}");
-        {% else %}
-        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'toJson(prediction)' }} + "}");
-        {% endif %}
-        {% else %}
-        // Get class prediction:
-        {{ 'int[]' if is_multilabel else label_type }} prediction = clf.predict(features);
-        System.out.println("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}" + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }});
-        {% if with_proba %}
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            {% if is_test or to_json %}
+            // Get JSON:
+            {{ 'int[]' if is_multilabel else label_type }} prediction = clf.predict(features);
+            {% if with_proba %}
+            double[] probabilities = clf.predictProba(features);
+            System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'toJson(prediction)' }} + ", \"predict_proba\": " + Arrays.toString(probabilities) + "}");
+            {% else %}
+            System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'toJson(prediction)' }} + "}");
+            {% endif %}
+            {% else %}
+            // Get class prediction:
+            {{ 'int[]' if is_multilabel else label_type }} prediction = clf.predict(features);
+            System.out.println("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}" + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }});
+            {% if with_proba %}
 
-        // Get class probabilities:
-        double[] probabilities = clf.predictProba(features);
-        for (int i = 0; i < probabilities.length; i++) {
-            System.out.println("Probability of class #" + i + " : " + String.valueOf(probabilities[i]));
+            // Get class probabilities:
+            double[] probabilities = clf.predictProba(features);
+            for (int i = 0; i < probabilities.length; i++) {
+                System.out.println("Probability of class #" + i + " : " + String.valueOf(probabilities[i]));
+            }
+            {% endif %}
+            {% endif %}
         }
-        {% endif %}
-        {% endif %}
 
     }
 }

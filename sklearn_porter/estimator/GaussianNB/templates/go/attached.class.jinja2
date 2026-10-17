@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
@@ -11,6 +12,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 )
 
 {% include 'labels' %}
@@ -82,21 +84,9 @@ func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
 	return likelihoods
 }
 
+{% include 'samples' %}
+
 func main() {
-
-	if len(os.Args) != {{ n_features + 1 }} {
-		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features.")
-		os.Exit(1)
-	}
-
-	// Features:
-	var features []float64
-	for _, arg := range os.Args[1:] {
-		if n, err := strconv.ParseFloat(arg, 64); err == nil {
-			features = append(features, n)
-		}
-	}
-
 	// Model data:
 	{{ priors }}
 	{{ sigmas }}
@@ -105,23 +95,26 @@ func main() {
 	// Estimator:
 	clf := {{ class_name }}{priors, sigmas, thetas}
 
-	{% if is_test or to_json %}
-	// Get JSON:
-	prediction := clf.Predict(features)
-	probabilities := clf.PredictProba(features)
-	res, _ := json.Marshal(&Response{Predict: prediction, PredictProba: probabilities})
-	fmt.Println(string(res))
-	{% else %}
-	// Get class prediction:
-	prediction := clf.Predict(features)
-	fmt.Printf("Predicted class: %v\n", prediction)
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		prediction := clf.Predict(features)
+		probabilities := clf.PredictProba(features)
+		res, _ := json.Marshal(&Response{Predict: prediction, PredictProba: probabilities})
+		fmt.Println(string(res))
+		{% else %}
+		// Get class prediction:
+		prediction := clf.Predict(features)
+		fmt.Printf("Predicted class: %v\n", prediction)
 
-	// Get class probabilities:
-	probabilities := clf.PredictProba(features)
-	for i, probability := range probabilities {
-		fmt.Printf("Probability of class #%d : %f\n", i, probability)
-	}
-	{% endif %}
+		// Get class probabilities:
+		probabilities := clf.PredictProba(features)
+		for i, probability := range probabilities {
+			fmt.Printf("Probability of class #%d : %f\n", i, probability)
+		}
+		{% endif %}
+	})
 
 }
 {% endblock %}

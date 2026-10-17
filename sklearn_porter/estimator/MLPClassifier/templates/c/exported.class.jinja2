@@ -181,70 +181,69 @@ void predict_proba(double *result, double features[N_FEATURES]) {
     free(outputs);
 }
 
-int main(int argc, const char *argv[]) {
+{% include 'samples' %}
 
-    if (argc != N_FEATURES + 2) {
-        fprintf(stderr, "You have to pass the path to the model data and %d features.\n", N_FEATURES);
+int main(int argc, const char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "You have to pass the path to the model data.\n");
         return 1;
     }
 
     /* Model data: */
     load(argv[1]);
 
-    /* Features: */
+    /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
-    for (int i = 2; i < argc; i++) {
-        features[i-2] = atof(argv[i]);
-    }
-
-    {% if is_test or to_json %}
-    /* Get JSON: */
-    double probabilities[n_classes()];
-    predict_proba(probabilities, features);
-    {% if is_multilabel %}
-    int labels[n_classes()];
-    predict(labels, features);
-    printf("{\"predict\": [");
-    for (int i = 0; i < n_classes(); i++) {
-        printf("%d", labels[i]);
-        if (i < (n_classes() - 1)) {
-            printf(",");
+    while (read_features(features, argc, argv, 2)) {
+        {% if is_test or to_json %}
+        /* Get JSON: */
+        double probabilities[n_classes()];
+        predict_proba(probabilities, features);
+        {% if is_multilabel %}
+        int labels[n_classes()];
+        predict(labels, features);
+        printf("{\"predict\": [");
+        for (int i = 0; i < n_classes(); i++) {
+            printf("%d", labels[i]);
+            if (i < (n_classes() - 1)) {
+                printf(",");
+            }
         }
-    }
-    printf("], \"predict_proba\": [");
-    {% else %}
-    printf("{\"predict\": ");
-    print_label(predict(features));
-    printf(", \"predict_proba\": [");
-    {% endif %}
-    for (int i = 0; i < n_classes(); i++) {
-        printf("%.17g", probabilities[i]);
-        if (i < (n_classes() - 1)) {
-            printf(",");
+        printf("], \"predict_proba\": [");
+        {% else %}
+        printf("{\"predict\": ");
+        print_label(predict(features));
+        printf(", \"predict_proba\": [");
+        {% endif %}
+        for (int i = 0; i < n_classes(); i++) {
+            printf("%.17g", probabilities[i]);
+            if (i < (n_classes() - 1)) {
+                printf(",");
+            }
         }
-    }
-    printf("]}");
-    {% else %}
-    /* Get class prediction: */
-    {% if is_multilabel %}
-    int labels[n_classes()];
-    predict(labels, features);
-    for (int i = 0; i < n_classes(); i++) {
-        printf("Predicted label #%d: %d\n", i, labels[i]);
-    }
-    {% else %}
-    printf("Predicted class: ");
-    print_label(predict(features));
-    printf("\n");
-    {% endif %}
+        printf("]}\n");
+        {% else %}
+        /* Get class prediction: */
+        {% if is_multilabel %}
+        int labels[n_classes()];
+        predict(labels, features);
+        for (int i = 0; i < n_classes(); i++) {
+            printf("Predicted label #%d: %d\n", i, labels[i]);
+        }
+        {% else %}
+        printf("Predicted class: ");
+        print_label(predict(features));
+        printf("\n");
+        {% endif %}
 
-    /* Get class probabilities: */
-    double probabilities[n_classes()];
-    predict_proba(probabilities, features);
-    for (int i = 0; i < n_classes(); i++) {
-        printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+        /* Get class probabilities: */
+        double probabilities[n_classes()];
+        predict_proba(probabilities, features);
+        for (int i = 0; i < n_classes(); i++) {
+            printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+        }
+        {% endif %}
     }
-    {% endif %}
 
     return 0;
 }

@@ -91,16 +91,11 @@ class {{ class_name }} {
 {% endif %}
     }
 
-    public static void main(String[] args) throws IOException {
-        int nFeatures = {{ n_features }};
-        if (args.length != (nFeatures + 1) || !args[0].endsWith(".json")) {
-            throw new IllegalArgumentException("You have to pass the path to the exported model data and " +  String.valueOf(nFeatures) + " features.");
-        }
+{% include 'samples' %}
 
-        // Features:
-        double[] features = new double[args.length - 1];
-        for (int i = 1, l = args.length; i < l; i++) {
-            features[i - 1] = Double.parseDouble(args[i]);
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
         }
 
         // Model data:
@@ -109,18 +104,21 @@ class {{ class_name }} {
         // Estimator:
         {{ class_name }} reg = new {{ class_name }}(modelData);
 
-        {% if is_test or to_json %}
-        // Get JSON:
-        double[] prediction = reg.predict(features);
-        String values = prediction.length == 1 ? String.valueOf(prediction[0]) : Arrays.toString(prediction);
-        System.out.println("{\"predict\": " + values + "}");
-        {% else %}
-        // Get predicted values:
-        double[] prediction = reg.predict(features);
-        for (int i = 0; i < prediction.length; i++) {
-            System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            {% if is_test or to_json %}
+            // Get JSON:
+            double[] prediction = reg.predict(features);
+            String values = prediction.length == 1 ? String.valueOf(prediction[0]) : Arrays.toString(prediction);
+            System.out.println("{\"predict\": " + values + "}");
+            {% else %}
+            // Get predicted values:
+            double[] prediction = reg.predict(features);
+            for (int i = 0; i < prediction.length; i++) {
+                System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
+            }
+            {% endif %}
         }
-        {% endif %}
 
     }
 }

@@ -56,18 +56,9 @@ class {{ class_name }} {
         return LABELS[this.predictIndex(features)];
     }
 
+{% include 'samples' %}
+
     public static void main(String[] args) {
-        int nFeatures = {{ n_features }};
-        if (args.length != nFeatures) {
-            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
-        }
-
-        // Features:
-        double[] features = new double[args.length];
-        for (int i = 0, l = args.length; i < l; i++) {
-            features[i] = Double.parseDouble(args[i]);
-        }
-
         // Model data:
         {{ coeffs }}
         {{ inters }}
@@ -75,15 +66,18 @@ class {{ class_name }} {
         // Estimator:
         {{ class_name }} clf = new {{ class_name }}(coeffs, inters);
 
-        {% if is_test or to_json %}
-        // Get JSON:
-        {{ label_type }} prediction = clf.predict(features);
-        System.out.println("{\"predict\": " + toJson(prediction) + "}");
-        {% else %}
-        // Get class prediction:
-        {{ label_type }} prediction = clf.predict(features);
-        System.out.println("Predicted class: " + prediction);
-        {% endif %}
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            {% if is_test or to_json %}
+            // Get JSON:
+            {{ label_type }} prediction = clf.predict(features);
+            System.out.println("{\"predict\": " + toJson(prediction) + "}");
+            {% else %}
+            // Get class prediction:
+            {{ label_type }} prediction = clf.predict(features);
+            System.out.println("Predicted class: " + prediction);
+            {% endif %}
+        }
 
     }
 }

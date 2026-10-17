@@ -1,0 +1,25 @@
+    // Read the features of one sample from the arguments or of several
+    // samples (one per line) from the standard input:
+    private static Iterable<double[]> readSamples(String[] args, int offset) {
+        if (args.length > offset) {
+            double[] features = parseFeatures(java.util.Arrays.copyOfRange(args, offset, args.length));
+            return java.util.Collections.singletonList(features);
+        }
+        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in));
+        return () -> reader.lines()
+            .map(String::trim)
+            .filter(line -> !line.isEmpty())
+            .map(line -> parseFeatures(line.split("\\s+")))
+            .iterator();
+    }
+
+    private static double[] parseFeatures(String[] values) {
+        if (values.length != {{ n_features }}) {
+            throw new IllegalArgumentException("You have to pass {{ n_features }} features per sample.");
+        }
+        double[] features = new double[values.length];
+        for (int i = 0; i < values.length; i++) {
+            features[i] = values[i].equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(values[i]);
+        }
+        return features;
+    }

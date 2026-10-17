@@ -109,37 +109,32 @@ class {{ class_name }} {
         return normVals(compute(features));
     }
 
+{% include 'samples' %}
+
     public static void main(String[] args) {
-        int nFeatures = {{ n_features }};
-        if (args.length != nFeatures) {
-            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
-        }
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            {% if is_test or to_json %}
+            // Get JSON:
+            {{ label_type }}{{ '[]' if is_multi_output }} prediction = {{ class_name }}.predict(features);
+            {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = {{ class_name }}.predictProba(features);
+            System.out.println("{\"predict\": " + toJson(prediction) + ", \"predict_proba\": " + String.join(",", {{ 'Arrays.deepToString(probabilities)' if is_multi_output else 'Arrays.toString(probabilities)' }}) + "}");
+            {% else %}
+            // Get class prediction:
+            {{ label_type }}{{ '[]' if is_multi_output }} prediction = {{ class_name }}.predict(features);
+            System.out.println("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" + {{ 'Arrays.toString(prediction)' if is_multi_output else 'String.valueOf(prediction)' }});
 
-        // Features:
-        double[] features = new double[args.length];
-        for (int i = 0, l = args.length; i < l; i++) {
-            features[i] = args[i].equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(args[i]);
-        }
-
-        {% if is_test or to_json %}
-        // Get JSON:
-        {{ label_type }}{{ '[]' if is_multi_output }} prediction = {{ class_name }}.predict(features);
-        {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = {{ class_name }}.predictProba(features);
-        System.out.println("{\"predict\": " + toJson(prediction) + ", \"predict_proba\": " + String.join(",", {{ 'Arrays.deepToString(probabilities)' if is_multi_output else 'Arrays.toString(probabilities)' }}) + "}");
-        {% else %}
-        // Get class prediction:
-        {{ label_type }}{{ '[]' if is_multi_output }} prediction = {{ class_name }}.predict(features);
-        System.out.println("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" + {{ 'Arrays.toString(prediction)' if is_multi_output else 'String.valueOf(prediction)' }});
-
-        // Get class probabilities:
-        {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = {{ class_name }}.predictProba(features);
-        for (int i = 0; i < probabilities.length; i++) {
-            System.out.print({{ 'Arrays.toString(probabilities[i])' if is_multi_output else 'String.valueOf(probabilities[i])' }});
-            if (i != probabilities.length - 1) {
-                System.out.print(",");
+            // Get class probabilities:
+            {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = {{ class_name }}.predictProba(features);
+            for (int i = 0; i < probabilities.length; i++) {
+                System.out.print({{ 'Arrays.toString(probabilities[i])' if is_multi_output else 'String.valueOf(probabilities[i])' }});
+                if (i != probabilities.length - 1) {
+                    System.out.print(",");
+                }
             }
+            System.out.println();
+            {% endif %}
         }
-        {% endif %}
 
     }
 }

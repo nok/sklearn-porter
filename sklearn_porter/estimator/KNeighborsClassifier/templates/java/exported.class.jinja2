@@ -269,12 +269,11 @@ class {{ class_name }} {
     }
 {% endif %}
 
-    public static void main(String[] args) throws IOException {
+{% include 'samples' %}
 
-        // Features:
-        double[] features = new double[args.length-1];
-        for (int i = 1, l = args.length; i < l; i++) {
-            features[i - 1] = Double.parseDouble(args[i]);
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
         }
 
         // Model data:
@@ -283,25 +282,29 @@ class {{ class_name }} {
         // Estimator:
         {{ class_name }} clf = new {{ class_name }}(modelData);
 
-        {% if is_test or to_json %}
-        // Get JSON:
-        {{ label_type }}{{ '[]' if is_multi_output }} prediction = clf.predict(features);
-        {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.predictProba(features);
-        System.out.println("{\"predict\": " + toJson(prediction) + ", \"predict_proba\": " + String.join(",", {{ 'Arrays.deepToString(probabilities)' if is_multi_output else 'Arrays.toString(probabilities)' }}) + "}");
-        {% else %}
-        // Get class prediction:
-        {{ label_type }}{{ '[]' if is_multi_output }} prediction = clf.predict(features);
-        System.out.println("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" + {{ 'Arrays.toString(prediction)' if is_multi_output else 'String.valueOf(prediction)' }});
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            {% if is_test or to_json %}
+            // Get JSON:
+            {{ label_type }}{{ '[]' if is_multi_output }} prediction = clf.predict(features);
+            {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.predictProba(features);
+            System.out.println("{\"predict\": " + toJson(prediction) + ", \"predict_proba\": " + String.join(",", {{ 'Arrays.deepToString(probabilities)' if is_multi_output else 'Arrays.toString(probabilities)' }}) + "}");
+            {% else %}
+            // Get class prediction:
+            {{ label_type }}{{ '[]' if is_multi_output }} prediction = clf.predict(features);
+            System.out.println("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" + {{ 'Arrays.toString(prediction)' if is_multi_output else 'String.valueOf(prediction)' }});
 
-        // Get class probabilities:
-        {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.predictProba(features);
-        for (int i = 0; i < probabilities.length; i++) {
-            System.out.print({{ 'Arrays.toString(probabilities[i])' if is_multi_output else 'String.valueOf(probabilities[i])' }});
-            if (i != probabilities.length - 1) {
-                System.out.print(",");
+            // Get class probabilities:
+            {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.predictProba(features);
+            for (int i = 0; i < probabilities.length; i++) {
+                System.out.print({{ 'Arrays.toString(probabilities[i])' if is_multi_output else 'String.valueOf(probabilities[i])' }});
+                if (i != probabilities.length - 1) {
+                    System.out.print(",");
+                }
             }
+            System.out.println();
+            {% endif %}
         }
-        {% endif %}
 
     }
 

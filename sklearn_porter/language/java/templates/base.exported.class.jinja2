@@ -16,5 +16,7 @@
  *         $ javac -cp gson.jar {{ class_name }}.java
  *     3. Execute a prediction:
  *         $ java -cp .:gson.jar {{ class_name }} {{ class_name }}.json feature_1 ... feature_{{ n_features }}
+ *     4. Execute the predictions of several samples (one per line):
+ *         $ java -cp .:gson.jar {{ class_name }} {{ class_name }}.json < samples.txt
  */
 {% block content %}{% endblock %}

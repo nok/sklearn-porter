@@ -58,25 +58,19 @@ void predict(double *values, double features[N_FEATURES]) {
     }
 }
 
+{% include 'samples' %}
+
 int main(int argc, const char *argv[]) {
-
-    if (argc != N_FEATURES + 1) {
-        fprintf(stderr, "You have to pass %d features.\n", N_FEATURES);
-        return 1;
-    }
-
-    /* Features: */
+    /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
-    for (int i = 1; i < argc; i++) {
-        features[i-1] = atof(argv[i]);
+    while (read_features(features, argc, argv, 1)) {
+        double prediction[N_OUTPUTS];
+        predict(prediction, features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
     }
-
-    double prediction[N_OUTPUTS];
-    predict(prediction, features);
-
-    {% filter indent(4, True) %}
-    {% include 'output' %}
-    {% endfilter %}
 
     return 0;
 }

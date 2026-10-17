@@ -1,0 +1,36 @@
+// Read the features of one sample from the arguments or of several samples
+// (one per line) from the standard input and pass them to the callback:
+func readSamples(args []string, callback func(features []float64)) {
+	if len(args) > 0 {
+		callback(parseFeatures(args))
+		return
+	}
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Buffer(make([]byte, 64*1024), 1024*1024*1024)
+	for scanner.Scan() {
+		if values := strings.Fields(scanner.Text()); len(values) > 0 {
+			callback(parseFeatures(values))
+		}
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}
+
+func parseFeatures(values []string) []float64 {
+	if len(values) != {{ n_features }} {
+		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features per sample.")
+		os.Exit(1)
+	}
+	features := make([]float64, len(values))
+	for i, value := range values {
+		feature, err := strconv.ParseFloat(value, 64)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		features[i] = feature
+	}
+	return features
+}

@@ -13,22 +13,23 @@ class {{ class_name }}
 end
 
 if __FILE__ == $0
-	if ARGV.length != {{ n_features }}
-		raise "You have to pass {{ n_features }} features."
-	end
-
-	# Features:
-	features = ARGV.collect { |value| value.downcase == 'nan' ? Float::NAN : value.to_f }
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
 
 	# Model data:
 	{{ model }}
 
 	# Estimator:
 	reg = {{ class_name }}.new model
-	prediction = reg.predict features
 
-	{% filter indent('\t', True) %}
-	{% include 'output' %}
-	{% endfilter %}
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		prediction = reg.predict features
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	end
 end
 {% endblock %}

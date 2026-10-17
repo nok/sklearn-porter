@@ -65,15 +65,12 @@ class {{ class_name }} {
 
 }
 
-if ($argc > 1) {
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
 
-    // Features:
     array_shift($argv);
-    $features = array_map('floatval', $argv);
-    if (count($features) != {{ n_features }}) {
-        fwrite(STDERR, "You have to pass {{ n_features }} features.\n");
-        exit(1);
-    }
 
     // Model data:
     {{ layers }}
@@ -83,21 +80,24 @@ if ($argc > 1) {
     // Estimator:
     $reg = new {{ class_name }}('{{ hidden_activation }}', $layers, $weights, $bias);
 
-    {% if is_test or to_json %}
-    // Get JSON:
-    $prediction = $reg->predict($features);
-    fwrite(STDOUT, json_encode(array("predict" => $prediction)));
-    {% else %}
-    // Get predicted values:
-    $prediction = $reg->predict($features);
-    if (is_array($prediction)) {
-        for ($i = 0; $i < count($prediction); $i++) {
-            fwrite(STDOUT, "Predicted value #" . strval($i) . " = " . strval($prediction[$i]) . "\n");
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        {% if is_test or to_json %}
+        // Get JSON:
+        $prediction = $reg->predict($features);
+        fwrite(STDOUT, json_encode(array("predict" => $prediction)) . "\n");
+        {% else %}
+        // Get predicted values:
+        $prediction = $reg->predict($features);
+        if (is_array($prediction)) {
+            for ($i = 0; $i < count($prediction); $i++) {
+                fwrite(STDOUT, "Predicted value #" . strval($i) . " = " . strval($prediction[$i]) . "\n");
+            }
+        } else {
+            fwrite(STDOUT, "Predicted value: " . strval($prediction) . "\n");
         }
-    } else {
-        fwrite(STDOUT, "Predicted value: " . strval($prediction) . "\n");
+        {% endif %}
     }
-    {% endif %}
 
 }
 {% endblock %}
