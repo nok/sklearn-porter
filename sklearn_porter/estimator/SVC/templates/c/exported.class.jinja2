@@ -33,7 +33,9 @@ void load(const char *path) {
     json_free(data);
 }
 
-int predict(double features[N_FEATURES]) {
+{% include 'labels' %}
+
+int predict_index(double features[N_FEATURES]) {
     int i, j, k, d, l;
     double kernels[N_VECTORS];
     double kernel;
@@ -164,6 +166,10 @@ int predict(double features[N_FEATURES]) {
     return classIdx;
 }
 
+Label predict(double features[N_FEATURES]) {
+    return labels[predict_index(features)];
+}
+
 int main(int argc, const char *argv[]) {
 
     if (argc != N_FEATURES + 2) {
@@ -182,10 +188,14 @@ int main(int argc, const char *argv[]) {
 
     {% if is_test or to_json %}
     /* Get JSON: */
-    printf("{\"predict\": %d}", predict(features));
+    printf("{\"predict\": ");
+    print_label(predict(features));
+    printf("}");
     {% else %}
     /* Get class prediction: */
-    printf("Predicted class: #%d\n", predict(features));
+    printf("Predicted class: ");
+    print_label(predict(features));
+    printf("\n");
     {% endif %}
 
     return 0;

@@ -21,6 +21,10 @@ public static double[] predictProba(double[] features) {
     return probas;
 }
 
-public static int predict(double[] features) {
+public static int predictIndex(double[] features) {
     return {{ class_name }}.findMax({{ class_name }}.predictProba(features));
+}
+
+public static {{ label_type }} predict(double[] features) {
+    return LABELS[predictIndex(features)];
 }

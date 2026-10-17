@@ -11,8 +11,10 @@ class {{ class_name }} {
         $this->inters = $inters;
     }
 
+{% include 'labels' %}
+
     {% if is_binary %}
-    public function predict($features) {
+    public function predictIndex($features) {
         $prob = 0.;
         for ($i = 0, $il = count($this->coeffs); $i < $il; $i++) {
             $prob += $this->coeffs[$i] * $features[$i];
@@ -23,7 +25,7 @@ class {{ class_name }} {
         return 0;
     }
     {% else %}
-    public function predict($features) {
+    public function predictIndex($features) {
         $classIdx = -1;
         $classVal = null;
         for ($i = 0, $il = count($this->inters); $i < $il; $i++) {
@@ -39,6 +41,10 @@ class {{ class_name }} {
         return $classIdx;
     }
     {% endif %}
+
+    public function predict($features) {
+        return self::LABELS[$this->predictIndex($features)];
+    }
 
 }
 
@@ -62,7 +68,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    fwrite(STDOUT, "Predicted class: " . strval($prediction) . "\n");
     {% endif %}
 
 }

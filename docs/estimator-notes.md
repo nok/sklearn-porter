@@ -1,9 +1,14 @@
 # Estimator Notes
 
+## Class labels
+
+- The ported classifiers return the labels of the classes like scikit-learn (`classes_`), e.g. `-1` and `1`, `1.5` or `'setosa'`. The labels are stored in the ported code as a constant (`labels` in C and Go, `LABELS` in the other languages), also by the `exported` template.
+- `predict_index` (`predictIndex` in Java, JavaScript and PHP and `PredictIndex` in Go) returns the index of the predicted class instead, which is also the position of its probability in the result of `predict_proba`.
+
 ## Multilabel and multi-output classification
 
-- The classifiers `RidgeClassifier` and `MLPClassifier` also support multilabel classification, i.e. if they were fitted on a label indicator matrix, the ported `predict` returns one binary value per label.
-- The classifiers `DecisionTreeClassifier`, `RandomForestClassifier`, `ExtraTreesClassifier` and `KNeighborsClassifier` also support multi-output classification, i.e. if they were fitted on a target with several columns, the ported `predict` returns one class per output. Like in scikit-learn, the ported `predict_proba` returns the class probabilities of each output.
+- The classifiers `RidgeClassifier` and `MLPClassifier` also support multilabel classification, i.e. if they were fitted on a label indicator matrix, the ported `predict` returns one binary value per label (without `predict_index`).
+- The classifiers `DecisionTreeClassifier`, `RandomForestClassifier`, `ExtraTreesClassifier` and `KNeighborsClassifier` also support multi-output classification, i.e. if they were fitted on a target with several columns, the ported `predict` returns the label of one class per output. Like in scikit-learn, the ported `predict_proba` returns the class probabilities of each output.
 
 ## BernoulliNB
 

@@ -7,6 +7,8 @@ from math import isinf
 import numpy as np
 from scipy.sparse import issparse
 
+from sklearn_porter import exceptions as exception
+
 options = {'logging.level': ERROR}
 
 
@@ -184,6 +186,62 @@ def get_output_classes(estimator) -> list:
     if isinstance(classes, list):
         return [len(c) for c in classes]
     return [len(classes)]
+
+
+# The kinds of the supported labels and the ranges of integer labels, which
+# have to fit into the `int` type of C and Java:
+LABEL_KINDS = {bool: 'int', int: 'int', float: 'double', str: 'str'}
+INT_RANGE = (-(2**31), 2**31 - 1)
+
+
+def get_labels(estimator) -> tuple[list, str]:
+    """
+    Get the labels of the classes of a fitted classifier and their kind.
+
+    The ported classifiers return the label of the predicted class like
+    scikit-learn. All labels must have the same kind, which defines their
+    type in the ported code: `int` (also of booleans), `double` or `str`.
+    The labels of multi-output classifiers are concatenated like their
+    classes (see `get_output_classes()`).
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The fitted classifier.
+
+    Returns
+    -------
+    The labels and their kind, e.g. `([1, 2, 3], 'int')`.
+
+    Raises
+    ------
+    NotSupportedYetError
+        If the labels have different or unsupported types, are infinite or
+        NaN, or don't fit into 32-bit integers.
+    """
+    classes = estimator.classes_
+    if not isinstance(classes, list):
+        classes = [classes]
+    # `tolist()` converts the NumPy scalars to Python scalars:
+    labels = [label for c in classes for label in np.asarray(c).tolist()]
+    kinds = {LABEL_KINDS.get(type(label), '') for label in labels}
+    if len(kinds) != 1 or '' in kinds:
+        types = ', '.join(sorted({type(label).__name__ for label in labels}))
+        msg = (
+            'The labels of all classes must have the same type '
+            f'(int, float or str), but they are of type: {types}.'
+        )
+        raise exception.NotSupportedYetError(msg)
+    kind = kinds.pop()
+    if kind == 'int':
+        labels = [int(label) for label in labels]
+        if not all(INT_RANGE[0] <= label <= INT_RANGE[1] for label in labels):
+            msg = 'The labels of the classes must be 32-bit integers.'
+            raise exception.NotSupportedYetError(msg)
+    elif kind == 'double' and not np.isfinite(labels).all():
+        msg = "The labels of the classes can't be infinite or NaN."
+        raise exception.NotSupportedYetError(msg)
+    return labels, kind
 
 
 def get_class_fractions(tree) -> list:

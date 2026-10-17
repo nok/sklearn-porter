@@ -12,6 +12,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.utils import get_labels
 
 
 class GaussianNB(EstimatorBase, EstimatorApiABC):
@@ -63,9 +64,13 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
                 self.estimator_name
             ) from None
 
+        # The labels of the classes, which the ported classifier returns:
+        labels, label_kind = get_labels(est)
         self.meta_info = dict(
             n_features=len(est.var_[0]),
             n_classes=len(est.classes_),  # ty: ignore[invalid-argument-type]
+            labels=labels,
+            label_kind=label_kind,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

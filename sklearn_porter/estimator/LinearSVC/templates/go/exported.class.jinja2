@@ -36,14 +36,16 @@ type {{ class_name }} struct {
 }
 {% endif %}
 
+{% include 'labels' %}
+
 {% if is_test or to_json %}
 type Response struct {
-	Predict int `json:"predict"`
+	Predict {{ label_type }} `json:"predict"`
 }
 {% endif %}
 
 {% if is_binary %}
-func (svc {{ class_name }}) Predict(features []float64) int {
+func (svc {{ class_name }}) PredictIndex(features []float64) int {
 	var prob float64
 	for i := 0; i < len(svc.Coeffs); i++ {
 		prob = prob + svc.Coeffs[i] * features[i]
@@ -54,7 +56,7 @@ func (svc {{ class_name }}) Predict(features []float64) int {
 	return 0
 }
 {% else %}
-func (svc {{ class_name }}) Predict(features []float64) int {
+func (svc {{ class_name }}) PredictIndex(features []float64) int {
 	classIdx := 0
 	classVal := math.Inf(-1)
 	outerCount, innerCount := len(svc.Coeffs), len(svc.Coeffs[0])
@@ -71,6 +73,10 @@ func (svc {{ class_name }}) Predict(features []float64) int {
 	return classIdx
 }
 {% endif %}
+
+func (svc {{ class_name }}) Predict(features []float64) {{ label_type }} {
+	return labels[svc.PredictIndex(features)]
+}
 
 func main() {
 
@@ -102,7 +108,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
-	fmt.Printf("Predicted class: #%d\n", prediction)
+	fmt.Printf("Predicted class: %v\n", prediction)
 	{% endif %}
 
 }

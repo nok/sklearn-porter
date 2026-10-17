@@ -1,3 +1,5 @@
+from json import dumps
+
 from sklearn_porter.language.LanguageABC import LanguageABC
 
 
@@ -39,6 +41,11 @@ class JavaScript(LanguageABC):
 
         # Primitive data types:
         'int':          '',
-        'double':       ''
+        'double':       '',
+        'str':          ''
     }
     # fmt: on
+
+    @staticmethod
+    def str_literal(value: str) -> str:
+        return dumps(value)

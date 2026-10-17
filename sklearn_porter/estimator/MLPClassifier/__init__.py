@@ -6,6 +6,7 @@ import numpy as np
 from loguru import logger as L
 
 # scikit-learn
+from sklearn.base import is_classifier
 from sklearn.neural_network import MLPClassifier as MLPClassifierClass
 from sklearn.neural_network import MLPRegressor as MLPRegressorClass
 
@@ -14,7 +15,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import is_multilabel
+from sklearn_porter.utils import get_labels, is_multilabel
 
 
 class MLPClassifier(EstimatorBase, EstimatorApiABC):
@@ -78,6 +79,10 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             # predict one binary value per label:
             is_multilabel=is_multilabel(est),
         )
+        if is_classifier(est):  # not the subclass MLPRegressor
+            # The labels of the classes, which the ported classifier returns:
+            labels, label_kind = get_labels(est)
+            self.meta_info.update(labels=labels, label_kind=label_kind)
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 

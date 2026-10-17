@@ -14,6 +14,8 @@ var {{ class_name }} = function() {
 
     that.forest = [];
 
+{% include 'labels' %}
+
     {{ method }}
 };
 
@@ -46,7 +48,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("Predicted class: #" + prediction);
+    console.log("Predicted class: " + prediction);
 
     // Get class probabilities:
     var probabilities = clf.predictProba(features);

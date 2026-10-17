@@ -18,6 +18,8 @@ int find_max(const double nums[N_CLASSES]) {
     return idx;
 }
 
+{% include 'labels' %}
+
 {{ method }}
 
 int main(int argc, const char *argv[]) {
@@ -37,7 +39,9 @@ int main(int argc, const char *argv[]) {
     /* Get JSON: */
     double probabilities[N_CLASSES];
     predict_proba(probabilities, features);
-    printf("{\"predict\": %d, \"predict_proba\": [", predict(features));
+    printf("{\"predict\": ");
+    print_label(predict(features));
+    printf(", \"predict_proba\": [");
     for (int i = 0; i < N_CLASSES; i++) {
         printf("%.17g", probabilities[i]);
         if (i < (N_CLASSES - 1)) {
@@ -47,7 +51,9 @@ int main(int argc, const char *argv[]) {
     printf("]}");
     {% else %}
     /* Get class prediction: */
-    printf("Predicted class: #%d\n", predict(features));
+    printf("Predicted class: ");
+    print_label(predict(features));
+    printf("\n");
 
     /* Get class probabilities: */
     double probabilities[N_CLASSES];

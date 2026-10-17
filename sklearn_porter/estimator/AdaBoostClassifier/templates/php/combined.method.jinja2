@@ -19,6 +19,10 @@ public function predictProba($features) {
     return $probas;
 }
 
-public function predict($features) {
+public function predictIndex($features) {
     return $this->findMax($this->predictProba($features));
+}
+
+public function predict($features) {
+    return self::LABELS[$this->predictIndex($features)];
 }

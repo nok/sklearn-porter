@@ -11,6 +11,8 @@ import (
 	"strconv"
 )
 
+{% include 'labels' %}
+
 type {{ class_name }} struct {
 	Layers []int `json:"layers"`
 	Weights [][][]float64 `json:"weights"`
@@ -21,7 +23,7 @@ type {{ class_name }} struct {
 
 {% if is_test or to_json %}
 type Response struct {
-	Predict {{ '[]int' if is_multilabel else 'int' }} `json:"predict"`
+	Predict {{ '[]int' if is_multilabel else label_type }} `json:"predict"`
 	PredictProba []float64 `json:"predict_proba"`
 }
 
@@ -83,7 +85,7 @@ func (clf {{ class_name }}) feedForward(features []float64) []float64 {
 	return inputs
 }
 
-func (clf {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multilabel else 'int' }} {
+func (clf {{ class_name }}) {{ 'Predict' if is_multilabel else 'PredictIndex' }}(features []float64) {{ '[]int' if is_multilabel else 'int' }} {
 	var outputs = clf.feedForward(features)
 	{% if is_multilabel %}
 	labels := make([]int, len(outputs))
@@ -103,6 +105,12 @@ func (clf {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multila
 	return clf.findMax(outputs)
 	{% endif %}
 }
+{% if not is_multilabel %}
+
+func (clf {{ class_name }}) Predict(features []float64) {{ label_type }} {
+	return labels[clf.PredictIndex(features)]
+}
+{% endif %}
 
 func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
 	var outputs = clf.feedForward(features)
@@ -150,7 +158,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
-	fmt.Printf("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}%v\n", prediction)
+	fmt.Printf("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}%v\n", prediction)
 
 	// Get class probabilities:
 	probabilities := clf.PredictProba(features)

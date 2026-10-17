@@ -116,7 +116,9 @@ class {{ class_name }} {
         return this.clf.network[this.clf.network.length - 1].clone();
     }
 
-    public {{ 'int[]' if is_multilabel else 'int' }} predict(double[] neurons) {
+{% include 'labels' %}
+
+    public {{ 'int[]' if is_multilabel else 'int' }} {{ 'predict' if is_multilabel else 'predictIndex' }}(double[] neurons) {
         double[] lastLayer = this.feedForward(neurons);
         {% if is_multilabel %}
         int[] labels = new int[lastLayer.length];
@@ -134,6 +136,12 @@ class {{ class_name }} {
         return findMax(lastLayer);
         {% endif %}
     }
+{% if not is_multilabel %}
+
+    public {{ label_type }} predict(double[] features) {
+        return LABELS[this.predictIndex(features)];
+    }
+{% endif %}
 
     public double[] predictProba(double[] neurons) {
         double[] lastLayer = this.feedForward(neurons);
@@ -163,13 +171,13 @@ class {{ class_name }} {
 
         {% if is_test or to_json %}
         // Get JSON:
-        {{ 'int[]' if is_multilabel else 'int' }} prediction = clf.predict(features);
+        {{ 'int[]' if is_multilabel else label_type }} prediction = clf.predict(features);
         double[] probabilities = clf.predictProba(features);
-        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }} + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
+        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'toJson(prediction)' }} + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
         {% else %}
         // Get class prediction:
-        {{ 'int[]' if is_multilabel else 'int' }} prediction = clf.predict(features);
-        System.out.println("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }});
+        {{ 'int[]' if is_multilabel else label_type }} prediction = clf.predict(features);
+        System.out.println("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}" + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }});
 
         // Get class probabilities:
         double[] probabilities = clf.predictProba(features);

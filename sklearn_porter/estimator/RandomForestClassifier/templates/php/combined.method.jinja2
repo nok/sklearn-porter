@@ -20,6 +20,23 @@ public function predictProba($features) {
 }
 {% endif %}
 
-public function predict($features) {
+public function predictIndex($features) {
     return $this->findMax($this->predictProba($features));
 }
+
+{% if is_multi_output %}
+// Predict the label of each output:
+public function predict($features) {
+    $labels = array();
+    $offset = 0;
+    foreach ($this->predictIndex($features) as $j => $idx) {
+        $labels[] = self::LABELS[$offset + $idx];
+        $offset += self::OUTPUT_CLASSES[$j];
+    }
+    return $labels;
+}
+{% else %}
+public function predict($features) {
+    return self::LABELS[$this->predictIndex($features)];
+}
+{% endif %}

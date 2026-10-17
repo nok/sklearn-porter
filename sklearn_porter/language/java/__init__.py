@@ -48,6 +48,7 @@ class Java(LanguageABC):
         # Primitive data types:
         'int':          'int',
         'double':       'double',
+        'str':          'String'
     }
     # fmt: on
 
@@ -55,3 +56,21 @@ class Java(LanguageABC):
         'https://repo1.maven.org/maven2/'
         'com/google/code/gson/gson/2.9.1/gson-2.9.1.jar'
     )
+
+    @staticmethod
+    def str_literal(value: str) -> str:
+        # Java translates Unicode escapes before it parses the source code,
+        # so only characters outside of ASCII are escaped by their UTF-16
+        # code units, all other non-printable characters as octal numbers:
+        chars = []
+        for char in value:
+            if 32 <= ord(char) < 127 and char not in '"\\':
+                chars.append(char)
+            elif ord(char) < 128:
+                chars.append(f'\\{ord(char):03o}')
+            else:
+                units = char.encode('utf-16-be', 'surrogatepass')
+                for i in range(0, len(units), 2):
+                    unit = int.from_bytes(units[i : i + 2], 'big')
+                    chars.append(f'\\u{unit:04x}')
+        return '"' + ''.join(chars) + '"'

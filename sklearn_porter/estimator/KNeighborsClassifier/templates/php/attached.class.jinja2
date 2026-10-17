@@ -106,10 +106,29 @@ class {{ class_name }} {
         return pow($dist, 1. / $q);
     }
 
-    public function predict($features) {
+{% include 'labels' %}
+
+    public function predictIndex($features) {
         $classProbas = $this->predictProba($features);
         return $this->findMax($classProbas);
     }
+
+{% if is_multi_output %}
+    // Predict the label of each output:
+    public function predict($features) {
+        $labels = array();
+        $offset = 0;
+        foreach ($this->predictIndex($features) as $j => $idx) {
+            $labels[] = self::LABELS[$offset + $idx];
+            $offset += self::OUTPUT_CLASSES[$j];
+        }
+        return $labels;
+    }
+{% else %}
+    public function predict($features) {
+        return self::LABELS[$this->predictIndex($features)];
+    }
+{% endif %}
 
 {% if is_multi_output %}
     public function predictProba($features) {
@@ -189,7 +208,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
+    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
 
     // Get class probabilities:
     $probabilities = $clf->predictProba($features);

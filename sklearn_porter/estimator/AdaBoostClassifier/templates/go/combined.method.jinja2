@@ -21,6 +21,10 @@ func PredictProba(features []float64) []float64 {
 	return probas
 }
 
-func Predict(features []float64) int {
+func PredictIndex(features []float64) int {
 	return findMax(PredictProba(features))
+}
+
+func Predict(features []float64) {{ label_type }} {
+	return labels[PredictIndex(features)]
 }

@@ -1,0 +1,36 @@
+{% if not is_multilabel %}
+    // The labels of the classes{{ ' of all outputs' if is_multi_output }}:
+    private static final {{ label_type }}[] LABELS = { {{ label_values }} };
+{% if is_test or to_json %}
+
+    // Convert a label to JSON:
+    private static String toJson({{ label_type }} label) {
+{% if label_kind == 'str' %}
+        StringBuilder json = new StringBuilder("\"");
+        for (char c : label.toCharArray()) {
+            if (c == '"' || c == '\\') {
+                json.append('\\').append(c);
+            } else if (c < 0x20 || c > 0x7e) {
+                json.append(String.format("\\u%04x", (int) c));
+            } else {
+                json.append(c);
+            }
+        }
+        return json.append('"').toString();
+{% else %}
+        return String.valueOf(label);
+{% endif %}
+    }
+{% if is_multi_output %}
+
+    // Convert the labels of all outputs to JSON:
+    private static String toJson({{ label_type }}[] labels) {
+        StringBuilder json = new StringBuilder("[");
+        for (int i = 0; i < labels.length; i++) {
+            json.append(i > 0 ? "," : "").append(toJson(labels[i]));
+        }
+        return json.append("]").toString();
+    }
+{% endif %}
+{% endif %}
+{% endif %}

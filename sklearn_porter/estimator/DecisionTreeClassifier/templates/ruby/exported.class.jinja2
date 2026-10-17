@@ -86,9 +86,27 @@ class {{ class_name }}
 		post.call @classes[(-node - 1) * {{ n_classes }}, {{ n_classes }}]
 	end
 
-	def predict (features)
+{% include 'labels' %}
+
+	def predict_index(features)
 		_compute features, 0, post=method(:_find_max)
 	end
+
+{% if is_multi_output %}
+	# Predict the label of each output:
+	def predict(features)
+		offset = 0
+		predict_index(features).each_with_index.map do |idx, j|
+			label = LABELS[offset + idx]
+			offset += OUTPUT_CLASSES[j]
+			label
+		end
+	end
+{% else %}
+	def predict(features)
+		LABELS[predict_index features]
+	end
+{% endif %}
 
 	def predict_proba (features)
 		_compute features, 0, post=method(:_norm_vals)
@@ -118,7 +136,7 @@ if __FILE__ == $0
 	{% else %}
 	# Get class prediction:
 	prediction = clf.predict features
-	puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}#{prediction}"
+	puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}#{prediction}"
 
 	# Get class probabilities:
 	probabilities = clf.predict_proba features

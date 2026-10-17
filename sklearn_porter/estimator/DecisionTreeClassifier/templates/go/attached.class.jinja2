@@ -12,9 +12,12 @@ import (
 	"os"
 	"strconv"
 )
+
+{% include 'labels' %}
+
 {% if is_test or to_json %}
 type response struct {
-	Predict {{ '[]int' if is_multi_output else 'int' }} `json:"predict"`
+	Predict {{ '[]' if is_multi_output }}{{ label_type }} `json:"predict"`
 	PredictProba {{ '[][]float64' if is_multi_output else '[]float64' }} `json:"predict_proba"`
 }
 {% endif %}
@@ -101,20 +104,37 @@ func normVals(nums []float64) []float64 {
 }
 {% endif %}
 
-func (dtc {{ class_name }}) predict(features []float64, node int) {{ '[]int' if is_multi_output else 'int' }} {
+func (dtc {{ class_name }}) predictIndex(features []float64, node int) {{ '[]int' if is_multi_output else 'int' }} {
 	if node >= 0 {
 		if features[dtc.Indices[node]] <= dtc.Thresholds[node] || (dtc.MissingGoToLeft[node] == 1 && math.IsNaN(features[dtc.Indices[node]])) {
-			return dtc.predict(features, dtc.Lefts[node])
+			return dtc.predictIndex(features, dtc.Lefts[node])
 		} else {
-			return dtc.predict(features, dtc.Rights[node])
+			return dtc.predictIndex(features, dtc.Rights[node])
 		}
 	}
 	return findMax(dtc.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
 }
 
-func (dtc {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
-	return dtc.predict(features, 0)
+func (dtc {{ class_name }}) PredictIndex(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
+	return dtc.predictIndex(features, 0)
 }
+
+{% if is_multi_output %}
+// Predict the label of each output:
+func (dtc {{ class_name }}) Predict(features []float64) []{{ label_type }} {
+	result := make([]{{ label_type }}, len(outputClasses))
+	offset := 0
+	for j, idx := range dtc.PredictIndex(features) {
+		result[j] = labels[offset+idx]
+		offset += outputClasses[j]
+	}
+	return result
+}
+{% else %}
+func (dtc {{ class_name }}) Predict(features []float64) {{ label_type }} {
+	return labels[dtc.PredictIndex(features)]
+}
+{% endif %}
 
 func (dtc {{ class_name }}) predictProba(features []float64, node int) {{ '[][]float64' if is_multi_output else '[]float64' }} {
 	if node >= 0 {
@@ -161,7 +181,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
-	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}%v\n", prediction)
+	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}%v\n", prediction)
 
 	// Get class probabilities:
 	probabilities := clf.PredictProba(features)

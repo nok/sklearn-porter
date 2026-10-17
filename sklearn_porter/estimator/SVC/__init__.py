@@ -13,6 +13,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.utils import get_labels
 
 
 class SVC(EstimatorBase, EstimatorApiABC):
@@ -97,6 +98,8 @@ class SVC(EstimatorBase, EstimatorApiABC):
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
 
+        # The labels of the classes, which the ported classifier returns:
+        labels, label_kind = get_labels(est)
         self.meta_info = dict(
             n_classes=len(est.classes_),
             n_features=len(self.model_data['vectors'][0]),
@@ -104,6 +107,8 @@ class SVC(EstimatorBase, EstimatorApiABC):
             n_vectors=len(self.model_data['vectors']),
             n_coeffs=len(self.model_data['coeffs']),
             n_inters=len(self.model_data['inters']),
+            labels=labels,
+            label_kind=label_kind,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

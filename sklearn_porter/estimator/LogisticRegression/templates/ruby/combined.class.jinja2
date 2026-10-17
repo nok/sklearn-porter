@@ -20,7 +20,9 @@ class {{ class_name }}
 		decisions
 	end
 
-	def self.predict(features)
+{% include 'labels' %}
+
+	def self.{{ 'predict' if is_multilabel else 'predict_index' }}(features)
 		decisions = decision_function features
 		{% if is_multilabel %}
 decisions.map { |decision| decision > 0 ? 1 : 0 }
@@ -34,6 +36,12 @@ decisions.map { |decision| decision > 0 ? 1 : 0 }
 		class_idx
 		{% endif %}
 	end
+{% if not is_multilabel %}
+
+	def self.predict(features)
+		LABELS[predict_index features]
+	end
+{% endif %}
 	{% if with_proba %}
 
 	def self.predict_proba(features)
@@ -72,7 +80,7 @@ if __FILE__ == $0
 	{% else %}
 	# Get class prediction:
 	prediction = {{ class_name }}.predict features
-	puts "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}#{prediction}"
+	puts "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}#{prediction}"
 	{% if with_proba %}
 
 	# Get class probabilities:

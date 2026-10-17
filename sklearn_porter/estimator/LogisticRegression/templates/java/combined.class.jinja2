@@ -21,7 +21,9 @@ class {{ class_name }} {
         return decisions;
     }
 
-    public static {{ 'int[]' if is_multilabel else 'int' }} predict(double[] features) {
+{% include 'labels' %}
+
+    public static {{ 'int[]' if is_multilabel else 'int' }} {{ 'predict' if is_multilabel else 'predictIndex' }}(double[] features) {
         double[] decisions = decisionFunction(features);
         {% if is_multilabel %}
 int[] labels = new int[decisions.length];
@@ -41,6 +43,12 @@ int[] labels = new int[decisions.length];
         return classIdx;
         {% endif %}
     }
+{% if not is_multilabel %}
+
+    public static {{ label_type }} predict(double[] features) {
+        return LABELS[predictIndex(features)];
+    }
+{% endif %}
     {% if with_proba %}
 
     public static double[] predictProba(double[] features) {
@@ -79,17 +87,17 @@ int[] labels = new int[decisions.length];
 
         {% if is_test or to_json %}
         // Get JSON:
-        {{ 'int[]' if is_multilabel else 'int' }} prediction = {{ class_name }}.predict(features);
+        {{ 'int[]' if is_multilabel else label_type }} prediction = {{ class_name }}.predict(features);
         {% if with_proba %}
         double[] probabilities = {{ class_name }}.predictProba(features);
-        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }} + ", \"predict_proba\": " + Arrays.toString(probabilities) + "}");
+        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'toJson(prediction)' }} + ", \"predict_proba\": " + Arrays.toString(probabilities) + "}");
         {% else %}
-        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }} + "}");
+        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multilabel else 'toJson(prediction)' }} + "}");
         {% endif %}
         {% else %}
         // Get class prediction:
-        {{ 'int[]' if is_multilabel else 'int' }} prediction = {{ class_name }}.predict(features);
-        System.out.println("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }});
+        {{ 'int[]' if is_multilabel else label_type }} prediction = {{ class_name }}.predict(features);
+        System.out.println("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}" + {{ 'Arrays.toString(prediction)' if is_multilabel else 'String.valueOf(prediction)' }});
         {% if with_proba %}
 
         // Get class probabilities:

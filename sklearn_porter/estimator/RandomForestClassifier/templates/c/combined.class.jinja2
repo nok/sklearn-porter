@@ -75,6 +75,8 @@ void norm_vals(double *result, const double nums[N_CLASSES]) {
 }
 {% endif %}
 
+{% include 'labels' %}
+
 {{ method }}
 
 int main(int argc, const char *argv[]) {
@@ -91,7 +93,7 @@ int main(int argc, const char *argv[]) {
     }
 
     {% if is_multi_output %}
-    int prediction[N_OUTPUTS];
+    Label prediction[N_OUTPUTS];
     predict(prediction, features);
     double *probabilities[N_OUTPUTS];
     for (int j = 0; j < N_OUTPUTS; j++) {
@@ -103,7 +105,7 @@ int main(int argc, const char *argv[]) {
     /* Get JSON: */
     printf("{\"predict\": [");
     for (int j = 0; j < N_OUTPUTS; j++) {
-        printf("%d", prediction[j]);
+        print_label(prediction[j]);
         if (j < (N_OUTPUTS - 1)) {
             printf(",");
         }
@@ -123,7 +125,9 @@ int main(int argc, const char *argv[]) {
     {% else %}
     /* Get the class prediction and the class probabilities of each output: */
     for (int j = 0; j < N_OUTPUTS; j++) {
-        printf("Predicted class of output #%d: #%d\n", j, prediction[j]);
+        printf("Predicted class of output #%d: ", j);
+        print_label(prediction[j]);
+        printf("\n");
         for (int i = 0; i < output_classes[j]; i++) {
             printf("Probability of class #%d of output #%d: %.6f\n", i, j, probabilities[j][i]);
         }
@@ -138,7 +142,9 @@ int main(int argc, const char *argv[]) {
     /* Get JSON: */
     double probabilities[N_CLASSES];
     predict_proba(probabilities, features);
-    printf("{\"predict\": %d, \"predict_proba\": [", predict(features));
+    printf("{\"predict\": ");
+    print_label(predict(features));
+    printf(", \"predict_proba\": [");
     for (int i = 0; i < N_CLASSES; i++) {
         printf("%.17g", probabilities[i]);
         if (i < (N_CLASSES - 1)) {
@@ -148,7 +154,9 @@ int main(int argc, const char *argv[]) {
     printf("]}");
     {% else %}
     /* Get class prediction: */
-    printf("Predicted class: #%d\n", predict(features));
+    printf("Predicted class: ");
+    print_label(predict(features));
+    printf("\n");
 
     /* Get class probabilities: */
     double probabilities[N_CLASSES];

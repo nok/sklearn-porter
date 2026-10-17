@@ -6,8 +6,11 @@ var fs = require('fs');
 
 var {{ class_name }} = function(jsonFile) {
     this.data = JSON.parse(fs.readFileSync(jsonFile));
+
+{% include 'labels' %}
+
     {% if is_binary %}
-    this.predict = function(features) {
+    this.predictIndex = function(features) {
         var prob = 0.;
         for (var i = 0, il = this.data.coeffs.length; i < il; i++) {
             prob += this.data.coeffs[i] * features[i];
@@ -18,7 +21,7 @@ var {{ class_name }} = function(jsonFile) {
         return 0;
     };
     {% else %}
-    this.predict = function(features) {
+    this.predictIndex = function(features) {
         var classIdx = 0,
             classVal = Number.NEGATIVE_INFINITY,
             prob = 0.;
@@ -35,6 +38,10 @@ var {{ class_name }} = function(jsonFile) {
         return classIdx;
     };
     {% endif %}
+
+    this.predict = function(features) {
+        return LABELS[this.predictIndex(features)];
+    };
 };
 
 var main = function () {
@@ -58,7 +65,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("Predicted class: #" + prediction);
+    console.log("Predicted class: " + prediction);
     {% endif %}
 }
 

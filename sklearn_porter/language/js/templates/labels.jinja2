@@ -1,0 +1,4 @@
+{% if not is_multilabel %}
+    // The labels of the classes{{ ' of all outputs' if is_multi_output }}:
+    var LABELS = [{{ label_values }}];
+{% endif %}

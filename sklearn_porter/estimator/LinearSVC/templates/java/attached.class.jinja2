@@ -21,8 +21,10 @@ class {{ class_name }} {
     }
     {% endif %}
 
+{% include 'labels' %}
+
     {% if is_binary %}
-    public int predict(double[] features) {
+    public int predictIndex(double[] features) {
         double prob = 0.;
         for (int i = 0, il = this.coeffs.length; i < il; i++) {
             prob += this.coeffs[i] * features[i];
@@ -33,7 +35,7 @@ class {{ class_name }} {
         return 0;
     }
     {% else %}
-    public int predict(double[] features) {
+    public int predictIndex(double[] features) {
         int classIdx = 0;
         double classVal = Double.NEGATIVE_INFINITY;
         for (int i = 0, il = this.inters.length; i < il; i++) {
@@ -49,6 +51,10 @@ class {{ class_name }} {
         return classIdx;
     }
     {% endif %}
+
+    public {{ label_type }} predict(double[] features) {
+        return LABELS[this.predictIndex(features)];
+    }
 
     public static void main(String[] args) {
         int nFeatures = {{ n_features }};
@@ -71,12 +77,12 @@ class {{ class_name }} {
 
         {% if is_test or to_json %}
         // Get JSON:
-        int prediction = clf.predict(features);
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        {{ label_type }} prediction = clf.predict(features);
+        System.out.println("{\"predict\": " + toJson(prediction) + "}");
         {% else %}
         // Get class prediction:
-        int prediction = clf.predict(features);
-        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {{ label_type }} prediction = clf.predict(features);
+        System.out.println("Predicted class: " + prediction);
         {% endif %}
 
     }

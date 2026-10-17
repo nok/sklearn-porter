@@ -74,6 +74,8 @@ var {{ class_name }} = function() {
 
     var forest = [];
 
+{% include 'labels' %}
+
     {{ method }}
 };
 
@@ -106,7 +108,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" + prediction);
+    console.log("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" + prediction);
 
     // Get class probabilities:
     var probabilities = clf.predictProba(features);

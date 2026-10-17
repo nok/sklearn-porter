@@ -13,7 +13,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_output_classes
+from sklearn_porter.utils import get_labels, get_output_classes
 
 
 class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
@@ -100,6 +100,8 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
         # The class votes of all outputs are concatenated, `output_classes`
         # defines their segments:
         output_classes = get_output_classes(est)
+        # The labels of the classes, which the ported classifier returns:
+        labels, label_kind = get_labels(est)
         self.meta_info = dict(
             n_classes=sum(output_classes),
             n_outputs=len(output_classes),
@@ -108,6 +110,8 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             n_templates=len(est._fit_X),
             n_features=len(est._fit_X[0]),
             metric=metric,
+            labels=labels,
+            label_kind=label_kind,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

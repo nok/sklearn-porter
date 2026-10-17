@@ -91,29 +91,46 @@ void norm_vals(double *result, double nums[N_CLASSES]) {
 }
 {% endif %}
 
+{% include 'labels' %}
+
 {% if is_multi_output %}
-void predict(int *result, double features[N_FEATURES], int node) {
+void predict_index(int *result, double features[N_FEATURES], int node) {
     if (node >= 0) {
         if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
-            predict(result, features, lefts[node]);
+            predict_index(result, features, lefts[node]);
             return;
         } else {
-            predict(result, features, rights[node]);
+            predict_index(result, features, rights[node]);
             return;
         }
     }
     find_max(result, &classes[(-node - 1) * N_CLASSES]);
 }
+
+/* Predict the label of each output: */
+void predict(Label *result, double features[N_FEATURES]) {
+    int j, offset = 0;
+    int idx[N_OUTPUTS];
+    predict_index(idx, features, 0);
+    for (j = 0; j < N_OUTPUTS; j++) {
+        result[j] = labels[offset + idx[j]];
+        offset += output_classes[j];
+    }
+}
 {% else %}
-int predict(double features[N_FEATURES], int node) {
+int predict_index(double features[N_FEATURES], int node) {
     if (node >= 0) {
         if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
-            return predict(features, lefts[node]);
+            return predict_index(features, lefts[node]);
         } else {
-            return predict(features, rights[node]);
+            return predict_index(features, rights[node]);
         }
     }
     return find_max(&classes[(-node - 1) * N_CLASSES]);
+}
+
+Label predict(double features[N_FEATURES]) {
+    return labels[predict_index(features, 0)];
 }
 {% endif %}
 
@@ -146,8 +163,8 @@ int main(int argc, const char *argv[]) {
     }
 
     {% if is_multi_output %}
-    int prediction[N_OUTPUTS];
-    predict(prediction, features, 0);
+    Label prediction[N_OUTPUTS];
+    predict(prediction, features);
     double *probabilities[N_OUTPUTS];
     for (int j = 0; j < N_OUTPUTS; j++) {
         probabilities[j] = malloc(output_classes[j] * sizeof(double));
@@ -158,7 +175,7 @@ int main(int argc, const char *argv[]) {
     /* Get JSON: */
     printf("{\"predict\": [");
     for (int j = 0; j < N_OUTPUTS; j++) {
-        printf("%d", prediction[j]);
+        print_label(prediction[j]);
         if (j < (N_OUTPUTS - 1)) {
             printf(",");
         }
@@ -178,7 +195,9 @@ int main(int argc, const char *argv[]) {
     {% else %}
     /* Get the class prediction and the class probabilities of each output: */
     for (int j = 0; j < N_OUTPUTS; j++) {
-        printf("Predicted class of output #%d: #%d\n", j, prediction[j]);
+        printf("Predicted class of output #%d: ", j);
+        print_label(prediction[j]);
+        printf("\n");
         for (int i = 0; i < output_classes[j]; i++) {
             printf("Probability of class #%d of output #%d: %.6f\n", i, j, probabilities[j][i]);
         }
@@ -193,7 +212,9 @@ int main(int argc, const char *argv[]) {
     /* Get JSON: */
     double probabilities[N_CLASSES];
     predict_proba(probabilities, features, 0);
-    printf("{\"predict\": %d, \"predict_proba\": [", predict(features, 0));
+    printf("{\"predict\": ");
+    print_label(predict(features));
+    printf(", \"predict_proba\": [");
     for (int i = 0; i < N_CLASSES; i++) {
         printf("%.6f", probabilities[i]);
         if (i < (N_CLASSES - 1)) {
@@ -203,7 +224,9 @@ int main(int argc, const char *argv[]) {
     printf("]}");
     {% else %}
     /* Get class prediction: */
-    printf("Predicted class: #%d\n", predict(features, 0));
+    printf("Predicted class: ");
+    print_label(predict(features));
+    printf("\n");
 
     /* Get class probabilities: */
     double probabilities[N_CLASSES];

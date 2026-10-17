@@ -11,6 +11,8 @@ class {{ class_name }} {
         return $idx;
     }
 
+{% include 'labels' %}
+
     {{ method | indent(4) }}
 
 }
@@ -36,7 +38,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    fwrite(STDOUT, "Predicted class: " . strval($prediction) . "\n");
 
     // Get class probabilities:
     $probabilities = $clf->predictProba($features);

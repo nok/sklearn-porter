@@ -22,3 +22,19 @@ class LanguageABC(ABC):
     CMD_EXECUTE: ClassVar[list[str]]
     # The basic templates of the programming language:
     TEMPLATES: ClassVar[dict[str, str]]
+
+    @staticmethod
+    def str_literal(value: str) -> str:
+        """
+        Get the string literal of a value, e.g. of a class label.
+
+        Parameters
+        ----------
+        value : str
+            The value.
+
+        Returns
+        -------
+        The string literal with all required escapes.
+        """
+        raise NotImplementedError

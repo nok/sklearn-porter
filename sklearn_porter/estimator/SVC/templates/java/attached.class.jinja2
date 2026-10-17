@@ -34,7 +34,9 @@ class {{ class_name }} {
         this.degree = degree;
     }
 
-    public int predict(double[] features) {
+{% include 'labels' %}
+
+    public int predictIndex(double[] features) {
         double[] kernels = new double[vectors.length];
         double kernel;
         switch (this.kernel) {
@@ -154,6 +156,10 @@ class {{ class_name }} {
         return this.classes[classIdx];
     }
 
+    public {{ label_type }} predict(double[] features) {
+        return LABELS[this.predictIndex(features)];
+    }
+
     public static void main(String[] args) {
 
         int nFeatures = {{ n_features }};
@@ -178,12 +184,12 @@ class {{ class_name }} {
 
         {% if is_test or to_json %}
         // Get JSON:
-        int prediction = clf.predict(features);
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + "}");
+        {{ label_type }} prediction = clf.predict(features);
+        System.out.println("{\"predict\": " + toJson(prediction) + "}");
         {% else %}
         // Get class prediction:
-        int prediction = clf.predict(features);
-        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {{ label_type }} prediction = clf.predict(features);
+        System.out.println("Predicted class: " + prediction);
         {% endif %}
 
     }

@@ -40,7 +40,7 @@ code must predict exactly the same classes as the original estimator.
 - `README.md` is the user documentation (also shown on PyPI, so use absolute
   links there), `CONTRIBUTING.md` the developer documentation.
 - `docs/`: further user documentation linked from the README
-  (`estimator-notes.md`, `limitations.md`, `known-issues.md`).
+  (`estimator-notes.md`, `limitations.md`).
 - `examples/basics/index.pct.py`: example notebook in jupytext format; the
   `.ipynb` file is generated.
 
@@ -109,6 +109,15 @@ table.
   extracted (`sklearn_porter.utils.densify()`), so the estimator classes don't
   need to check for sparse matrices themselves. The passed estimator remains
   unchanged and is used for the predictions of scikit-learn.
+- The ported classifiers return the labels of the classes
+  (`sklearn_porter.utils.get_labels()`): `predict_index` returns the index
+  of the class and `predict` maps it to the labels, which the shared
+  template `labels` of each language
+  (`sklearn_porter/language/<language>/templates/labels.jinja2`) defines.
+  All labels have the same kind (`int`, `double` or `str`), the string
+  literals are escaped by `str_literal()` of the language. Multilabel
+  classifiers keep their `predict` (one binary value per label) without
+  `predict_index`.
 - AdaBoostClassifier is ported with the SAMME algorithm (`SAMME.R` was removed
   from scikit-learn).
 

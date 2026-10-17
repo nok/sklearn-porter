@@ -77,8 +77,14 @@ class {{ class_name }} {
         return probas;
     }
 
-    public int predict(double[] features) {
+{% include 'labels' %}
+
+    public int predictIndex(double[] features) {
         return findMax(this.predictProba(features));
+    }
+
+    public {{ label_type }} predict(double[] features) {
+        return LABELS[this.predictIndex(features)];
     }
 
     // Model data:
@@ -107,13 +113,13 @@ class {{ class_name }} {
 
         {% if is_test or to_json %}
         // Get JSON:
-        int prediction = clf.predict(features);
+        {{ label_type }} prediction = clf.predict(features);
         double[] probabilities = clf.predictProba(features);
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
+        System.out.println("{\"predict\": " + toJson(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
         {% else %}
         // Get class prediction:
-        int prediction = clf.predict(features);
-        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {{ label_type }} prediction = clf.predict(features);
+        System.out.println("Predicted class: " + prediction);
 
         // Get class probabilities:
         double[] probabilities = clf.predictProba(features);

@@ -11,9 +11,11 @@ import (
 	"strconv"
 )
 
+{% include 'labels' %}
+
 {% if is_test or to_json %}
 type Response struct {
-	Predict int `json:"predict"`
+	Predict {{ label_type }} `json:"predict"`
 	PredictProba []float64 `json:"predict_proba"`
 }
 
@@ -74,8 +76,12 @@ func (forest {{ class_name }}) PredictProba(features []float64) []float64 {
 	return probas
 }
 
-func (forest {{ class_name }}) Predict(features []float64) int {
+func (forest {{ class_name }}) PredictIndex(features []float64) int {
 	return findMax(forest.PredictProba(features))
+}
+
+func (forest {{ class_name }}) Predict(features []float64) {{ label_type }} {
+	return labels[forest.PredictIndex(features)]
 }
 
 func main() {
@@ -116,7 +122,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
-	fmt.Printf("Predicted class: #%d\n", prediction)
+	fmt.Printf("Predicted class: %v\n", prediction)
 
 	// Get class probabilities:
 	probabilities := clf.PredictProba(features)

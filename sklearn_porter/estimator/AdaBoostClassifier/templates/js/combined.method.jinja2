@@ -24,6 +24,10 @@ this.predictProba = function(features) {
     return probas;
 };
 
-this.predict = function(features) {
+this.predictIndex = function(features) {
     return _findMax(this.predictProba(features));
+};
+
+this.predict = function(features) {
+    return LABELS[this.predictIndex(features)];
 };

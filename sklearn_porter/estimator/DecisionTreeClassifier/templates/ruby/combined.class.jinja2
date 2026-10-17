@@ -72,9 +72,27 @@ class {{ class_name }}
 		classes
 	end
 
-	def self.predict (features)
+{% include 'labels' %}
+
+	def self.predict_index(features)
 		self._find_max self._compute features
 	end
+
+{% if is_multi_output %}
+	# Predict the label of each output:
+	def self.predict(features)
+		offset = 0
+		predict_index(features).each_with_index.map do |idx, j|
+			label = LABELS[offset + idx]
+			offset += OUTPUT_CLASSES[j]
+			label
+		end
+	end
+{% else %}
+	def self.predict(features)
+		LABELS[predict_index features]
+	end
+{% endif %}
 
 	def self.predict_proba (features)
 		self._norm_vals self._compute features
@@ -98,7 +116,7 @@ if __FILE__ == $0
 	{% else %}
 	# Get class prediction:
 	prediction = {{ class_name }}.predict features
-	puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}#{prediction}"
+	puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}#{prediction}"
 
 	# Get class probabilities:
 	probabilities = {{ class_name }}.predict_proba features

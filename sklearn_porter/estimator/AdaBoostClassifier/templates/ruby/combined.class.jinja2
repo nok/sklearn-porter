@@ -17,8 +17,15 @@ class {{ class_name }}
 
     {{ method | indent(4) }}
 
-    def predict(features)
+    # The labels of the classes:
+    LABELS = [{{ label_values }}]
+
+    def predict_index(features)
         _find_max(predict_proba(features))
+    end
+
+    def predict(features)
+        LABELS[predict_index features]
     end
 
 end
@@ -42,7 +49,7 @@ if __FILE__ == $0
     {% else %}
     # Get class prediction:
     prediction = clf.predict features
-    puts "Predicted class: ##{prediction}"
+    puts "Predicted class: #{prediction}"
 
     # Get class probabilities:
     probabilities = clf.predict_proba features

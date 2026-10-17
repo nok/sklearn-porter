@@ -15,7 +15,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
-from sklearn_porter.utils import get_leaf_values, get_tree_data
+from sklearn_porter.utils import get_labels, get_leaf_values, get_tree_data
 
 
 class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
@@ -79,10 +79,14 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
                 estimators.append((e, weight))
         n_estimators = len(estimators)
 
+        # The labels of the classes, which the ported classifier returns:
+        labels, label_kind = get_labels(est)
         self.meta_info = dict(
             n_classes=est.n_classes_,
             n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
             n_estimators=n_estimators,
+            labels=labels,
+            label_kind=label_kind,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
