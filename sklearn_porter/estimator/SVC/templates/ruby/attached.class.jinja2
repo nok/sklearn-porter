@@ -9,10 +9,6 @@ class {{ class_name }}
 
 	def initialize (vectors, coeffs, inters, weights, kernel, gamma, coef0, degree)
 		@n_classes = weights.length
-		@classes = Array.new(@n_classes)
-		for i in 0 ... @n_classes
-			@classes[i] = i
-		end
 
 		@vectors = vectors
 		@coeffs = coeffs
@@ -143,7 +139,7 @@ class {{ class_name }}
 					class_idx = i
 			end
 		end
-		@classes[class_idx]
+		class_idx
 
 	end
 

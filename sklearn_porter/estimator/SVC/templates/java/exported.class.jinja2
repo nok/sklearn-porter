@@ -14,7 +14,6 @@ class {{ class_name }} {
     private enum Kernel { LINEAR, POLY, RBF, SIGMOID }
     private class Classifier {
         private int nClasses;
-        private int[] classes;
         private double[][] vectors;
         private double[][] coeffs;
         private double[] inters;
@@ -33,10 +32,6 @@ class {{ class_name }} {
             this.clf = new Gson().fromJson(reader, Classifier.class);
         }
         this.clf.nClasses = this.clf.weights.length;
-        this.clf.classes = new int[this.clf.nClasses];
-        for (int i = 0; i < this.clf.nClasses; i++) {
-            this.clf.classes[i] = i;
-        }
         this.clf.kkernel = Kernel.valueOf(this.clf.kernel.toUpperCase());
     }
 
@@ -159,7 +154,7 @@ class {{ class_name }} {
                 classIdx = i;
             }
         }
-        return this.clf.classes[classIdx];
+        return classIdx;
     }
 
     public {{ label_type }} predict(double[] features) {

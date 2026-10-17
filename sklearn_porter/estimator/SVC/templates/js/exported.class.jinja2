@@ -8,10 +8,6 @@ var {{ class_name }} = function(jsonFile) {
     this.data = JSON.parse(fs.readFileSync(jsonFile));
 
     this.nClasses = this.data.weights.length;
-    this.classes = new Array(this.nClasses);
-    for (var i = 0; i < this.nClasses; i++) {
-        this.classes[i] = i;
-    }
     this.vectors = this.data.vectors;
     this.coeffs = this.data.coeffs;
     this.inters = this.data.inters;
@@ -134,7 +130,7 @@ var {{ class_name }} = function(jsonFile) {
                 classIdx= i;
             }
         }
-        return this.classes[classIdx];
+        return classIdx;
     }
 
     this.predict = function(features) {

@@ -3,10 +3,6 @@
 {% block content %}
 var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma, coef0, degree) {
     this.nClasses = weights.length;
-    this.classes = new Array(this.nClasses);
-    for (var i = 0; i < this.nClasses; i++) {
-        this.classes[i] = i;
-    }
     this.vectors = vectors;
     this.coeffs = coeffs;
     this.inters = inters;
@@ -129,7 +125,7 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
                 classIdx= i;
             }
         }
-        return this.classes[classIdx];
+        return classIdx;
     }
 
     this.predict = function(features) {

@@ -5,7 +5,6 @@ class {{ class_name }} {
 
     private $data;
     private $nClasses;
-    private $classes;
     private $vectors;
     private $coeffs;
     private $inters;
@@ -19,10 +18,6 @@ class {{ class_name }} {
         $this->data = json_decode(file_get_contents($path, true), true);
 
         $this->nClasses = count($this->data['weights']);
-        $this->classes = array_fill(0, $this->nClasses, 0);
-        for ($i = 0; $i < $this->nClasses; $i++) {
-            $this->classes[$i] = $i;
-        }
 
         $this->vectors = $this->data['vectors'];
         $this->coeffs = $this->data['coeffs'];
@@ -158,7 +153,7 @@ class {{ class_name }} {
                 $classIdx = $i;
             }
         }
-        return $this->classes[$classIdx];
+        return $classIdx;
 
     }
 
