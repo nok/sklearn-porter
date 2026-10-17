@@ -390,6 +390,92 @@ def test_make_with_samples_as_arguments(
     assert proc.returncode != 0
 
 
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
+@pytest.mark.parametrize('binary', [True, False], ids=['binary', 'multi'])
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_text_output(
+    tmp_root_dir: Path,
+    candidate: Candidate,
+    binary: bool,
+    language: str,
+    template: str,
+):
+    """Test the text output of the ported estimators (`make()` uses JSON)."""
+    orig_est = candidate.create()
+    is_classifier = candidate in CLASSIFIERS
+    if not is_classifier and binary:
+        pytest.skip('Skip the binary variant of regressors')
+    if not can(orig_est, language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+    params = orig_est.get_params()
+    params = {
+        k: v
+        for k, v in dict(n_estimators=3, max_depth=3, max_iter=20).items()
+        if k in params
+    }
+    orig_est.set_params(**params)
+    if is_classifier:
+        x, y = load_iris(return_X_y=True)
+        if binary:
+            y = (y > 0).astype(int)
+    else:
+        x, y = load_diabetes(return_X_y=True)
+    orig_est.fit(X=x, y=y)
+
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'text_output'),
+            ('candidate', candidate.name),
+            ('binary', str(binary)),
+            ('language', language),
+            ('template', template),
+        ],
+    )
+    est = Estimator(orig_est, language=language, template=template)
+    est._estimator.placeholders['is_test'] = False  # set by pytest
+    out = est.save(directory=tmp_dir)
+    if isinstance(out, tuple):  # the source code and the model data
+        src_path, data_args = Path(out[0]), [str(out[1])]
+    else:
+        src_path, data_args = Path(out), []
+
+    lang = enum.Language[language.upper()].value
+    class_paths = [str(tmp_dir), os.environ['SKLEARN_PORTER_PYTEST_GSON_PATH']]
+    cmd_args = dict(
+        src_path=str(src_path),
+        dest_path=str(tmp_dir / src_path.stem),
+        dest_dir=str(tmp_dir),
+        class_path=os.pathsep.join(class_paths),
+        class_name=src_path.stem,
+    )
+    if lang.CMD_COMPILE:
+        cmd = [arg.format(**cmd_args) for arg in lang.CMD_COMPILE]
+        proc = run(cmd, capture_output=True, encoding='utf-8')
+        if 'code too large' in proc.stdout + proc.stderr:
+            pytest.skip('Skip too large code (Java)')
+        assert proc.returncode == 0, proc.stdout + proc.stderr
+    cmd = [arg.format(**cmd_args) for arg in lang.CMD_EXECUTE] + data_args
+
+    # The output of several samples is the output of each sample:
+    samples = [list(map(str, e)) for e in x[::50]]
+    outputs = []
+    for args in samples:
+        proc = run(cmd + args, capture_output=True, encoding='utf-8')
+        assert proc.returncode == 0, proc.stderr
+        assert proc.stdout.strip() and not proc.stderr
+        # e.g. the warnings and deprecations of PHP (see `strict_php`):
+        assert not any(w in proc.stdout for w in ('Warning:', 'Deprecated:'))
+        outputs.append(proc.stdout)
+    batch = ''.join(' '.join(args) + '\n' for args in samples)
+    proc = run(cmd, input=batch, capture_output=True, encoding='utf-8')
+    assert proc.returncode == 0, proc.stderr
+    assert proc.stdout == ''.join(outputs)
+
+
 def test_missing_compiler(fitted_tree, monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv('PATH', '')
     est = Estimator(fitted_tree, language='c')
