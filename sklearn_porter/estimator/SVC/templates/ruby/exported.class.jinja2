@@ -10,10 +10,6 @@ class {{ class_name }}
 		@data = JSON.parse(File.read(path))
 
 		@n_classes = @data['weights'].length
-		@classes = Array.new(@n_classes)
-		for i in 0 ... @n_classes
-			@classes[i] = i
-  	end
 
 		@vectors = @data['vectors']
 		@coeffs = @data['coeffs']
@@ -144,7 +140,7 @@ class {{ class_name }}
 					class_idx = i
 			end
 		end
-		@classes[class_idx]
+		class_idx
 
 	end
 

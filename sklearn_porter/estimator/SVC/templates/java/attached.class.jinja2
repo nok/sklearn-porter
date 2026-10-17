@@ -6,7 +6,6 @@ class {{ class_name }} {
     private enum Kernel { LINEAR, POLY, RBF, SIGMOID }
 
     private int nClasses;
-    private int[] classes;
     private double[][] vectors;
     private double[][] coeffs;
     private double[] inters;
@@ -18,10 +17,6 @@ class {{ class_name }} {
 
     public {{ class_name }} (double[][] vectors, double[][] coeffs, double[] inters, int[] weights, String kernel, double gamma, double coef0, double degree) {
         this.nClasses = weights.length;
-        this.classes = new int[this.nClasses];
-        for (int i = 0; i < this.nClasses; i++) {
-            this.classes[i] = i;
-        }
 
         this.vectors = vectors;
         this.coeffs = coeffs;
@@ -153,7 +148,7 @@ class {{ class_name }} {
                 classIdx= i;
             }
         }
-        return this.classes[classIdx];
+        return classIdx;
     }
 
     public {{ label_type }} predict(double[] features) {
