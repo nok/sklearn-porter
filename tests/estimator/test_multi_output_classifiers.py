@@ -50,6 +50,7 @@ def load_multi_output_data(name: str) -> tuple[np.ndarray, np.ndarray]:
         ),
         lambda: KNeighborsClassifier(n_neighbors=1),
         lambda: KNeighborsClassifier(n_neighbors=5),
+        lambda: KNeighborsClassifier(n_neighbors=5, weights='distance'),
     ],
     ids=[
         'DecisionTreeClassifier',
@@ -58,6 +59,7 @@ def load_multi_output_data(name: str) -> tuple[np.ndarray, np.ndarray]:
         'ExtraTreesClassifier',
         'KNeighborsClassifier_k_1',
         'KNeighborsClassifier_k_5',
+        'KNeighborsClassifier_k_5_distance',
     ],
 )
 def test_estimator_multi_output_classifier(

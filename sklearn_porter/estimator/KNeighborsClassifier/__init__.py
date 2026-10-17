@@ -65,8 +65,10 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
                 self.estimator_name
             ) from None
 
-        if est.weights != 'uniform':
-            msg = 'Only `uniform` weights are supported.'
+        # The votes of the neighbors are equal (`uniform`) or weighted by the
+        # inverse of their distances (`distance`), callables aren't supported:
+        if est.weights not in ('uniform', 'distance'):
+            msg = 'Only the weights `uniform` and `distance` are supported.'
             raise exception.NotSupportedYetError(msg)
 
         # The effective metric and its parameters contain the used distance,
@@ -110,6 +112,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
             n_templates=len(est._fit_X),
             n_features=len(est._fit_X[0]),
             metric=metric,
+            weights=est.weights,
             labels=labels,
             label_kind=label_kind,
         )
