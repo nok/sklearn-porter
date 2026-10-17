@@ -91,17 +91,36 @@ class {{ class_name }} {
     }
 {% endif %}
 
-    public function predict($features) {
+{% include 'labels' %}
+
+    public function predictIndex($features) {
         $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
         if ($node >= 0) {
             if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
-                return $this->predict($features, $this->lefts[$node]);
+                return $this->predictIndex($features, $this->lefts[$node]);
             } else {
-                return $this->predict($features, $this->rights[$node]);
+                return $this->predictIndex($features, $this->rights[$node]);
             }
         }
         return $this->findMax(array_slice($this->classes, (-$node - 1) * {{ n_classes }}, {{ n_classes }}));
     }
+
+{% if is_multi_output %}
+    // Predict the label of each output:
+    public function predict($features) {
+        $labels = array();
+        $offset = 0;
+        foreach ($this->predictIndex($features) as $j => $idx) {
+            $labels[] = self::LABELS[$offset + $idx];
+            $offset += self::OUTPUT_CLASSES[$j];
+        }
+        return $labels;
+    }
+{% else %}
+    public function predict($features) {
+        return self::LABELS[$this->predictIndex($features)];
+    }
+{% endif %}
 
     public function predictProba($features) {
         $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
@@ -139,7 +158,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
+    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
 
     // Get class probabilities:
     $probabilities = $clf->predictProba($features);

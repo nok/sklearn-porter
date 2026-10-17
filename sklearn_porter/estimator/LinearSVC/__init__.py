@@ -13,6 +13,7 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+from sklearn_porter.utils import get_labels
 
 
 class LinearSVC(EstimatorBase, EstimatorApiABC):
@@ -68,10 +69,14 @@ class LinearSVC(EstimatorBase, EstimatorApiABC):
         coeffs = est.coef_
         inters = np.broadcast_to(est.intercept_, (len(coeffs),))
 
+        # The labels of the classes, which the ported classifier returns:
+        labels, label_kind = get_labels(est)
         self.meta_info = dict(
             n_features=len(coeffs[0]),
             n_classes=len(est.classes_),
             is_binary=len(est.classes_) == 2,
+            labels=labels,
+            label_kind=label_kind,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

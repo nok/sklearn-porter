@@ -16,7 +16,9 @@ class {{ class_name }} {
         return $decisions;
     }
 
-    public static function predict($features) {
+{% include 'labels' %}
+
+    public static function {{ 'predict' if is_multilabel else 'predictIndex' }}($features) {
         $decisions = {{ class_name }}::decisionFunction($features);
         {% if is_multilabel %}
 return array_map(function ($decision) {
@@ -34,6 +36,12 @@ return array_map(function ($decision) {
         return $classIdx;
         {% endif %}
     }
+{% if not is_multilabel %}
+
+    public static function predict($features) {
+        return self::LABELS[self::predictIndex($features)];
+    }
+{% endif %}
     {% if with_proba %}
 
     public static function predictProba($features) {
@@ -80,7 +88,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = {{ class_name }}::predict($features);
-    fwrite(STDOUT, "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multilabel else 'strval($prediction)' }} . "\n");
+    fwrite(STDOUT, "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}" . {{ "implode(', ', $prediction)" if is_multilabel else 'strval($prediction)' }} . "\n");
     {% if with_proba %}
 
     // Get class probabilities:

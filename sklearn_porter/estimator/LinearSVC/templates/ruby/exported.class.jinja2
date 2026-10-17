@@ -12,8 +12,10 @@ class {{ class_name }}
 		@inters = @data['inters']
 	end
 
+{% include 'labels' %}
+
 	{% if is_binary %}
-	def predict (features)
+	def predict_index(features)
 		prob = 0
 		for i in 0 ... @coeffs.length
 			prob += @coeffs[i] * features[i].to_f
@@ -24,7 +26,7 @@ class {{ class_name }}
 		return 0
 	end
 	{% else %}
-	def predict (features)
+	def predict_index(features)
 		class_val = -1.0/0.0
 		class_idx = -1
 		for i in 0 ... @inters.length
@@ -40,6 +42,10 @@ class {{ class_name }}
 		class_idx
 	end
 	{% endif %}
+
+	def predict(features)
+		LABELS[predict_index features]
+	end
 
 end
 
@@ -64,7 +70,7 @@ if __FILE__ == $0
 	{% else %}
 	# Get class prediction:
 	prediction = clf.predict features
-	puts "Predicted class: ##{prediction}"
+	puts "Predicted class: #{prediction}"
 	{% endif %}
 end
 {% endblock %}

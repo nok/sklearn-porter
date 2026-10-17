@@ -1,0 +1,26 @@
+{% if not is_multilabel %}
+/* The labels of the classes{{ ' of all outputs' if is_multi_output }}: */
+typedef {{ label_type }} Label;
+Label labels[{{ labels | length }}] = { {{ label_values }} };
+
+/* Print a label as JSON: */
+void print_label(Label label) {
+{% if label_kind == 'str' %}
+    putchar('"');
+    for (const char *c = label; *c != '\0'; c++) {
+        if (*c == '"' || *c == '\\') {
+            printf("\\%c", *c);
+        } else if ((unsigned char) *c < 0x20) {
+            printf("\\u%04x", *c);
+        } else {
+            putchar(*c);
+        }
+    }
+    putchar('"');
+{% elif label_kind == 'double' %}
+    printf("%.17g", label);
+{% else %}
+    printf("%d", label);
+{% endif %}
+}
+{% endif %}

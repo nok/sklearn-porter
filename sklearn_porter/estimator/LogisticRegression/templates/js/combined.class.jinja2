@@ -16,7 +16,9 @@ var {{ class_name }} = function() {
         return decisions;
     };
 
-    this.predict = function(features) {
+{% include 'labels' %}
+
+    this.{{ 'predict' if is_multilabel else 'predictIndex' }} = function(features) {
         var decisions = this.decisionFunction(features);
         {% if is_multilabel %}
 return decisions.map(function(decision) {
@@ -34,6 +36,12 @@ return decisions.map(function(decision) {
         return classIdx;
         {% endif %}
     };
+{% if not is_multilabel %}
+
+    this.predict = function(features) {
+        return LABELS[this.predictIndex(features)];
+    };
+{% endif %}
     {% if with_proba %}
 
     this.predictProba = function(features) {
@@ -89,7 +97,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" + prediction);
+    console.log("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}" + prediction);
     {% if with_proba %}
 
     // Get class probabilities:

@@ -64,8 +64,14 @@ var {{ class_name }} = function(jsonFile) {
         return jll;
     };
 
-    this.predict = function(features) {
+{% include 'labels' %}
+
+    this.predictIndex = function(features) {
         return _findMax(_compute(features, this.data.priors, this.data.probs, this.data.binarize, this.data.threshold));
+    };
+
+    this.predict = function(features) {
+        return LABELS[this.predictIndex(features)];
     };
 
     this.predictProba = function(features) {
@@ -100,7 +106,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("Predicted class: #" + prediction);
+    console.log("Predicted class: " + prediction);
 
     // Get class probabilities:
     var probabilities = clf.predictProba(features);

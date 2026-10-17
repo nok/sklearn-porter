@@ -74,9 +74,27 @@ var {{ class_name }} = function() {
         return post(classes);
     };
 
-    this.predict = function(features) {
+{% include 'labels' %}
+
+    this.predictIndex = function(features) {
         return this._compute(features, _findMax);
     };
+
+{% if is_multi_output %}
+    // Predict the label of each output:
+    this.predict = function(features) {
+        var offset = 0;
+        return this.predictIndex(features).map(function(idx, j) {
+            var label = LABELS[offset + idx];
+            offset += outputClasses[j];
+            return label;
+        });
+    };
+{% else %}
+    this.predict = function(features) {
+        return LABELS[this.predictIndex(features)];
+    };
+{% endif %}
 
     this.predictProba = function(features) {
         return this._compute(features, _normVals);
@@ -113,7 +131,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" + prediction);
+    console.log("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" + prediction);
 
     // Get class probabilities:
     var probabilities = clf.predictProba(features);

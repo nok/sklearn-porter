@@ -46,8 +46,15 @@ namespace {
             return $probas;
         }
 
-        public function predict($features) {
+        // The labels of the classes:
+        const LABELS = [{{ label_values }}];
+
+        public function predictIndex($features) {
             return self::findMax($this->predictProba($features));
+        }
+
+        public function predict($features) {
+            return self::LABELS[$this->predictIndex($features)];
         }
 
     }
@@ -111,7 +118,7 @@ namespace {
         {% else %}
         // Get class prediction:
         $prediction = $clf->predict($features);
-        fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+        fwrite(STDOUT, "Predicted class: " . strval($prediction) . "\n");
 
         // Get class probabilities:
         $probabilities = $clf->predictProba($features);

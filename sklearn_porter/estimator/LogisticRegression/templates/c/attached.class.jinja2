@@ -35,7 +35,9 @@ void predict(int *labels, double features[N_FEATURES]) {
     }
 }
 {% else %}
-int predict(double features[N_FEATURES]) {
+{% include 'labels' %}
+
+int predict_index(double features[N_FEATURES]) {
     double decisions[N_DECISIONS];
     decision_function(decisions, features);
     {% if is_binary %}
@@ -49,6 +51,10 @@ int predict(double features[N_FEATURES]) {
     }
     return class_idx;
     {% endif %}
+}
+
+Label predict(double features[N_FEATURES]) {
+    return labels[predict_index(features)];
 }
 {% endif %}
 {% if with_proba %}
@@ -105,7 +111,8 @@ int main(int argc, const char *argv[]) {
     }
     printf("]");
     {% else %}
-    printf("{\"predict\": %d", predict(features));
+    printf("{\"predict\": ");
+    print_label(predict(features));
     {% endif %}
     {% if with_proba %}
     double probabilities[N_CLASSES];
@@ -129,7 +136,9 @@ int main(int argc, const char *argv[]) {
         printf("Predicted label #%d: %d\n", i, labels[i]);
     }
     {% else %}
-    printf("Predicted class: #%d\n", predict(features));
+    printf("Predicted class: ");
+    print_label(predict(features));
+    printf("\n");
     {% endif %}
     {% if with_proba %}
 

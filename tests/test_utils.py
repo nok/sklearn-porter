@@ -13,10 +13,18 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
+from sklearn_porter import exceptions as exception
+from sklearn_porter.language.c import C
+from sklearn_porter.language.go import Go
+from sklearn_porter.language.java import Java
+from sklearn_porter.language.js import JavaScript
+from sklearn_porter.language.php import PHP
+from sklearn_porter.language.ruby import Ruby
 from sklearn_porter.utils import (
     densify,
     dump_model_data,
     get_class_fractions,
+    get_labels,
     get_leaf_values,
     get_output_classes,
     get_thresholds,
@@ -250,3 +258,64 @@ def test_infinite_values():
     assert dump_model_data(data) == '{"thresholds":[1e999,-1e999,1.5]}'
     assert has_infinite_thresholds(data)
     assert not has_infinite_thresholds(dict(thresholds=[-2.0, 1.5]))
+
+
+@pytest.mark.parametrize(
+    ('y', 'expected'),
+    [
+        ([2, 0, 5], ([0, 2, 5], 'int')),
+        ([-1.0, 1.0, 1.0], ([-1.0, 1.0], 'double')),
+        (['b', 'a', 'a'], (['a', 'b'], 'str')),
+        ([True, False, True], ([0, 1], 'int')),
+        (np.array(['b', 'a'], dtype=object), (['a', 'b'], 'str')),
+    ],
+    ids=['int', 'float', 'str', 'bool', 'object'],
+)
+def test_labels(y: list, expected: tuple):
+    """Test the labels of the classes and their kind."""
+    x = np.arange(len(y)).reshape(-1, 1)
+    labels, kind = get_labels(DecisionTreeClassifier().fit(x, y))
+    assert (labels, kind) == expected
+    assert all(type(label) is type(expected[0][0]) for label in labels)
+
+
+def test_labels_of_multiple_outputs():
+    """Test the concatenated labels of all outputs."""
+    x = np.arange(4).reshape(-1, 1)
+    y = np.array([['a', 'x'], ['b', 'y'], ['c', 'x'], ['a', 'y']])
+    est = DecisionTreeClassifier().fit(x, y)
+    assert get_labels(est) == (['a', 'b', 'c', 'x', 'y'], 'str')
+
+
+@pytest.mark.parametrize(
+    'y',
+    [
+        np.array([1, 'a'], dtype=object),
+        np.array([1, 2.5], dtype=object),
+        [0, 2**31],
+    ],
+    ids=['mixed-int-str', 'mixed-int-float', 'int64'],
+)
+def test_unsupported_labels(y):
+    """Test the labels of different or unsupported types."""
+    est = DecisionTreeClassifier()
+    est.classes_ = np.asarray(y)
+    with pytest.raises(exception.NotSupportedYetError):
+        get_labels(est)
+
+
+@pytest.mark.parametrize(
+    ('language', 'expected'),
+    [
+        (C, '"a\\042b\\134c\\077\'\\303\\244"'),
+        (Go, '"a\\U00000022b\\U0000005cc?\'\\U000000e4"'),
+        (Java, '"a\\042b\\134c?\'\\u00e4"'),
+        (JavaScript, '"a\\"b\\\\c?\'\\u00e4"'),
+        (PHP, "'a\"b\\\\c?\\'ä'"),
+        (Ruby, "'a\"b\\\\c?\\'ä'"),
+    ],
+    ids=lambda x: getattr(x, 'KEY', None),
+)
+def test_string_literals(language, expected: str):
+    """Test the escapes of the string literals of all languages."""
+    assert language.str_literal('a"b\\c?\'ä') == expected

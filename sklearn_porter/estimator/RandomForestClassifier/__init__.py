@@ -22,6 +22,7 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import (
     dump_model_data,
     get_class_fractions,
+    get_labels,
     get_leaf_values,
     get_output_classes,
     get_tree_data,
@@ -97,6 +98,8 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
 
         # Extract and save meta information:
         output_classes = get_output_classes(est)
+        # The labels of the classes, which the ported classifier returns:
+        labels, label_kind = get_labels(est)
         self.meta_info = dict(
             # The number of fitted trees, because `n_estimators` can be
             # changed after the fit (e.g. with `set_params`):
@@ -108,6 +111,8 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             n_outputs=len(output_classes),
             output_classes=output_classes,
             is_multi_output=len(output_classes) > 1,
+            labels=labels,
+            label_kind=label_kind,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

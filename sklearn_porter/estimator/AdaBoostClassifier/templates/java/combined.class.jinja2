@@ -15,6 +15,8 @@ class {{ class_name }} {
         return idx;
     }
 
+{% include 'labels' %}
+
     {{ method }}
 
     public static void main(String[] args) {
@@ -31,13 +33,13 @@ class {{ class_name }} {
 
         {% if is_test or to_json %}
         // Get JSON:
-        int prediction = {{ class_name }}.predict(features);
+        {{ label_type }} prediction = {{ class_name }}.predict(features);
         double[] probabilities = {{ class_name }}.predictProba(features);
-        System.out.println("{\"predict\": " + String.valueOf(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
+        System.out.println("{\"predict\": " + toJson(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
         {% else %}
         // Get class prediction:
-        int prediction = {{ class_name }}.predict(features);
-        System.out.println("Predicted class: #" + String.valueOf(prediction));
+        {{ label_type }} prediction = {{ class_name }}.predict(features);
+        System.out.println("Predicted class: " + prediction);
 
         // Get class probabilities:
         double[] probabilities = {{ class_name }}.predictProba(features);

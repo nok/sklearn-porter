@@ -15,9 +15,11 @@ import (
 	"strconv"
 )
 
+{% include 'labels' %}
+
 {% if is_test or to_json %}
 type Response struct {
-	Predict {{ '[]int' if is_multilabel else 'int' }} `json:"predict"`
+	Predict {{ '[]int' if is_multilabel else label_type }} `json:"predict"`
 	{% if with_proba %}
 	PredictProba []float64 `json:"predict_proba"`
 	{% endif %}
@@ -37,7 +39,7 @@ func DecisionFunction(features []float64) []float64 {
 	return decisions
 }
 
-func Predict(features []float64) {{ '[]int' if is_multilabel else 'int' }} {
+func {{ 'Predict' if is_multilabel else 'PredictIndex' }}(features []float64) {{ '[]int' if is_multilabel else 'int' }} {
 	decisions := DecisionFunction(features)
 	{% if is_multilabel %}
 	labels := make([]int, len(decisions))
@@ -62,6 +64,12 @@ func Predict(features []float64) {{ '[]int' if is_multilabel else 'int' }} {
 	return classIdx
 	{% endif %}
 }
+{% if not is_multilabel %}
+
+func Predict(features []float64) {{ label_type }} {
+	return labels[PredictIndex(features)]
+}
+{% endif %}
 {% if with_proba %}
 
 func PredictProba(features []float64) []float64 {
@@ -115,7 +123,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := Predict(features)
-	fmt.Printf("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}%v\n", prediction)
+	fmt.Printf("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}%v\n", prediction)
 	{% if with_proba %}
 
 	// Get class probabilities:

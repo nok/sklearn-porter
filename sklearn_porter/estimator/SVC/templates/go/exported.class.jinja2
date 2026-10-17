@@ -13,6 +13,8 @@ import (
 	"strings"
 )
 
+{% include 'labels' %}
+
 type {{ class_name }} struct {
 	Vectors [][]float64 `json:"vectors"`
 	Coeffs [][]float64 `json:"coeffs"`
@@ -26,11 +28,11 @@ type {{ class_name }} struct {
 
 {% if is_test or to_json %}
 type Response struct {
-	Predict int `json:"predict"`
+	Predict {{ label_type }} `json:"predict"`
 }
 
 {% endif %}
-func (svc {{ class_name }}) Predict(features []float64) int {
+func (svc {{ class_name }}) PredictIndex(features []float64) int {
 	kernels := make([]float64, int(len(svc.Vectors)))
 
 	switch strings.ToUpper(svc.Kernel) {
@@ -147,6 +149,10 @@ func (svc {{ class_name }}) Predict(features []float64) int {
 	return classIdx
 }
 
+func (svc {{ class_name }}) Predict(features []float64) {{ label_type }} {
+	return labels[svc.PredictIndex(features)]
+}
+
 func main() {
 
 	// Features:
@@ -177,7 +183,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
-	fmt.Printf("Predicted class: #%d\n", prediction)
+	fmt.Printf("Predicted class: %v\n", prediction)
 	{% endif %}
 
 }

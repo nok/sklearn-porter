@@ -22,6 +22,25 @@ public static double[] predictProba(double[] features) {
 }
 {% endif %}
 
-public static {{ 'int[]' if is_multi_output else 'int' }} predict(double[] features) {
+public static {{ 'int[]' if is_multi_output else 'int' }} predictIndex(double[] features) {
     return {{ class_name }}.findMax({{ class_name }}.predictProba(features));
 }
+{% if is_multi_output %}
+
+// Predict the label of each output:
+public static {{ label_type }}[] predict(double[] features) {
+    int[] idx = predictIndex(features);
+    {{ label_type }}[] result = new {{ label_type }}[idx.length];
+    int offset = 0;
+    for (int j = 0; j < idx.length; j++) {
+        result[j] = LABELS[offset + idx[j]];
+        offset += OUTPUT_CLASSES[j];
+    }
+    return result;
+}
+{% else %}
+
+public static {{ label_type }} predict(double[] features) {
+    return LABELS[predictIndex(features)];
+}
+{% endif %}

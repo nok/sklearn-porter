@@ -76,6 +76,8 @@ class {{ class_name }} {
     }
 {% endif %}
 
+{% include 'labels' %}
+
     {{ method }}
 
     public static void main(String[] args) {
@@ -92,13 +94,13 @@ class {{ class_name }} {
 
         {% if is_test or to_json %}
         // Get JSON:
-        {{ 'int[]' if is_multi_output else 'int' }} prediction = {{ class_name }}.predict(features);
+        {{ label_type }}{{ '[]' if is_multi_output }} prediction = {{ class_name }}.predict(features);
         {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = {{ class_name }}.predictProba(features);
-        System.out.println("{\"predict\": " + {{ 'Arrays.toString(prediction)' if is_multi_output else 'String.valueOf(prediction)' }} + ", \"predict_proba\": " + String.join(",", {{ 'Arrays.deepToString(probabilities)' if is_multi_output else 'Arrays.toString(probabilities)' }}) + "}");
+        System.out.println("{\"predict\": " + toJson(prediction) + ", \"predict_proba\": " + String.join(",", {{ 'Arrays.deepToString(probabilities)' if is_multi_output else 'Arrays.toString(probabilities)' }}) + "}");
         {% else %}
         // Get class prediction:
-        {{ 'int[]' if is_multi_output else 'int' }} prediction = {{ class_name }}.predict(features);
-        System.out.println("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" + {{ 'Arrays.toString(prediction)' if is_multi_output else 'String.valueOf(prediction)' }});
+        {{ label_type }}{{ '[]' if is_multi_output }} prediction = {{ class_name }}.predict(features);
+        System.out.println("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" + {{ 'Arrays.toString(prediction)' if is_multi_output else 'String.valueOf(prediction)' }});
 
         // Get class probabilities:
         {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = {{ class_name }}.predictProba(features);

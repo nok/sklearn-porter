@@ -11,6 +11,8 @@ import (
 	"strconv"
 )
 
+{% include 'labels' %}
+
 type {{ class_name }} struct {
 	Priors []float64 `json:"priors"`
 	Sigmas [][]float64 `json:"sigmas"`
@@ -19,7 +21,7 @@ type {{ class_name }} struct {
 
 {% if is_test or to_json %}
 type Response struct {
-	Predict int `json:"predict"`
+	Predict {{ label_type }} `json:"predict"`
 	PredictProba []float64 `json:"predict_proba"`
 }
 
@@ -61,8 +63,12 @@ func (clf {{ class_name }}) compute(features []float64) []float64 {
 	return likelihoods
 }
 
-func (clf {{ class_name }}) Predict(features []float64) int {
+func (clf {{ class_name }}) PredictIndex(features []float64) int {
 	return clf.findMax(clf.compute(features))
+}
+
+func (clf {{ class_name }}) Predict(features []float64) {{ label_type }} {
+	return labels[clf.PredictIndex(features)]
 }
 
 func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
@@ -112,7 +118,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
-	fmt.Printf("Predicted class: #%d\n", prediction)
+	fmt.Printf("Predicted class: %v\n", prediction)
 
 	// Get class probabilities:
 	probabilities := clf.PredictProba(features)

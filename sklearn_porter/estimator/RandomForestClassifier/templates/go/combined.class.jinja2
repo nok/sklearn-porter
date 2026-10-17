@@ -15,9 +15,11 @@ import (
 	"strconv"
 )
 
+{% include 'labels' %}
+
 {% if is_test or to_json %}
 type Response struct {
-	Predict {{ '[]int' if is_multi_output else 'int' }} `json:"predict"`
+	Predict {{ '[]' if is_multi_output }}{{ label_type }} `json:"predict"`
 	PredictProba {{ '[][]float64' if is_multi_output else '[]float64' }} `json:"predict_proba"`
 }
 
@@ -129,7 +131,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := Predict(features)
-	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}%v\n", prediction)
+	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}%v\n", prediction)
 
 	// Get class probabilities:
 	probabilities := PredictProba(features)

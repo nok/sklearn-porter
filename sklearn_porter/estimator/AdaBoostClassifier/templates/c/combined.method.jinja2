@@ -22,8 +22,12 @@ void predict_proba(double *probas, double features[N_FEATURES]) {
     }
 }
 
-int predict(double features[N_FEATURES]) {
+int predict_index(double features[N_FEATURES]) {
     double probas[N_CLASSES];
     predict_proba(probas, features);
     return find_max(probas);
+}
+
+Label predict(double features[N_FEATURES]) {
+    return labels[predict_index(features)];
 }

@@ -25,7 +25,9 @@ class {{ class_name }}
 		@degree = degree
 	end
 
-	def predict (features)
+{% include 'labels' %}
+
+	def predict_index(features)
 
 		kernels = Array.new(@vectors.length)
 		case @kernel
@@ -145,6 +147,10 @@ class {{ class_name }}
 
 	end
 
+	def predict(features)
+		LABELS[predict_index features]
+	end
+
 end
 
 if __FILE__ == $0
@@ -171,7 +177,7 @@ if __FILE__ == $0
 	{% else %}
 	# Get class prediction:
 	prediction = clf.predict features
-	puts "Predicted class: ##{prediction}"
+	puts "Predicted class: #{prediction}"
 	{% endif %}
 end
 {% endblock %}

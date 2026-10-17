@@ -12,9 +12,11 @@ import (
 	"strconv"
 )
 
+{% include 'labels' %}
+
 {% if is_test or to_json %}
 type Response struct {
-	Predict {{ '[]int' if is_multi_output else 'int' }} `json:"predict"`
+	Predict {{ '[]' if is_multi_output }}{{ label_type }} `json:"predict"`
 	PredictProba {{ '[][]float64' if is_multi_output else '[]float64' }} `json:"predict_proba"`
 }
 
@@ -146,9 +148,26 @@ func (tree {{ class_name }}Tree) Compute(features []float64, node int) []float64
 	return tree.NormVals(tree.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
 }
 
-func (forest {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
+func (forest {{ class_name }}) PredictIndex(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
 	return forest.FindMax(forest.PredictProba(features))
 }
+
+{% if is_multi_output %}
+// Predict the label of each output:
+func (forest {{ class_name }}) Predict(features []float64) []{{ label_type }} {
+	result := make([]{{ label_type }}, len(outputClasses))
+	offset := 0
+	for j, idx := range forest.PredictIndex(features) {
+		result[j] = labels[offset+idx]
+		offset += outputClasses[j]
+	}
+	return result
+}
+{% else %}
+func (forest {{ class_name }}) Predict(features []float64) {{ label_type }} {
+	return labels[forest.PredictIndex(features)]
+}
+{% endif %}
 
 {% if is_multi_output %}
 func (forest {{ class_name }}) PredictProba(features []float64) [][]float64 {
@@ -217,7 +236,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := clf.Predict(features)
-	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}%v\n", prediction)
+	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}%v\n", prediction)
 	probabilities := clf.PredictProba(features)
 	for i, probability := range probabilities {
 		fmt.Printf("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}%d : %f\n", i, probability)

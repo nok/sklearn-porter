@@ -79,10 +79,29 @@ class {{ class_name }} {
         return $classes;
     }
 
-    public static function predict($features) {
+{% include 'labels' %}
+
+    public static function predictIndex($features) {
         $classes = {{ class_name }}::compute($features);
         return {{ class_name }}::findMax($classes);
     }
+
+{% if is_multi_output %}
+    // Predict the label of each output:
+    public static function predict($features) {
+        $labels = array();
+        $offset = 0;
+        foreach (self::predictIndex($features) as $j => $idx) {
+            $labels[] = self::LABELS[$offset + $idx];
+            $offset += self::OUTPUT_CLASSES[$j];
+        }
+        return $labels;
+    }
+{% else %}
+    public static function predict($features) {
+        return self::LABELS[self::predictIndex($features)];
+    }
+{% endif %}
 
     public static function predictProba($features) {
         $classes = {{ class_name }}::compute($features);
@@ -107,7 +126,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = {{ class_name }}::predict($features);
-    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
+    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
 
     // Get class probabilities:
     $probabilities = {{ class_name }}::predictProba($features);

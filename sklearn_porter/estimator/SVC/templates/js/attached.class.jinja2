@@ -16,7 +16,9 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
     this.coef0 = coef0;
     this.degree = degree;
 
-    this.predict = function(features) {
+{% include 'labels' %}
+
+    this.predictIndex = function(features) {
         var kernels = new Array(vectors.length);
         var kernel;
         var i, j, k, d, l;
@@ -129,6 +131,10 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
         }
         return this.classes[classIdx];
     }
+
+    this.predict = function(features) {
+        return LABELS[this.predictIndex(features)];
+    };
 };
 
 var main = function () {
@@ -165,7 +171,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("Predicted class: #" + prediction);
+    console.log("Predicted class: " + prediction);
     {% endif %}
 }
 

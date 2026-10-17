@@ -49,8 +49,14 @@ class {{ class_name }} {
         return $likelihoods;
     }
 
-    public function predict($features) {
+{% include 'labels' %}
+
+    public function predictIndex($features) {
         return $this->findMax($this->compute($features));
+    }
+
+    public function predict($features) {
+        return self::LABELS[$this->predictIndex($features)];
     }
 
     public function predictProba($features) {
@@ -89,7 +95,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "Predicted class: #" . strval($prediction) . "\n");
+    fwrite(STDOUT, "Predicted class: " . strval($prediction) . "\n");
 
     // Get class probabilities:
     $probabilities = $clf->predictProba($features);

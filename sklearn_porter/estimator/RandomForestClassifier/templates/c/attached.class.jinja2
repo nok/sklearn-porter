@@ -156,17 +156,34 @@ void predict_proba(double *probas, double features[N_FEATURES]) {
 }
 {% endif %}
 
+{% include 'labels' %}
+
 {% if is_multi_output %}
-void predict(int *result, double features[N_FEATURES]) {
+void predict_index(int *result, double features[N_FEATURES]) {
     double probas[N_CLASSES];
     predict_proba_concatenated(probas, features);
     find_max(result, probas);
 }
+
+/* Predict the label of each output: */
+void predict(Label *result, double features[N_FEATURES]) {
+    int j, offset = 0;
+    int idx[N_OUTPUTS];
+    predict_index(idx, features);
+    for (j = 0; j < N_OUTPUTS; j++) {
+        result[j] = labels[offset + idx[j]];
+        offset += output_classes[j];
+    }
+}
 {% else %}
-int predict(double features[N_FEATURES]) {
+int predict_index(double features[N_FEATURES]) {
     double probas[N_CLASSES];
     predict_proba(probas, features);
     return find_max(probas);
+}
+
+Label predict(double features[N_FEATURES]) {
+    return labels[predict_index(features)];
 }
 {% endif %}
 
@@ -184,7 +201,7 @@ int main(int argc, const char *argv[]) {
     }
 
     {% if is_multi_output %}
-    int prediction[N_OUTPUTS];
+    Label prediction[N_OUTPUTS];
     predict(prediction, features);
     double *probabilities[N_OUTPUTS];
     for (int j = 0; j < N_OUTPUTS; j++) {
@@ -196,7 +213,7 @@ int main(int argc, const char *argv[]) {
     /* Get JSON: */
     printf("{\"predict\": [");
     for (int j = 0; j < N_OUTPUTS; j++) {
-        printf("%d", prediction[j]);
+        print_label(prediction[j]);
         if (j < (N_OUTPUTS - 1)) {
             printf(",");
         }
@@ -216,7 +233,9 @@ int main(int argc, const char *argv[]) {
     {% else %}
     /* Get the class prediction and the class probabilities of each output: */
     for (int j = 0; j < N_OUTPUTS; j++) {
-        printf("Predicted class of output #%d: #%d\n", j, prediction[j]);
+        printf("Predicted class of output #%d: ", j);
+        print_label(prediction[j]);
+        printf("\n");
         for (int i = 0; i < output_classes[j]; i++) {
             printf("Probability of class #%d of output #%d: %.6f\n", i, j, probabilities[j][i]);
         }
@@ -231,7 +250,9 @@ int main(int argc, const char *argv[]) {
     /* Get JSON: */
     double probabilities[N_CLASSES];
     predict_proba(probabilities, features);
-    printf("{\"predict\": %d, \"predict_proba\": [", predict(features));
+    printf("{\"predict\": ");
+    print_label(predict(features));
+    printf(", \"predict_proba\": [");
     for (int i = 0; i < N_CLASSES; i++) {
         printf("%.17g", probabilities[i]);
         if (i < (N_CLASSES - 1)) {
@@ -241,7 +262,9 @@ int main(int argc, const char *argv[]) {
     printf("]}");
     {% else %}
     /* Get class prediction: */
-    printf("Predicted class: #%d\n", predict(features));
+    printf("Predicted class: ");
+    print_label(predict(features));
+    printf("\n");
 
     /* Get class probabilities: */
     double probabilities[N_CLASSES];

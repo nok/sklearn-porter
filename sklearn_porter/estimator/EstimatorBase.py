@@ -232,4 +232,32 @@ class EstimatorBase(EstimatorApiABC):
             lstrip_blocks=True,
             loader=DictLoader(tpls),
         )
+        # The labels are available in all templates, also in the included
+        # template `labels` of the language:
+        environment.globals.update(self._get_label_placeholders(language))
         return environment
+
+    def _get_label_placeholders(self, language: enum.Language) -> dict:
+        """
+        Render the labels of the classes and their type for a language.
+
+        Parameters
+        ----------
+        language : Language
+            The required language.
+
+        Returns
+        -------
+        The placeholders `label_type` and `label_values`, or nothing if the
+        estimator has no labels (e.g. a regressor).
+        """
+        kind = self.meta_info.get('label_kind')
+        if not kind:
+            return {}
+        lang = language.value
+        to_literal = lang.str_literal if kind == 'str' else repr
+        values = map(to_literal, self.meta_info['labels'])
+        return dict(
+            label_type=lang.TEMPLATES[kind],
+            label_values=', '.join(values),
+        )

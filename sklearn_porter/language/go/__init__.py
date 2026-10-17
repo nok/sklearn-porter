@@ -41,6 +41,19 @@ class Go(LanguageABC):
 
         # Primitive data types:
         'int':          'int',
-        'double':       'float64'
+        'double':       'float64',
+        'str':          'string'
     }
     # fmt: on
+
+    @staticmethod
+    def str_literal(value: str) -> str:
+        # All characters except printable ASCII characters are escaped by
+        # their code points:
+        chars = [
+            char
+            if 32 <= ord(char) < 127 and char not in '"\\'
+            else f'\\U{ord(char):08x}'
+            for char in value
+        ]
+        return '"' + ''.join(chars) + '"'

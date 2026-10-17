@@ -1045,6 +1045,113 @@ def test_regressions_of_regressors(
     assert score == 1.0
 
 
+# The labels of the classes of the tests, the strings contain the quotes,
+# escapes, trigraphs, interpolations and characters outside of ASCII of the
+# languages:
+LABELS = {
+    'int': [-1, 3, 7],
+    'float': [-1.0, 2.0, 5.0],
+    'str': [
+        "set'osa",
+        'ver"si\\color ??= $x #{y}',
+        'vir\tginica \xe4\U0001f600',
+    ],
+    'binary_int': [-1, 1],
+    'binary_bool': [False, True],
+}
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('labels', LABELS.values(), ids=list(LABELS))
+@pytest.mark.parametrize('candidate', CLASSIFIERS, ids=lambda x: x.name)
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_class_labels(
+    tmp_root_dir: Path,
+    candidate: Candidate,
+    labels: list,
+    language: str,
+    template: str,
+):
+    """Test the labels of the classes, which the ported classifiers return."""
+    if not can(candidate.clazz(), language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+    x, y = load_iris(return_X_y=True)
+    # Binary labels merge the last classes:
+    y = np.array(labels)[np.minimum(y, len(labels) - 1)]
+    orig_est = candidate.create().fit(X=x, y=y)
+    test_x = x[::10]
+    if isinstance(orig_est, KNeighborsClassifier):
+        test_x = drop_neighbor_ties(orig_est, test_x)
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'class_labels'),
+            ('estimator', candidate.name),
+            ('labels', str(len(labels)) + type(labels[0]).__name__),
+            ('language', language),
+            ('template', template),
+        ],
+    )
+    y_pred, _ = Estimator(orig_est).make(
+        test_x,
+        language=language,
+        template=template,
+        directory=tmp_dir,
+        delete_created_files=False,
+    )
+    assert y_pred.dtype == orig_est.classes_.dtype
+    np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        DecisionTreeClassifier(max_depth=3, random_state=0),
+        RandomForestClassifier(n_estimators=3, max_depth=3, random_state=0),
+        ExtraTreesClassifier(n_estimators=3, max_depth=3, random_state=0),
+        KNeighborsClassifier(),
+    ],
+    ids=lambda x: type(x).__name__,
+)
+def test_class_labels_of_multiple_outputs(
+    tmp_root_dir: Path, orig_est, language: str, template: str
+):
+    """Test the labels of the classes of each output."""
+    if not can(orig_est, language, template, 'predict'):
+        pytest.skip('Skip unsupported estimator/language/template combination')
+    x, y = load_iris(return_X_y=True)
+    y = np.c_[
+        np.array(LABELS['str'])[y],
+        np.where(x[:, 0] > 5.8, 'long', 'short'),
+    ]
+    orig_est.fit(X=x, y=y)
+    test_x = x[::10]
+    if isinstance(orig_est, KNeighborsClassifier):
+        test_x = drop_neighbor_ties(orig_est, test_x)
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'class_labels_of_multiple_outputs'),
+            ('estimator', type(orig_est).__name__),
+            ('language', language),
+            ('template', template),
+        ],
+    )
+    y_pred, _ = Estimator(orig_est).make(
+        test_x,
+        language=language,
+        template=template,
+        directory=tmp_dir,
+        delete_created_files=False,
+    )
+    np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
+
+
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'exported'])
 @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])

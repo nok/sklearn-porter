@@ -78,6 +78,8 @@ class {{ class_name }} {
     }
 {% endif %}
 
+{% include 'labels' %}
+
     {{ method | indent(4) }}
 
 }
@@ -105,7 +107,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
+    fwrite(STDOUT, "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" . {{ "implode(', ', $prediction)" if is_multi_output else 'strval($prediction)' }} . "\n");
 
     // Get class probabilities:
     $probabilities = $clf->predictProba($features);

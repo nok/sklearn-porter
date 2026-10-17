@@ -11,9 +11,12 @@ import (
 	"os"
 	"strconv"
 )
+
+{% include 'labels' %}
+
 {% if is_test or to_json %}
 type response struct {
-	Predict {{ '[]int' if is_multi_output else 'int' }} `json:"predict"`
+	Predict {{ '[]' if is_multi_output }}{{ label_type }} `json:"predict"`
 	PredictProba {{ '[][]float64' if is_multi_output else '[]float64' }} `json:"predict_proba"`
 }
 {% endif %}
@@ -97,9 +100,26 @@ func compute(features []float64) []float64 {
 	return classes
 }
 
-func Predict(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
+func PredictIndex(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
 	return findMax(compute(features))
 }
+
+{% if is_multi_output %}
+// Predict the label of each output:
+func Predict(features []float64) []{{ label_type }} {
+	result := make([]{{ label_type }}, len(outputClasses))
+	offset := 0
+	for j, idx := range PredictIndex(features) {
+		result[j] = labels[offset+idx]
+		offset += outputClasses[j]
+	}
+	return result
+}
+{% else %}
+func Predict(features []float64) {{ label_type }} {
+	return labels[PredictIndex(features)]
+}
+{% endif %}
 
 func PredictProba(features []float64) {{ '[][]float64' if is_multi_output else '[]float64' }} {
 	return normVals(compute(features))
@@ -124,7 +144,7 @@ func main() {
 	{% else %}
 	// Get class prediction:
 	prediction := Predict(features)
-	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}%v\n", prediction)
+	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}%v\n", prediction)
 
 	// Get class probabilities:
 	probabilities := PredictProba(features)

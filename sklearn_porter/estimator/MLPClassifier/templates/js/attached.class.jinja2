@@ -86,7 +86,9 @@ var {{ class_name }} = function(hidden, output, layers, weights, bias) {
         return this.network[this.network.length - 1].slice();
     };
 
-    this.predict = function(neurons) {
+{% include 'labels' %}
+
+    this.{{ 'predict' if is_multilabel else 'predictIndex' }} = function(neurons) {
         var lastLayer = this.feedForward(neurons);
         {% if is_multilabel %}
         return lastLayer.map(function(output) {
@@ -102,6 +104,12 @@ var {{ class_name }} = function(hidden, output, layers, weights, bias) {
         return findMax(lastLayer);
         {% endif %}
     };
+{% if not is_multilabel %}
+
+    this.predict = function(features) {
+        return LABELS[this.predictIndex(features)];
+    };
+{% endif %}
 
     this.predictProba = function(neurons) {
         var lastLayer = this.feedForward(neurons);
@@ -147,7 +155,7 @@ var main = function () {
     {% else %}
     // Get class prediction:
     var prediction = clf.predict(features);
-    console.log("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" + prediction);
+    console.log("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}" + prediction);
 
     // Get class probabilities:
     var probabilities = clf.predictProba(features);

@@ -41,6 +41,19 @@ class C(LanguageABC):
 
         # Primitive data types:
         'int':          'int',
-        'double':       'double'
+        'double':       'double',
+        'str':          'const char *'
     }
     # fmt: on
+
+    @staticmethod
+    def str_literal(value: str) -> str:
+        # All bytes except printable ASCII characters are escaped as octal
+        # numbers, also `?` because of the trigraphs of C99:
+        chars = [
+            chr(byte)
+            if 32 <= byte < 127 and chr(byte) not in '"\\?'
+            else f'\\{byte:03o}'
+            for byte in value.encode('utf-8')
+        ]
+        return '"' + ''.join(chars) + '"'

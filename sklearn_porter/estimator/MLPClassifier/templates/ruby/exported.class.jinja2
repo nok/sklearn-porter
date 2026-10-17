@@ -56,7 +56,9 @@ class {{ class_name }}
 		inputs
 	end
 
-	def predict(features)
+{% include 'labels' %}
+
+	def {{ 'predict' if is_multilabel else 'predict_index' }}(features)
 		outputs = _feed_forward(features)
 		{% if is_multilabel %}
 		outputs.map { |output| output > 0.5 ? 1 : 0 }
@@ -67,6 +69,12 @@ class {{ class_name }}
 		_find_max(outputs)
 		{% endif %}
 	end
+{% if not is_multilabel %}
+
+	def predict(features)
+		LABELS[predict_index features]
+	end
+{% endif %}
 
 	def predict_proba(features)
 		outputs = _feed_forward(features)
@@ -100,7 +108,7 @@ if __FILE__ == $0
 	{% else %}
 	# Get class prediction:
 	prediction = clf.predict features
-	puts "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}#{prediction}"
+	puts "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}#{prediction}"
 
 	# Get class probabilities:
 	probabilities = clf.predict_proba features

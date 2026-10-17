@@ -548,6 +548,15 @@ class Estimator:
                 y = list(executor.map(_system_call, x))
         y = list(zip(*y, strict=False))
         y_pred = np.array(y[0])
+        meta_info = self._estimator.meta_info
+        if 'labels' in meta_info and not meta_info.get('is_multilabel'):
+            # The ported classifiers return the labels of the classes, so
+            # convert them (e.g. `1` of JSON to `1.0`) to the type of the
+            # labels of scikit-learn:
+            classes = self._estimator.estimator.classes_
+            if not isinstance(classes, list):
+                classes = [classes]
+            y_pred = y_pred.astype(np.result_type(*classes))
         y_proba: np.ndarray | list[np.ndarray] | None = None
         if len(y) > 1:
             if self._estimator.meta_info.get('is_multi_output'):
@@ -840,7 +849,7 @@ def _system_call(cmd: list[str], n_retries: int = 3):
         if attempt:
             sleep(0.1 * 2**attempt)
         try:
-            proc = run(cmd, capture_output=True, text=True)
+            proc = run(cmd, capture_output=True, encoding='utf-8')
         except OSError as e:  # e.g. a missing or busy executable
             error = f'{type(e).__name__}: {e}'
             continue

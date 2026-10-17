@@ -152,12 +152,18 @@ void predict(int *labels, double features[N_FEATURES]) {
     free(outputs);
 }
 {% else %}
-int predict(double features[N_FEATURES]) {
+{% include 'labels' %}
+
+int predict_index(double features[N_FEATURES]) {
     int n_outputs = layers[n_layers - 1];
     double *outputs = feed_forward(features);
     int prediction = n_outputs == 1 ? outputs[0] > .5 : find_max(outputs, n_outputs);
     free(outputs);
     return prediction;
+}
+
+Label predict(double features[N_FEATURES]) {
+    return labels[predict_index(features)];
 }
 {% endif %}
 
@@ -207,7 +213,9 @@ int main(int argc, const char *argv[]) {
     }
     printf("], \"predict_proba\": [");
     {% else %}
-    printf("{\"predict\": %d, \"predict_proba\": [", predict(features));
+    printf("{\"predict\": ");
+    print_label(predict(features));
+    printf(", \"predict_proba\": [");
     {% endif %}
     for (int i = 0; i < n_classes(); i++) {
         printf("%.17g", probabilities[i]);
@@ -225,7 +233,9 @@ int main(int argc, const char *argv[]) {
         printf("Predicted label #%d: %d\n", i, labels[i]);
     }
     {% else %}
-    printf("Predicted class: #%d\n", predict(features));
+    printf("Predicted class: ");
+    print_label(predict(features));
+    printf("\n");
     {% endif %}
 
     /* Get class probabilities: */

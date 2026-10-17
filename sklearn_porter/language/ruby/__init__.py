@@ -39,6 +39,12 @@ class Ruby(LanguageABC):
 
         # Primitive data types:
         'int':          '',
-        'double':       ''
+        'double':       '',
+        'str':          ''
     }
     # fmt: on
+
+    @staticmethod
+    def str_literal(value: str) -> str:
+        # Strings in single quotes contain only the escapes `\\` and `\'`:
+        return "'" + value.replace('\\', '\\\\').replace("'", "\\'") + "'"

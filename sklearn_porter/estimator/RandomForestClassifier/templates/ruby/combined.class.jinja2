@@ -61,9 +61,28 @@ class {{ class_name }}
 
     {{ method | indent(4) }}
 
-    def predict(features)
+    # The labels of the classes{{ ' of all outputs' if is_multi_output }}:
+    LABELS = [{{ label_values }}]
+
+    def predict_index(features)
         _find_max(predict_proba(features))
     end
+
+{% if is_multi_output %}
+    # Predict the label of each output:
+    def predict(features)
+        offset = 0
+        predict_index(features).each_with_index.map do |idx, j|
+            label = LABELS[offset + idx]
+            offset += OUTPUT_CLASSES[j]
+            label
+        end
+    end
+{% else %}
+    def predict(features)
+        LABELS[predict_index features]
+    end
+{% endif %}
 
 end
 
@@ -86,7 +105,7 @@ if __FILE__ == $0
     {% else %}
     # Get class prediction:
     prediction = clf.predict features
-    puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: #' }}#{prediction}"
+    puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}#{prediction}"
 
     # Get class probabilities:
     probabilities = clf.predict_proba features

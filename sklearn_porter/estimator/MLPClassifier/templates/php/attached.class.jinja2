@@ -73,7 +73,9 @@ class {{ class_name }} {
         return $inputs;
     }
 
-    public function predict($features) {
+{% include 'labels' %}
+
+    public function {{ 'predict' if is_multilabel else 'predictIndex' }}($features) {
         $outputs = $this->feedForward($features);
         {% if is_multilabel %}
         return array_map(function ($output) {
@@ -86,6 +88,12 @@ class {{ class_name }} {
         return $this->findMax($outputs);
         {% endif %}
     }
+{% if not is_multilabel %}
+
+    public function predict($features) {
+        return self::LABELS[$this->predictIndex($features)];
+    }
+{% endif %}
 
     public function predictProba($features) {
         $outputs = $this->feedForward($features);
@@ -123,7 +131,7 @@ if ($argc > 1) {
     {% else %}
     // Get class prediction:
     $prediction = $clf->predict($features);
-    fwrite(STDOUT, "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: #' }}" . {{ "implode(', ', $prediction)" if is_multilabel else 'strval($prediction)' }} . "\n");
+    fwrite(STDOUT, "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}" . {{ "implode(', ', $prediction)" if is_multilabel else 'strval($prediction)' }} . "\n");
 
     // Get class probabilities:
     $probabilities = $clf->predictProba($features);
