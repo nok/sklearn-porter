@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
@@ -13,6 +14,7 @@ import (
 	{% endif %}
 	"os"
 	"strconv"
+	"strings"
 )
 {% if is_test or to_json %}
 type response struct {
@@ -27,38 +29,29 @@ func Predict(features []float64) []float64 {
 	return values
 }
 
+{% include 'samples' %}
+
 func main() {
-
-	if len(os.Args) != {{ n_features + 1 }} {
-		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features.")
-		os.Exit(1)
-	}
-
-	// Features:
-	var features []float64
-	for _, arg := range os.Args[1:] {
-		if n, err := strconv.ParseFloat(arg, 64); err == nil {
-			features = append(features, n)
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		prediction := Predict(features)
+		var res []byte
+		if len(prediction) == 1 {
+			res, _ = json.Marshal(&response{Predict: prediction[0]})
+		} else {
+			res, _ = json.Marshal(&response{Predict: prediction})
 		}
-	}
-
-	{% if is_test or to_json %}
-	// Get JSON:
-	prediction := Predict(features)
-	var res []byte
-	if len(prediction) == 1 {
-		res, _ = json.Marshal(&response{Predict: prediction[0]})
-	} else {
-		res, _ = json.Marshal(&response{Predict: prediction})
-	}
-	fmt.Println(string(res))
-	{% else %}
-	// Get predicted values:
-	prediction := Predict(features)
-	for i, value := range prediction {
-		fmt.Printf("Predicted value #%d : %v\n", i, value)
-	}
-	{% endif %}
+		fmt.Println(string(res))
+		{% else %}
+		// Get predicted values:
+		prediction := Predict(features)
+		for i, value := range prediction {
+			fmt.Printf("Predicted value #%d : %v\n", i, value)
+		}
+		{% endif %}
+	})
 
 }
 {% endblock %}

@@ -150,12 +150,9 @@ class {{ class_name }}
 end
 
 if __FILE__ == $0
-	if ARGV.length != {{ n_features }}
-		raise "You have to pass {{ n_features }} features."
-	end
-
-	# Features:
-	features = ARGV.collect(&:to_f)
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
 
 	# Model data:
 	{{ vectors }}
@@ -166,14 +163,17 @@ if __FILE__ == $0
 	# Estimator:
 	clf = {{ class_name }}.new vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}
 
-	{% if is_test or to_json %}
-	# Get JSON:
-	prediction = clf.predict features
-	puts JSON.generate({:predict => prediction})
-	{% else %}
-	# Get class prediction:
-	prediction = clf.predict features
-	puts "Predicted class: #{prediction}"
-	{% endif %}
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		{% if is_test or to_json %}
+		# Get JSON:
+		prediction = clf.predict features
+		puts JSON.generate({:predict => prediction})
+		{% else %}
+		# Get class prediction:
+		prediction = clf.predict features
+		puts "Predicted class: #{prediction}"
+		{% endif %}
+	end
 end
 {% endblock %}

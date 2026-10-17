@@ -14,5 +14,7 @@ Environment:
 Usage:
     1. Execute a prediction:
         $ php -f {{ class_name }}.php {{ class_name }}.json feature_1 ... feature_{{ n_features }}
+    2. Execute the predictions of several samples (one per line):
+        $ php -f {{ class_name }}.php {{ class_name }}.json < samples.txt
 */
 {% block content %}{% endblock %}

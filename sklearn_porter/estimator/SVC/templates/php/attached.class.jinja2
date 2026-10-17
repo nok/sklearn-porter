@@ -160,11 +160,12 @@ class {{ class_name }} {
 
 }
 
-if ($argc > 1) {
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
 
-    // Features:
     array_shift($argv);
-    $features = $argv;
 
     // Model data:
     {{ vectors }}
@@ -175,15 +176,18 @@ if ($argc > 1) {
     // Estimator:
     $clf = new {{ class_name }}($vectors, $coeffs, $inters, $weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
 
-    {% if is_test or to_json %}
-    // Get JSON:
-    $prediction = $clf->predict($features);
-    fwrite(STDOUT, json_encode(array("predict" => $prediction)));
-    {% else %}
-    // Get class prediction:
-    $prediction = $clf->predict($features);
-    fwrite(STDOUT, "Predicted class: " . strval($prediction) . "\n");
-    {% endif %}
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        {% if is_test or to_json %}
+        // Get JSON:
+        $prediction = $clf->predict($features);
+        fwrite(STDOUT, json_encode(array("predict" => $prediction)) . "\n");
+        {% else %}
+        // Get class prediction:
+        $prediction = $clf->predict($features);
+        fwrite(STDOUT, "Predicted class: " . strval($prediction) . "\n");
+        {% endif %}
+    }
 
 }
 {% endblock %}

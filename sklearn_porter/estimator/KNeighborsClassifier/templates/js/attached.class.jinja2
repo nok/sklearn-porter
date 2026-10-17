@@ -231,23 +231,9 @@ var {{ class_name }} = function(X, y, k, n, metric, power) {
 
 };
 
+{% include 'samples' %}
+
 var main = function () {
-    if (typeof process !== 'undefined' && typeof process.argv !== 'undefined') {
-        if (process.argv.length - 2 !== {{ n_features }}) {
-            var IllegalArgumentException = function(message) {
-                this.message = message;
-                this.name = "IllegalArgumentException";
-            }
-            throw new IllegalArgumentException("You have to pass {{ n_features }} features.");
-        }
-    }
-
-    // Features:
-    var features = process.argv.slice(2);
-    for (var i = 0; i < features.length; i++) {
-        features[i] = parseFloat(features[i]);
-    }
-
     // Model data:
     {{ X }}
     {{ y }}
@@ -255,23 +241,26 @@ var main = function () {
     // Estimator:
     var clf = new {{ class_name }}(X, y, {{ k }}, {{ n }}, "{{ metric }}", {{ power }});
 
-    {% if is_test or to_json %}
-    // Get JSON:
-    console.log(JSON.stringify({
-        "predict": clf.predict(features),
-        "predict_proba": clf.predictProba(features)
-    }));
-    {% else %}
-    // Get class prediction:
-    var prediction = clf.predict(features);
-    console.log("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" + prediction);
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        {% if is_test or to_json %}
+        // Get JSON:
+        console.log(JSON.stringify({
+            "predict": clf.predict(features),
+            "predict_proba": clf.predictProba(features)
+        }));
+        {% else %}
+        // Get class prediction:
+        var prediction = clf.predict(features);
+        console.log("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}" + prediction);
 
-    // Get class probabilities:
-    var probabilities = clf.predictProba(features);
-    for (var i = 0; i < probabilities.length; i++) {
-        console.log("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}" + i + " : " + probabilities[i]);
-    }
-    {% endif %}
+        // Get class probabilities:
+        var probabilities = clf.predictProba(features);
+        for (var i = 0; i < probabilities.length; i++) {
+            console.log("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}" + i + " : " + probabilities[i]);
+        }
+        {% endif %}
+    });
 
 }
 

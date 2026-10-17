@@ -21,6 +21,12 @@ code must predict exactly the same classes as the original estimator.
   `save`) lives in `sklearn_porter/cli/`.
 - `make()` compiles and executes the ported estimator via subprocess calls,
   `test()` compares its predictions with scikit-learn (integrity score).
+- The `main` of each ported estimator reads the features of one sample from
+  its arguments or of several samples (one per line) from the standard input
+  (shared template `samples` of each language) and prints one result per
+  line. `make()` passes the samples in batches of at least 100 samples to
+  the standard input, because starting a process (e.g. the JVM) takes much
+  longer than a prediction.
 
 ## Layout
 

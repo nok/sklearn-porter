@@ -25,23 +25,17 @@ class {{ class_name }} {
         return values;
     }
 
+{% include 'samples' %}
+
     public static void main(String[] args) {
-        int nFeatures = {{ n_features }};
-        if (args.length != nFeatures) {
-            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            double[] prediction = {{ class_name }}.predict(features);
+
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
         }
-
-        // Features:
-        double[] features = new double[args.length];
-        for (int i = 0, l = args.length; i < l; i++) {
-            features[i] = args[i].equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(args[i]);
-        }
-
-        double[] prediction = {{ class_name }}.predict(features);
-
-        {% filter indent(8, True) %}
-        {% include 'output' %}
-        {% endfilter %}
 
     }
 }

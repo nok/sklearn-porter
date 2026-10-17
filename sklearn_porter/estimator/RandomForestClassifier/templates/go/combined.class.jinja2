@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
@@ -13,6 +14,7 @@ import (
 	{% endif %}
 	"os"
 	"strconv"
+	"strings"
 )
 
 {% include 'labels' %}
@@ -107,38 +109,29 @@ func normVals(nums []float64) []float64 {
 
 {{ method }}
 
+{% include 'samples' %}
+
 func main() {
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		prediction := Predict(features)
+		probabilities := PredictProba(features)
+		res, _ := json.Marshal(&Response{Predict: prediction, PredictProba: probabilities})
+		fmt.Println(string(res))
+		{% else %}
+		// Get class prediction:
+		prediction := Predict(features)
+		fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}%v\n", prediction)
 
-	if len(os.Args) != {{ n_features + 1 }} {
-		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features.")
-		os.Exit(1)
-	}
-
-	// Features:
-	var features []float64
-	for _, arg := range os.Args[1:] {
-		if n, err := strconv.ParseFloat(arg, 64); err == nil {
-			features = append(features, n)
+		// Get class probabilities:
+		probabilities := PredictProba(features)
+		for i, probability := range probabilities {
+			fmt.Printf("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}%d : %f\n", i, probability)
 		}
-	}
-
-	{% if is_test or to_json %}
-	// Get JSON:
-	prediction := Predict(features)
-	probabilities := PredictProba(features)
-	res, _ := json.Marshal(&Response{Predict: prediction, PredictProba: probabilities})
-	fmt.Println(string(res))
-	{% else %}
-	// Get class prediction:
-	prediction := Predict(features)
-	fmt.Printf("{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}%v\n", prediction)
-
-	// Get class probabilities:
-	probabilities := PredictProba(features)
-	for i, probability := range probabilities {
-		fmt.Printf("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}%d : %f\n", i, probability)
-	}
-	{% endif %}
+		{% endif %}
+	})
 
 }
 {% endblock %}

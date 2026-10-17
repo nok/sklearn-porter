@@ -21,33 +21,27 @@ class {{ class_name }} {
         return values;
     }
 
+{% include 'samples' %}
+
     public static void main(String[] args) {
-        int nFeatures = {{ n_features }};
-        if (args.length != nFeatures) {
-            throw new IllegalArgumentException("You have to pass " +  String.valueOf(nFeatures) + " features.");
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            {% if is_test or to_json %}
+            // Get JSON:
+            double[] prediction = {{ class_name }}.predict(features);
+            {% if is_multi_output %}
+            System.out.println("{\"predict\": " + Arrays.toString(prediction) + "}");
+            {% else %}
+            System.out.println("{\"predict\": " + String.valueOf(prediction[0]) + "}");
+            {% endif %}
+            {% else %}
+            // Get predicted values:
+            double[] prediction = {{ class_name }}.predict(features);
+            for (int i = 0; i < prediction.length; i++) {
+                System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
+            }
+            {% endif %}
         }
-
-        // Features:
-        double[] features = new double[args.length];
-        for (int i = 0, l = args.length; i < l; i++) {
-            features[i] = Double.parseDouble(args[i]);
-        }
-
-        {% if is_test or to_json %}
-        // Get JSON:
-        double[] prediction = {{ class_name }}.predict(features);
-        {% if is_multi_output %}
-        System.out.println("{\"predict\": " + Arrays.toString(prediction) + "}");
-        {% else %}
-        System.out.println("{\"predict\": " + String.valueOf(prediction[0]) + "}");
-        {% endif %}
-        {% else %}
-        // Get predicted values:
-        double[] prediction = {{ class_name }}.predict(features);
-        for (int i = 0; i < prediction.length; i++) {
-            System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
-        }
-        {% endif %}
 
     }
 }

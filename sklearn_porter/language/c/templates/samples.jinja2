@@ -1,0 +1,40 @@
+/* Read the features of the next sample, either of one sample from the
+   arguments or of several samples (one per line) from the standard input: */
+int read_features(double features[], int argc, const char *argv[], int offset) {
+    static int n_read = 0;
+    if (argc > offset) {
+        if (n_read++ > 0) {
+            return 0;
+        }
+        if (argc - offset != N_FEATURES) {
+            fprintf(stderr, "You have to pass %d features per sample.\n", N_FEATURES);
+            exit(1);
+        }
+        for (int i = 0; i < N_FEATURES; i++) {
+            features[i] = atof(argv[offset + i]);
+        }
+        return 1;
+    }
+    int c, i = 0;
+    while (1) {
+        do {
+            c = getchar();
+        } while (c == ' ' || c == '\t' || c == '\r');
+        if (c == '\n' || c == EOF) {
+            if (i == N_FEATURES) {
+                return 1;
+            }
+            if (i == 0) {
+                if (c == EOF) {
+                    return 0;
+                }
+                continue;  /* empty line */
+            }
+        } else if (i < N_FEATURES && ungetc(c, stdin) != EOF && scanf("%lf", &features[i]) == 1) {
+            i++;
+            continue;
+        }
+        fprintf(stderr, "You have to pass %d features per sample.\n", N_FEATURES);
+        exit(1);
+    }
+}

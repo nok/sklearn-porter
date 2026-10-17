@@ -41,25 +41,24 @@ class {{ class_name }} {
         return forest;
     }
 
-    public static void main(String[] args) throws IOException {
-        int nFeatures = {{ n_features }};
-        if (args.length != (nFeatures + 1) || !args[0].endsWith(".json")) {
-            throw new IllegalArgumentException("You have to pass the path to the exported model data and " +  String.valueOf(nFeatures) + " features.");
-        }
+{% include 'samples' %}
 
-        // Features:
-        double[] features = new double[args.length - 1];
-        for (int i = 1, l = args.length; i < l; i++) {
-            features[i - 1] = args[i].equalsIgnoreCase("nan") ? Double.NaN : Double.parseDouble(args[i]);
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
         }
 
         // Estimator:
         {{ class_name }} reg = new {{ class_name }}(load(args[0]));
-        double[] prediction = reg.predict(features);
 
-        {% filter indent(8, True) %}
-        {% include 'output' %}
-        {% endfilter %}
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            double[] prediction = reg.predict(features);
+
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
 
     }
 }

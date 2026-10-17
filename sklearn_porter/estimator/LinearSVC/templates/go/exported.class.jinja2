@@ -5,6 +5,7 @@ package main
 
 {% if is_binary %}
 import (
+	"bufio"
 	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
@@ -12,6 +13,7 @@ import (
   "io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type {{ class_name }} struct {
@@ -20,6 +22,7 @@ type {{ class_name }} struct {
 }
 {% else %}
 import (
+	"bufio"
 	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
@@ -28,6 +31,7 @@ import (
 	"math"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type {{ class_name }} struct {
@@ -78,14 +82,12 @@ func (svc {{ class_name }}) Predict(features []float64) {{ label_type }} {
 	return labels[svc.PredictIndex(features)]
 }
 
-func main() {
+{% include 'samples' %}
 
-	// Features:
-	var features []float64
-	for _, arg := range os.Args[2:] {
-		if n, err := strconv.ParseFloat(arg, 64); err == nil {
-			features = append(features, n)
-		}
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
+		os.Exit(1)
 	}
 
 	// Model data:
@@ -100,16 +102,19 @@ func main() {
 	var clf {{ class_name }}
 	json.Unmarshal(byteValue, &clf)
 
-	{% if is_test or to_json %}
-	// Get JSON:
-	prediction := clf.Predict(features)
-	res, _ := json.Marshal(&Response{Predict: prediction})
-	fmt.Println(string(res))
-	{% else %}
-	// Get class prediction:
-	prediction := clf.Predict(features)
-	fmt.Printf("Predicted class: %v\n", prediction)
-	{% endif %}
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[2:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		prediction := clf.Predict(features)
+		res, _ := json.Marshal(&Response{Predict: prediction})
+		fmt.Println(string(res))
+		{% else %}
+		// Get class prediction:
+		prediction := clf.Predict(features)
+		fmt.Printf("Predicted class: %v\n", prediction)
+		{% endif %}
+	})
 
 }
 {% endblock %}

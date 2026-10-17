@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	{% if with_proba %}
@@ -11,6 +12,7 @@ import (
 	{% endif %}
 	"os"
 	"strconv"
+	"strings"
 )
 
 {% include 'labels' %}
@@ -97,19 +99,12 @@ func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
 }
 {% endif %}
 
+{% include 'samples' %}
+
 func main() {
-
-	if len(os.Args) != {{ n_features + 2 }} {
-		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data and {{ n_features }} features.")
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
 		os.Exit(1)
-	}
-
-	// Features:
-	var features []float64
-	for _, arg := range os.Args[2:] {
-		if n, err := strconv.ParseFloat(arg, 64); err == nil {
-			features = append(features, n)
-		}
 	}
 
 	// Model data:
@@ -123,28 +118,31 @@ func main() {
 	var clf {{ class_name }}
 	json.Unmarshal(byteValue, &clf)
 
-	{% if is_test or to_json %}
-	// Get JSON:
-	res, _ := json.Marshal(&Response{
-		Predict: clf.Predict(features),
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[2:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		res, _ := json.Marshal(&Response{
+			Predict: clf.Predict(features),
+			{% if with_proba %}
+			PredictProba: clf.PredictProba(features),
+			{% endif %}
+		})
+		fmt.Println(string(res))
+		{% else %}
+		// Get class prediction:
+		prediction := clf.Predict(features)
+		fmt.Printf("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}%v\n", prediction)
 		{% if with_proba %}
-		PredictProba: clf.PredictProba(features),
+
+		// Get class probabilities:
+		probabilities := clf.PredictProba(features)
+		for i, probability := range probabilities {
+			fmt.Printf("Probability of class #%d : %f\n", i, probability)
+		}
+		{% endif %}
 		{% endif %}
 	})
-	fmt.Println(string(res))
-	{% else %}
-	// Get class prediction:
-	prediction := clf.Predict(features)
-	fmt.Printf("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}%v\n", prediction)
-	{% if with_proba %}
-
-	// Get class probabilities:
-	probabilities := clf.PredictProba(features)
-	for i, probability := range probabilities {
-		fmt.Printf("Probability of class #%d : %f\n", i, probability)
-	}
-	{% endif %}
-	{% endif %}
 
 }
 {% endblock %}

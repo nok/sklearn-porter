@@ -4,6 +4,7 @@
 package main
 
 import (
+	"bufio"
 	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
@@ -13,6 +14,7 @@ import (
 	{% endif %}
 	"os"
 	"strconv"
+	"strings"
 )
 
 {% include 'labels' %}
@@ -96,43 +98,34 @@ func PredictProba(features []float64) []float64 {
 }
 {% endif %}
 
+{% include 'samples' %}
+
 func main() {
-
-	if len(os.Args) != {{ n_features + 1 }} {
-		fmt.Fprintln(os.Stderr, "You have to pass {{ n_features }} features.")
-		os.Exit(1)
-	}
-
-	// Features:
-	var features []float64
-	for _, arg := range os.Args[1:] {
-		if n, err := strconv.ParseFloat(arg, 64); err == nil {
-			features = append(features, n)
-		}
-	}
-
-	{% if is_test or to_json %}
-	// Get JSON:
-	res, _ := json.Marshal(&Response{
-		Predict: Predict(features),
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		res, _ := json.Marshal(&Response{
+			Predict: Predict(features),
+			{% if with_proba %}
+			PredictProba: PredictProba(features),
+			{% endif %}
+		})
+		fmt.Println(string(res))
+		{% else %}
+		// Get class prediction:
+		prediction := Predict(features)
+		fmt.Printf("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}%v\n", prediction)
 		{% if with_proba %}
-		PredictProba: PredictProba(features),
+
+		// Get class probabilities:
+		probabilities := PredictProba(features)
+		for i, probability := range probabilities {
+			fmt.Printf("Probability of class #%d : %f\n", i, probability)
+		}
+		{% endif %}
 		{% endif %}
 	})
-	fmt.Println(string(res))
-	{% else %}
-	// Get class prediction:
-	prediction := Predict(features)
-	fmt.Printf("{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}%v\n", prediction)
-	{% if with_proba %}
-
-	// Get class probabilities:
-	probabilities := PredictProba(features)
-	for i, probability := range probabilities {
-		fmt.Printf("Probability of class #%d : %f\n", i, probability)
-	}
-	{% endif %}
-	{% endif %}
 
 }
 {% endblock %}

@@ -1,0 +1,20 @@
+// Read the features of one sample from the arguments or of several samples
+// (one per line) from the standard input:
+function readSamples($args) {
+    $lines = count($args) > 0 ? array(implode(' ', $args)) : file('php://stdin');
+    $samples = array();
+    foreach ($lines as $line) {
+        $values = preg_split('/\s+/', trim($line), -1, PREG_SPLIT_NO_EMPTY);
+        if (count($values) == 0) {
+            continue;
+        }
+        if (count($values) != {{ n_features }}) {
+            fwrite(STDERR, "You have to pass {{ n_features }} features per sample.\n");
+            exit(1);
+        }
+        $samples[] = array_map(function ($value) {
+            return strtolower($value) === 'nan' ? NAN : floatval($value);
+        }, $values);
+    }
+    return $samples;
+}

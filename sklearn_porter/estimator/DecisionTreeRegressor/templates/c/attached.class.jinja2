@@ -29,41 +29,35 @@ double *predict(double features[N_FEATURES]) {
     return &values[(-node - 1) * N_OUTPUTS];
 }
 
+{% include 'samples' %}
+
 int main(int argc, const char *argv[]) {
-
-    if (argc != N_FEATURES + 1) {
-        fprintf(stderr, "You have to pass %d features.\n", N_FEATURES);
-        return 1;
-    }
-
-    /* Features: */
+    /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
-    for (int i = 1; i < argc; i++) {
-        features[i-1] = atof(argv[i]);
-    }
+    while (read_features(features, argc, argv, 1)) {
+        double *prediction = predict(features);
 
-    double *prediction = predict(features);
-
-    {% if is_test or to_json %}
-    /* Get JSON: */
-    if (N_OUTPUTS == 1) {
-        printf("{\"predict\": %.17g}", prediction[0]);
-    } else {
-        printf("{\"predict\": [");
-        for (int i = 0; i < N_OUTPUTS; i++) {
-            printf("%.17g", prediction[i]);
-            if (i < (N_OUTPUTS - 1)) {
-                printf(",");
+        {% if is_test or to_json %}
+        /* Get JSON: */
+        if (N_OUTPUTS == 1) {
+            printf("{\"predict\": %.17g}\n", prediction[0]);
+        } else {
+            printf("{\"predict\": [");
+            for (int i = 0; i < N_OUTPUTS; i++) {
+                printf("%.17g", prediction[i]);
+                if (i < (N_OUTPUTS - 1)) {
+                    printf(",");
+                }
             }
+            printf("]}\n");
         }
-        printf("]}");
+        {% else %}
+        /* Get predicted values: */
+        for (int i = 0; i < N_OUTPUTS; i++) {
+            printf("Predicted value #%d: %.17g\n", i, prediction[i]);
+        }
+        {% endif %}
     }
-    {% else %}
-    /* Get predicted values: */
-    for (int i = 0; i < N_OUTPUTS; i++) {
-        printf("Predicted value #%d: %.17g\n", i, prediction[i]);
-    }
-    {% endif %}
 
     return 0;
 }

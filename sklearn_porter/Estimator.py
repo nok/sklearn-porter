@@ -58,6 +58,11 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter import meta
 from sklearn_porter.utils import densify, options
 
+# The minimal number of samples which `make()` passes to one process of the
+# ported estimator, because starting a process takes much longer than a
+# prediction:
+MIN_BATCH_SIZE = 100
+
 
 @decorator.aliased
 class Estimator:
@@ -427,7 +432,9 @@ class Estimator:
         x : list or np.ndarray of shape (n_samples, n_features) or (n_features)
             Input data.
         n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
-            The number of threads to make the predictions.
+            The maximal number of processes to make the predictions. Each
+            process predicts a batch of at least 100 samples (or all
+            samples, if there are fewer).
         directory : str or Path, optional (default: a temporary directory)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)
@@ -531,21 +538,34 @@ class Estimator:
             x = x[np.newaxis, :]
         x = x.tolist()
 
-        # Commands (program, arguments and features):
-        x = [cmd + list(map(str, e)) for e in x]
-
         if isinstance(n_jobs, int) and n_jobs <= 1:
             n_jobs = False
-
         if not n_jobs:
-            y = list(map(_system_call, x))
+            n_jobs = 1
+        elif isinstance(n_jobs, bool) or not isinstance(n_jobs, int):
+            n_jobs = cpu_count() or 1
+
+        # The ported estimator reads the samples (one per line) from the
+        # standard input. Starting a process (e.g. the JVM) takes much longer
+        # than a prediction, so each process predicts a batch of samples:
+        n_batches = max(1, min(n_jobs, len(x) // MIN_BATCH_SIZE))
+        batch_size = -(-len(x) // n_batches)  # rounded up
+        batches = [
+            '\n'.join(' '.join(map(str, e)) for e in x[i : i + batch_size])
+            + '\n'
+            for i in range(0, len(x), batch_size)
+        ]
+
+        def call(batch: str) -> list:
+            return _system_call(cmd, batch)
+
+        if len(batches) == 1:
+            y = call(batches[0])
         else:
-            if isinstance(n_jobs, bool) or not isinstance(n_jobs, int):
-                n_jobs = cpu_count() or 1
             # Threads are sufficient, because they only wait for the
             # subprocesses which execute the ported estimator:
-            with ThreadPoolExecutor(n_jobs) as executor:
-                y = list(executor.map(_system_call, x))
+            with ThreadPoolExecutor(len(batches)) as executor:
+                y = [e for ys in executor.map(call, batches) for e in ys]
         y = list(zip(*y, strict=False))
         y_pred = np.array(y[0])
         meta_info = self._estimator.meta_info
@@ -694,7 +714,9 @@ class Estimator:
         x : numpy.ndarray, shape (n_samples, n_features)
             Input data.
         n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
-            The number of threads to make the predictions.
+            The maximal number of processes to make the predictions. Each
+            process predicts a batch of at least 100 samples (or all
+            samples, if there are fewer).
         directory : str or Path, optional (default: a temporary directory)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)
@@ -820,7 +842,7 @@ def _get_binary_path(src_path: Path) -> Path:
     return src_path.parent / (src_path.stem + suffix)
 
 
-def _system_call(cmd: list[str], n_retries: int = 3):
+def _system_call(cmd: list[str], samples: str, n_retries: int = 3) -> list:
     """
     Separate helper function for parallel system calls.
 
@@ -832,24 +854,31 @@ def _system_call(cmd: list[str], n_retries: int = 3):
     ----------
     cmd : list of str
         The program and its arguments.
+    samples : str
+        The features of the samples, one sample per line, which are passed
+        to the standard input.
     n_retries : int (default: 3)
         The number of retries after a failed call.
 
     Returns
     -------
-    The predictions (and probabilities) of the executed estimator.
+    The predictions (and probabilities) of each sample.
 
     Raises
     ------
     ExecutionFailed
-        If the call failed or didn't return valid JSON on every attempt.
+        If the call failed or didn't return valid JSON of each sample on
+        every attempt.
     """
+    n_samples = samples.count('\n')
     proc_stdout = proc_stderr = ''
     for attempt in range(n_retries + 1):
         if attempt:
             sleep(0.1 * 2**attempt)
         try:
-            proc = run(cmd, capture_output=True, encoding='utf-8')
+            proc = run(
+                cmd, input=samples, capture_output=True, encoding='utf-8'
+            )
         except OSError as e:  # e.g. a missing or busy executable
             error = f'{type(e).__name__}: {e}'
             continue
@@ -858,14 +887,20 @@ def _system_call(cmd: list[str], n_retries: int = 3):
             error = f'Exit code {proc.returncode}'
             continue
         try:
-            out = loads(proc_stdout)
+            outs = [loads(line) for line in proc_stdout.splitlines() if line]
         except JSONDecodeError as e:
             error = f'Invalid JSON ({e})'
             continue
-        result = [out.get('predict')]
-        if 'predict_proba' in out.keys():
-            result.append(out.get('predict_proba'))
-        return result
+        if len(outs) != n_samples:
+            error = f'{len(outs)} results of {n_samples} samples'
+            continue
+        results = []
+        for out in outs:
+            result = [out.get('predict')]
+            if 'predict_proba' in out.keys():
+                result.append(out.get('predict_proba'))
+            results.append(result)
+        return results
     msg = (
         f'Command `{join(cmd)}` failed after {n_retries + 1} attempts.\n'
         f'{error}\n\nstdout:\n{proc_stdout}\nstderr:\n{proc_stderr}'

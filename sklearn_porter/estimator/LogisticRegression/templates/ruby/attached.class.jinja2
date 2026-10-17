@@ -64,12 +64,9 @@ decisions.map { |decision| decision > 0 ? 1 : 0 }
 end
 
 if __FILE__ == $0
-	if ARGV.length != {{ n_features }}
-		raise "You have to pass {{ n_features }} features."
-	end
-
-	# Features:
-	features = ARGV.collect(&:to_f)
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
 
 	# Model data:
 	{{ coeffs }}
@@ -78,27 +75,30 @@ if __FILE__ == $0
 	# Estimator:
 	clf = {{ class_name }}.new coeffs, inters
 
-	{% if is_test or to_json %}
-	# Get JSON:
-	prediction = clf.predict features
-	{% if with_proba %}
-	probabilities = clf.predict_proba features
-	puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
-	{% else %}
-	puts JSON.generate({:predict => prediction})
-	{% endif %}
-	{% else %}
-	# Get class prediction:
-	prediction = clf.predict features
-	puts "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}#{prediction}"
-	{% if with_proba %}
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		{% if is_test or to_json %}
+		# Get JSON:
+		prediction = clf.predict features
+		{% if with_proba %}
+		probabilities = clf.predict_proba features
+		puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+		{% else %}
+		puts JSON.generate({:predict => prediction})
+		{% endif %}
+		{% else %}
+		# Get class prediction:
+		prediction = clf.predict features
+		puts "{{ 'Predicted labels: ' if is_multilabel else 'Predicted class: ' }}#{prediction}"
+		{% if with_proba %}
 
-	# Get class probabilities:
-	probabilities = clf.predict_proba features
-	for i in 0 ... probabilities.length
-		puts "Probability of class ##{i} : #{probabilities[i]}"
+		# Get class probabilities:
+		probabilities = clf.predict_proba features
+		for i in 0 ... probabilities.length
+			puts "Probability of class ##{i} : #{probabilities[i]}"
+		end
+		{% endif %}
+		{% endif %}
 	end
-	{% endif %}
-	{% endif %}
 end
 {% endblock %}

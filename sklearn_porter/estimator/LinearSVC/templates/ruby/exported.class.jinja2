@@ -50,27 +50,29 @@ class {{ class_name }}
 end
 
 if __FILE__ == $0
-	if ARGV.length != {{ n_features + 1 }}
-		raise "You have to pass the path to the model data and {{ n_features }} features."
-	end
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+	raise "You have to pass the path to the model data." if ARGV.empty?
 
 	# Model data:
 	modelData = ARGV.shift
 
-	# Features:
-	features = ARGV.collect(&:to_f)
-
 	# Estimator:
 	clf = {{ class_name }}.new modelData
 
-	{% if is_test or to_json %}
-	# Get JSON:
-	prediction = clf.predict features
-	puts JSON.generate({:predict => prediction})
-	{% else %}
-	# Get class prediction:
-	prediction = clf.predict features
-	puts "Predicted class: #{prediction}"
-	{% endif %}
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		{% if is_test or to_json %}
+		# Get JSON:
+		prediction = clf.predict features
+		puts JSON.generate({:predict => prediction})
+		{% else %}
+		# Get class prediction:
+		prediction = clf.predict features
+		puts "Predicted class: #{prediction}"
+		{% endif %}
+	end
 end
 {% endblock %}

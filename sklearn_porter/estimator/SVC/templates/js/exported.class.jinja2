@@ -138,11 +138,11 @@ var {{ class_name }} = function(jsonFile) {
     };
 };
 
+{% include 'samples' %}
+
 var main = function () {
-    // Features:
-    var features = process.argv.slice(3);
-    for (var i = 0; i < features.length; i++) {
-        features[i] = parseFloat(features[i]);
+    if (process.argv.length < 3) {
+        throw new Error("You have to pass the path to the model data.");
     }
 
     // Model data:
@@ -151,16 +151,19 @@ var main = function () {
     // Estimator:
     var clf = new {{ class_name }}(json);
 
-    {% if is_test or to_json %}
-    // Get JSON:
-    console.log(JSON.stringify({
-        "predict": clf.predict(features)
-    }));
-    {% else %}
-    // Get class prediction:
-    var prediction = clf.predict(features);
-    console.log("Predicted class: " + prediction);
-    {% endif %}
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(3)).forEach(function (features) {
+        {% if is_test or to_json %}
+        // Get JSON:
+        console.log(JSON.stringify({
+            "predict": clf.predict(features)
+        }));
+        {% else %}
+        // Get class prediction:
+        var prediction = clf.predict(features);
+        console.log("Predicted class: " + prediction);
+        {% endif %}
+    });
 }
 
 if (require.main === module) {
