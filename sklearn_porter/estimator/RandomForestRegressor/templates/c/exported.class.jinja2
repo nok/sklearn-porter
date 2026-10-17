@@ -12,24 +12,12 @@ typedef struct {
     double *thresholds;
     int *indices;
     int *missing_go_to_left;
-    double *values; /* shape: (n_nodes * N_OUTPUTS) */
+    double *values; /* shape: (n_leaves * N_OUTPUTS) */
 } Tree;
 
 
 int n_estimators;
 Tree *trees;
-
-/* Copy the predicted values of all nodes to a flat array: */
-double *flatten(JsonValue *values) {
-    int i, j;
-    double *result = malloc(values->length * N_OUTPUTS * sizeof(double));
-    for (i = 0; i < values->length; i++) {
-        for (j = 0; j < N_OUTPUTS; j++) {
-            result[i * N_OUTPUTS + j] = values->items[i]->items[j]->number;
-        }
-    }
-    return result;
-}
 
 void load(const char *path) {
     JsonValue *data = json_read(path);
@@ -42,7 +30,7 @@ void load(const char *path) {
         trees[i].thresholds = json_doubles(json_get(tree, "thresholds"));
         trees[i].indices = json_ints(json_get(tree, "indices"));
         trees[i].missing_go_to_left = json_ints(json_get(tree, "missing_go_to_left"));
-        trees[i].values = flatten(json_get(tree, "values"));
+        trees[i].values = json_doubles(json_get(tree, "values"));
     }
     json_free(data);
 }
@@ -50,14 +38,14 @@ void load(const char *path) {
 /* Find the leaf and return its predicted values: */
 const double *compute(const Tree *tree, double features[N_FEATURES]) {
     int node = 0;
-    while (tree->lefts[node] != -1) {
+    while (node >= 0) {
         if (features[tree->indices[node]] <= tree->thresholds[node] || (tree->missing_go_to_left[node] && isnan(features[tree->indices[node]]))) {
             node = tree->lefts[node];
         } else {
             node = tree->rights[node];
         }
     }
-    return tree->values + node * N_OUTPUTS;
+    return tree->values + (-node - 1) * N_OUTPUTS;
 }
 
 /* Average the predicted values of all trees: */

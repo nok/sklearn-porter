@@ -24,20 +24,20 @@ type {{ class_name }} struct {
 	Thresholds []float64
 	Indices []int
 	MissingGoToLeft []int
-	Values [][]float64
+	Values []float64
 }
 
 // Find the leaf and return its predicted values:
 func (reg {{ class_name }}) Predict(features []float64) []float64 {
 	node := 0
-	for reg.Lefts[node] != -1 {
+	for node >= 0 {
 		if features[reg.Indices[node]] <= reg.Thresholds[node] || (reg.MissingGoToLeft[node] == 1 && math.IsNaN(features[reg.Indices[node]])) {
 			node = reg.Lefts[node]
 		} else {
 			node = reg.Rights[node]
 		}
 	}
-	return reg.Values[node]
+	return reg.Values[(-node-1)*{{ n_outputs }} : -node*{{ n_outputs }}]
 }
 
 func main() {

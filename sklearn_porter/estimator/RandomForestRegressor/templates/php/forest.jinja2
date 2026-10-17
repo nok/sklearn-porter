@@ -4,26 +4,26 @@ public function __construct($model) {
     $this->forest = $model;
 }
 
-// Find the leaf and return its predicted values:
+// Find the leaf and return the index of its first predicted value:
 private static function compute($tree, $features) {
     $node = 0;
-    while ($tree['lefts'][$node] != -1) {
+    while ($node >= 0) {
         if ($features[$tree['indices'][$node]] <= $tree['thresholds'][$node] || ($tree['missing_go_to_left'][$node] == 1 && is_nan($features[$tree['indices'][$node]]))) {
             $node = $tree['lefts'][$node];
         } else {
             $node = $tree['rights'][$node];
         }
     }
-    return $tree['values'][$node];
+    return (-$node - 1) * {{ n_outputs }};
 }
 
 // Average the predicted values of all trees:
 public function predict($features) {
     $values = array_fill(0, {{ n_outputs }}, 0.);
     foreach ($this->forest as $tree) {
-        $temp = self::compute($tree, $features);
+        $start = self::compute($tree, $features);
         for ($j = 0; $j < {{ n_outputs }}; $j++) {
-            $values[$j] += $temp[$j];
+            $values[$j] += $tree['values'][$start + $j];
         }
     }
     for ($j = 0; $j < {{ n_outputs }}; $j++) {

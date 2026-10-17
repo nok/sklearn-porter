@@ -20,18 +20,18 @@ class {{ class_name }}
 	# Find the leaf and return its predicted values:
 	def predict(features)
 		node = 0
-		while @lefts[node] != -1
+		while node >= 0
 			if features[@indices[node]] <= @thresholds[node] || (@missing_go_to_left[node] == 1 && features[@indices[node]].nan?)
 				node = @lefts[node]
 			else
 				node = @rights[node]
 			end
 		end
-		values = @values[node]
+		values = @values[(-node - 1) * {{ n_outputs }}, {{ n_outputs }}]
 		if values.length == 1
 			return values[0]
 		end
-		values.dup
+		values
 	end
 
 end

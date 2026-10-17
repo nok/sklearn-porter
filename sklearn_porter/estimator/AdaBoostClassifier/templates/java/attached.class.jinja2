@@ -12,10 +12,10 @@ class {{ class_name }} {
         private int[] rights;
         private double[] thresholds;
         private int[] indices;
-        private double[][] classes;
+        private double[] classes;
         private double weight;
 
-        private Tree(int[] lefts, int[] rights, double[] thresholds, int[] indices, double[][] classes, double weight) {
+        private Tree(int[] lefts, int[] rights, double[] thresholds, int[] indices, double[] classes, double weight) {
             this.lefts = lefts;
             this.rights = rights;
             this.thresholds = thresholds;
@@ -26,14 +26,20 @@ class {{ class_name }} {
 
         private int compute(double[] features) {
             int node = 0;
-            while (this.thresholds[node] != -2) {
+            while (node >= 0) {
                 if (features[this.indices[node]] <= this.thresholds[node]) {
                     node = this.lefts[node];
                 } else {
                     node = this.rights[node];
                 }
             }
-            return findMax(this.classes[node]);
+            // Find the class with the maximum fraction of the leaf:
+            int start = (-node - 1) * {{ n_classes }};
+            int idx = 0;
+            for (int i = 1; i < {{ n_classes }}; i++) {
+                idx = this.classes[start + i] > this.classes[start + idx] ? i : idx;
+            }
+            return idx;
         }
     }
 

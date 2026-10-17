@@ -11,25 +11,13 @@ typedef struct {
     int *rights;
     double *thresholds;
     int *indices;
-    double *classes; /* shape: (n_nodes * N_CLASSES) */
+    double *classes; /* shape: (n_leaves * N_CLASSES) */
     double weight;
 } Tree;
 
 
 int n_estimators;
 Tree *trees;
-
-/* Copy the class fractions of all nodes to a flat array: */
-double *flatten(JsonValue *classes) {
-    int i, j;
-    double *result = malloc(classes->length * N_CLASSES * sizeof(double));
-    for (i = 0; i < classes->length; i++) {
-        for (j = 0; j < N_CLASSES; j++) {
-            result[i * N_CLASSES + j] = classes->items[i]->items[j]->number;
-        }
-    }
-    return result;
-}
 
 void load(const char *path) {
     JsonValue *data = json_read(path);
@@ -41,7 +29,7 @@ void load(const char *path) {
         trees[i].rights = json_ints(json_get(tree, "rights"));
         trees[i].thresholds = json_doubles(json_get(tree, "thresholds"));
         trees[i].indices = json_ints(json_get(tree, "indices"));
-        trees[i].classes = flatten(json_get(tree, "classes"));
+        trees[i].classes = json_doubles(json_get(tree, "classes"));
         trees[i].weight = json_get(tree, "weight")->number;
     }
     json_free(data);
@@ -58,14 +46,14 @@ int find_max(const double nums[N_CLASSES]) {
 
 int compute(const Tree *tree, double features[N_FEATURES]) {
     int node = 0;
-    while (tree->thresholds[node] != -2) {
+    while (node >= 0) {
         if (features[tree->indices[node]] <= tree->thresholds[node]) {
             node = tree->lefts[node];
         } else {
             node = tree->rights[node];
         }
     }
-    return find_max(tree->classes + node * N_CLASSES);
+    return find_max(tree->classes + (-node - 1) * N_CLASSES);
 }
 
 void predict_proba(double *probas, double features[N_FEATURES]) {

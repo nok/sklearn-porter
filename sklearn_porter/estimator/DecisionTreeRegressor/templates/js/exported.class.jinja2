@@ -16,18 +16,18 @@ var {{ class_name }} = function(jsonFile) {
 
     this.predict = function(features) {
         var node = 0;
-        while (this.lefts[node] !== -1) {
+        while (node >= 0) {
             if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] === 1 && isNaN(features[this.indices[node]]))) {
                 node = this.lefts[node];
             } else {
                 node = this.rights[node];
             }
         }
-        var values = this.values[node];
+        var values = this.values.slice((-node - 1) * {{ n_outputs }}, -node * {{ n_outputs }});
         if (values.length === 1) {
             return values[0];
         }
-        return values.slice();
+        return values;
     };
 
 };

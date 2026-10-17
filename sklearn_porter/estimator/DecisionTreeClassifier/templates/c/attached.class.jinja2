@@ -84,7 +84,7 @@ void norm_vals(double *result, double nums[N_CLASSES]) {
 
 {% if is_multi_output %}
 void predict(int *result, double features[N_FEATURES], int node) {
-    if (thresholds[node] != -2) {
+    if (node >= 0) {
         if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
             predict(result, features, lefts[node]);
             return;
@@ -93,30 +93,30 @@ void predict(int *result, double features[N_FEATURES], int node) {
             return;
         }
     }
-    find_max(result, classes[node]);
+    find_max(result, &classes[(-node - 1) * N_CLASSES]);
 }
 {% else %}
 int predict(double features[N_FEATURES], int node) {
-    if (thresholds[node] != -2) {
+    if (node >= 0) {
         if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
             return predict(features, lefts[node]);
         } else {
             return predict(features, rights[node]);
         }
     }
-    return find_max(classes[node]);
+    return find_max(&classes[(-node - 1) * N_CLASSES]);
 }
 {% endif %}
 
 void predict_proba({{ 'double **result' if is_multi_output else 'double *result' }}, double features[N_FEATURES], int node) {
-    if (thresholds[node] != -2) {
+    if (node >= 0) {
         if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
             predict_proba(result, features, lefts[node]);
         } else {
             predict_proba(result, features, rights[node]);
         }
     } else {
-        norm_vals(result, classes[node]);
+        norm_vals(result, &classes[(-node - 1) * N_CLASSES]);
     }
 }
 

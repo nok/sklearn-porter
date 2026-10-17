@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-{% if is_test or to_json %}
 import java.util.Arrays;
-{% endif %}
 
 class {{ class_name }} {
 
@@ -21,7 +19,7 @@ class {{ class_name }} {
         private int[] indices;
         @SerializedName("missing_go_to_left")
         private int[] missingGoToLeft;
-        private double[][] values;
+        private double[] values;
     }
     private Tree tree;
 
@@ -34,14 +32,14 @@ class {{ class_name }} {
     // Find the leaf and return its predicted values:
     public double[] predict(double[] features) {
         int node = 0;
-        while (this.tree.lefts[node] != -1) {
+        while (node >= 0) {
             if (features[this.tree.indices[node]] <= this.tree.thresholds[node] || (this.tree.missingGoToLeft[node] == 1 && Double.isNaN(features[this.tree.indices[node]]))) {
                 node = this.tree.lefts[node];
             } else {
                 node = this.tree.rights[node];
             }
         }
-        return this.tree.values[node].clone();
+        return Arrays.copyOfRange(this.tree.values, (-node - 1) * {{ n_outputs }}, -node * {{ n_outputs }});
     }
 
     public static void main(String[] args) throws IOException {

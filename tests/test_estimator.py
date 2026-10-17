@@ -539,10 +539,11 @@ def test_tree_routing_of_missing_values(orig_est):
     data = model_data.get('estimators', [model_data])
     n_checks = 0
     for tree, tree_data in zip(trees, data, strict=True):
-        expected = tree.tree_.missing_go_to_left.tolist()
-        assert tree_data['missing_go_to_left'] == expected
+        # The model data contains only the splits:
         is_split = tree.tree_.children_left != -1
-        n_checks += int(tree.tree_.missing_go_to_left[is_split].sum())
+        expected = tree.tree_.missing_go_to_left[is_split].tolist()
+        assert tree_data['missing_go_to_left'] == expected
+        n_checks += sum(expected)
     assert n_checks > 0
     # Only the splits which send missing values to the left child check
     # the features for missing values:
@@ -1187,6 +1188,62 @@ def test_forest_with_changed_n_estimators(
     np.testing.assert_allclose(
         y_proba, orig_est.predict_proba(x), rtol=1e-6, atol=1e-8
     )
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        DecisionTreeClassifier(min_samples_split=1000),
+        DecisionTreeRegressor(min_samples_split=1000),
+        RandomForestClassifier(
+            n_estimators=3, min_samples_split=1000, random_state=0
+        ),
+        RandomForestRegressor(
+            n_estimators=3, min_samples_split=1000, random_state=0
+        ),
+    ],
+    ids=lambda x: type(x).__name__,
+)
+def test_trees_with_a_single_leaf(
+    tmp_root_dir: Path,
+    orig_est: BaseEstimator,
+    language: str,
+    template: str,
+):
+    """Test trees which consist of a single leaf. Their model data has a
+    split whose children are both this leaf (see `get_tree_data()`)."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = clone(orig_est).fit(X=x, y=y)
+    trees = getattr(orig_est, 'estimators_', [orig_est])
+    assert all(tree.tree_.node_count == 1 for tree in trees)
+
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'trees_with_a_single_leaf'),
+            ('estimator', type(orig_est).__name__),
+            ('language', language),
+            ('template', template),
+        ],
+    )
+    y_pred, y_proba = Estimator(orig_est).make(
+        x[::10],
+        language=language,
+        template=template,
+        directory=tmp_dir,
+        delete_created_files=False,
+    )
+    np.testing.assert_array_equal(
+        y_pred.astype(float), orig_est.predict(x[::10])
+    )
+    if hasattr(orig_est, 'predict_proba'):
+        # Some ported estimators print the probabilities with six decimals:
+        np.testing.assert_allclose(
+            y_proba, orig_est.predict_proba(x[::10]), rtol=0, atol=1e-5
+        )
 
 
 @pytest.mark.regression

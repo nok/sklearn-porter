@@ -76,14 +76,14 @@ class {{ class_name }}
 {% endif %}
 
 	def _compute (features, node, post)
-		if @thresholds[node] != -2
+		if node >= 0
 			if features[@indices[node]] <= @thresholds[node] || (@missing_go_to_left[node] == 1 && features[@indices[node]].nan?)
 				return _compute features, @lefts[node], post
 			else
 				return _compute features, @rights[node], post
 			end
 		end
-		post.call @classes[node]
+		post.call @classes[(-node - 1) * {{ n_classes }}, {{ n_classes }}]
 	end
 
 	def predict (features)

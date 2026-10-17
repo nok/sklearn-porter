@@ -25,7 +25,7 @@ type {{ class_name }} struct {
 	Thresholds []float64
 	Indices []int
 	MissingGoToLeft []int
-	Classes [][]float64
+	Classes []float64
 }
 
 {% if is_multi_output %}
@@ -102,14 +102,14 @@ func normVals(nums []float64) []float64 {
 {% endif %}
 
 func (dtc {{ class_name }}) predict(features []float64, node int) {{ '[]int' if is_multi_output else 'int' }} {
-	if dtc.Thresholds[node] != -2 {
+	if node >= 0 {
 		if features[dtc.Indices[node]] <= dtc.Thresholds[node] || (dtc.MissingGoToLeft[node] == 1 && math.IsNaN(features[dtc.Indices[node]])) {
 			return dtc.predict(features, dtc.Lefts[node])
 		} else {
 			return dtc.predict(features, dtc.Rights[node])
 		}
 	}
-	return findMax(dtc.Classes[node])
+	return findMax(dtc.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
 }
 
 func (dtc {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
@@ -117,14 +117,14 @@ func (dtc {{ class_name }}) Predict(features []float64) {{ '[]int' if is_multi_o
 }
 
 func (dtc {{ class_name }}) predictProba(features []float64, node int) {{ '[][]float64' if is_multi_output else '[]float64' }} {
-	if dtc.Thresholds[node] != -2 {
+	if node >= 0 {
 		if features[dtc.Indices[node]] <= dtc.Thresholds[node] || (dtc.MissingGoToLeft[node] == 1 && math.IsNaN(features[dtc.Indices[node]])) {
 			return dtc.predictProba(features, dtc.Lefts[node])
 		} else {
 			return dtc.predictProba(features, dtc.Rights[node])
 		}
 	}
-	return normVals(dtc.Classes[node])
+	return normVals(dtc.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
 }
 
 func (dtc {{ class_name }}) PredictProba(features []float64) {{ '[][]float64' if is_multi_output else '[]float64' }} {

@@ -4,7 +4,7 @@ private static Tree tree{{ index }}() {
         new int[] {{ '{' }}{{ rights }}{{ '}' }},
         new double[] {{ '{' }}{{ thresholds }}{{ '}' }},
         new int[] {{ '{' }}{{ indices }}{{ '}' }},
-        new double[][] {{ '{' }}{% for c in classes %}{{ '{' }}{{ c }}{{ '}' }}{% if not loop.last %}, {% endif %}{% endfor %}{{ '}' }},
+        new double[] {{ '{' }}{{ classes }}{{ '}' }},
         {{ weight }}
     );
 }

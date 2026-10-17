@@ -16,8 +16,9 @@ from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import (
     dump_model_data,
     get_class_fractions,
+    get_leaf_values,
     get_output_classes,
-    get_thresholds,
+    get_tree_data,
     has_infinite_thresholds,
     has_missing_go_to_left,
     missing_name,
@@ -97,16 +98,12 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
-        # Extract and save model data:
-        self.model_data = dict(
-            lefts=est.tree_.children_left.tolist(),
-            rights=est.tree_.children_right.tolist(),
-            thresholds=get_thresholds(est.tree_),
-            indices=est.tree_.feature.tolist(),
-            # Samples with missing values (NaN) go to the left child if 1,
-            # otherwise to the right child:
-            missing_go_to_left=est.tree_.missing_go_to_left.tolist(),
-            classes=get_class_fractions(est.tree_),
+        # Extract and save model data, the splits and the class fractions
+        # of the leaves (see `get_tree_data()`). Samples with missing values
+        # (NaN) go to the left child if `missing_go_to_left` is 1, otherwise
+        # to the right child:
+        self.model_data = get_tree_data(
+            est.tree_, get_class_fractions(est.tree_), 'classes'
         )
         L.info(f'Model data (keys): {self.model_data.keys()}')
         L.opt(lazy=True).debug(f'Model data: {self.model_data}')
@@ -176,8 +173,6 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         tpl_int = tpls.get_template('int').render()
         tpl_double = tpls.get_template('double').render()
         tpl_arr_1 = tpls.get_template('arr[]')
-        tpl_arr_2 = tpls.get_template('arr[][]')
-        tpl_in_brackets = tpls.get_template('in_brackets')
 
         # Make contents:
         lefts_val = list(map(str, self.model_data['lefts']))
@@ -212,19 +207,12 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             n=len(indices_val),
         )
 
-        classes_val = [
-            list(map(converter, e)) for e in self.model_data['classes']
-        ]
-        classes_str = [', '.join(e) for e in classes_val]
-        classes_str = ', '.join(
-            [tpl_in_brackets.render(value=e) for e in classes_str]
-        )
-        classes_str = tpl_arr_2.render(
+        classes_val = list(map(converter, self.model_data['classes']))
+        classes_str = tpl_arr_1.render(
             type=tpl_double,
             name='classes',
-            values=classes_str,
+            values=', '.join(classes_val),
             n=len(classes_val),
-            m=len(classes_val[0]),
         )
 
         missing_val = list(map(str, self.model_data['missing_go_to_left']))
@@ -300,7 +288,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             self.model_data['lefts'],
             self.model_data['rights'],
             self.model_data['thresholds'],
-            self.model_data[self.LEAF_DATA],
+            get_leaf_values(self.model_data, self.LEAF_DATA),
             self.model_data['indices'],
             self.model_data['missing_go_to_left'],
             0,
@@ -333,20 +321,20 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         converter
             The number converter.
         left_nodes : list
-            The left children node.
+            The left children of the splits.
         right_nodes : list
-            The left children node.
+            The right children of the splits.
         threshold : list
-            The decision thresholds.
+            The decision thresholds of the splits.
         value : list
-            The label or class.
+            The values of the leaves.
         features : list
-            The feature values.
+            The feature indices of the splits.
         missing_go_to_left : list
             Whether samples with missing values (NaN) go to the left child.
-        node : list
-            The current node.
-        depth : list
+        node : int
+            The current node, a split `i` or a leaf `-i - 1`.
+        depth : int
             The tree depth.
 
         Returns
@@ -355,7 +343,11 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         """
         out = ''
         out_indent = tpls.get_template('indent').render()
-        if threshold[node] != -2.0:
+        # A tree with a single leaf has a split whose children are both
+        # this leaf (see `get_tree_data()`):
+        if node >= 0 and left_nodes[node] == right_nodes[node]:
+            node = left_nodes[node]
+        if node >= 0:
             out += '\n'
             val_a = f'features[{features[node]}]'
             if language is enum.Language.PHP:
@@ -371,40 +363,38 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             out_if = indent(out_if, depth * out_indent)
             out += out_if
 
-            if left_nodes[node] != -1.0:
-                out += self._create_branch(
-                    tpls,
-                    language,
-                    converter,
-                    left_nodes,
-                    right_nodes,
-                    threshold,
-                    value,
-                    features,
-                    missing_go_to_left,
-                    left_nodes[node],
-                    depth + 1,
-                )
+            out += self._create_branch(
+                tpls,
+                language,
+                converter,
+                left_nodes,
+                right_nodes,
+                threshold,
+                value,
+                features,
+                missing_go_to_left,
+                left_nodes[node],
+                depth + 1,
+            )
 
             out += '\n'
             out_else = tpls.get_template('else').render()
             out_else = indent(out_else, depth * out_indent)
             out += out_else
 
-            if right_nodes[node] != -1.0:
-                out += self._create_branch(
-                    tpls,
-                    language,
-                    converter,
-                    left_nodes,
-                    right_nodes,
-                    threshold,
-                    value,
-                    features,
-                    missing_go_to_left,
-                    right_nodes[node],
-                    depth + 1,
-                )
+            out += self._create_branch(
+                tpls,
+                language,
+                converter,
+                left_nodes,
+                right_nodes,
+                threshold,
+                value,
+                features,
+                missing_go_to_left,
+                right_nodes[node],
+                depth + 1,
+            )
 
             out += '\n'
             out_endif = tpls.get_template('endif').render()
@@ -412,7 +402,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             out += out_endif
         else:
             out += self._create_leaf(
-                tpls, language, converter, value[node], depth
+                tpls, language, converter, value[-node - 1], depth
             )
         return out
 

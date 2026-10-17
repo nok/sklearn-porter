@@ -4,9 +4,9 @@ private static class Tree {
     private double[] thresholds;
     private int[] indices;
     private int[] missingGoToLeft;
-    private double[][] values;
+    private double[] values;
 
-    private Tree(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[][] values) {
+    private Tree(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[] values) {
         this.lefts = lefts;
         this.rights = rights;
         this.thresholds = thresholds;
@@ -15,17 +15,20 @@ private static class Tree {
         this.values = values;
     }
 
-    // Find the leaf and return its predicted values:
-    private double[] compute(double[] features) {
+    // Find the leaf and add its predicted values to the values:
+    private void addValues(double[] features, double[] values) {
         int node = 0;
-        while (this.lefts[node] != -1) {
+        while (node >= 0) {
             if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
                 node = this.lefts[node];
             } else {
                 node = this.rights[node];
             }
         }
-        return this.values[node];
+        int start = (-node - 1) * {{ n_outputs }};
+        for (int j = 0; j < values.length; j++) {
+            values[j] += this.values[start + j];
+        }
     }
 }
 
@@ -39,10 +42,7 @@ public {{ class_name }}(Tree[] forest) {
 public double[] predict(double[] features) {
     double[] values = new double[{{ n_outputs }}];
     for (Tree tree : this.forest) {
-        double[] temp = tree.compute(features);
-        for (int j = 0; j < values.length; j++) {
-            values[j] += temp[j];
-        }
+        tree.addValues(features, values);
     }
     for (int j = 0; j < values.length; j++) {
         values[j] /= this.forest.length;

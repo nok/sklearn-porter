@@ -90,6 +90,12 @@ table.
   (`sklearn_porter.utils.get_class_fractions()`). Don't round them to class
   counts, otherwise the probabilities of trees fitted with `sample_weight` or
   `class_weight` differ.
+- The model data of the tree estimators contains only the splits of each tree
+  (`sklearn_porter.utils.get_tree_data()`): the children refer to splits by
+  `i >= 0` and to leaves by `-i - 1`, the values of the leaves are
+  concatenated (the values of leaf `i` start at `i * n_values`). A tree with
+  a single leaf gets a split whose children are both this leaf, so no array
+  is empty.
 - scikit-learn routes missing values (NaN) of every tree via
   `tree_.missing_go_to_left`, even if the tree was fitted without missing
   values. The tree templates check `isnan` only for splits which send missing
