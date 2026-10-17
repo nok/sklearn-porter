@@ -6,9 +6,7 @@ package main
 {% if is_binary %}
 import (
 	"bufio"
-	{% if is_test or to_json %}
 	"encoding/json"
-	{% endif %}
 	"fmt"
   "io/ioutil"
 	"os"
@@ -23,9 +21,7 @@ type {{ class_name }} struct {
 {% else %}
 import (
 	"bufio"
-	{% if is_test or to_json %}
 	"encoding/json"
-	{% endif %}
 	"fmt"
 	"io/ioutil"
 	"math"
