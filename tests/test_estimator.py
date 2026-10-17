@@ -300,8 +300,13 @@ def test_make_in_batches(
 
     def run(cmd: list[str], **kwargs) -> CompletedProcess:
         inputs.append(kwargs['input'])
-        n = kwargs['input'].count('\n')
-        stdout = '{"predict": 0, "predict_proba": [1, 0, 0]}\n' * n
+        # Predict the index of each sample (its first feature is 4 * index):
+        indices = [
+            int(float(e.split()[0])) // 4 for e in kwargs['input'].splitlines()
+        ]
+        stdout = ''.join(
+            f'{{"predict": {i}, "predict_proba": [1, 0, 0]}}\n' for i in indices
+        )
         return CompletedProcess(cmd, 0, stdout=stdout, stderr='')
 
     monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run)
@@ -312,10 +317,13 @@ def test_make_in_batches(
         x, n_jobs=n_jobs, check_dependencies=False, directory=tmp_path
     )
     assert len(inputs) == n_batches
-    # The batches contain all samples in their order, one sample per line:
+    # The batches contain all samples, one sample per line (the threads call
+    # the processes in any order):
+    inputs.sort(key=lambda batch: float(batch.split()[0]))
     lines = ''.join(inputs).splitlines()
     assert lines == [' '.join(map(str, e)) for e in x.tolist()]
-    assert y_pred.shape == (n_samples,)
+    # The predictions keep the order of the samples:
+    np.testing.assert_array_equal(y_pred, np.arange(n_samples))
     assert y_proba.shape == (n_samples, 3)
 
 
