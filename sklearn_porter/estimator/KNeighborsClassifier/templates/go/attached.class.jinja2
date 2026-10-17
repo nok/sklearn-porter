@@ -147,6 +147,33 @@ func (knn {{ class_name }}) Predict(features []float64) {{ label_type }} {
 }
 {% endif %}
 
+{% if weights == 'distance' %}
+// Weight the nearest neighbors by the inverse of their distances. If some
+// neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
+func weigh(dists []float64) ([]float64, float64) {
+	weights := make([]float64, len(dists))
+	isExact := false
+	for i, dist := range dists {
+		weights[i] = 1 / dist
+		if math.IsInf(weights[i], 0) {
+			isExact = true
+		}
+	}
+	total := 0.
+	for i := range weights {
+		if isExact {
+			if math.IsInf(weights[i], 0) {
+				weights[i] = 1
+			} else {
+				weights[i] = 0
+			}
+		}
+		total += weights[i]
+	}
+	return weights, total
+}
+
+{% endif %}
 {% if is_multi_output %}
 func (knn {{ class_name }}) PredictProba(features []float64) [][]float64 {
 	var classProbas = make([]float64, knn.N)
@@ -160,6 +187,23 @@ func (knn {{ class_name }}) PredictProba(features []float64) [][]float64 {
 	sort.SliceStable(indices, func(a, b int) bool {
 		return dists[indices[a]] < dists[indices[b]]
 	})
+{% if weights == 'distance' %}
+	nearest := make([]float64, knn.K)
+	for i := 0; i < knn.K; i++ {
+		nearest[i] = dists[indices[i]]
+	}
+	weights, total := weigh(nearest)
+	// Each neighbor votes with its weight for one class of each output:
+	nOutputs := len(knn.Y) / nSamples
+	for i := 0; i < knn.K; i++ {
+		for j := 0; j < nOutputs; j++ {
+			classProbas[knn.Y[indices[i]*nOutputs+j]] += weights[i]
+		}
+	}
+	for i := 0; i < knn.N; i++ {
+		classProbas[i] /= total
+	}
+{% else %}
 	// Each neighbor votes for one class of each output:
 	nOutputs := len(knn.Y) / nSamples
 	for i := 0; i < knn.K; i++ {
@@ -170,6 +214,7 @@ func (knn {{ class_name }}) PredictProba(features []float64) [][]float64 {
 	for i := 0; i < knn.N; i++ {
 		classProbas[i] /= float64(knn.K)
 	}
+{% endif %}
 	return splitOutputs(classProbas)
 }
 {% else %}
@@ -196,12 +241,26 @@ func (knn {{ class_name }}) PredictProba(features []float64) []float64 {
 		sort.SliceStable(dists, func(i, j int) bool {
 			return dists[i].value < dists[j].value
 		})
+{% if weights == 'distance' %}
+		nearest := make([]float64, knn.K)
+		for i := 0; i < knn.K; i++ {
+			nearest[i] = dists[i].value
+		}
+		weights, total := weigh(nearest)
+		for i := 0; i < knn.K; i++ {
+			classProbas[dists[i].y] += weights[i]
+		}
+		for i := 0; i < knn.N; i++ {
+			classProbas[i] = classProbas[i] / total
+		}
+{% else %}
 		for i := 0; i < knn.K; i++ {
 			classProbas[dists[i].y] += 1
 		}
 		for i := 0; i < knn.N; i++ {
 			classProbas[i] = classProbas[i] / float64(knn.K)
 		}
+{% endif %}
 	}
 	return classProbas
 }

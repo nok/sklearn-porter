@@ -829,6 +829,22 @@ def test_k_neighbors_classifier_with_unsupported_metric(
         Estimator(orig_est)
 
 
+@pytest.mark.parametrize('weights', ['uniform', 'distance'])
+def test_k_neighbors_classifier_with_supported_weights(weights: str):
+    """Test the weights of the votes of the ported neighbors."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = KNeighborsClassifier(weights=weights).fit(X=x, y=y)
+    assert Estimator(orig_est)._estimator.meta_info['weights'] == weights
+
+
+def test_k_neighbors_classifier_with_unsupported_weights():
+    """Test the rejection of weights which aren't ported (callables)."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = KNeighborsClassifier(weights=lambda d: d**2).fit(X=x, y=y)
+    with pytest.raises(exception.NotSupportedYetError, match='weights'):
+        Estimator(orig_est)
+
+
 @pytest.mark.regression
 @pytest.mark.parametrize(
     'x',

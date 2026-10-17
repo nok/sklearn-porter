@@ -110,11 +110,36 @@ class {{ class_name }}
 	end
 {% endif %}
 
+{% if weights == 'distance' %}
+	# Weight the nearest neighbors by the inverse of their distances. If some
+	# neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
+	def _weigh (dists)
+		weights = dists.map { |dist| 1.0 / dist }
+		if weights.any? { |weight| weight.infinite? }
+			weights = weights.map { |weight| weight.infinite? ? 1.0 : 0.0 }
+		end
+		weights
+	end
+
+{% endif %}
 {% if is_multi_output %}
 	def predict_proba (features)
 		class_probas = Array.new(@n, 0.0)
 		# The neighbors are the indices of the samples sorted by their distance:
 		dists = (0 ... @x.length).sort_by { |i| [_compute(@x[i], features, @metric, @power), i] }
+{% if weights == 'distance' %}
+		weights = _weigh(dists.first(@k).map { |i| _compute(@x[i], features, @metric, @power) })
+		total = 0.0
+		# Each neighbor votes with its weight for one class of each output:
+		n_outputs = @y.length / @x.length
+		for i in 0 ... @k
+			total += weights[i]
+			for j in 0 ... n_outputs
+				class_probas[@y[dists[i] * n_outputs + j]] += weights[i]
+			end
+		end
+		_split_outputs(class_probas.map { |p| p / total })
+{% else %}
 		# Each neighbor votes for one class of each output:
 		n_outputs = @y.length / @x.length
 		for i in 0 ... @k
@@ -123,6 +148,7 @@ class {{ class_name }}
 			end
 		end
 		_split_outputs(class_probas.map { |p| p / @k })
+{% endif %}
 	end
 {% else %}
 	def predict_proba (features)
@@ -146,12 +172,24 @@ class {{ class_name }}
             end
             # Sort the neighbors by distance and index (stable):
             dists.sort_by! { |neighbor| [neighbor[1], neighbor[2]] }
+{% if weights == 'distance' %}
+            weights = _weigh(dists.first(@k).map { |neighbor| neighbor[1] })
+            total = 0.0
+            for i in 0 ... @k
+                total += weights[i]
+                class_probas[dists[i][0]] += weights[i]
+            end
+            for i in 0 ... @n
+                class_probas[i] /= total
+            end
+{% else %}
             for i in 0 ... @k
                 class_probas[dists[i][0]] += 1
             end
             for i in 0 ... @n
                 class_probas[i] /= @k
             end
+{% endif %}
         end
         class_probas
 	end

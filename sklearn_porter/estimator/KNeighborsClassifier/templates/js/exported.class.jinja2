@@ -95,6 +95,26 @@ var {{ class_name }} = function(jsonFile) {
         return Math.pow(dist, 1. / q);
     };
 
+{% if weights == 'distance' %}
+    // Weight the nearest neighbors by the inverse of their distances. If some
+    // neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
+    var _weigh = function(neighbors, k) {
+        var i, weights = new Array(k), isExact = false;
+        for (i = 0; i < k; i++) {
+            weights[i] = 1. / neighbors[i].dist;
+            if (Math.abs(weights[i]) === Infinity) {
+                isExact = true;
+            }
+        }
+        if (isExact) {
+            for (i = 0; i < k; i++) {
+                weights[i] = Math.abs(weights[i]) === Infinity ? 1. : 0.;
+            }
+        }
+        return weights;
+    };
+
+{% endif %}
 {% if is_multi_output %}
     this.predictProba = function(features) {
         var classProbas = new Array(this.data.n).fill(0);
@@ -106,6 +126,20 @@ var {{ class_name }} = function(jsonFile) {
         dists.sort(function compare(n1, n2) {
             return n1.dist - n2.dist;
         });
+{% if weights == 'distance' %}
+        // Each neighbor votes with its weight for one class of each output:
+        var nOutputs = this.data.y.length / this.data.X.length;
+        var weights = _weigh(dists, this.data.k), total = 0.;
+        for (i = 0; i < this.data.k; i++) {
+            total += weights[i];
+            for (j = 0; j < nOutputs; j++) {
+                classProbas[this.data.y[dists[i].y * nOutputs + j]] += weights[i];
+            }
+        }
+        for (i = 0; i < this.data.n; i++) {
+            classProbas[i] /= total;
+        }
+{% else %}
         // Each neighbor votes for one class of each output:
         var nOutputs = this.data.y.length / this.data.X.length;
         for (i = 0; i < this.data.k; i++) {
@@ -116,6 +150,7 @@ var {{ class_name }} = function(jsonFile) {
         for (i = 0; i < this.data.n; i++) {
             classProbas[i] /= this.data.k;
         }
+{% endif %}
         return _splitOutputs(classProbas);
     };
 {% else %}
@@ -146,12 +181,23 @@ var {{ class_name }} = function(jsonFile) {
                 }
                 return n1.index - n2.index;
             });
+{% if weights == 'distance' %}
+            var weights = _weigh(dists, this.data.k), total = 0.;
+            for (i = 0; i < this.data.k; i++) {
+                total += weights[i];
+                classProbas[dists[i].y] += weights[i];
+            }
+            for (i = 0; i < this.data.n; i++) {
+                classProbas[i] /= total;
+            }
+{% else %}
             for (i = 0; i < this.data.k; i++) {
                 classProbas[dists[i].y] += 1;
             }
             for (i = 0; i < this.data.n; i++) {
                 classProbas[i] /= this.data.k;
             }
+{% endif %}
         }
         return classProbas;
     };

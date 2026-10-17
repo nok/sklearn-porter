@@ -221,3 +221,123 @@ def test_estimator_k_neighbors_classifier_with_tied_neighbors(
     np.testing.assert_array_equal(y_classes, exp_classes)
     for y_proba, exp_proba in zip(y_probas, exp_probas, strict=True):
         np.testing.assert_allclose(y_proba, exp_proba)
+
+
+@pytest.mark.parametrize('template', ['attached', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
+@pytest.mark.parametrize('n_neighbors', [1, 5])
+@pytest.mark.parametrize(
+    ('metric', 'params'),
+    [
+        pytest.param(m, p, id=m)
+        for m, p in [
+            ('euclidean', dict()),
+            ('manhattan', dict(metric='manhattan')),
+            ('chebyshev', dict(metric='chebyshev')),
+            ('cosine', dict(metric='cosine')),
+        ]
+    ],
+)
+def test_estimator_k_neighbors_classifier_with_distance_weights(
+    tmp_root_dir: Path,
+    dataset: Dataset,
+    template: str,
+    language: str,
+    n_neighbors: int,
+    metric: str,
+    params: dict,
+):
+    """Test and compare k-Neighbors classifiers whose neighbors vote with
+    the inverse of their distances (`weights='distance'`)."""
+    orig_est = KNeighborsClassifierClass(
+        n_neighbors=n_neighbors, weights='distance', **params
+    )
+
+    # Estimator:
+    x, y = dataset.data, dataset.target
+    orig_est.fit(X=x, y=y)
+    est = Estimator(orig_est)
+
+    # Samples, incl. training samples with the distance 0 to a neighbor:
+    test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x), x[::15]))
+    test_x = drop_neighbor_ties(orig_est, test_x)
+
+    # Directory:
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'estimator_k_neighbors_classifier_with_distance_weights'),
+            ('dataset', dataset.name),
+            ('language', language),
+            ('template', template),
+            ('n_neighbors', str(n_neighbors)),
+            ('metric', metric),
+        ],
+    )
+
+    try:
+        y_pred, y_proba = est.make(
+            test_x,
+            language=language,
+            template=template,
+            directory=tmp_dir,
+            delete_created_files=False,
+        )
+    except exception.CodeTooLarge:
+        pytest.skip('The code is too large to compile (e.g. Java attached)')
+    np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
+    np.testing.assert_allclose(
+        y_proba, orig_est.predict_proba(test_x), rtol=0, atol=1e-5
+    )
+
+
+@pytest.mark.parametrize('template', ['attached', 'exported'])
+@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('n_outputs', [1, 2])
+def test_estimator_k_neighbors_classifier_with_zero_distances(
+    tmp_root_dir: Path,
+    n_outputs: int,
+    language: str,
+    template: str,
+):
+    """Test the votes of neighbors with the distance 0 and distance weights:
+    only these neighbors vote with the weight 1 (like scikit-learn)."""
+    # Duplicated training samples with different classes:
+    x = np.array(
+        [[0, 0], [0, 0], [0, 0], [1, 0], [0, 3], [4, 4], [5, 4], [4, 6]],
+        dtype=float,
+    )
+    y = np.array([[0, 1, 1, 2, 2, 0, 1, 2], [1, 0, 1, 0, 1, 0, 1, 0]]).T
+    y = y[:, :n_outputs] if n_outputs > 1 else y[:, 0]
+    orig_est = KNeighborsClassifierClass(n_neighbors=4, weights='distance')
+    orig_est.fit(X=x, y=y)
+
+    # Samples with three, one or no neighbors with the distance 0:
+    test_x = np.array([[0, 0], [1, 0], [4, 4], [0.5, 0], [4.5, 4.5]])
+    assert len(drop_neighbor_ties(orig_est, test_x)) == len(test_x)
+
+    # Directory:
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'estimator_k_neighbors_classifier_with_zero_distances'),
+            ('language', language),
+            ('template', template),
+            ('n_outputs', str(n_outputs)),
+        ],
+    )
+
+    y_pred, y_proba = Estimator(orig_est).make(
+        test_x,
+        language=language,
+        template=template,
+        directory=tmp_dir,
+        delete_created_files=False,
+    )
+    np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
+    expected = orig_est.predict_proba(test_x)
+    if n_outputs == 1:
+        y_proba, expected = [y_proba], [expected]
+    for actual, desired in zip(y_proba, expected, strict=True):
+        np.testing.assert_allclose(actual, desired, rtol=0, atol=1e-12)
