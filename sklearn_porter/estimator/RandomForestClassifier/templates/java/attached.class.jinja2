@@ -24,7 +24,8 @@ class {{ class_name }} {
             this.classes = classes;
         }
 
-        private double[] compute(double[] features) {
+        // Add the normalized values of the leaf to the probabilities:
+        private void addProbas(double[] features, double[] probas) {
             int node = 0;
             while (this.thresholds[node] != -2) {
                 if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
@@ -33,7 +34,7 @@ class {{ class_name }} {
                     node = this.rights[node];
                 }
             }
-            return normVals(this.classes[node]);
+            addNormVals(this.classes[node], probas);
         }
     }
 
@@ -80,9 +81,8 @@ class {{ class_name }} {
 {% endif %}
 
 {% if is_multi_output %}
-    // Normalize the values of each output:
-    private static double[] normVals(double[] nums) {
-        double[] result = new double[nums.length];
+    // Add the normalized values of each output to the probabilities:
+    private static void addNormVals(double[] nums, double[] probas) {
         int offset = 0;
         for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
             double sum = 0.;
@@ -90,29 +90,21 @@ class {{ class_name }} {
                 sum += nums[i];
             }
             for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
-                result[i] = sum == 0 ? 1. / OUTPUT_CLASSES[j] : nums[i] / sum;
+                probas[i] += sum == 0 ? 1. / OUTPUT_CLASSES[j] : nums[i] / sum;
             }
             offset += OUTPUT_CLASSES[j];
         }
-        return result;
     }
 {% else %}
-    private static double[] normVals(double[] nums) {
-        double[] result = new double[nums.length];
+    // Add the normalized values to the probabilities:
+    private static void addNormVals(double[] nums, double[] probas) {
         double sum = 0.;
         for (int i = 0; i < nums.length; i++) {
             sum += nums[i];
         }
-        if (sum == 0) {
-            for (int i = 0; i < nums.length; i++) {
-                result[i] = 1.0 / nums.length;
-            }
-        } else {
-            for (int i = 0; i < nums.length; i++) {
-                result[i] = nums[i] / sum;
-            }
+        for (int i = 0; i < nums.length; i++) {
+            probas[i] += sum == 0 ? 1.0 / nums.length : nums[i] / sum;
         }
-        return result;
     }
 {% endif %}
 
@@ -120,10 +112,7 @@ class {{ class_name }} {
     public double[][] predictProba(double[] features) {
         double[] probas = new double[{{ n_classes }}];
         for (Tree tree : this.forest) {
-            double[] temp = tree.compute(features);
-            for (int i = 0; i < probas.length; i++) {
-                probas[i] += temp[i];
-            }
+            tree.addProbas(features, probas);
         }
         for (int i = 0; i < probas.length; i++) {
             probas[i] /= this.forest.length;
@@ -134,10 +123,7 @@ class {{ class_name }} {
     public double[] predictProba(double[] features) {
         double[] probas = new double[{{ n_classes }}];
         for (Tree tree : this.forest) {
-            double[] temp = tree.compute(features);
-            for (int i = 0; i < probas.length; i++) {
-                probas[i] += temp[i];
-            }
+            tree.addProbas(features, probas);
         }
         for (int i = 0; i < probas.length; i++) {
             probas[i] /= this.forest.length;
