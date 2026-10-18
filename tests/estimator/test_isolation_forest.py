@@ -16,8 +16,8 @@ def drop_threshold_ties(est: IsolationForest, x: np.ndarray) -> np.ndarray:
     """
     Drop the samples whose score is (almost) equal to the offset. Whether they
     are inliers or outliers depends on rounding errors of the power function
-    of the language, e.g. training samples are on the threshold with a float
-    `contamination`.
+    of the language and of NumPy (depending on the CPU), e.g. training samples
+    are on the threshold with a float `contamination`.
     """
     return x[~np.isclose(est.decision_function(x), 0, rtol=0, atol=1e-9)]
 

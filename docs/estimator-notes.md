@@ -24,7 +24,7 @@
 
 - The ported [IsolationForest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html) supports only `predict`, which returns `1` for inliers and `-1` for outliers like scikit-learn. The scores (`score_samples` and `decision_function`) aren't ported.
 - A sample is an outlier if its score is lower than `offset_`, which scikit-learn derives from `contamination` (`-0.5` with `contamination='auto'`). To change the threshold, fit the estimator with another `contamination` or set `offset_` before you port it. The template `exported` saves the offset in the JSON file (`offset`) next to the trees.
-- Samples whose score is (almost) equal to the offset can be predicted differently than by scikit-learn, because the power function of each language can round the last digit differently. With a float `contamination` the offset is a percentile of the scores of the training samples, so some training samples can be such samples.
+- Samples whose score is (almost) equal to the offset can be predicted differently than by scikit-learn, because the power function of each language (and of NumPy, depending on the CPU) can round the last digit differently. With a float `contamination` the offset is a percentile of the scores of the training samples, so some training samples can be such samples.
 - [PyOD](https://github.com/yzhao062/pyod) wraps the IsolationForest of scikit-learn, so you can port its fitted estimator (`detector_`). PyOD uses its own threshold and inverted scores, so its labels can differ from the ported `predict`.
 
 ## KNeighborsClassifier

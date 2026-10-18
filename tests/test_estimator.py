@@ -1575,7 +1575,7 @@ def _score_isolation_forest(model_data: dict, x: np.ndarray) -> np.ndarray:
 )
 def test_isolation_forest_model_data(params: dict):
     """Test the model data of an IsolationForest: the path lengths of the
-    leaves give exactly the scores of scikit-learn."""
+    leaves give the scores of scikit-learn."""
     x, _ = load_iris(return_X_y=True)
     x = x.copy()
     x[::7, 1] = np.nan  # missing values
@@ -1587,9 +1587,18 @@ def test_isolation_forest_model_data(params: dict):
     assert model_data['offset'] == orig_est.offset_
     test_x = np.vstack((x, x + 0.5))
     scores = _score_isolation_forest(model_data, test_x)
-    np.testing.assert_array_equal(scores, orig_est.score_samples(test_x))
+    # NumPy computes the power with SIMD instructions depending on the CPU
+    # (e.g. with AVX-512), which can differ by a few ULP from `pow()`:
+    np.testing.assert_allclose(
+        scores, orig_est.score_samples(test_x), rtol=1e-14, atol=0
+    )
+    # Except the samples whose score is (almost) equal to the offset:
+    decisions = orig_est.decision_function(test_x)
+    is_tie = np.isclose(decisions, 0, rtol=0, atol=1e-9)
     y_pred = np.where(scores - model_data['offset'] < 0, -1, 1)
-    np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
+    np.testing.assert_array_equal(
+        y_pred[~is_tie], orig_est.predict(test_x)[~is_tie]
+    )
     # The template `exported` saves the denominator and the offset too:
     _, exported = est.port()
     assert json.loads(exported) == json.loads(json.dumps(model_data))
