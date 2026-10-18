@@ -15,6 +15,7 @@ from sklearn.ensemble import (
     AdaBoostClassifier,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    IsolationForest,
     RandomForestClassifier,
     RandomForestRegressor,
 )
@@ -106,6 +107,15 @@ def get_regressors() -> Iterator[Candidate]:
         yield Candidate(name=e.__name__, clazz=e, create=e)
 
 
+def get_outlier_detectors() -> Iterator[Candidate]:
+    """Get the available outlier detectors."""
+    _outlier_detectors = [
+        IsolationForest,
+    ]
+    for e in _outlier_detectors:
+        yield Candidate(name=e.__name__, clazz=e, create=e)
+
+
 def get_datasets() -> Iterator[Dataset]:
     """Get the available toy datasets."""
 
@@ -138,6 +148,7 @@ def get_regression_datasets() -> Iterator[Dataset]:
 
 CLASSIFIERS = list(get_classifiers())
 REGRESSORS = list(get_regressors())
-CANDIDATES = CLASSIFIERS + REGRESSORS
+OUTLIER_DETECTORS = list(get_outlier_detectors())
+CANDIDATES = CLASSIFIERS + REGRESSORS + OUTLIER_DETECTORS
 DATASETS = list(get_datasets())
 REGRESSION_DATASETS = list(get_regression_datasets())

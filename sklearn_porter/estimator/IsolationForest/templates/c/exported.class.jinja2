@@ -1,0 +1,93 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+
+typedef struct {
+    int *lefts;
+    int *rights;
+    double *thresholds;
+    int *indices;
+    int *missing_go_to_left;
+    double *values; /* the path length of each leaf */
+} Tree;
+
+
+int n_estimators;
+Tree *trees;
+double denominator;
+double offset;
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    JsonValue *estimators = json_get(data, "estimators");
+    n_estimators = estimators->length;
+    trees = malloc(n_estimators * sizeof(Tree));
+    for (int i = 0; i < n_estimators; i++) {
+        JsonValue *tree = estimators->items[i];
+        trees[i].lefts = json_ints(json_get(tree, "lefts"));
+        trees[i].rights = json_ints(json_get(tree, "rights"));
+        trees[i].thresholds = json_doubles(json_get(tree, "thresholds"));
+        trees[i].indices = json_ints(json_get(tree, "indices"));
+        trees[i].missing_go_to_left = json_ints(json_get(tree, "missing_go_to_left"));
+        trees[i].values = json_doubles(json_get(tree, "values"));
+    }
+    denominator = json_get(data, "denominator")->number;
+    offset = json_get(data, "offset")->number;
+    json_free(data);
+}
+
+/* Find the leaf and return its path length: */
+const double *compute(const Tree *tree, double features[N_FEATURES]) {
+    int node = 0;
+    while (node >= 0) {
+        if (features[tree->indices[node]] <= tree->thresholds[node] || (tree->missing_go_to_left[node] && isnan(features[tree->indices[node]]))) {
+            node = tree->lefts[node];
+        } else {
+            node = tree->rights[node];
+        }
+    }
+    return tree->values + (-node - 1);
+}
+
+/* The score of a sample depends on its path lengths in all trees: */
+double score_samples(double features[N_FEATURES]) {
+    double path_length = 0.;
+    for (int i = 0; i < n_estimators; i++) {
+        path_length += compute(&trees[i], features)[0];
+    }
+    return -pow(2., -(path_length / denominator));
+}
+
+/* A sample is an outlier (-1), if its score is lower than the offset,
+   otherwise an inlier (1): */
+int predict(double features[N_FEATURES]) {
+    return score_samples(features) - offset < 0 ? -1 : 1;
+}
+
+{% include 'samples' %}
+
+int main(int argc, const char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "You have to pass the path to the model data.\n");
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 2)) {
+        int prediction = predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+    return 0;
+}
+{% endblock %}

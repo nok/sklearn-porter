@@ -1,0 +1,45 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {{ trees | indent(4) }}
+
+    const DENOMINATOR = {{ denominator }};
+    const OFFSET = {{ offset }};
+
+    // The score of a sample depends on its path lengths in all trees:
+    private static function scoreSamples($features) {
+        $pathLength = 0.;
+        {% for i in range(n_estimators) %}
+        $pathLength += self::compute_{{ i }}($features)[0];
+        {% endfor %}
+        return -pow(2., -($pathLength / self::DENOMINATOR));
+    }
+
+    // A sample is an outlier (-1), if its score is lower than the offset,
+    // otherwise an inlier (1):
+    public static function predict($features) {
+        return self::scoreSamples($features) - self::OFFSET < 0 ? -1 : 1;
+    }
+
+}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        $prediction = {{ class_name }}::predict($features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+}
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+
+{% endif %}
+class {{ class_name }}
+
+	{{ trees | indent('\t') }}
+
+	DENOMINATOR = {{ denominator }}
+	OFFSET = {{ offset }}
+
+	# The score of a sample depends on its path lengths in all trees:
+	def self.score_samples(features)
+		path_length = 0.0
+		{% for i in range(n_estimators) %}
+		path_length += self.compute_{{ i }}(features)[0]
+		{% endfor %}
+		-(2.0 ** -(path_length / DENOMINATOR))
+	end
+
+	# A sample is an outlier (-1), if its score is lower than the offset,
+	# otherwise an inlier (1):
+	def self.predict(features)
+		self.score_samples(features) - OFFSET < 0 ? -1 : 1
+	end
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		prediction = {{ class_name }}.predict features
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	end
+end
+{% endblock %}

@@ -21,12 +21,18 @@ from scipy.sparse import issparse
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
-from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
+from sklearn.base import (
+    BaseEstimator,
+    ClassifierMixin,
+    OutlierMixin,
+    RegressorMixin,
+)
 from sklearn.ensemble import (
     AdaBoostClassifier,
     BaseEnsemble,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    IsolationForest,
     RandomForestClassifier,
     RandomForestRegressor,
 )
@@ -210,7 +216,7 @@ class Estimator:
 
         Check if the estimator is a valid base estimator of scikit-learn.
         Check if the estimator is embedded in an optimizer or pipeline.
-        Check if the estimator is a classifier or regressor.
+        Check if the estimator is a classifier, regressor or outlier detector.
 
         Parameters
         ----------
@@ -307,10 +313,18 @@ class Estimator:
             return est
         L.debug('└> No, the estimator is not inherited from `RegressorMixin`.')
 
-        if not (is_classifier or is_regressor):
+        # Check OutlierMixin:
+        L.debug('Check whether the estimator is inherited from `OutlierMixin`.')
+        is_outlier_detector = isinstance(est, OutlierMixin)
+        if is_outlier_detector:
+            L.debug('└> Yes, the estimator is inherited from `OutlierMixin`.')
+            return est
+        L.debug('└> No, the estimator is not inherited from `OutlierMixin`.')
+
+        if not (is_classifier or is_regressor or is_outlier_detector):
             msg = (
                 f'The passed object of type `{qualname}` is neither '
-                'a classifier nor a regressor.'
+                'a classifier, a regressor nor an outlier detector.'
             )
             L.error(msg)
             raise ValueError(msg)
@@ -324,7 +338,7 @@ class Estimator:
 
         Parameters
         ----------
-        estimator : ClassifierMixin or RegressorMixin
+        estimator : ClassifierMixin, RegressorMixin or OutlierMixin
             Set a fitted base estimator of scikit-learn.
 
         Returns
@@ -337,7 +351,7 @@ class Estimator:
         L.debug(f'Start loading the passed estimator: `{qualname}`.')
 
         name = est.__class__.__qualname__
-        clazzes = Estimator.classifiers() + Estimator.regressors()
+        clazzes = Estimator.estimators()
         clazzes = {clazz.__name__: clazz for clazz in clazzes}
         if name in clazzes and isinstance(est, clazzes[name]):
             module = import_module(f'sklearn_porter.estimator.{name}')
@@ -791,6 +805,34 @@ class Estimator:
         )
 
     @staticmethod
+    def estimators() -> tuple:
+        """
+        Get a set of all supported and installed estimators.
+
+        Returns
+        -------
+        estimators : tuple
+            A set of supported classifiers, regressors and outlier detectors.
+        """
+        return (
+            Estimator.classifiers()
+            + Estimator.regressors()
+            + Estimator.outlier_detectors()
+        )
+
+    @staticmethod
+    def outlier_detectors() -> tuple:
+        """
+        Get a set of supported and installed outlier detectors.
+
+        Returns
+        -------
+        estimators : tuple
+            A set of supported outlier detectors.
+        """
+        return (IsolationForest,)
+
+    @staticmethod
     def regressors() -> tuple:
         """
         Get a set of supported and installed regressors.
@@ -934,7 +976,7 @@ def show(language: str | enum.Language | None = None):
         language = enum.Language.convert(language)
         languages = {language.value.KEY: language.value}
     headers = ['Estimator'] + [lang.LABEL for lang in languages.values()]
-    clazzes = Estimator.classifiers() + Estimator.regressors()
+    clazzes = Estimator.estimators()
     clazzes = {_get_qualname(c()): c() for c in clazzes}
     clazzes = dict(sorted(clazzes.items()))
     table = []
@@ -1000,7 +1042,7 @@ def can(
     else:
         return False
 
-    cands = Estimator.classifiers() + Estimator.regressors()
+    cands = Estimator.estimators()
     cands = [c.__name__ for c in cands]
 
     if name not in cands:

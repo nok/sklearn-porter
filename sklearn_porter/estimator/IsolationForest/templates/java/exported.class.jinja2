@@ -1,0 +1,69 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+class {{ class_name }} {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+    {% endfilter %}
+
+    private static class TreeData {
+        private int[] lefts;
+        private int[] rights;
+        private double[] thresholds;
+        private int[] indices;
+        @SerializedName("missing_go_to_left")
+        private int[] missingGoToLeft;
+        private double[] values;
+    }
+
+    private static class ModelData {
+        private TreeData[] estimators;
+        private double denominator;
+        private double offset;
+    }
+
+    // Load the model data:
+    private static {{ class_name }} load(String file) throws IOException {
+        ModelData data;
+        try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
+            data = new Gson().fromJson(reader, ModelData.class);
+        }
+        Tree[] forest = new Tree[data.estimators.length];
+        for (int i = 0; i < data.estimators.length; i++) {
+            TreeData tree = data.estimators[i];
+            forest[i] = new Tree(tree.lefts, tree.rights, tree.thresholds, tree.indices, tree.missingGoToLeft, tree.values);
+        }
+        return new {{ class_name }}(forest, data.denominator, data.offset);
+    }
+
+{% include 'samples' %}
+
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = load(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            int prediction = clf.predict(features);
+
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+
+    }
+}
+{% endblock %}

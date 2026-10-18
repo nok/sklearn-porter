@@ -1,0 +1,67 @@
+type {{ class_name }} struct {
+	Trees []{{ class_name }}Tree `json:"estimators"`
+	Denominator float64 `json:"denominator"`
+	Offset float64 `json:"offset"`
+}
+
+type {{ class_name }}Tree struct {
+	Lefts []int `json:"lefts"`
+	Rights []int `json:"rights"`
+	Thresholds []float64 `json:"thresholds"`
+	Indices []int `json:"indices"`
+	MissingGoToLeft []int `json:"missing_go_to_left"`
+	Values []float64 `json:"values"`
+}
+{% if has_infinite_thresholds %}
+
+// UnmarshalJSON parses the infinite thresholds `1e999` and `-1e999`, which
+// encoding/json rejects:
+func (tree *{{ class_name }}Tree) UnmarshalJSON(data []byte) error {
+	type plain {{ class_name }}Tree
+	var aux struct {
+		*plain
+		Thresholds []json.Number `json:"thresholds"`
+	}
+	aux.plain = (*plain)(tree)
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+	tree.Thresholds = make([]float64, len(aux.Thresholds))
+	for i, threshold := range aux.Thresholds {
+		// ParseFloat returns ±Inf (and a range error) for these values:
+		tree.Thresholds[i], _ = strconv.ParseFloat(string(threshold), 64)
+	}
+	return nil
+}
+{% endif %}
+
+// Find the leaf and return its path length:
+func (tree {{ class_name }}Tree) Compute(features []float64) float64 {
+	node := 0
+	for node >= 0 {
+		if features[tree.Indices[node]] <= tree.Thresholds[node] || (tree.MissingGoToLeft[node] == 1 && math.IsNaN(features[tree.Indices[node]])) {
+			node = tree.Lefts[node]
+		} else {
+			node = tree.Rights[node]
+		}
+	}
+	return tree.Values[-node-1]
+}
+
+// The score of a sample depends on its path lengths in all trees:
+func (forest {{ class_name }}) scoreSamples(features []float64) float64 {
+	pathLength := 0.0
+	for _, tree := range forest.Trees {
+		pathLength += tree.Compute(features)
+	}
+	return -math.Pow(2, -(pathLength / forest.Denominator))
+}
+
+// A sample is an outlier (-1), if its score is lower than the offset,
+// otherwise an inlier (1):
+func (forest {{ class_name }}) Predict(features []float64) int {
+	if forest.scoreSamples(features)-forest.Offset < 0 {
+		return -1
+	}
+	return 1
+}

@@ -22,6 +22,7 @@ from sklearn.ensemble import (
     AdaBoostClassifier,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    IsolationForest,
     RandomForestClassifier,
     RandomForestRegressor,
 )
@@ -127,6 +128,7 @@ def test_repr_output(fitted_tree):
 def test_show_output():
     table = show()
     assert 'DecisionTreeClassifier' in table
+    assert 'IsolationForest' in table
     assert 'Java' in table
     assert 'JavaScript' in table
 
@@ -522,6 +524,17 @@ def test_list_of_regressors():
     )
     result = sorted([r.__name__ for r in Estimator.regressors()])
     assert regressors == result
+
+
+def test_list_of_outlier_detectors():
+    """Test and compare list of outlier detectors."""
+    result = [e.__name__ for e in Estimator.outlier_detectors()]
+    assert result == ['IsolationForest']
+    assert Estimator.estimators() == (
+        Estimator.classifiers()
+        + Estimator.regressors()
+        + Estimator.outlier_detectors()
+    )
 
 
 def test_list_of_classifiers():
@@ -1529,6 +1542,57 @@ def test_forest_n_estimators_from_fitted_trees(
     est = Estimator(orig_est)._estimator
     assert est.meta_info['n_estimators'] == 6
     assert len(est.model_data['estimators']) == 6
+
+
+def _score_isolation_forest(model_data: dict, x: np.ndarray) -> np.ndarray:
+    """Sum the path lengths of the trees like the ported IsolationForest."""
+    scores = []
+    for features in x:
+        path_length = 0.0
+        for tree in model_data['estimators']:
+            node = 0
+            while node >= 0:
+                feature = features[tree['indices'][node]]
+                is_left = feature <= tree['thresholds'][node] or (
+                    tree['missing_go_to_left'][node] and np.isnan(feature)
+                )
+                node = tree['lefts' if is_left else 'rights'][node]
+            path_length += tree['values'][-node - 1]
+        scores.append(-(2 ** -(path_length / model_data['denominator'])))
+    return np.array(scores)
+
+
+@pytest.mark.parametrize(
+    'params',
+    [
+        dict(),
+        dict(contamination=0.1),
+        dict(max_features=0.5),
+        dict(max_samples=0.5, bootstrap=True),
+        dict(max_samples=1),
+    ],
+    ids=['default', 'contamination', 'max_features', 'bootstrap', 'one_sample'],
+)
+def test_isolation_forest_model_data(params: dict):
+    """Test the model data of an IsolationForest: the path lengths of the
+    leaves give exactly the scores of scikit-learn."""
+    x, _ = load_iris(return_X_y=True)
+    x = x.copy()
+    x[::7, 1] = np.nan  # missing values
+    orig_est = IsolationForest(n_estimators=10, random_state=0, **params)
+    orig_est.fit(x)
+    est = Estimator(orig_est, language='js', template='exported')
+    model_data = est._estimator.model_data
+    assert len(model_data['estimators']) == 10
+    assert model_data['offset'] == orig_est.offset_
+    test_x = np.vstack((x, x + 0.5))
+    scores = _score_isolation_forest(model_data, test_x)
+    np.testing.assert_array_equal(scores, orig_est.score_samples(test_x))
+    y_pred = np.where(scores - model_data['offset'] < 0, -1, 1)
+    np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
+    # The template `exported` saves the denominator and the offset too:
+    _, exported = est.port()
+    assert json.loads(exported) == json.loads(json.dumps(model_data))
 
 
 @pytest.mark.regression

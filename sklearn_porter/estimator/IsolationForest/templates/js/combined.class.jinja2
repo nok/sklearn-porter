@@ -1,0 +1,49 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+var {{ class_name }} = function() {
+
+    var forest = [];
+
+    {{ trees | indent(4) }}
+
+    var denominator = {{ denominator }};
+    var offset = {{ offset }};
+
+    // The score of a sample depends on its path lengths in all trees:
+    var scoreSamples = function(features) {
+        var pathLength = 0.;
+        for (var i = 0; i < forest.length; i++) {
+            pathLength += forest[i](features)[0];
+        }
+        return -Math.pow(2., -(pathLength / denominator));
+    };
+
+    // A sample is an outlier (-1), if its score is lower than the offset,
+    // otherwise an inlier (1):
+    this.predict = function(features) {
+        return scoreSamples(features) - offset < 0 ? -1 : 1;
+    };
+
+};
+
+{% include 'samples' %}
+
+var main = function () {
+    // Estimator:
+    var clf = new {{ class_name }}();
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        var prediction = clf.predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

@@ -60,6 +60,10 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 - [linear_model.ElasticNet](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.ElasticNet.html)
 - [neural_network.MLPRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html)
 
+#### Outlier detectors
+
+- [ensemble.IsolationForest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html)
+
 ### Languages
 
 The estimators are ported to **C**, **Go**, **Java**, **JavaScript**, **PHP** and **Ruby**.
