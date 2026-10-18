@@ -1,0 +1,114 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import com.google.gson.Gson;
+{% if is_test or to_json %}
+import java.util.Arrays;
+{% endif %}
+
+class {{ class_name }} {
+
+    private class Classifier {
+        private double[] priors;
+        private double[][] probs;
+    }
+
+    private Classifier clf;
+
+    public {{ class_name }}(String file) throws IOException {
+        try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
+            this.clf = new Gson().fromJson(reader, Classifier.class);
+        }
+    }
+
+    private int findMax(double[] nums) {
+        int i = 0, l = nums.length, idx = 0;
+        for (i = 0; i < l; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
+
+    private double logSumExp(double[] nums) {
+        double max = nums[findMax(nums)];
+        double sum = 0.;
+        for (int i = 0 , il = nums.length; i < il; i++) {
+            sum += Math.exp(nums[i] - max);
+        }
+        return max + Math.log(sum);
+    }
+
+    private double[] compute(double[] features) {
+        int nClasses = this.clf.probs.length;
+        int nFeatures = this.clf.probs[0].length;
+
+        double[] jll = new double[nClasses];
+        for (int i = 0; i < nClasses; i++) {
+            double sum = 0.;
+            for (int j = 0; j < nFeatures; j++) {
+                sum += features[j] * this.clf.probs[i][j];
+            }
+            jll[i] = sum + this.clf.priors[i];
+        }
+        return jll;
+    }
+
+{% include 'labels' %}
+
+    public int predictIndex(double[] features) {
+        return findMax(compute(features));
+    }
+
+    public {{ label_type }} predict(double[] features) {
+        return LABELS[this.predictIndex(features)];
+    }
+
+    public double[] predictProba(double[] features) {
+        double[] jll = compute(features);
+        double sum = logSumExp(jll);
+        for (int i = 0, il = jll.length; i < il; i++) {
+            jll[i] = Math.exp(jll[i] - sum);
+        }
+        return jll;
+    }
+
+{% include 'samples' %}
+
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Model data:
+        String modelData = args[0];
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(modelData);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            {% if is_test or to_json %}
+            // Get JSON:
+            {{ label_type }} prediction = clf.predict(features);
+            double[] probabilities = clf.predictProba(features);
+            System.out.println("{\"predict\": " + toJson(prediction) + ", \"predict_proba\": " + String.join(",", Arrays.toString(probabilities)) + "}");
+            {% else %}
+            // Get class prediction:
+            {{ label_type }} prediction = clf.predict(features);
+            System.out.println("Predicted class: " + prediction);
+
+            // Get class probabilities:
+            double[] probabilities = clf.predictProba(features);
+            for (int i = 0; i < probabilities.length; i++) {
+                System.out.println("Probability of class #" + i + " : " + String.valueOf(probabilities[i]));
+            }
+            {% endif %}
+        }
+
+    }
+}
+{% endblock %}

@@ -28,7 +28,12 @@ from sklearn.linear_model import (
     RidgeClassifier,
     SGDClassifier,
 )
-from sklearn.naive_bayes import BernoulliNB, GaussianNB
+from sklearn.naive_bayes import (
+    BernoulliNB,
+    ComplementNB,
+    GaussianNB,
+    MultinomialNB,
+)
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.svm import SVC, LinearSVC, NuSVC
@@ -74,6 +79,8 @@ def get_classifiers() -> Iterator[Candidate]:
         KNeighborsClassifier,
         GaussianNB,
         BernoulliNB,
+        MultinomialNB,
+        ComplementNB,
         MLPClassifier,
         SGDClassifier,
         RidgeClassifier,
