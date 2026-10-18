@@ -1,0 +1,8 @@
+// Add the values of all trees to the initial prediction:
+func (reg {{ class_name }}) Predict(features []float64) float64 {
+	value := reg.Inits[0]
+	for _, tree := range reg.Trees {
+		value += tree.Compute(features)
+	}
+	return value
+}

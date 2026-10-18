@@ -1,0 +1,46 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	{% filter indent('\t', True) %}
+	{% include 'forest' %}
+	{% endfilter %}
+
+
+	# Add the values of all trees to the initial prediction:
+	def predict(features)
+		value = @inits[0]
+		@forest.each do |tree|
+			value += {{ class_name }}.compute(tree, features)
+		end
+		value
+	end
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+
+	# Model data:
+	{{ model }}
+
+	# Estimator:
+	reg = {{ class_name }}.new model, [{{ inits }}]
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		prediction = reg.predict features
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	end
+end
+{% endblock %}

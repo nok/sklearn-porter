@@ -1,0 +1,30 @@
+var Tree = function(lefts, rights, thresholds, indices, missingGoToLeft, values) {
+    this.lefts = lefts;
+    this.rights = rights;
+    this.thresholds = thresholds;
+    this.indices = indices;
+    this.missingGoToLeft = missingGoToLeft;
+    this.values = values;
+
+    // Find the leaf and return its value:
+    this.compute = function(features) {
+        var node = 0;
+        while (node >= 0) {
+            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] === 1 && isNaN(features[this.indices[node]]))) {
+                node = this.lefts[node];
+            } else {
+                node = this.rights[node];
+            }
+        }
+        return this.values[-node - 1];
+    };
+};
+
+var forest = [];
+for (var i = 0, il = estimators.length; i < il; i++) {
+    forest.push(new Tree(
+        estimators[i]['lefts'], estimators[i]['rights'],
+        estimators[i]['thresholds'], estimators[i]['indices'], estimators[i]['missing_go_to_left'],
+        estimators[i]['values']
+    ));
+}

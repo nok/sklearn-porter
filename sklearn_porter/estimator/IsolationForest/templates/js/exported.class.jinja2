@@ -10,9 +10,10 @@ var {{ class_name }} = function(jsonFile) {
         denominator = modelData['denominator'],
         offset = modelData['offset'];
 
-    {% filter indent(4) %}
+    {% filter indent(4, True) %}
     {% include 'forest' %}
     {% endfilter %}
+
 
 };
 

@@ -210,11 +210,11 @@ class EstimatorBase(EstimatorApiABC):
             tpls.update({path.stem: path.read_text() for path in tpls_paths})
 
         # 3. Load specific templates from template files:
-        # The templates of a class overwrite the templates of its bases:
+        # The templates of a class overwrite the templates of its bases
+        # (also of the bases of its bases):
         ignored = {'EstimatorBase', 'EstimatorApiABC'}
-        bases = [b.__name__ for b in self.__class__.__bases__]
+        bases = [b.__name__ for b in reversed(self.__class__.__mro__)]
         bases = [b for b in dict.fromkeys(bases) if b not in ignored]
-        bases.append(self.__class__.__name__)
         est_dir = root_dir / 'estimator'
         for base_dir in bases:
             tpls_dir = est_dir / base_dir / 'templates' / lang.KEY

@@ -1,0 +1,52 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_ESTIMATORS {{ n_estimators }}
+
+{% include 'tree' %}
+
+
+{{ model }}
+
+Tree trees[N_ESTIMATORS] = {
+{% for i in range(n_estimators) %}
+    {lefts_{{ i }}, rights_{{ i }}, thresholds_{{ i }}, indices_{{ i }}, missing_go_to_left_{{ i }}, values_{{ i }}}{% if not loop.last %},{% endif %}
+
+{% endfor %}
+};
+
+double init = {{ inits }};
+
+{% include 'compute' %}
+
+
+/* Add the values of all trees to the initial prediction: */
+double predict(double features[N_FEATURES]) {
+    double value = init;
+    for (int i = 0; i < N_ESTIMATORS; i++) {
+        value += compute(&trees[i], features);
+    }
+    return value;
+}
+
+{% include 'samples' %}
+
+int main(int argc, const char *argv[]) {
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        double prediction = predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+    return 0;
+}
+{% endblock %}

@@ -1,0 +1,38 @@
+private static class Tree {
+    private int[] lefts;
+    private int[] rights;
+    private double[] thresholds;
+    private int[] indices;
+    private int[] missingGoToLeft;
+    private double[] values;
+
+    private Tree(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[] values) {
+        this.lefts = lefts;
+        this.rights = rights;
+        this.thresholds = thresholds;
+        this.indices = indices;
+        this.missingGoToLeft = missingGoToLeft;
+        this.values = values;
+    }
+
+    // Find the leaf and return its value:
+    private double compute(double[] features) {
+        int node = 0;
+        while (node >= 0) {
+            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
+                node = this.lefts[node];
+            } else {
+                node = this.rights[node];
+            }
+        }
+        return this.values[-node - 1];
+    }
+}
+
+private Tree[] forest;
+private double[] inits;
+
+public {{ class_name }}(Tree[] forest, double[] inits) {
+    this.forest = forest;
+    this.inits = inits;
+}

@@ -1,0 +1,10 @@
+# Add the values of the trees of all stages to the initial raw predictions:
+def _decision_function(features)
+	raw = @inits.dup
+	(0 ... @forest.length).step(raw.length) do |i|
+		for k in 0 ... raw.length
+			raw[k] += {{ class_name }}.compute(@forest[i + k], features)
+		end
+	end
+	raw
+end

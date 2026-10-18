@@ -1,0 +1,60 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict float64 `json:"predict"`
+}
+
+{% endif %}
+{% include 'forest' %}
+
+
+{% include 'predict' %}
+
+
+{% include 'samples' %}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
+		os.Exit(1)
+	}
+
+	// Model data:
+	modelData, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Estimator:
+	var reg {{ class_name }}
+	if err := json.Unmarshal(modelData, &reg); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[2:], func(features []float64) {
+		prediction := reg.Predict(features)
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	})
+
+}
+{% endblock %}

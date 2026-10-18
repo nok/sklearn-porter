@@ -1,0 +1,17 @@
+def initialize(forest, inits)
+	@forest = forest
+	@inits = inits
+end
+
+# Find the leaf and return its value:
+def self.compute(tree, features)
+	node = 0
+	while node >= 0
+		if features[tree['indices'][node]] <= tree['thresholds'][node] || (tree['missing_go_to_left'][node] == 1 && features[tree['indices'][node]].nan?)
+			node = tree['lefts'][node]
+		else
+			node = tree['rights'][node]
+		end
+	end
+	tree['values'][-node - 1]
+end

@@ -18,10 +18,13 @@ from sklearn.datasets import (
     load_iris,
     make_multilabel_classification,
 )
+from sklearn.dummy import DummyClassifier
 from sklearn.ensemble import (
     AdaBoostClassifier,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    GradientBoostingClassifier,
+    GradientBoostingRegressor,
     IsolationForest,
     RandomForestClassifier,
     RandomForestRegressor,
@@ -49,6 +52,7 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC, LinearSVC, NuSVC
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.utils import get_tags
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -514,6 +518,7 @@ def test_list_of_regressors():
                 DecisionTreeRegressor,
                 ElasticNet,
                 ExtraTreesRegressor,
+                GradientBoostingRegressor,
                 Lasso,
                 LinearRegression,
                 MLPRegressor,
@@ -546,6 +551,7 @@ def test_list_of_classifiers():
         DecisionTreeClassifier,
         ExtraTreesClassifier,
         GaussianNB,
+        GradientBoostingClassifier,
         KNeighborsClassifier,
         LinearSVC,
         LogisticRegression,
@@ -1300,6 +1306,10 @@ def test_regressions_of_regressors(
     # Estimator:
     orig_est = candidate.create()
     x, y = dataset.data, dataset.target
+    if np.ndim(y) > 1 and not get_tags(orig_est).target_tags.multi_output:
+        pytest.skip(
+            'Skip multiple outputs, which the regressor does not support'
+        )
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', ConvergenceWarning)
         orig_est.fit(X=x, y=y)
@@ -1602,6 +1612,118 @@ def test_isolation_forest_model_data(params: dict):
     # The template `exported` saves the denominator and the offset too:
     _, exported = est.port()
     assert json.loads(exported) == json.loads(json.dumps(model_data))
+
+
+def _raw_gradient_boosting(model_data: dict, x: np.ndarray) -> np.ndarray:
+    """Add the values of the trees like the ported gradient boosting."""
+    inits = model_data['inits']
+    trees = model_data['estimators']
+    raws = []
+    for features in x:
+        raw = list(inits)
+        for i, tree in enumerate(trees):
+            node = 0
+            while node >= 0:
+                is_left = (
+                    features[tree['indices'][node]]
+                    <= (tree['thresholds'][node])
+                )
+                node = tree['lefts' if is_left else 'rights'][node]
+            raw[i % len(inits)] += tree['values'][-node - 1]
+        raws.append(raw)
+    return np.array(raws)
+
+
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        GradientBoostingClassifier(n_estimators=10, random_state=0),
+        GradientBoostingClassifier(
+            n_estimators=10, loss='exponential', random_state=0
+        ),
+        GradientBoostingClassifier(n_estimators=10, init='zero'),
+        GradientBoostingClassifier(
+            n_estimators=10,
+            init=DummyClassifier(strategy='uniform'),
+            subsample=0.5,
+            max_features=0.5,
+            random_state=0,
+        ),
+        GradientBoostingRegressor(n_estimators=10, random_state=0),
+        GradientBoostingRegressor(n_estimators=10, loss='quantile'),
+        GradientBoostingRegressor(n_estimators=10, init='zero'),
+    ],
+    ids=[
+        'classifier',
+        'classifier_exponential',
+        'classifier_init_zero',
+        'classifier_init_uniform',
+        'regressor',
+        'regressor_quantile',
+        'regressor_init_zero',
+    ],
+)
+@pytest.mark.parametrize('binary', [True, False], ids=['binary', 'multi'])
+def test_gradient_boosting_model_data(orig_est, binary: bool):
+    """Test the model data of gradient boosting: the values of the trees
+    give the raw predictions of scikit-learn."""
+    is_classifier = isinstance(orig_est, GradientBoostingClassifier)
+    if not is_classifier and binary:
+        pytest.skip('Skip the binary variant of regressors')
+    if orig_est.get_params()['loss'] == 'exponential' and not binary:
+        pytest.skip('Skip the exponential loss of multiclass classifiers')
+    if is_classifier:
+        x, y = load_iris(return_X_y=True)
+        if binary:
+            y = (y > 0).astype(int)
+    else:
+        x, y = load_diabetes(return_X_y=True)
+    orig_est = clone(orig_est).fit(X=x, y=y)
+    est = Estimator(orig_est, language='js', template='exported')
+    model_data = est._estimator.model_data
+    n_stages, n_trees = orig_est.estimators_.shape
+    assert len(model_data['estimators']) == n_stages * n_trees
+    assert len(model_data['inits']) == n_trees
+    test_x = np.vstack((x, x + 0.5))
+    raw = _raw_gradient_boosting(model_data, test_x)
+    if is_classifier:
+        desired = orig_est.decision_function(test_x)
+    else:
+        desired = orig_est.predict(test_x)
+    np.testing.assert_allclose(
+        raw, np.reshape(desired, raw.shape), rtol=1e-14, atol=1e-12
+    )
+    # The template `exported` saves the initial raw predictions too:
+    _, exported = est.port()
+    assert json.loads(exported) == json.loads(json.dumps(model_data))
+
+
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        GradientBoostingClassifier(n_estimators=3, init=LogisticRegression()),
+        GradientBoostingClassifier(
+            n_estimators=3, init=DummyClassifier(strategy='stratified')
+        ),
+        GradientBoostingRegressor(n_estimators=3, init=LinearRegression()),
+    ],
+    ids=[
+        'classifier_estimator',
+        'classifier_stratified',
+        'regressor_estimator',
+    ],
+)
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_gradient_boosting_with_unsupported_init(orig_est):
+    """Test the rejection of initial estimators with non constant
+    predictions."""
+    if isinstance(orig_est, GradientBoostingClassifier):
+        x, y = load_iris(return_X_y=True)
+    else:
+        x, y = load_diabetes(return_X_y=True)
+    orig_est = clone(orig_est).fit(X=x, y=y)
+    with pytest.raises(exception.NotSupportedYetError, match='init'):
+        Estimator(orig_est)
 
 
 @pytest.mark.regression

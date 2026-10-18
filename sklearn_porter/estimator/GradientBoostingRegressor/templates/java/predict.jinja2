@@ -1,0 +1,8 @@
+// Add the values of all trees to the initial prediction:
+public double predict(double[] features) {
+    double value = this.inits[0];
+    for (Tree tree : this.forest) {
+        value += tree.compute(features);
+    }
+    return value;
+}

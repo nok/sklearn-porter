@@ -1,0 +1,41 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+
+{% endif %}
+class {{ class_name }}
+
+	{{ trees | indent('\t') }}
+
+	INITS = [{{ inits }}]
+
+	# Add the values of all trees to the initial prediction:
+	def self.predict(features)
+		value = INITS[0]
+		{% for i in range(n_estimators) %}
+		value += self.compute_{{ i }}(features)[0]
+		{% endfor %}
+		value
+	end
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		prediction = {{ class_name }}.predict features
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	end
+end
+{% endblock %}

@@ -1,0 +1,11 @@
+// Add the values of the trees of all stages to the initial raw predictions:
+func (clf {{ class_name }}) decisionFunction(features []float64) []float64 {
+	raw := make([]float64, len(clf.Inits))
+	copy(raw, clf.Inits)
+	for i := 0; i < len(clf.Trees); i += len(raw) {
+		for k := range raw {
+			raw[k] += clf.Trees[i+k].Compute(features)
+		}
+	}
+	return raw
+}

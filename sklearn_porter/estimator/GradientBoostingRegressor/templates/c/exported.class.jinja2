@@ -1,0 +1,68 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+
+{% include 'tree' %}
+
+
+int n_estimators;
+Tree *trees;
+double init;
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    JsonValue *estimators = json_get(data, "estimators");
+    n_estimators = estimators->length;
+    trees = malloc(n_estimators * sizeof(Tree));
+    for (int i = 0; i < n_estimators; i++) {
+        JsonValue *tree = estimators->items[i];
+        trees[i].lefts = json_ints(json_get(tree, "lefts"));
+        trees[i].rights = json_ints(json_get(tree, "rights"));
+        trees[i].thresholds = json_doubles(json_get(tree, "thresholds"));
+        trees[i].indices = json_ints(json_get(tree, "indices"));
+        trees[i].missing_go_to_left = json_ints(json_get(tree, "missing_go_to_left"));
+        trees[i].values = json_doubles(json_get(tree, "values"));
+    }
+    init = json_get(data, "inits")->items[0]->number;
+    json_free(data);
+}
+
+{% include 'compute' %}
+
+
+/* Add the values of all trees to the initial prediction: */
+double predict(double features[N_FEATURES]) {
+    double value = init;
+    for (int i = 0; i < n_estimators; i++) {
+        value += compute(&trees[i], features);
+    }
+    return value;
+}
+
+{% include 'samples' %}
+
+int main(int argc, const char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "You have to pass the path to the model data.\n");
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 2)) {
+        double prediction = predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+    return 0;
+}
+{% endblock %}

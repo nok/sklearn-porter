@@ -20,6 +20,13 @@
 - Like scikit-learn, the ported ComplementNB uses the class priors only if it was fitted on a single class, otherwise `class_prior` and `fit_prior` don't change its predictions.
 - The features are usually word counts (e.g. of a [`CountVectorizer`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html)) or tf-idf values (e.g. of a [`TfidfVectorizer`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html)). The vectorizer isn't ported, so you have to compute the features of the ported estimator yourself, and with a large vocabulary the dense model data gets large (see the [limitations](limitations.md)).
 
+## GradientBoostingClassifier and GradientBoostingRegressor
+
+- The ported [GradientBoostingClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingClassifier.html) and [GradientBoostingRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.GradientBoostingRegressor.html) start with the constant raw predictions of the initial estimator (`init_`) and add the values of the leaves of all trees, which are multiplied by the learning rate in advance. They add the same values in the same order as scikit-learn, so the raw predictions and the predictions are the same; the probabilities can differ in the last digits (see the [limitations](limitations.md)).
+- The default initial estimator and `init='zero'` are supported. An `init` estimator whose predictions depend on the features (e.g. a `LogisticRegression`) or a `DummyClassifier(strategy='stratified')` can't be ported and raises a `NotSupportedYetError`.
+- A multiclass GradientBoostingClassifier has one tree per class and stage (e.g. 1000 trees with 10 classes and the default `n_estimators=100`), so the generated code can get large. Use the `exported` template for many trees, especially with Java.
+- [HistGradientBoostingClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingClassifier.html) and [HistGradientBoostingRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.HistGradientBoostingRegressor.html) use another structure of trees and aren't supported yet.
+
 ## IsolationForest
 
 - The ported [IsolationForest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html) supports only `predict`, which returns `1` for inliers and `-1` for outliers like scikit-learn. The scores (`score_samples` and `decision_function`) aren't ported.

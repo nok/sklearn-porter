@@ -1,0 +1,47 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {{ trees | indent(4) }}
+
+    const INITS = array({{ inits }});
+
+    // Add the values of the trees of all stages to the initial raw predictions:
+    private function decisionFunction($features) {
+        $raw = self::INITS;
+        {% for i in range(n_estimators) %}
+        $raw[{{ i % n_trees_per_stage }}] += self::compute_{{ i }}($features)[0];
+        {% endfor %}
+        return $raw;
+    }
+
+{% include 'labels' %}
+
+    {% filter indent(4, True) %}
+    {% include 'methods' %}
+    {% endfilter %}
+
+
+}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
+
+
+    array_shift($argv);
+
+    // Estimator:
+    $clf = new {{ class_name }}();
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+}
+{% endblock %}

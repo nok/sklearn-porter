@@ -1,0 +1,17 @@
+{% if is_test or to_json %}
+// Get JSON:
+prediction := clf.Predict(features)
+probabilities := clf.PredictProba(features)
+res, _ := json.Marshal(&Response{Predict: prediction, PredictProba: probabilities})
+fmt.Println(string(res))
+{% else %}
+// Get class prediction:
+prediction := clf.Predict(features)
+fmt.Printf("Predicted class: %v\n", prediction)
+
+// Get class probabilities:
+probabilities := clf.PredictProba(features)
+for i, probability := range probabilities {
+	fmt.Printf("Probability of class #%d : %f\n", i, probability)
+}
+{% endif %}

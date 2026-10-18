@@ -1,0 +1,54 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import com.google.gson.Gson;
+import com.google.gson.annotations.SerializedName;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+{% if is_test or to_json %}
+import java.util.Arrays;
+{% endif %}
+
+class {{ class_name }} {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+
+
+    {% include 'decision' %}
+    {% endfilter %}
+
+
+{% include 'labels' %}
+
+    {% filter indent(4, True) %}
+    {% include 'methods' %}
+
+
+    {% include 'load' %}
+    {% endfilter %}
+
+
+{% include 'samples' %}
+
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = load(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+
+    }
+}
+{% endblock %}

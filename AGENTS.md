@@ -36,7 +36,11 @@ code must predict exactly the same classes as the original estimator.
   the fitted estimator and renders the templates in `port()`.
 - `sklearn_porter/estimator/<Name>/templates/<language>/*.jinja2`: Jinja2
   templates; they extend the base templates in
-  `sklearn_porter/language/<language>/templates/`.
+  `sklearn_porter/language/<language>/templates/`. A subclass of another
+  estimator class (e.g. `GradientBoostingClassifier` of
+  `GradientBoostingRegressor` of `RandomForestRegressor`) loads the
+  templates of all its base classes, and its own templates overwrite the ones
+  with the same name.
 - `sklearn_porter/language/<language>/__init__.py`: subclass of `LanguageABC`
   with the compile and execute commands and small code snippets.
 - `sklearn_porter/enums`, `exceptions`, `utils`, `meta`: shared helpers.

@@ -1,0 +1,45 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_CLASSES {{ n_classes }}
+#define N_TREES {{ n_trees_per_stage }} /* the number of trees per stage */
+
+
+{{ trees }}
+
+double inits[N_TREES] = {{ '{' }}{{ inits }}{{ '}' }};
+
+/* Add the values of the trees of all stages to the initial raw predictions: */
+void decision_function(double *raw, double features[N_FEATURES]) {
+    double temp[1];
+    for (int k = 0; k < N_TREES; k++) {
+        raw[k] = inits[k];
+    }
+    {% for i in range(n_estimators) %}
+    compute_{{ i }}(temp, features);
+    raw[{{ i % n_trees_per_stage }}] += temp[0];
+    {% endfor %}
+}
+
+{% include 'methods' %}
+
+
+{% include 'samples' %}
+
+int main(int argc, const char *argv[]) {
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+    return 0;
+}
+{% endblock %}

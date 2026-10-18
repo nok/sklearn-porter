@@ -1,0 +1,39 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {{ trees | indent(4) }}
+
+    const INITS = array({{ inits }});
+
+    // Add the values of all trees to the initial prediction:
+    public static function predict($features) {
+        $value = self::INITS[0];
+        {% for i in range(n_estimators) %}
+        $value += self::compute_{{ i }}($features)[0];
+        {% endfor %}
+        return $value;
+    }
+
+}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
+
+
+    array_shift($argv);
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        $prediction = {{ class_name }}::predict($features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+}
+{% endblock %}

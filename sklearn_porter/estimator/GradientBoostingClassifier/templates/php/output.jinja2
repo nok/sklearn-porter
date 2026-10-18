@@ -1,0 +1,16 @@
+{% if is_test or to_json %}
+// Get JSON:
+$prediction = $clf->predict($features);
+$probabilities = $clf->predictProba($features);
+fwrite(STDOUT, json_encode(array("predict" => $prediction, "predict_proba" => $probabilities)) . "\n");
+{% else %}
+// Get class prediction:
+$prediction = $clf->predict($features);
+fwrite(STDOUT, "Predicted class: " . strval($prediction) . "\n");
+
+// Get class probabilities:
+$probabilities = $clf->predictProba($features);
+for ($i = 0; $i < count($probabilities); $i++) {
+    fwrite(STDOUT, "Probability of class #" . strval($i) . " = " . strval($probabilities[$i]) . "\n");
+}
+{% endif %}

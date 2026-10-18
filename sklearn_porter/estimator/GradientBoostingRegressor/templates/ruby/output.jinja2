@@ -1,0 +1,7 @@
+{% if is_test or to_json %}
+# Get JSON:
+puts JSON.generate({:predict => prediction})
+{% else %}
+# Get predicted value:
+puts "Predicted value: #{prediction}"
+{% endif %}

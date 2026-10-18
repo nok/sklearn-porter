@@ -1,0 +1,45 @@
+// Compute the probabilities of the classes from the raw predictions:
+func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
+	raw := clf.decisionFunction(features)
+	{% if is_binary %}
+	proba := 1.0 / (1.0 + math.Exp(-{% if is_exponential %}2.0 * {% endif %}raw[0]))
+	return []float64{1.0 - proba, proba}
+	{% else %}
+	max := raw[0]
+	for _, value := range raw {
+		max = math.Max(max, value)
+	}
+	probas := make([]float64, len(raw))
+	sum := 0.0
+	for k, value := range raw {
+		probas[k] = math.Exp(value - max)
+		sum += probas[k]
+	}
+	for k := range probas {
+		probas[k] /= sum
+	}
+	return probas
+	{% endif %}
+}
+
+func (clf {{ class_name }}) PredictIndex(features []float64) int {
+	raw := clf.decisionFunction(features)
+	{% if is_binary %}
+	if raw[0] >= 0 {
+		return 1
+	}
+	return 0
+	{% else %}
+	idx := 0
+	for k := range raw {
+		if raw[k] > raw[idx] {
+			idx = k
+		}
+	}
+	return idx
+	{% endif %}
+}
+
+func (clf {{ class_name }}) Predict(features []float64) {{ label_type }} {
+	return labels[clf.PredictIndex(features)]
+}

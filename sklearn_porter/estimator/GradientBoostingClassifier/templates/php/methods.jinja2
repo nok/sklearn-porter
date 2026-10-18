@@ -1,0 +1,37 @@
+// Compute the probabilities of the classes from the raw predictions:
+public function predictProba($features) {
+    $raw = $this->decisionFunction($features);
+    {% if is_binary %}
+    $proba = 1. / (1. + exp(-{% if is_exponential %}2. * {% endif %}$raw[0]));
+    return array(1. - $proba, $proba);
+    {% else %}
+    $max = max($raw);
+    $probas = array();
+    $sum = 0.;
+    foreach ($raw as $k => $value) {
+        $probas[$k] = exp($value - $max);
+        $sum += $probas[$k];
+    }
+    foreach ($probas as $k => $proba) {
+        $probas[$k] = $proba / $sum;
+    }
+    return $probas;
+    {% endif %}
+}
+
+public function predictIndex($features) {
+    $raw = $this->decisionFunction($features);
+    {% if is_binary %}
+    return $raw[0] >= 0 ? 1 : 0;
+    {% else %}
+    $idx = 0;
+    for ($k = 1, $l = count($raw); $k < $l; $k++) {
+        $idx = $raw[$k] > $raw[$idx] ? $k : $idx;
+    }
+    return $idx;
+    {% endif %}
+}
+
+public function predict($features) {
+    return self::LABELS[$this->predictIndex($features)];
+}
