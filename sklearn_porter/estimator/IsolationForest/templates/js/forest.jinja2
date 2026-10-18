@@ -1,0 +1,45 @@
+var Tree = function(lefts, rights, thresholds, indices, missingGoToLeft, values) {
+    this.lefts = lefts;
+    this.rights = rights;
+    this.thresholds = thresholds;
+    this.indices = indices;
+    this.missingGoToLeft = missingGoToLeft;
+    this.values = values;
+
+    // Find the leaf and return its path length:
+    this.compute = function(features) {
+        var node = 0;
+        while (node >= 0) {
+            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] === 1 && isNaN(features[this.indices[node]]))) {
+                node = this.lefts[node];
+            } else {
+                node = this.rights[node];
+            }
+        }
+        return this.values[-node - 1];
+    };
+};
+
+this.forest = [];
+for (var i = 0, il = estimators.length; i < il; i++) {
+    this.forest.push(new Tree(
+        estimators[i]['lefts'], estimators[i]['rights'],
+        estimators[i]['thresholds'], estimators[i]['indices'], estimators[i]['missing_go_to_left'],
+        estimators[i]['values']
+    ));
+}
+
+// The score of a sample depends on its path lengths in all trees:
+var scoreSamples = function(forest, features) {
+    var pathLength = 0.;
+    for (var i = 0; i < forest.length; i++) {
+        pathLength += forest[i].compute(features);
+    }
+    return -Math.pow(2., -(pathLength / denominator));
+};
+
+// A sample is an outlier (-1), if its score is lower than the offset,
+// otherwise an inlier (1):
+this.predict = function(features) {
+    return scoreSamples(this.forest, features) - offset < 0 ? -1 : 1;
+};

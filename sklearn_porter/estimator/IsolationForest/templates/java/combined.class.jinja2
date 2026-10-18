@@ -1,0 +1,40 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {{ trees | indent(4) }}
+
+    private static final double DENOMINATOR = {{ denominator }};
+    private static final double OFFSET = {{ offset }};
+
+    // The score of a sample depends on its path lengths in all trees:
+    private static double scoreSamples(double[] features) {
+        double pathLength = 0.;
+        {% for i in range(n_estimators) %}
+        pathLength += compute_{{ i }}(features)[0];
+        {% endfor %}
+        return -Math.pow(2., -(pathLength / DENOMINATOR));
+    }
+
+    // A sample is an outlier (-1), if its score is lower than the offset,
+    // otherwise an inlier (1):
+    public static int predict(double[] features) {
+        return scoreSamples(features) - OFFSET < 0 ? -1 : 1;
+    }
+
+{% include 'samples' %}
+
+    public static void main(String[] args) {
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            int prediction = {{ class_name }}.predict(features);
+
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+
+    }
+}
+{% endblock %}

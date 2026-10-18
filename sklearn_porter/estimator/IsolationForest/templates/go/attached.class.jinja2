@@ -1,0 +1,48 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict int `json:"predict"`
+}
+
+{% endif %}
+{% include 'forest' %}
+
+
+{% include 'samples' %}
+
+func main() {
+	// Model data:
+	{{ model }}
+
+	// Estimator:
+	reg := {{ class_name }}{Denominator: {{ denominator }}, Offset: {{ offset }}}
+	if err := json.Unmarshal([]byte(model), &reg.Trees); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		prediction := reg.Predict(features)
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	})
+
+}
+{% endblock %}

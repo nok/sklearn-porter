@@ -1,0 +1,35 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+    {% endfilter %}
+
+}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    // Model data:
+    {{ model }}
+
+    // Estimator:
+    $clf = new {{ class_name }}($model, {{ denominator }}, {{ offset }});
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        $prediction = $clf->predict($features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+}
+{% endblock %}

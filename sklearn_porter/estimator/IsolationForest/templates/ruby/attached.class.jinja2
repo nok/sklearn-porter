@@ -1,0 +1,35 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	{% filter indent('\t', True) %}
+	{% include 'forest' %}
+	{% endfilter %}
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+	# Model data:
+	{{ model }}
+
+	# Estimator:
+	clf = {{ class_name }}.new model, {{ denominator }}, {{ offset }}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		prediction = clf.predict features
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	end
+end
+{% endblock %}

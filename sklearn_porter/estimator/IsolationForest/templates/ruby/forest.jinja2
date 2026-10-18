@@ -1,0 +1,33 @@
+def initialize(forest, denominator, offset)
+	@forest = forest
+	@denominator = denominator
+	@offset = offset
+end
+
+# Find the leaf and return its path length:
+def self.compute(tree, features)
+	node = 0
+	while node >= 0
+		if features[tree['indices'][node]] <= tree['thresholds'][node] || (tree['missing_go_to_left'][node] == 1 && features[tree['indices'][node]].nan?)
+			node = tree['lefts'][node]
+		else
+			node = tree['rights'][node]
+		end
+	end
+	tree['values'][-node - 1]
+end
+
+# The score of a sample depends on its path lengths in all trees:
+def score_samples(features)
+	path_length = 0.0
+	@forest.each do |tree|
+		path_length += {{ class_name }}.compute(tree, features)
+	end
+	-(2.0 ** -(path_length / @denominator))
+end
+
+# A sample is an outlier (-1), if its score is lower than the offset,
+# otherwise an inlier (1):
+def predict(features)
+	score_samples(features) - @offset < 0 ? -1 : 1
+end

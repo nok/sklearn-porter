@@ -1,0 +1,76 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_ESTIMATORS {{ n_estimators }}
+
+typedef struct {
+    int *lefts;
+    int *rights;
+    double *thresholds;
+    int *indices;
+    int *missing_go_to_left;
+    double *values; /* the path length of each leaf */
+} Tree;
+
+
+{{ model }}
+
+Tree trees[N_ESTIMATORS] = {
+{% for i in range(n_estimators) %}
+    {lefts_{{ i }}, rights_{{ i }}, thresholds_{{ i }}, indices_{{ i }}, missing_go_to_left_{{ i }}, values_{{ i }}}{% if not loop.last %},{% endif %}
+
+{% endfor %}
+};
+
+double denominator = {{ denominator }};
+double offset = {{ offset }};
+
+/* Find the leaf and return its path length: */
+const double *compute(const Tree *tree, double features[N_FEATURES]) {
+    int node = 0;
+    while (node >= 0) {
+        if (features[tree->indices[node]] <= tree->thresholds[node] || (tree->missing_go_to_left[node] && isnan(features[tree->indices[node]]))) {
+            node = tree->lefts[node];
+        } else {
+            node = tree->rights[node];
+        }
+    }
+    return tree->values + (-node - 1);
+}
+
+/* The score of a sample depends on its path lengths in all trees: */
+double score_samples(double features[N_FEATURES]) {
+    double path_length = 0.;
+    for (int i = 0; i < N_ESTIMATORS; i++) {
+        path_length += compute(&trees[i], features)[0];
+    }
+    return -pow(2., -(path_length / denominator));
+}
+
+/* A sample is an outlier (-1), if its score is lower than the offset,
+   otherwise an inlier (1): */
+int predict(double features[N_FEATURES]) {
+    return score_samples(features) - offset < 0 ? -1 : 1;
+}
+
+{% include 'samples' %}
+
+int main(int argc, const char *argv[]) {
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        int prediction = predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+    return 0;
+}
+{% endblock %}

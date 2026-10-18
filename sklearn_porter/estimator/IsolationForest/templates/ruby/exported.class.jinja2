@@ -1,0 +1,37 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	{% filter indent('\t', True) %}
+	{% include 'forest' %}
+	{% endfilter %}
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+	raise "You have to pass the path to the model data." if ARGV.empty?
+
+	# Model data:
+	model = JSON.parse(File.read(ARGV.shift))
+
+	# Estimator:
+	clf = {{ class_name }}.new model['estimators'], model['denominator'], model['offset']
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		prediction = clf.predict features
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	end
+end
+{% endblock %}

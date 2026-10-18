@@ -1,0 +1,48 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+
+
+{{ trees }}
+
+double denominator = {{ denominator }};
+double offset = {{ offset }};
+
+/* The score of a sample depends on its path lengths in all trees: */
+double score_samples(double features[N_FEATURES]) {
+    double path_length = 0.;
+    double temp[1];
+    {% for i in range(n_estimators) %}
+    compute_{{ i }}(temp, features);
+    path_length += temp[0];
+    {% endfor %}
+    return -pow(2., -(path_length / denominator));
+}
+
+/* A sample is an outlier (-1), if its score is lower than the offset,
+   otherwise an inlier (1): */
+int predict(double features[N_FEATURES]) {
+    return score_samples(features) - offset < 0 ? -1 : 1;
+}
+
+{% include 'samples' %}
+
+int main(int argc, const char *argv[]) {
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        int prediction = predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+    return 0;
+}
+{% endblock %}

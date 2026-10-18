@@ -1,0 +1,37 @@
+private $forest;
+private $denominator;
+private $offset;
+
+public function __construct($forest, $denominator, $offset) {
+    $this->forest = $forest;
+    $this->denominator = $denominator;
+    $this->offset = $offset;
+}
+
+// Find the leaf and return its path length:
+private static function compute($tree, $features) {
+    $node = 0;
+    while ($node >= 0) {
+        if ($features[$tree['indices'][$node]] <= $tree['thresholds'][$node] || ($tree['missing_go_to_left'][$node] == 1 && is_nan($features[$tree['indices'][$node]]))) {
+            $node = $tree['lefts'][$node];
+        } else {
+            $node = $tree['rights'][$node];
+        }
+    }
+    return $tree['values'][-$node - 1];
+}
+
+// The score of a sample depends on its path lengths in all trees:
+private function scoreSamples($features) {
+    $pathLength = 0.;
+    foreach ($this->forest as $tree) {
+        $pathLength += self::compute($tree, $features);
+    }
+    return -pow(2., -($pathLength / $this->denominator));
+}
+
+// A sample is an outlier (-1), if its score is lower than the offset,
+// otherwise an inlier (1):
+public function predict($features) {
+    return $this->scoreSamples($features) - $this->offset < 0 ? -1 : 1;
+}
