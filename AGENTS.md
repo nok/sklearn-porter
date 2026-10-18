@@ -71,6 +71,15 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 - Run the regression tests in Docker after changing templates, the model data
   extraction or the execution of ported estimators.
 - New tests which call `make()` or `test()` must be marked with `regression`.
+- Don't compare floating point results with NumPy bit-exactly (e.g.
+  `assert_array_equal` of scores or probabilities): NumPy computes functions
+  like `np.power`, `np.exp` or `np.log` with SIMD instructions depending on
+  the CPU (e.g. SVML with AVX-512 on the x86 runners of GitHub Actions),
+  which can differ by a few ULP from `pow()`/`exp()` of libm or of the target
+  languages. Docker on Apple Silicon (aarch64) doesn't show these differences,
+  so a test can pass locally and fail on some runners only. Use
+  `assert_allclose` with a small `rtol` (e.g. `1e-14`) and drop samples on a
+  decision boundary (ties) before comparing predictions.
 
 ## Adding or changing an estimator
 
