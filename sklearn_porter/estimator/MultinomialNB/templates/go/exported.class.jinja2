@@ -1,0 +1,122 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% include 'labels' %}
+
+type {{ class_name }} struct {
+	Priors []float64 `json:"priors"`
+	Probs [][]float64 `json:"probs"`
+}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict {{ label_type }} `json:"predict"`
+	PredictProba []float64 `json:"predict_proba"`
+}
+
+{% endif %}
+func (clf {{ class_name }}) findMax(nums []float64) int {
+	var idx = 0
+	for i := 0; i < len(nums); i++ {
+		if nums[i] > nums[idx] {
+			idx = i
+		}
+	}
+	return idx
+}
+
+func (clf {{ class_name }}) logSumExp(nums []float64) float64 {
+	var max = nums[clf.findMax(nums)]
+	var sum = 0.0
+	for i := 0; i < len(nums); i++ {
+		sum += math.Exp(nums[i] - max)
+	}
+	return max + math.Log(sum)
+}
+
+func (clf {{ class_name }}) compute(features []float64) []float64 {
+	var likelihoods = make([]float64, len(clf.Priors))
+	for i := 0; i < len(clf.Priors); i++ {
+		var sum = 0.0
+		for j := 0; j < len(clf.Probs[i]); j++ {
+			sum += features[j] * clf.Probs[i][j]
+		}
+		likelihoods[i] = sum + clf.Priors[i]
+	}
+	return likelihoods
+}
+
+func (clf {{ class_name }}) PredictIndex(features []float64) int {
+	return clf.findMax(clf.compute(features))
+}
+
+func (clf {{ class_name }}) Predict(features []float64) {{ label_type }} {
+	return labels[clf.PredictIndex(features)]
+}
+
+func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
+	var likelihoods = clf.compute(features)
+	var sum = clf.logSumExp(likelihoods)
+	for i := 0; i < len(likelihoods); i++ {
+		likelihoods[i] = math.Exp(likelihoods[i] - sum)
+	}
+	return likelihoods
+}
+
+{% include 'samples' %}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
+		os.Exit(1)
+	}
+
+	// Model data:
+	modelData, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Estimator:
+	var clf {{ class_name }}
+	if err := json.Unmarshal(modelData, &clf); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[2:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		prediction := clf.Predict(features)
+		probabilities := clf.PredictProba(features)
+		res, _ := json.Marshal(&Response{Predict: prediction, PredictProba: probabilities})
+		fmt.Println(string(res))
+		{% else %}
+		// Get class prediction:
+		prediction := clf.Predict(features)
+		fmt.Printf("Predicted class: %v\n", prediction)
+
+		// Get class probabilities:
+		probabilities := clf.PredictProba(features)
+		for i, probability := range probabilities {
+			fmt.Printf("Probability of class #%d : %f\n", i, probability)
+		}
+		{% endif %}
+	})
+
+}
+{% endblock %}

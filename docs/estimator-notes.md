@@ -14,6 +14,12 @@
 
 - [BernoulliNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html) with feature or class probabilities of 0 or 1 (e.g. with `alpha=0`) can't be ported and raises a `NotSupportedYetError`, because scikit-learn itself computes undefined (`NaN`) joint log likelihoods with them.
 
+## MultinomialNB and ComplementNB
+
+- [MultinomialNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.MultinomialNB.html) and [ComplementNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.ComplementNB.html) with infinite feature log probabilities (e.g. with `alpha=0` and features without counts in a class or, with ComplementNB, in all other classes) can't be ported and raise a `NotSupportedYetError`, because scikit-learn itself computes undefined (`NaN`) joint log likelihoods with them. The same applies to a MultinomialNB with class probabilities of 0 (e.g. with `class_prior` or classes without samples after `partial_fit`).
+- Like scikit-learn, the ported ComplementNB uses the class priors only if it was fitted on a single class, otherwise `class_prior` and `fit_prior` don't change its predictions.
+- The features are usually word counts (e.g. of a [`CountVectorizer`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.CountVectorizer.html)) or tf-idf values (e.g. of a [`TfidfVectorizer`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html)). The vectorizer isn't ported, so you have to compute the features of the ported estimator yourself, and with a large vocabulary the dense model data gets large (see the [limitations](limitations.md)).
+
 ## KNeighborsClassifier
 
 - [KNeighborsClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsClassifier.html) can be ported with the weights `uniform` and `distance` and the metrics `minkowski` (e.g. `euclidean` or `manhattan`), `chebyshev`, `cosine` and `hamming`. Other metrics (e.g. `canberra` or a callable), the weighted Minkowski distance (`metric_params={'w': ...}`) and callable weights raise a `NotSupportedYetError`. With `weights='distance'` the neighbors vote with the inverse of their distances; like in scikit-learn, only the neighbors with the distance 0 vote (with equal weights) if there are any.

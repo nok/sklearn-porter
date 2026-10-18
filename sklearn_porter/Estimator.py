@@ -43,7 +43,12 @@ from sklearn.linear_model import (
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.model_selection._search import BaseSearchCV
-from sklearn.naive_bayes import BernoulliNB, GaussianNB
+from sklearn.naive_bayes import (
+    BernoulliNB,
+    ComplementNB,
+    GaussianNB,
+    MultinomialNB,
+)
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
@@ -768,6 +773,7 @@ class Estimator:
         return (
             AdaBoostClassifier,
             BernoulliNB,
+            ComplementNB,
             DecisionTreeClassifier,
             ExtraTreesClassifier,
             GaussianNB,
@@ -775,6 +781,7 @@ class Estimator:
             LinearSVC,
             LogisticRegression,
             MLPClassifier,
+            MultinomialNB,
             NuSVC,
             Perceptron,
             RandomForestClassifier,

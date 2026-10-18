@@ -37,7 +37,12 @@ from sklearn.linear_model import (
     SGDClassifier,
 )
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from sklearn.naive_bayes import BernoulliNB, GaussianNB
+from sklearn.naive_bayes import (
+    BernoulliNB,
+    ComplementNB,
+    GaussianNB,
+    MultinomialNB,
+)
 from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
@@ -524,12 +529,14 @@ def test_list_of_classifiers():
     classifiers = [
         AdaBoostClassifier,
         BernoulliNB,
+        ComplementNB,
         DecisionTreeClassifier,
         ExtraTreesClassifier,
         GaussianNB,
         KNeighborsClassifier,
         LinearSVC,
         LogisticRegression,
+        MultinomialNB,
         NuSVC,
         Perceptron,
         RandomForestClassifier,
@@ -824,6 +831,64 @@ def test_bernoulli_nb_with_infinite_log_probabilities():
     assert not np.isfinite(orig_est.feature_log_prob_).all()
     with pytest.raises(exception.NotSupportedYetError, match='alpha'):
         Estimator(orig_est)
+
+
+@pytest.mark.parametrize('clazz', [MultinomialNB, ComplementNB])
+@pytest.mark.filterwarnings('ignore::RuntimeWarning')  # log(0)
+def test_naive_bayes_with_infinite_log_probabilities(clazz: type):
+    """Test the rejection of feature counts of 0 without smoothing."""
+    x = np.array([[1, 0, 1], [2, 0, 1], [0, 3, 1], [0, 1, 2]])
+    orig_est = clazz(alpha=0.0).fit(X=x, y=[0, 0, 1, 1])
+    assert not np.isfinite(orig_est.feature_log_prob_).all()
+    with pytest.raises(exception.NotSupportedYetError, match='alpha'):
+        Estimator(orig_est)
+    # With `force_alpha=False` scikit-learn smoothes with `alpha=1e-10`:
+    orig_est = clazz(alpha=0.0, force_alpha=False)
+    with pytest.warns(UserWarning, match='alpha too small'):
+        orig_est.fit(X=x, y=[0, 0, 1, 1])
+    model_data = Estimator(orig_est)._estimator.model_data
+    assert model_data['probs'] == orig_est.feature_log_prob_.tolist()
+
+
+@pytest.mark.filterwarnings('ignore::RuntimeWarning')  # log(0)
+def test_multinomial_nb_with_class_probabilities_of_zero():
+    """Test the rejection of classes with a probability of 0."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = MultinomialNB(class_prior=[0.0, 0.5, 0.5]).fit(X=x, y=y)
+    with pytest.raises(exception.NotSupportedYetError, match='class_prior'):
+        Estimator(orig_est)
+    # Classes without samples (e.g. in the first batch of `partial_fit`):
+    orig_est = MultinomialNB().partial_fit(X=x[:50], y=y[:50], classes=[0, 1])
+    with pytest.raises(exception.NotSupportedYetError, match='class_prior'):
+        Estimator(orig_est)
+
+
+def test_multinomial_nb_model_data():
+    """Test the model data of a MultinomialNB."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = MultinomialNB(class_prior=[0.2, 0.3, 0.5]).fit(X=x, y=y)
+    model_data = Estimator(orig_est)._estimator.model_data
+    assert model_data['priors'] == orig_est.class_log_prior_.tolist()
+    assert model_data['probs'] == orig_est.feature_log_prob_.tolist()
+
+
+@pytest.mark.parametrize('n_classes', [1, 2, 3])
+@pytest.mark.filterwarnings('ignore::RuntimeWarning')  # log(0)
+def test_complement_nb_model_data(n_classes: int):
+    """Test the class priors of a ComplementNB, which are only used with a
+    single class like in scikit-learn."""
+    x, y = load_iris(return_X_y=True)
+    y = np.minimum(y, n_classes - 1)
+    class_prior = np.zeros(n_classes)
+    class_prior[-1] = 0.5  # e.g. infinite log priors, which are ignored
+    orig_est = ComplementNB(class_prior=class_prior).fit(X=x, y=y)
+    model_data = Estimator(orig_est)._estimator.model_data
+    priors = orig_est.class_log_prior_ if n_classes == 1 else [0.0] * n_classes
+    assert model_data['priors'] == list(priors)
+    assert model_data['probs'] == orig_est.feature_log_prob_.tolist()
+    # The ported joint log likelihoods (of the ported model data):
+    jll = x @ np.array(model_data['probs']).T + model_data['priors']
+    np.testing.assert_allclose(jll, orig_est.predict_joint_log_proba(x))
 
 
 SPARSIFIABLE_CLASSIFIERS = [

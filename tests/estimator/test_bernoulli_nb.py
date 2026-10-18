@@ -9,18 +9,12 @@ from sklearn.naive_bayes import BernoulliNB
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
 from tests.commons import DATASETS, Dataset
-from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
-
-
-def drop_class_ties(est: BernoulliNB, x: np.ndarray) -> np.ndarray:
-    """
-    Drop the samples whose two most likely classes have the same joint log
-    likelihood. Which of them is predicted depends on rounding errors, e.g.
-    two iris classes are equal after binarizing the features at the mean.
-    """
-    jll = np.sort(est.predict_joint_log_proba(x), axis=1)
-    return x[~np.isclose(jll[:, -1], jll[:, -2])]
-
+from tests.utils import (
+    dataset_generate_x,
+    dataset_uniform_x,
+    drop_class_ties,
+    fs_mkdir,
+)
 
 # Long running regression tests, see `make test-regression`:
 pytestmark = pytest.mark.regression

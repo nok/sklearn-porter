@@ -58,3 +58,17 @@ def drop_neighbor_ties(est, x: np.ndarray) -> np.ndarray:
         return x
     dists, _ = est.kneighbors(x, n_neighbors=k + 1)
     return x[~np.isclose(dists[:, k - 1], dists[:, k])]
+
+
+def drop_class_ties(est, x: np.ndarray) -> np.ndarray:
+    """
+    Drop the samples whose two most likely classes of a naive Bayes
+    classifier have the same joint log likelihood. Which of them is predicted
+    depends on rounding errors, e.g. two iris classes of a BernoulliNB are
+    equal after binarizing the features at the mean.
+    """
+    jll = est.predict_joint_log_proba(x)
+    if jll.shape[1] < 2:
+        return x
+    jll = np.sort(jll, axis=1)
+    return x[~np.isclose(jll[:, -1], jll[:, -2])]

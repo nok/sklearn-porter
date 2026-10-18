@@ -1,0 +1,94 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def initialize(priors, probs)
+		@priors = priors
+		@probs = probs
+	end
+
+	def _find_max(nums)
+		idx = 0
+		for i in 0 ... nums.length
+			idx = nums[i] > nums[idx] ? i : idx
+		end
+		idx
+	end
+
+	def _log_sum_exp(nums)
+		max = nums[_find_max nums]
+		sum = 0.0
+		for i in 0 ... nums.length
+			sum += Math.exp(nums[i] - max)
+		end
+		max + Math.log(sum)
+	end
+
+	def _compute(features)
+		likelihoods = Array.new(@priors.length, 0.0)
+		for i in 0 ... @priors.length
+			sum = 0.0
+			for j in 0 ... @probs[i].length
+				sum += features[j] * @probs[i][j]
+			end
+			likelihoods[i] = sum + @priors[i]
+		end
+		likelihoods
+	end
+
+{% include 'labels' %}
+
+	def predict_index(features)
+		_find_max _compute(features)
+	end
+
+	def predict(features)
+		LABELS[predict_index features]
+	end
+
+	def predict_proba(features)
+		likelihoods = _compute features
+		sum = _log_sum_exp likelihoods
+		likelihoods.map { |likelihood| Math.exp(likelihood - sum) }
+	end
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+	# Model data:
+	{{ priors }}
+	{{ probs }}
+
+	# Estimator:
+	clf = {{ class_name }}.new priors, probs
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		{% if is_test or to_json %}
+		# Get JSON:
+		prediction = clf.predict features
+		probabilities = clf.predict_proba features
+		puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+		{% else %}
+		# Get class prediction:
+		prediction = clf.predict features
+		puts "Predicted class: #{prediction}"
+
+		# Get class probabilities:
+		probabilities = clf.predict_proba features
+		for i in 0 ... probabilities.length
+			puts "Probability of class ##{i} : #{probabilities[i]}"
+		end
+		{% endif %}
+	end
+end
+{% endblock %}
