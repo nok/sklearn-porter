@@ -1,0 +1,49 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+var {{ class_name }} = function() {
+
+    var forest = [];
+
+    {{ trees | indent(4) }}
+
+    var inits = [{{ inits }}];
+
+    // Add the values of the trees of all stages to the initial raw predictions:
+    var decisionFunction = function(features) {
+        var raw = inits.slice();
+        for (var i = 0; i < forest.length; i += raw.length) {
+            for (var k = 0; k < raw.length; k++) {
+                raw[k] += forest[i + k](features)[0];
+            }
+        }
+        return raw;
+    };
+
+{% include 'labels' %}
+
+    {% filter indent(4, True) %}
+    {% include 'methods' %}
+    {% endfilter %}
+
+
+};
+
+{% include 'samples' %}
+
+var main = function () {
+    // Estimator:
+    var clf = new {{ class_name }}();
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

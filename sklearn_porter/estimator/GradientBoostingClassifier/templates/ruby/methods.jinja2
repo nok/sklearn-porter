@@ -1,0 +1,31 @@
+# Compute the probabilities of the classes from the raw predictions:
+def predict_proba(features)
+	raw = _decision_function features
+	{% if is_binary %}
+	proba = 1.0 / (1.0 + Math.exp(-{% if is_exponential %}2.0 * {% endif %}raw[0]))
+	[1.0 - proba, proba]
+	{% else %}
+	max = raw.max
+	probas = raw.map { |value| Math.exp(value - max) }
+	sum = 0.0
+	probas.each { |proba| sum += proba }
+	probas.map { |proba| proba / sum }
+	{% endif %}
+end
+
+def predict_index(features)
+	raw = _decision_function features
+	{% if is_binary %}
+	raw[0] >= 0 ? 1 : 0
+	{% else %}
+	idx = 0
+	for k in 1 ... raw.length
+		idx = raw[k] > raw[idx] ? k : idx
+	end
+	idx
+	{% endif %}
+end
+
+def predict(features)
+	LABELS[predict_index features]
+end

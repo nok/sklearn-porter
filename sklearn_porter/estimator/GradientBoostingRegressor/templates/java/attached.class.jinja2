@@ -1,0 +1,40 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+
+
+    {% include 'predict' %}
+    {% endfilter %}
+
+
+    // Model data:
+    {{ model | indent(4) }}
+
+{% include 'samples' %}
+
+    public static void main(String[] args) {
+        // Estimator:
+        Tree[] forest = {
+            {% for i in range(n_estimators) %}
+            tree{{ i }}(){% if not loop.last %},{% endif %}
+
+            {% endfor %}
+        };
+        {{ class_name }} reg = new {{ class_name }}(forest, new double[] {{ '{' }}{{ inits }}{{ '}' }});
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            double prediction = reg.predict(features);
+
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+
+    }
+}
+{% endblock %}

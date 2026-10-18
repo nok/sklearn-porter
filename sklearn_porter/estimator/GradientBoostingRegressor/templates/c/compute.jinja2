@@ -1,0 +1,12 @@
+/* Find the leaf and return its value: */
+double compute(const Tree *tree, double features[N_FEATURES]) {
+    int node = 0;
+    while (node >= 0) {
+        if (features[tree->indices[node]] <= tree->thresholds[node] || (tree->missing_go_to_left[node] && isnan(features[tree->indices[node]]))) {
+            node = tree->lefts[node];
+        } else {
+            node = tree->rights[node];
+        }
+    }
+    return tree->values[-node - 1];
+}

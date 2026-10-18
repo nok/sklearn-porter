@@ -1,0 +1,33 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {{ trees | indent(4) }}
+
+    private static final double[] INITS = {{ '{' }}{{ inits }}{{ '}' }};
+
+    // Add the values of all trees to the initial prediction:
+    public static double predict(double[] features) {
+        double value = INITS[0];
+        {% for i in range(n_estimators) %}
+        value += compute_{{ i }}(features)[0];
+        {% endfor %}
+        return value;
+    }
+
+{% include 'samples' %}
+
+    public static void main(String[] args) {
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            double prediction = {{ class_name }}.predict(features);
+
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+
+    }
+}
+{% endblock %}

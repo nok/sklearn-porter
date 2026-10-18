@@ -1,0 +1,9 @@
+{% if is_test or to_json %}
+// Get JSON:
+console.log(JSON.stringify({
+    "predict": reg.predict(features)
+}));
+{% else %}
+// Get predicted value:
+console.log("Predicted value: " + reg.predict(features));
+{% endif %}

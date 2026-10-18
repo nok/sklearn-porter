@@ -3,9 +3,10 @@
 {% block content %}
 var {{ class_name }} = function(estimators, denominator, offset) {
 
-    {% filter indent(4) %}
+    {% filter indent(4, True) %}
     {% include 'forest' %}
     {% endfilter %}
+
 
 };
 

@@ -1,0 +1,49 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+
+{% endif %}
+class {{ class_name }}
+
+	{{ trees | indent('\t') }}
+
+	INITS = [{{ inits }}]
+
+	# Add the values of the trees of all stages to the initial raw predictions:
+	def _decision_function(features)
+		raw = INITS.dup
+		{% for i in range(n_estimators) %}
+		raw[{{ i % n_trees_per_stage }}] += {{ class_name }}.compute_{{ i }}(features)[0]
+		{% endfor %}
+		raw
+	end
+
+{% include 'labels' %}
+
+	{% filter indent('\t', True) %}
+	{% include 'methods' %}
+	{% endfilter %}
+
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+
+	# Estimator:
+	clf = {{ class_name }}.new
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	end
+end
+{% endblock %}

@@ -1,0 +1,17 @@
+{% if is_test or to_json %}
+// Get JSON:
+console.log(JSON.stringify({
+    "predict": clf.predict(features),
+    "predict_proba": clf.predictProba(features)
+}));
+{% else %}
+// Get class prediction:
+var prediction = clf.predict(features);
+console.log("Predicted class: " + prediction);
+
+// Get class probabilities:
+var probabilities = clf.predictProba(features);
+for (var i = 0; i < probabilities.length; i++) {
+    console.log("Probability of class #" + i + " : " + probabilities[i]);
+}
+{% endif %}

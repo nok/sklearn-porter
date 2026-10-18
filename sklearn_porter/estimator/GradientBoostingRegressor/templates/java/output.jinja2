@@ -1,0 +1,7 @@
+{% if is_test or to_json %}
+// Get JSON:
+System.out.println("{\"predict\": " + prediction + "}");
+{% else %}
+// Get predicted value:
+System.out.println("Predicted value: " + prediction);
+{% endif %}

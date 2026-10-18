@@ -1,0 +1,41 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+
+
+{{ trees }}
+
+double init = {{ inits }};
+
+/* Add the values of all trees to the initial prediction: */
+double predict(double features[N_FEATURES]) {
+    double value = init;
+    double temp[1];
+    {% for i in range(n_estimators) %}
+    compute_{{ i }}(temp, features);
+    value += temp[0];
+    {% endfor %}
+    return value;
+}
+
+{% include 'samples' %}
+
+int main(int argc, const char *argv[]) {
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        double prediction = predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+    return 0;
+}
+{% endblock %}

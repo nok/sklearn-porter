@@ -1,0 +1,55 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% include 'labels' %}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict {{ label_type }} `json:"predict"`
+	PredictProba []float64 `json:"predict_proba"`
+}
+
+{% endif %}
+{% include 'forest' %}
+
+
+{% include 'decision' %}
+
+
+{% include 'methods' %}
+
+
+{% include 'samples' %}
+
+func main() {
+	// Model data:
+	{{ model }}
+
+	// Estimator:
+	clf := {{ class_name }}{Inits: []float64{ {{- inits -}} }}
+	if err := json.Unmarshal([]byte(model), &clf.Trees); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	})
+
+}
+{% endblock %}

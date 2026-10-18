@@ -32,6 +32,8 @@ from sklearn.ensemble import (
     BaseEnsemble,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
+    GradientBoostingClassifier,
+    GradientBoostingRegressor,
     IsolationForest,
     RandomForestClassifier,
     RandomForestRegressor,
@@ -243,8 +245,9 @@ class Estimator:
 
         # Check BaseEnsemble:
         if isinstance(est, BaseEnsemble):
+            # A list or an array (e.g. of the stages of gradient boosting):
             estimators = getattr(est, 'estimators_', None)
-            if not estimators:
+            if estimators is None or len(estimators) == 0:
                 raise exception.NotFittedEstimatorError(qualname)
 
         # Check GridSearchCV and RandomizedSearchCV:
@@ -791,6 +794,7 @@ class Estimator:
             DecisionTreeClassifier,
             ExtraTreesClassifier,
             GaussianNB,
+            GradientBoostingClassifier,
             KNeighborsClassifier,
             LinearSVC,
             LogisticRegression,
@@ -846,6 +850,7 @@ class Estimator:
             DecisionTreeRegressor,
             ElasticNet,
             ExtraTreesRegressor,
+            GradientBoostingRegressor,
             Lasso,
             LinearRegression,
             MLPRegressor,

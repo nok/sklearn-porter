@@ -1,0 +1,44 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+var {{ class_name }} = function(estimators, inits) {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+
+
+    {% include 'decision' %}
+    {% endfilter %}
+
+
+{% include 'labels' %}
+
+    {% filter indent(4, True) %}
+    {% include 'methods' %}
+    {% endfilter %}
+
+
+};
+
+{% include 'samples' %}
+
+var main = function () {
+    // Model data:
+    {{ model }}
+    var inits = [{{ inits }}];
+
+    // Estimator:
+    var clf = new {{ class_name }}(model, inits);
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

@@ -1,0 +1,11 @@
+// Add the values of the trees of all stages to the initial raw predictions:
+private function decisionFunction($features) {
+    $raw = $this->inits;
+    $n = count($raw);
+    for ($i = 0, $l = count($this->forest); $i < $l; $i += $n) {
+        for ($k = 0; $k < $n; $k++) {
+            $raw[$k] += self::compute($this->forest[$i + $k], $features);
+        }
+    }
+    return $raw;
+}

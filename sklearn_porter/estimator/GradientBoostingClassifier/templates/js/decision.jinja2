@@ -1,0 +1,10 @@
+// Add the values of the trees of all stages to the initial raw predictions:
+var decisionFunction = function(features) {
+    var raw = inits.slice();
+    for (var i = 0; i < forest.length; i += raw.length) {
+        for (var k = 0; k < raw.length; k++) {
+            raw[k] += forest[i + k].compute(features);
+        }
+    }
+    return raw;
+};

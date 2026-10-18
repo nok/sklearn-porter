@@ -1,0 +1,8 @@
+{% if is_test or to_json %}
+// Get JSON:
+res, _ := json.Marshal(&Response{Predict: prediction})
+fmt.Println(string(res))
+{% else %}
+// Get predicted value:
+fmt.Printf("Predicted value: %v\n", prediction)
+{% endif %}

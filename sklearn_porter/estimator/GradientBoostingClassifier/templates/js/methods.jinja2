@@ -1,0 +1,36 @@
+// Compute the probabilities of the classes from the raw predictions:
+this.predictProba = function(features) {
+    var raw = decisionFunction(features);
+    {% if is_binary %}
+    var proba = 1. / (1. + Math.exp(-{% if is_exponential %}2. * {% endif %}raw[0]));
+    return [1. - proba, proba];
+    {% else %}
+    var max = Math.max(...raw), sum = 0.;
+    var probas = new Array(raw.length);
+    for (var k = 0; k < raw.length; k++) {
+        probas[k] = Math.exp(raw[k] - max);
+        sum += probas[k];
+    }
+    for (var k = 0; k < raw.length; k++) {
+        probas[k] /= sum;
+    }
+    return probas;
+    {% endif %}
+};
+
+this.predictIndex = function(features) {
+    var raw = decisionFunction(features);
+    {% if is_binary %}
+    return raw[0] >= 0 ? 1 : 0;
+    {% else %}
+    var idx = 0;
+    for (var k = 1; k < raw.length; k++) {
+        idx = raw[k] > raw[idx] ? k : idx;
+    }
+    return idx;
+    {% endif %}
+};
+
+this.predict = function(features) {
+    return LABELS[this.predictIndex(features)];
+};

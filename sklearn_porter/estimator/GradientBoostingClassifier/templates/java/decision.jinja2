@@ -1,0 +1,10 @@
+// Add the values of the trees of all stages to the initial raw predictions:
+private double[] decisionFunction(double[] features) {
+    double[] raw = this.inits.clone();
+    for (int i = 0; i < this.forest.length; i += raw.length) {
+        for (int k = 0; k < raw.length; k++) {
+            raw[k] += this.forest[i + k].compute(features);
+        }
+    }
+    return raw;
+}

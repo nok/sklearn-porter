@@ -1,0 +1,7 @@
+{% if is_test or to_json %}
+/* Get JSON: */
+printf("{\"predict\": %.17g}\n", prediction);
+{% else %}
+/* Get predicted value: */
+printf("Predicted value: %.17g\n", prediction);
+{% endif %}

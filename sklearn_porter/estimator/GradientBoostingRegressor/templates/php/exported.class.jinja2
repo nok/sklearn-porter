@@ -1,0 +1,52 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+    {% endfilter %}
+
+
+    // Add the values of all trees to the initial prediction:
+    public function predict($features) {
+        $value = $this->inits[0];
+        foreach ($this->forest as $tree) {
+            $value += self::compute($tree, $features);
+        }
+        return $value;
+    }
+
+}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
+
+
+    if (count($argv) < 2) {
+        fwrite(STDERR, "You have to pass the path to the model data.\n");
+        exit(1);
+    }
+
+    array_shift($argv);
+
+    // Model data:
+    $path = array_shift($argv);
+    $model = json_decode(file_get_contents($path), true);
+
+    // Estimator:
+    $reg = new {{ class_name }}($model['estimators'], $model['inits']);
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        $prediction = $reg->predict($features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+}
+{% endblock %}

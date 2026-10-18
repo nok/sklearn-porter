@@ -1,0 +1,27 @@
+{% if is_test or to_json %}
+/* Get JSON: */
+double probabilities[N_CLASSES];
+predict_proba(probabilities, features);
+printf("{\"predict\": ");
+print_label(predict(features));
+printf(", \"predict_proba\": [");
+for (int i = 0; i < N_CLASSES; i++) {
+    printf("%.17g", probabilities[i]);
+    if (i < (N_CLASSES - 1)) {
+        printf(",");
+    }
+}
+printf("]}\n");
+{% else %}
+/* Get class prediction: */
+printf("Predicted class: ");
+print_label(predict(features));
+printf("\n");
+
+/* Get class probabilities: */
+double probabilities[N_CLASSES];
+predict_proba(probabilities, features);
+for (int i = 0; i < N_CLASSES; i++) {
+    printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
+}
+{% endif %}
