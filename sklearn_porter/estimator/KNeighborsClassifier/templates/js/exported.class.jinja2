@@ -7,10 +7,9 @@ var fs = require('fs');
 var {{ class_name }} = function(jsonFile) {
     this.data = JSON.parse(fs.readFileSync(jsonFile));
 
-    var Neighbor = function(y, dist, index) {
-        this.y = y;
-        this.dist = dist;
+    var Neighbor = function(index, dist) {
         this.index = index;
+        this.dist = dist;
     };
 
 {% if is_multi_output %}
@@ -95,6 +94,25 @@ var {{ class_name }} = function(jsonFile) {
         return Math.pow(dist, 1. / q);
     };
 
+    // Find the k nearest neighbors sorted by distance and index (like a stable
+    // sort). A sample is only inserted if it's nearer than the k-th neighbor:
+    var _findNeighbors = function(features, X, k, metric, power) {
+        var neighbors = [], i, j, dist;
+        for (i = 0; i < X.length; i++) {
+            dist = _compute(X[i], features, metric, power);
+            if (neighbors.length === k && !(dist < neighbors[k - 1].dist)) {
+                continue;
+            }
+            j = neighbors.length < k ? neighbors.length : k - 1;
+            while (j > 0 && dist < neighbors[j - 1].dist) {
+                neighbors[j] = neighbors[j - 1];
+                j--;
+            }
+            neighbors[j] = new Neighbor(i, dist);
+        }
+        return neighbors;
+    };
+
 {% if weights == 'distance' %}
     // Weight the nearest neighbors by the inverse of their distances. If some
     // neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
@@ -118,22 +136,15 @@ var {{ class_name }} = function(jsonFile) {
 {% if is_multi_output %}
     this.predictProba = function(features) {
         var classProbas = new Array(this.data.n).fill(0);
-        var i, j, dists = [];
-        for (i = 0; i < this.data.X.length; i++) {
-            // The neighbors store the index of the sample:
-            dists.push(new Neighbor(i, _compute(this.data.X[i], features, this.data.metric, this.data.power)));
-        }
-        dists.sort(function compare(n1, n2) {
-            return n1.dist - n2.dist;
-        });
+        var neighbors = _findNeighbors(features, this.data.X, this.data.k, this.data.metric, this.data.power);
+        var i, j, nOutputs = this.data.y.length / this.data.X.length;
 {% if weights == 'distance' %}
         // Each neighbor votes with its weight for one class of each output:
-        var nOutputs = this.data.y.length / this.data.X.length;
-        var weights = _weigh(dists, this.data.k), total = 0.;
+        var weights = _weigh(neighbors, this.data.k), total = 0.;
         for (i = 0; i < this.data.k; i++) {
             total += weights[i];
             for (j = 0; j < nOutputs; j++) {
-                classProbas[this.data.y[dists[i].y * nOutputs + j]] += weights[i];
+                classProbas[this.data.y[neighbors[i].index * nOutputs + j]] += weights[i];
             }
         }
         for (i = 0; i < this.data.n; i++) {
@@ -141,10 +152,9 @@ var {{ class_name }} = function(jsonFile) {
         }
 {% else %}
         // Each neighbor votes for one class of each output:
-        var nOutputs = this.data.y.length / this.data.X.length;
         for (i = 0; i < this.data.k; i++) {
             for (j = 0; j < nOutputs; j++) {
-                classProbas[this.data.y[dists[i].y * nOutputs + j]] += 1;
+                classProbas[this.data.y[neighbors[i].index * nOutputs + j]] += 1;
             }
         }
         for (i = 0; i < this.data.n; i++) {
@@ -156,49 +166,25 @@ var {{ class_name }} = function(jsonFile) {
 {% else %}
     this.predictProba = function(features) {
         var classProbas = new Array(this.data.n).fill(0);
-        var i, dist;
-        if (this.data.k === 1) {
-            var classIdx = 0,
-                minDist = Number.POSITIVE_INFINITY;
-            for (i = 0; i < this.data.X.length; i++) {
-                dist = _compute(this.data.X[i], features, this.data.metric, this.data.power);
-                if (dist < minDist) {
-                    minDist = dist;
-                    classIdx = this.data.y[i];
-                }
-            }
-            classProbas[classIdx] = 1;
-        } else {
-            var dists = [];
-            for (i = 0; i < this.data.X.length; i++) {
-                dist = _compute(this.data.X[i], features, this.data.metric, this.data.power);
-                dists.push(new Neighbor(this.data.y[i], dist, i));
-            }
-            // Sort the neighbors by distance and index (stable):
-            dists.sort(function compare(n1, n2) {
-                if (n1.dist !== n2.dist) {
-                    return n1.dist < n2.dist ? -1 : 1;
-                }
-                return n1.index - n2.index;
-            });
+        var neighbors = _findNeighbors(features, this.data.X, this.data.k, this.data.metric, this.data.power);
+        var i;
 {% if weights == 'distance' %}
-            var weights = _weigh(dists, this.data.k), total = 0.;
-            for (i = 0; i < this.data.k; i++) {
-                total += weights[i];
-                classProbas[dists[i].y] += weights[i];
-            }
-            for (i = 0; i < this.data.n; i++) {
-                classProbas[i] /= total;
-            }
-{% else %}
-            for (i = 0; i < this.data.k; i++) {
-                classProbas[dists[i].y] += 1;
-            }
-            for (i = 0; i < this.data.n; i++) {
-                classProbas[i] /= this.data.k;
-            }
-{% endif %}
+        var weights = _weigh(neighbors, this.data.k), total = 0.;
+        for (i = 0; i < this.data.k; i++) {
+            total += weights[i];
+            classProbas[this.data.y[neighbors[i].index]] += weights[i];
         }
+        for (i = 0; i < this.data.n; i++) {
+            classProbas[i] /= total;
+        }
+{% else %}
+        for (i = 0; i < this.data.k; i++) {
+            classProbas[this.data.y[neighbors[i].index]] += 1;
+        }
+        for (i = 0; i < this.data.n; i++) {
+            classProbas[i] /= this.data.k;
+        }
+{% endif %}
         return classProbas;
     };
 {% endif %}

@@ -2,9 +2,6 @@
 
 {% block content %}
 import java.util.Arrays;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 
 
 class {{ class_name }} {
@@ -26,11 +23,11 @@ class {{ class_name }} {
     }
 
     private static class Neighbor {
-        Integer y;
-        Double dist;
+        int index;
+        double dist;
 
-        public Neighbor(int y, double dist) {
-            this.y = y;
+        public Neighbor(int index, double dist) {
+            this.index = index;
             this.dist = dist;
         }
     }
@@ -121,6 +118,26 @@ class {{ class_name }} {
         return Math.pow(dist, 1. / q);
     }
 
+    // Find the k nearest neighbors sorted by distance and index (like a stable
+    // sort). A sample is only inserted if it's nearer than the k-th neighbor:
+    private Neighbor[] findNeighbors(double[] features) {
+        Neighbor[] neighbors = new Neighbor[this.k];
+        int n = 0;
+        for (int i = 0; i < this.X.length; i++) {
+            double dist = {{ class_name }}.compute(this.X[i], features, this.metric, this.power);
+            if (n == this.k && !(dist < neighbors[this.k - 1].dist)) {
+                continue;
+            }
+            int j = n < this.k ? n++ : this.k - 1;
+            while (j > 0 && dist < neighbors[j - 1].dist) {
+                neighbors[j] = neighbors[j - 1];
+                j--;
+            }
+            neighbors[j] = new Neighbor(i, dist);
+        }
+        return neighbors;
+    }
+
 {% include 'labels' %}
 
     public {{ 'int[]' if is_multi_output else 'int' }} predictIndex(double[] features) {
@@ -150,11 +167,11 @@ class {{ class_name }} {
 {% if weights == 'distance' %}
     // Weight the nearest neighbors by the inverse of their distances. If some
     // neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
-    private static double[] weigh(ArrayList<Neighbor> neighbors, int k) {
+    private static double[] weigh(Neighbor[] neighbors, int k) {
         double[] weights = new double[k];
         boolean isExact = false;
         for (int i = 0; i < k; i++) {
-            weights[i] = 1. / neighbors.get(i).dist;
+            weights[i] = 1. / neighbors[i].dist;
             if (Double.isInfinite(weights[i])) {
                 isExact = true;
             }
@@ -171,27 +188,16 @@ class {{ class_name }} {
 {% if is_multi_output %}
     public double[][] predictProba(double[] features) {
         double[] classProbas = new double[this.n];
-        ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
-        for (int i = 0; i < this.X.length; i++) {
-            // The neighbors store the index of the sample:
-            double dist = {{ class_name }}.compute(this.X[i], features, this.metric, this.power);
-            dists.add(new Neighbor(i, dist));
-        }
-        Collections.sort(dists, new Comparator<Neighbor>() {
-            @Override
-            public int compare(Neighbor n1, Neighbor n2) {
-                return n1.dist.compareTo(n2.dist);
-            }
-        });
+        Neighbor[] neighbors = this.findNeighbors(features);
+        int nOutputs = this.y.length / this.X.length;
 {% if weights == 'distance' %}
         // Each neighbor votes with its weight for one class of each output:
-        int nOutputs = this.y.length / this.X.length;
-        double[] weights = {{ class_name }}.weigh(dists, this.k);
+        double[] weights = {{ class_name }}.weigh(neighbors, this.k);
         double total = 0.;
         for (int i = 0; i < this.k; i++) {
             total += weights[i];
             for (int j = 0; j < nOutputs; j++) {
-                classProbas[this.y[dists.get(i).y * nOutputs + j]] += weights[i];
+                classProbas[this.y[neighbors[i].index * nOutputs + j]] += weights[i];
             }
         }
         for (int i = 0; i < this.n; i++) {
@@ -199,10 +205,9 @@ class {{ class_name }} {
         }
 {% else %}
         // Each neighbor votes for one class of each output:
-        int nOutputs = this.y.length / this.X.length;
-        for (Neighbor neighbor : dists.subList(0, this.k)) {
+        for (Neighbor neighbor : neighbors) {
             for (int j = 0; j < nOutputs; j++) {
-                classProbas[this.y[neighbor.y * nOutputs + j]]++;
+                classProbas[this.y[neighbor.index * nOutputs + j]]++;
             }
         }
         for (int i = 0; i < this.n; i++) {
@@ -213,50 +218,26 @@ class {{ class_name }} {
     }
 {% else %}
     public double[] predictProba(double[] features) {
-        int classIdx = 0;
         double[] classProbas = new double[this.n];
-        double dist;
-        if (this.k == 1) {
-            double minDist = Double.POSITIVE_INFINITY;
-            for (int i = 0; i < this.y.length; i++) {
-                dist = {{ class_name }}.compute(this.X[i], features, this.metric, this.power);
-                if (dist < minDist) {
-                    minDist = dist;
-                    classIdx = y[i];
-                }
-            }
-            classProbas[classIdx] = 1;
-        } else {
-            ArrayList<Neighbor> dists = new ArrayList<Neighbor>();
-            for (int i = 0; i < this.y.length; i++) {
-                dist = {{ class_name }}.compute(this.X[i], features, this.metric, this.power);
-                dists.add(new Neighbor(y[i], dist));
-            }
-            Collections.sort(dists, new Comparator<Neighbor>() {
-                @Override
-                public int compare(Neighbor n1, Neighbor n2) {
-                    return n1.dist.compareTo(n2.dist);
-                }
-            });
+        Neighbor[] neighbors = this.findNeighbors(features);
 {% if weights == 'distance' %}
-            double[] weights = {{ class_name }}.weigh(dists, this.k);
-            double total = 0.;
-            for (int i = 0; i < this.k; i++) {
-                total += weights[i];
-                classProbas[dists.get(i).y] += weights[i];
-            }
-            for (int i = 0; i < this.n; i++) {
-                classProbas[i] /= total;
-            }
-{% else %}
-            for (Neighbor neighbor : dists.subList(0, this.k)) {
-                classProbas[neighbor.y]++;
-            }
-            for (int i = 0; i < this.n; i++) {
-                classProbas[i] /= this.k;
-            }
-{% endif %}
+        double[] weights = {{ class_name }}.weigh(neighbors, this.k);
+        double total = 0.;
+        for (int i = 0; i < this.k; i++) {
+            total += weights[i];
+            classProbas[this.y[neighbors[i].index]] += weights[i];
         }
+        for (int i = 0; i < this.n; i++) {
+            classProbas[i] /= total;
+        }
+{% else %}
+        for (Neighbor neighbor : neighbors) {
+            classProbas[this.y[neighbor.index]]++;
+        }
+        for (int i = 0; i < this.n; i++) {
+            classProbas[i] /= this.k;
+        }
+{% endif %}
         return classProbas;
     }
 {% endif %}

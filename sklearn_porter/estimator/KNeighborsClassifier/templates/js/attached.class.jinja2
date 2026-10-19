@@ -10,10 +10,9 @@ var {{ class_name }} = function(X, y, k, n, metric, power) {
     this.metric = metric;
     this.power = power;
 
-    var Neighbor = function(y, dist, index) {
-        this.y = y;
-        this.dist = dist;
+    var Neighbor = function(index, dist) {
         this.index = index;
+        this.dist = dist;
     };
 
 {% if is_multi_output %}
@@ -98,6 +97,25 @@ var {{ class_name }} = function(X, y, k, n, metric, power) {
         return Math.pow(dist, 1. / q);
     };
 
+    // Find the k nearest neighbors sorted by distance and index (like a stable
+    // sort). A sample is only inserted if it's nearer than the k-th neighbor:
+    var findNeighbors = function(features, X, k, metric, power) {
+        var neighbors = [], i, j, dist;
+        for (i = 0; i < X.length; i++) {
+            dist = compute(X[i], features, metric, power);
+            if (neighbors.length === k && !(dist < neighbors[k - 1].dist)) {
+                continue;
+            }
+            j = neighbors.length < k ? neighbors.length : k - 1;
+            while (j > 0 && dist < neighbors[j - 1].dist) {
+                neighbors[j] = neighbors[j - 1];
+                j--;
+            }
+            neighbors[j] = new Neighbor(i, dist);
+        }
+        return neighbors;
+    };
+
 {% include 'labels' %}
 
     this.predictIndex = function(features) {
@@ -144,22 +162,15 @@ var {{ class_name }} = function(X, y, k, n, metric, power) {
 {% if is_multi_output %}
     this.predictProba = function(features) {
         var classProbas = new Array(this.n).fill(0);
-        var i, j, dists = [];
-        for (i = 0; i < this.X.length; i++) {
-            // The neighbors store the index of the sample:
-            dists.push(new Neighbor(i, compute(this.X[i], features, this.metric, this.power)));
-        }
-        dists.sort(function compare(n1, n2) {
-            return n1.dist - n2.dist;
-        });
+        var neighbors = findNeighbors(features, this.X, this.k, this.metric, this.power);
+        var i, j, nOutputs = this.y.length / this.X.length;
 {% if weights == 'distance' %}
         // Each neighbor votes with its weight for one class of each output:
-        var nOutputs = this.y.length / this.X.length;
-        var weights = weigh(dists, this.k), total = 0.;
+        var weights = weigh(neighbors, this.k), total = 0.;
         for (i = 0; i < this.k; i++) {
             total += weights[i];
             for (j = 0; j < nOutputs; j++) {
-                classProbas[this.y[dists[i].y * nOutputs + j]] += weights[i];
+                classProbas[this.y[neighbors[i].index * nOutputs + j]] += weights[i];
             }
         }
         for (i = 0; i < this.n; i++) {
@@ -167,10 +178,9 @@ var {{ class_name }} = function(X, y, k, n, metric, power) {
         }
 {% else %}
         // Each neighbor votes for one class of each output:
-        var nOutputs = this.y.length / this.X.length;
         for (i = 0; i < this.k; i++) {
             for (j = 0; j < nOutputs; j++) {
-                classProbas[this.y[dists[i].y * nOutputs + j]] += 1;
+                classProbas[this.y[neighbors[i].index * nOutputs + j]] += 1;
             }
         }
         for (i = 0; i < this.n; i++) {
@@ -182,49 +192,25 @@ var {{ class_name }} = function(X, y, k, n, metric, power) {
 {% else %}
     this.predictProba = function(features) {
         var classProbas = new Array(this.n).fill(0);
-        var i, dist;
-        if (this.k === 1) {
-            var classIdx = 0,
-                minDist = Number.POSITIVE_INFINITY;
-            for (i = 0; i < this.y.length; i++) {
-                dist = compute(this.X[i], features, this.metric, this.power);
-                if (dist < minDist) {
-                    minDist = dist;
-                    classIdx = this.y[i];
-                }
-            }
-            classProbas[classIdx] = 1;
-        } else {
-            var dists = [];
-            for (i = 0; i < this.y.length; i++) {
-                dist = compute(this.X[i], features, this.metric, this.power);
-                dists.push(new Neighbor(this.y[i], dist, i));
-            }
-            // Sort the neighbors by distance and index (stable):
-            dists.sort(function compare(n1, n2) {
-                if (n1.dist !== n2.dist) {
-                    return n1.dist < n2.dist ? -1 : 1;
-                }
-                return n1.index - n2.index;
-            });
+        var neighbors = findNeighbors(features, this.X, this.k, this.metric, this.power);
+        var i;
 {% if weights == 'distance' %}
-            var weights = weigh(dists, this.k), total = 0.;
-            for (i = 0; i < this.k; i++) {
-                total += weights[i];
-                classProbas[dists[i].y] += weights[i];
-            }
-            for (i = 0; i < this.n; i++) {
-                classProbas[i] /= total;
-            }
-{% else %}
-            for (i = 0; i < this.k; i++) {
-                classProbas[dists[i].y] += 1;
-            }
-            for (i = 0; i < this.n; i++) {
-                classProbas[i] /= this.k;
-            }
-{% endif %}
+        var weights = weigh(neighbors, this.k), total = 0.;
+        for (i = 0; i < this.k; i++) {
+            total += weights[i];
+            classProbas[this.y[neighbors[i].index]] += weights[i];
         }
+        for (i = 0; i < this.n; i++) {
+            classProbas[i] /= total;
+        }
+{% else %}
+        for (i = 0; i < this.k; i++) {
+            classProbas[this.y[neighbors[i].index]] += 1;
+        }
+        for (i = 0; i < this.n; i++) {
+            classProbas[i] /= this.k;
+        }
+{% endif %}
         return classProbas;
     };
 {% endif %}

@@ -166,33 +166,49 @@ def test_estimator_k_neighbors_classifier_with_hamming_metric(
 
 @pytest.mark.parametrize('template', ['attached', 'exported'])
 @pytest.mark.parametrize('language', LANGUAGES)
+@pytest.mark.parametrize('weights', ['uniform', 'distance'])
 @pytest.mark.parametrize('n_outputs', [1, 2])
-@pytest.mark.parametrize('n_neighbors', [1, 5])
+@pytest.mark.parametrize('n_neighbors', [1, 2, 5, 30, 120])
 def test_estimator_k_neighbors_classifier_with_tied_neighbors(
     tmp_root_dir: Path,
     n_neighbors: int,
     n_outputs: int,
+    weights: str,
     language: str,
     template: str,
 ):
     """Test the tied neighbors of k-Neighbors classifiers: of several
     training samples with the same distance, the ported estimators pick the
-    first ones in the order of the training data (in all languages)."""
+    first ones in the order of the training data (in all languages), also if
+    all training samples are neighbors (`n_neighbors=120`)."""
     # Discrete features, so many training samples have the same distance:
     rng = np.random.RandomState(0)
     x = rng.randint(3, size=(120, 2)).astype(float)
     y = rng.randint(3, size=(120, n_outputs))
     test_x = rng.randint(3, size=(40, 2)).astype(float)
-    orig_est = KNeighborsClassifierClass(n_neighbors=n_neighbors)
+    orig_est = KNeighborsClassifierClass(
+        n_neighbors=n_neighbors, weights=weights
+    )
     orig_est.fit(X=x, y=y if n_outputs > 1 else y.ravel())
 
-    # Expected class probabilities: the votes of the first `n_neighbors`
-    # training samples, sorted (stable) by their distances:
+    # Expected class probabilities: the (weighted) votes of the first
+    # `n_neighbors` training samples, sorted (stable) by their distances:
     dists = np.sqrt(((test_x[:, None, :] - x[None, :, :]) ** 2).sum(axis=2))
     neighbors = np.argsort(dists, axis=1, kind='stable')[:, :n_neighbors]
+    votes = np.ones(neighbors.shape)
+    if weights == 'distance':
+        # Only the neighbors with the distance 0 vote, if there are any:
+        with np.errstate(divide='ignore'):
+            votes = 1.0 / np.take_along_axis(dists, neighbors, axis=1)
+        is_exact = np.isinf(votes)
+        votes = np.where(is_exact.any(axis=1, keepdims=True), is_exact, votes)
     exp_probas = [
-        np.array([np.bincount(y[n, j], minlength=3) for n in neighbors])
-        / n_neighbors
+        np.array(
+            [
+                np.bincount(y[n, j], weights=v, minlength=3) / v.sum()
+                for n, v in zip(neighbors, votes, strict=True)
+            ]
+        )
         for j in range(n_outputs)
     ]
     exp_classes = np.column_stack([p.argmax(axis=1) for p in exp_probas])
@@ -206,6 +222,7 @@ def test_estimator_k_neighbors_classifier_with_tied_neighbors(
             ('template', template),
             ('n_neighbors', str(n_neighbors)),
             ('n_outputs', str(n_outputs)),
+            ('weights', weights),
         ],
     )
 

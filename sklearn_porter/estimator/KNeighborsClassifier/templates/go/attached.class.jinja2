@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"math"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 )
@@ -34,9 +33,9 @@ type {{ class_name }} struct {
 	Power float64
 }
 
-type Distance struct {
-	y int
-	value float64
+type Neighbor struct {
+	index int
+	dist float64
 }
 
 {% if is_multi_output %}
@@ -128,6 +127,30 @@ func (knn {{ class_name }}) Compute(temp []float64, cand []float64, metric strin
 	return math.Pow(dist, 1.0/power)
 }
 
+// Find the k nearest neighbors sorted by distance and index (like a stable
+// sort). A sample is only inserted if it's nearer than the k-th neighbor:
+func (knn {{ class_name }}) FindNeighbors(features []float64) []Neighbor {
+	neighbors := make([]Neighbor, 0, knn.K)
+	for i := 0; i < len(knn.X); i++ {
+		dist := knn.Compute(knn.X[i], features, knn.Metric, knn.Power)
+		if len(neighbors) == knn.K && !(dist < neighbors[knn.K-1].dist) {
+			continue
+		}
+		j := len(neighbors)
+		if j < knn.K {
+			neighbors = append(neighbors, Neighbor{})
+		} else {
+			j = knn.K - 1
+		}
+		for j > 0 && dist < neighbors[j-1].dist {
+			neighbors[j] = neighbors[j-1]
+			j--
+		}
+		neighbors[j] = Neighbor{i, dist}
+	}
+	return neighbors
+}
+
 func (knn {{ class_name }}) PredictIndex(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
 	return knn.FindMax(knn.PredictProba(features))
 }
@@ -152,11 +175,11 @@ func (knn {{ class_name }}) Predict(features []float64) {{ label_type }} {
 {% if weights == 'distance' %}
 // Weight the nearest neighbors by the inverse of their distances. If some
 // neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
-func weigh(dists []float64) ([]float64, float64) {
-	weights := make([]float64, len(dists))
+func weigh(neighbors []Neighbor) ([]float64, float64) {
+	weights := make([]float64, len(neighbors))
 	isExact := false
-	for i, dist := range dists {
-		weights[i] = 1 / dist
+	for i, neighbor := range neighbors {
+		weights[i] = 1 / neighbor.dist
 		if math.IsInf(weights[i], 0) {
 			isExact = true
 		}
@@ -179,27 +202,14 @@ func weigh(dists []float64) ([]float64, float64) {
 {% if is_multi_output %}
 func (knn {{ class_name }}) PredictProba(features []float64) [][]float64 {
 	var classProbas = make([]float64, knn.N)
-	nSamples := len(knn.X)
-	indices := make([]int, nSamples)
-	dists := make([]float64, nSamples)
-	for i := 0; i < nSamples; i++ {
-		indices[i] = i
-		dists[i] = knn.Compute(knn.X[i], features, knn.Metric, knn.Power)
-	}
-	sort.SliceStable(indices, func(a, b int) bool {
-		return dists[indices[a]] < dists[indices[b]]
-	})
+	neighbors := knn.FindNeighbors(features)
+	nOutputs := len(knn.Y) / len(knn.X)
 {% if weights == 'distance' %}
-	nearest := make([]float64, knn.K)
-	for i := 0; i < knn.K; i++ {
-		nearest[i] = dists[indices[i]]
-	}
-	weights, total := weigh(nearest)
+	weights, total := weigh(neighbors)
 	// Each neighbor votes with its weight for one class of each output:
-	nOutputs := len(knn.Y) / nSamples
 	for i := 0; i < knn.K; i++ {
 		for j := 0; j < nOutputs; j++ {
-			classProbas[knn.Y[indices[i]*nOutputs+j]] += weights[i]
+			classProbas[knn.Y[neighbors[i].index*nOutputs+j]] += weights[i]
 		}
 	}
 	for i := 0; i < knn.N; i++ {
@@ -207,10 +217,9 @@ func (knn {{ class_name }}) PredictProba(features []float64) [][]float64 {
 	}
 {% else %}
 	// Each neighbor votes for one class of each output:
-	nOutputs := len(knn.Y) / nSamples
 	for i := 0; i < knn.K; i++ {
 		for j := 0; j < nOutputs; j++ {
-			classProbas[knn.Y[indices[i]*nOutputs+j]] += 1
+			classProbas[knn.Y[neighbors[i].index*nOutputs+j]] += 1
 		}
 	}
 	for i := 0; i < knn.N; i++ {
@@ -222,48 +231,23 @@ func (knn {{ class_name }}) PredictProba(features []float64) [][]float64 {
 {% else %}
 func (knn {{ class_name }}) PredictProba(features []float64) []float64 {
 	var classProbas = make([]float64, knn.N)
-	if knn.K == 1 {
-		classIdx := 0
-		minDist := math.Inf(0)
-		for i := 0; i < len(knn.Y); i++ {
-			dist := knn.Compute(knn.X[i], features, knn.Metric, knn.Power)
-			if dist < minDist {
-				minDist = dist
-				classIdx = knn.Y[i]
-			}
-		}
-		classProbas[classIdx] = 1
-	} else {
-		dists := []Distance{}
-		for i := 0; i < len(knn.Y); i++ {
-			dist := knn.Compute(knn.X[i], features, knn.Metric, knn.Power)
-			d := Distance{knn.Y[i], dist}
-			dists = append(dists, d)
-		}
-		sort.SliceStable(dists, func(i, j int) bool {
-			return dists[i].value < dists[j].value
-		})
+	neighbors := knn.FindNeighbors(features)
 {% if weights == 'distance' %}
-		nearest := make([]float64, knn.K)
-		for i := 0; i < knn.K; i++ {
-			nearest[i] = dists[i].value
-		}
-		weights, total := weigh(nearest)
-		for i := 0; i < knn.K; i++ {
-			classProbas[dists[i].y] += weights[i]
-		}
-		for i := 0; i < knn.N; i++ {
-			classProbas[i] = classProbas[i] / total
-		}
-{% else %}
-		for i := 0; i < knn.K; i++ {
-			classProbas[dists[i].y] += 1
-		}
-		for i := 0; i < knn.N; i++ {
-			classProbas[i] = classProbas[i] / float64(knn.K)
-		}
-{% endif %}
+	weights, total := weigh(neighbors)
+	for i := 0; i < knn.K; i++ {
+		classProbas[knn.Y[neighbors[i].index]] += weights[i]
 	}
+	for i := 0; i < knn.N; i++ {
+		classProbas[i] = classProbas[i] / total
+	}
+{% else %}
+	for i := 0; i < knn.K; i++ {
+		classProbas[knn.Y[neighbors[i].index]] += 1
+	}
+	for i := 0; i < knn.N; i++ {
+		classProbas[i] = classProbas[i] / float64(knn.K)
+	}
+{% endif %}
 	return classProbas
 }
 {% endif %}
