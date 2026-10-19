@@ -825,6 +825,19 @@ def test_tree_without_routing_of_missing_values_to_the_left():
     assert '"math"' not in est.port(language='go', template='combined')
 
 
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_indentation_of_combined_templates(language: str, tmp_path: Path):
+    """Test that the code of the `combined` templates is indented with tabs."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = DecisionTreeClassifier(random_state=0).fit(X=x, y=y)
+    est = Estimator(orig_est, language=language, template='combined')
+    ported = est.port()
+    saved = Path(est.save(directory=tmp_path)).read_text()
+    assert ported == saved
+    assert '\n\t\t\t' in ported
+    assert not [line for line in ported.split('\n') if line.startswith('    ')]
+
+
 @pytest.mark.parametrize(
     'language, literal',
     [
