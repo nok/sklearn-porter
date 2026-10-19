@@ -11,7 +11,7 @@ class {{ class_name }}
 	# Return the predicted values:
 	def self.predict(features)
 		values = Array.new({{ n_outputs }}, 0.0)
-		{{ tree | indent(4, True) }}
+		{{ tree | indent('\t', True) }}
 		if values.length == 1
 			return values[0]
 		end

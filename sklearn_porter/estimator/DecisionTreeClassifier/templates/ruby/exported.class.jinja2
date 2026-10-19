@@ -6,7 +6,7 @@ require 'json'
 
 class {{ class_name }}
 
-	def initialize (path)
+	def initialize(path)
 		@data = JSON.parse(File.read(path))
 
 		@lefts = @data['lefts']
@@ -22,7 +22,7 @@ class {{ class_name }}
 	OUTPUT_CLASSES = [{{ output_classes | join(', ') }}]
 
 	# Find the class with the maximum value of each output:
-	def _find_max (nums)
+	def _find_max(nums)
 		offset = 0
 		OUTPUT_CLASSES.map do |n|
 			idx = 0
@@ -34,7 +34,7 @@ class {{ class_name }}
 		end
 	end
 {% else %}
-	def _find_max (nums)
+	def _find_max(nums)
 		idx = 0
 		for i in 0 ... nums.length
 			idx = nums[i] > nums[idx] ? i : idx
@@ -45,7 +45,7 @@ class {{ class_name }}
 
 {% if is_multi_output %}
 	# Normalize the values of each output:
-	def _norm_vals (nums)
+	def _norm_vals(nums)
 		offset = 0
 		OUTPUT_CLASSES.map do |n|
 			sum = nums[offset, n].sum
@@ -55,7 +55,7 @@ class {{ class_name }}
 		end
 	end
 {% else %}
-	def _norm_vals (nums)
+	def _norm_vals(nums)
 		result = []
 		sum = 0
 		for i in 0 ... nums.length
@@ -75,7 +75,7 @@ class {{ class_name }}
 	end
 {% endif %}
 
-	def _compute (features, node, post)
+	def _compute(features, node, post)
 		if node >= 0
 			if features[@indices[node]] <= @thresholds[node] || (@missing_go_to_left[node] == 1 && features[@indices[node]].nan?)
 				return _compute features, @lefts[node], post
@@ -108,7 +108,7 @@ class {{ class_name }}
 	end
 {% endif %}
 
-	def predict_proba (features)
+	def predict_proba(features)
 		_compute features, 0, post=method(:_norm_vals)
 	end
 

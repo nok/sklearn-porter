@@ -6,7 +6,7 @@ require 'json'
 
 class {{ class_name }}
 
-	def initialize (path)
+	def initialize(path)
 		@data = JSON.parse(File.read(path))
 		@coeffs = @data['coeffs']
 		@inters = @data['inters']

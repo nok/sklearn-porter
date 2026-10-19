@@ -5,14 +5,14 @@ package main
 
 import (
 	"bufio"
-  {% if is_test or to_json %}
+	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
 	"fmt"
+	"math"
 	"os"
-  "math"
-	"strconv"
 	"sort"
+	"strconv"
 	"strings"
 )
 

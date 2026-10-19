@@ -8,110 +8,110 @@ require 'json'
 class {{ class_name }}
 
 {% if is_multi_output %}
-    # Normalize the values of each output:
-    def _norm_vals(nums)
-        result = []
-        offset = 0
-        OUTPUT_CLASSES.each do |n|
-            sum = nums[offset, n].sum.to_f
-            for i in offset ... offset + n
-                result[i] = sum == 0 ? 1.0 / n : nums[i] / sum
-            end
-            offset += n
-        end
-        result
-    end
+	# Normalize the values of each output:
+	def _norm_vals(nums)
+		result = []
+		offset = 0
+		OUTPUT_CLASSES.each do |n|
+			sum = nums[offset, n].sum.to_f
+			for i in offset ... offset + n
+				result[i] = sum == 0 ? 1.0 / n : nums[i] / sum
+			end
+			offset += n
+		end
+		result
+	end
 {% else %}
-    def _norm_vals(nums)
-        sum = nums.sum.to_f
-        if sum == 0
-            return Array.new(nums.length, 1.0 / nums.length)
-        end
-        nums.map { |num| num / sum }
-    end
+	def _norm_vals(nums)
+		sum = nums.sum.to_f
+		if sum == 0
+			return Array.new(nums.length, 1.0 / nums.length)
+		end
+		nums.map { |num| num / sum }
+	end
 {% endif %}
 
 {% if is_multi_output %}
-    # The classes of all outputs are concatenated, these are their numbers:
-    OUTPUT_CLASSES = [{{ output_classes | join(', ') }}]
+	# The classes of all outputs are concatenated, these are their numbers:
+	OUTPUT_CLASSES = [{{ output_classes | join(', ') }}]
 
-    # Find the class with the maximum probability of each output:
-    def _find_max(nums)
-    	nums.map { |probas| probas.index(probas.max) }
-    end
+	# Find the class with the maximum probability of each output:
+	def _find_max(nums)
+		nums.map { |probas| probas.index(probas.max) }
+	end
 
-    # Split the concatenated values into the values of each output:
-    def _split_outputs(nums)
-        offset = 0
-        OUTPUT_CLASSES.map do |n|
-            probas = nums[offset, n]
-            offset += n
-            probas
-        end
-    end
+	# Split the concatenated values into the values of each output:
+	def _split_outputs(nums)
+		offset = 0
+		OUTPUT_CLASSES.map do |n|
+			probas = nums[offset, n]
+			offset += n
+			probas
+		end
+	end
 {% else %}
-    def _find_max(nums)
-        idx = 0
-        for i in 0 ... nums.length
-            idx = nums[i] > nums[idx] ? i : idx
-        end
-        idx
-    end
+	def _find_max(nums)
+		idx = 0
+		for i in 0 ... nums.length
+			idx = nums[i] > nums[idx] ? i : idx
+		end
+		idx
+	end
 {% endif %}
 
-    {{ method | indent(4) }}
+	{{ method | indent('\t') }}
 
-    # The labels of the classes{{ ' of all outputs' if is_multi_output }}:
-    LABELS = [{{ label_values }}]
+	# The labels of the classes{{ ' of all outputs' if is_multi_output }}:
+	LABELS = [{{ label_values }}]
 
-    def predict_index(features)
-        _find_max(predict_proba(features))
-    end
+	def predict_index(features)
+		_find_max(predict_proba(features))
+	end
 
 {% if is_multi_output %}
-    # Predict the label of each output:
-    def predict(features)
-        offset = 0
-        predict_index(features).each_with_index.map do |idx, j|
-            label = LABELS[offset + idx]
-            offset += OUTPUT_CLASSES[j]
-            label
-        end
-    end
+	# Predict the label of each output:
+	def predict(features)
+		offset = 0
+		predict_index(features).each_with_index.map do |idx, j|
+			label = LABELS[offset + idx]
+			offset += OUTPUT_CLASSES[j]
+			label
+		end
+	end
 {% else %}
-    def predict(features)
-        LABELS[predict_index features]
-    end
+	def predict(features)
+		LABELS[predict_index features]
+	end
 {% endif %}
 
 end
 
 if __FILE__ == $0
-    {% filter indent(4, True) %}
-    {% include 'samples' %}
-    {% endfilter %}
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
 
-    # Estimator:
-    clf = {{ class_name }}.new
+	# Estimator:
+	clf = {{ class_name }}.new
 
-    # Features of one sample (arguments) or several samples (standard input):
-    read_samples(ARGV) do |features|
-        {% if is_test or to_json %}
-        # Get JSON:
-        prediction = clf.predict features
-        probabilities = clf.predict_proba features
-        puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
-        {% else %}
-        # Get class prediction:
-        prediction = clf.predict features
-        puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}#{prediction}"
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		{% if is_test or to_json %}
+		# Get JSON:
+		prediction = clf.predict features
+		probabilities = clf.predict_proba features
+		puts JSON.generate({:predict => prediction, :predict_proba => probabilities})
+		{% else %}
+		# Get class prediction:
+		prediction = clf.predict features
+		puts "{{ 'Predicted classes: ' if is_multi_output else 'Predicted class: ' }}#{prediction}"
 
-        # Get class probabilities:
-        probabilities = clf.predict_proba features
-        for i in 0 ... probabilities.length
-            puts "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}#{i} : #{probabilities[i]}"
-        end
-        {% endif %}
-    end
+		# Get class probabilities:
+		probabilities = clf.predict_proba features
+		for i in 0 ... probabilities.length
+			puts "{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}#{i} : #{probabilities[i]}"
+		end
+		{% endif %}
+	end
 end
 {% endblock %}

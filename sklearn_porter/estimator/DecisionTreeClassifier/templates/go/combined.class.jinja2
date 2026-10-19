@@ -2,7 +2,7 @@ package main
 
 import (
 	"bufio"
-  {% if is_test or to_json %}
+	{% if is_test or to_json %}
 	"encoding/json"
 	{% endif %}
 	"fmt"
@@ -98,7 +98,7 @@ func normVals(nums []float64) []float64 {
 
 func compute(features []float64) []float64 {
 	classes := make([]float64, {{ n_classes }})
-	{{ tree | indent(4, True) }}
+	{{ tree | indent('\t', True) }}
 	return classes
 }
 
