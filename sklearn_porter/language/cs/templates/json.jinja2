@@ -1,0 +1,27 @@
+    // Convert a number, a label or an array of them to JSON:
+    private static string ToJson(object value) {
+        if (value is double) {
+            return ((double) value).ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+        }
+        if (value is int) {
+            return ((int) value).ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        if (value is string) {
+            System.Text.StringBuilder json = new System.Text.StringBuilder("\"");
+            foreach (char c in (string) value) {
+                if (c == '"' || c == '\\') {
+                    json.Append('\\').Append(c);
+                } else if (c < 0x20 || c > 0x7e) {
+                    json.Append("\\u").Append(((int) c).ToString("x4"));
+                } else {
+                    json.Append(c);
+                }
+            }
+            return json.Append('"').ToString();
+        }
+        System.Collections.Generic.List<string> items = new System.Collections.Generic.List<string>();
+        foreach (object item in (System.Array) value) {
+            items.Add(ToJson(item));
+        }
+        return "[" + string.Join(",", items) + "]";
+    }

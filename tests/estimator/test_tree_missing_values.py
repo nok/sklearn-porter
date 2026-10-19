@@ -17,7 +17,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 # sklearn-porter
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import DATASETS, Dataset
+from tests.commons import DATASETS, LANGUAGES, Dataset
 from tests.utils import fs_mkdir
 
 # Long running regression tests, see `make test-regression`:
@@ -74,7 +74,7 @@ def make(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize(
     'orig_est', CLASSIFIERS, ids=lambda x: type(x).__name__
@@ -107,7 +107,7 @@ def test_tree_classifier_with_missing_values(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('orig_est', REGRESSORS, ids=lambda x: type(x).__name__)
 def test_tree_regressor_with_missing_values(
     tmp_root_dir: Path,
@@ -129,7 +129,7 @@ def test_tree_regressor_with_missing_values(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'orig_est', CLASSIFIERS + REGRESSORS, ids=lambda x: type(x).__name__
 )

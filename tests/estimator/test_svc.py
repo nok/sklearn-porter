@@ -13,7 +13,7 @@ from sklearn_porter import exceptions as exception
 
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import DATASETS, Dataset
+from tests.commons import DATASETS, LANGUAGES, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 # Long running regression tests, see `make test-regression`:
@@ -21,7 +21,7 @@ pytestmark = pytest.mark.regression
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
 @pytest.mark.parametrize(
     'gamma',
@@ -89,7 +89,7 @@ def test_estimator_svc(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 def test_estimator_nu_svc(
@@ -146,7 +146,7 @@ def test_estimator_nu_svc(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('kernel', ['poly', 'rbf', 'sigmoid'])
 @pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
 def test_estimator_svm_with_gamma_scale_on_unscaled_features(
@@ -197,7 +197,7 @@ def test_estimator_svm_with_gamma_scale_on_unscaled_features(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)

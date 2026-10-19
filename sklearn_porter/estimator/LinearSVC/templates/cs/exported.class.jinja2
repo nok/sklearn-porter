@@ -1,0 +1,92 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private class ModelData {
+        {% if is_binary %}
+        public double[] Coeffs { get; set; }
+        public double Inters { get; set; }
+        {% else %}
+        public double[][] Coeffs { get; set; }
+        public double[] Inters { get; set; }
+        {% endif %}
+    }
+
+    private ModelData data;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+    }
+
+{% include 'labels' %}
+
+
+    {% if is_binary %}
+    public int PredictIndex(double[] features) {
+        double prob = 0.0;
+        for (int i = 0; i < this.data.Coeffs.Length; i++) {
+            prob += this.data.Coeffs[i] * features[i];
+        }
+        if (prob + this.data.Inters > 0) {
+            return 1;
+        }
+        return 0;
+    }
+    {% else %}
+    public int PredictIndex(double[] features) {
+        int classIdx = 0;
+        double classVal = double.NegativeInfinity;
+        for (int i = 0; i < this.data.Inters.Length; i++) {
+            double prob = 0.0;
+            for (int j = 0; j < this.data.Coeffs[0].Length; j++) {
+                prob += this.data.Coeffs[i][j] * features[j];
+            }
+            if (prob + this.data.Inters[i] > classVal) {
+                classVal = prob + this.data.Inters[i];
+                classIdx = i;
+            }
+        }
+        return classIdx;
+    }
+    {% endif %}
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            {{ label_type }} prediction = clf.Predict(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + "}");
+            {% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

@@ -47,6 +47,11 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             enum.Template.COMBINED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
+        enum.Language.CS: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         enum.Language.GO: {
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.COMBINED: enum.ALL_METHODS,
@@ -241,7 +246,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         plas_copy.update(dict(methods=out_fns, method_calls=out_calls))
         out_method = tpl_method.render(**plas_copy)
 
-        if language in (enum.Language.JAVA, enum.Language.JS):
+        if language in (enum.Language.CS, enum.Language.JAVA, enum.Language.JS):
             n_indents = 1
             out_method = indent(out_method, n_indents * tpl_indent)
             out_method = out_method[(n_indents * len(tpl_indent)) :]
@@ -263,7 +268,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         """
         Embed the model data of all trees into the source code.
 
-        C and Java get array literals per tree, all other languages parse
+        C, C# and Java get array literals per tree, all other languages parse
         the model data as JSON string.
 
         Parameters
@@ -281,7 +286,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
         -------
         The model data as source code.
         """
-        if language in (enum.Language.C, enum.Language.JAVA):
+        if language in (enum.Language.C, enum.Language.CS, enum.Language.JAVA):
             tpl_tree = tpls.get_template('attached.tree')
             trees = []
             for idx, tree in enumerate(model_data):

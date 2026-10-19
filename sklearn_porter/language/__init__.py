@@ -1,4 +1,5 @@
 from sklearn_porter.language.c import C
+from sklearn_porter.language.cs import CSharp
 from sklearn_porter.language.go import Go
 from sklearn_porter.language.java import Java
 from sklearn_porter.language.js import JavaScript
@@ -7,6 +8,7 @@ from sklearn_porter.language.ruby import Ruby
 
 LANGUAGES = {
     C.KEY: C,
+    CSharp.KEY: CSharp,
     Go.KEY: Go,
     Java.KEY: Java,
     JavaScript.KEY: JavaScript,
@@ -14,4 +16,13 @@ LANGUAGES = {
     Ruby.KEY: Ruby,
 }
 
-__all__ = ['C', 'Go', 'Java', 'JavaScript', 'PHP', 'Ruby', 'LANGUAGES']
+__all__ = [
+    'C',
+    'CSharp',
+    'Go',
+    'Java',
+    'JavaScript',
+    'PHP',
+    'Ruby',
+    'LANGUAGES',
+]

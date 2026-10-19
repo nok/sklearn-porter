@@ -1,0 +1,48 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public class {{ class_name }} {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+    {% endfilter %}
+
+
+    public {{ class_name }}() {
+        this.forest = new Tree[] {
+            {% for i in range(n_estimators) %}
+            Tree{{ i }}(){% if not loop.last %},{% endif %}
+
+            {% endfor %}
+        };
+    }
+
+    // Model data:
+    {{ model | indent(4) }}
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}();
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            double[] prediction = reg.Predict(features);
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+    }
+}
+{% endblock %}

@@ -1,0 +1,12 @@
+private class ModelData {
+    public Tree[] Estimators { get; set; }
+    public double[] Inits { get; set; }
+}
+
+// Load the model data:
+public {{ class_name }}(string file) {
+    JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+    ModelData data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+    this.forest = data.Estimators;
+    this.inits = data.Inits;
+}

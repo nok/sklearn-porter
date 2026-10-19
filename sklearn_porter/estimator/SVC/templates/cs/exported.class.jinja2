@@ -1,0 +1,188 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private enum Kernel { Linear, Poly, Rbf, Sigmoid }
+
+    private class ModelData {
+        public double[][] Vectors { get; set; }
+        public double[][] Coeffs { get; set; }
+        public double[] Inters { get; set; }
+        public int[] Weights { get; set; }
+        public string Kernel { get; set; }
+        public double Gamma { get; set; }
+        public double Coef0 { get; set; }
+        public double Degree { get; set; }
+    }
+
+    private ModelData data;
+    private Kernel kernel;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+        this.kernel = (Kernel) Enum.Parse(typeof(Kernel), this.data.Kernel, true);
+    }
+
+{% include 'labels' %}
+
+
+    public int PredictIndex(double[] features) {
+        double[] kernels = new double[this.data.Vectors.Length];
+        double kernel;
+        switch (this.kernel) {
+            case Kernel.Linear:
+                // <x,x'>
+                for (int i = 0; i < this.data.Vectors.Length; i++) {
+                    kernel = 0.0;
+                    for (int j = 0; j < this.data.Vectors[i].Length; j++) {
+                        kernel += this.data.Vectors[i][j] * features[j];
+                    }
+                    kernels[i] = kernel;
+                }
+                break;
+            case Kernel.Poly:
+                // (y<x,x'>+r)^d
+                for (int i = 0; i < this.data.Vectors.Length; i++) {
+                    kernel = 0.0;
+                    for (int j = 0; j < this.data.Vectors[i].Length; j++) {
+                        kernel += this.data.Vectors[i][j] * features[j];
+                    }
+                    kernels[i] = Math.Pow((this.data.Gamma * kernel) + this.data.Coef0, this.data.Degree);
+                }
+                break;
+            case Kernel.Rbf:
+                // exp(-y|x-x'|^2)
+                for (int i = 0; i < this.data.Vectors.Length; i++) {
+                    kernel = 0.0;
+                    for (int j = 0; j < this.data.Vectors[i].Length; j++) {
+                        kernel += Math.Pow(this.data.Vectors[i][j] - features[j], 2);
+                    }
+                    kernels[i] = Math.Exp(-this.data.Gamma * kernel);
+                }
+                break;
+            case Kernel.Sigmoid:
+                // tanh(y<x,x'>+r)
+                for (int i = 0; i < this.data.Vectors.Length; i++) {
+                    kernel = 0.0;
+                    for (int j = 0; j < this.data.Vectors[i].Length; j++) {
+                        kernel += this.data.Vectors[i][j] * features[j];
+                    }
+                    kernels[i] = Math.Tanh((this.data.Gamma * kernel) + this.data.Coef0);
+                }
+                break;
+        }
+
+        int[] starts = new int[this.data.Weights.Length];
+        for (int i = 0; i < this.data.Weights.Length; i++) {
+            if (i != 0) {
+                int start = 0;
+                for (int j = 0; j < i; j++) {
+                    start += this.data.Weights[j];
+                }
+                starts[i] = start;
+            } else {
+                starts[0] = 0;
+            }
+        }
+
+        int[] ends = new int[this.data.Weights.Length];
+        for (int i = 0; i < this.data.Weights.Length; i++) {
+            ends[i] = this.data.Weights[i] + starts[i];
+        }
+
+        if (this.data.Weights.Length == 2) {
+            for (int i = 0; i < kernels.Length; i++) {
+                kernels[i] = -kernels[i];
+            }
+            double decision = 0.0;
+            for (int k = starts[1]; k < ends[1]; k++) {
+                decision += kernels[k] * this.data.Coeffs[0][k];
+            }
+            for (int k = starts[0]; k < ends[0]; k++) {
+                decision += kernels[k] * this.data.Coeffs[0][k];
+            }
+            decision += this.data.Inters[0];
+            if (decision > 0) {
+                return 0;
+            }
+            return 1;
+        }
+
+        double[] decisions = new double[this.data.Inters.Length];
+        for (int i = 0, d = 0, l = this.data.Weights.Length; i < l; i++) {
+            for (int j = i + 1; j < l; j++) {
+                double tmp = 0.0;
+                for (int k = starts[j]; k < ends[j]; k++) {
+                    tmp += this.data.Coeffs[i][k] * kernels[k];
+                }
+                for (int k = starts[i]; k < ends[i]; k++) {
+                    tmp += this.data.Coeffs[j - 1][k] * kernels[k];
+                }
+                decisions[d] = tmp + this.data.Inters[d];
+                d++;
+            }
+        }
+
+        int[] votes = new int[this.data.Inters.Length];
+        for (int i = 0, d = 0, l = this.data.Weights.Length; i < l; i++) {
+            for (int j = i + 1; j < l; j++) {
+                votes[d] = decisions[d] > 0 ? i : j;
+                d++;
+            }
+        }
+
+        int[] amounts = new int[this.data.Weights.Length];
+        for (int i = 0; i < votes.Length; i++) {
+            amounts[votes[i]] += 1;
+        }
+
+        int classVal = -1, classIdx = -1;
+        for (int i = 0; i < amounts.Length; i++) {
+            if (amounts[i] > classVal) {
+                classVal = amounts[i];
+                classIdx = i;
+            }
+        }
+        return classIdx;
+    }
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            {{ label_type }} prediction = clf.Predict(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + "}");
+            {% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

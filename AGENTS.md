@@ -2,7 +2,7 @@
 
 ## Purpose
 
-sklearn-porter transpiles trained scikit-learn estimators to C, Go, Java,
+sklearn-porter transpiles trained scikit-learn estimators to C, C#, Go, Java,
 JavaScript, PHP and Ruby, e.g. for embedded systems without Python. The ported
 code must predict exactly the same classes as the original estimator.
 
@@ -69,9 +69,11 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 - Tests which compile and execute ported estimators are marked with
   `@pytest.mark.regression` and skipped by default
   (`addopts = "-m 'not regression'"` in `pyproject.toml`).
-- The regression tests need gcc, go, java, node, php and ruby. They run only
-  locally in Docker (`make test-regression`), never in GitHub Actions, because
-  they would exceed the free minutes.
+- The regression tests need gcc, dotnet, go, java, node, php and ruby. They
+  run only locally in Docker (`make test-regression`), never in GitHub
+  Actions, because they would exceed the free minutes.
+- The tests are parametrized with the keys of all languages from
+  `tests.commons.LANGUAGES`.
 - Run the regression tests in Docker after changing templates, the model data
   extraction or the execution of ported estimators.
 - New tests which call `make()` or `test()` must be marked with `regression`.
@@ -151,6 +153,18 @@ table.
   dynamic properties are deprecated since PHP 8.2. The regression tests run
   PHP with `error_reporting = E_ALL` (see `tests/conftest.py`), so any notice,
   warning or deprecation breaks the JSON output and fails the tests.
+- C# (key `cs`): `make()` compiles the source code directly with the
+  compiler of the .NET SDK (`csc.dll`, much faster than `dotnet build`) and
+  `-langversion:7.3`, so the templates must only use language features of
+  C# 7.3. The compiler gets the reference assemblies from a response file
+  (`*.rsp`) and the program a runtime configuration
+  (`*.runtimeconfig.json`), see `CSharp.prepare_compilation()`. The
+  `exported` templates read the JSON file with `System.Text.Json` and
+  `JsonNamingPolicy.SnakeCaseLower` (.NET 8+). Format and parse numbers with
+  `CultureInfo.InvariantCulture`, because the default culture can use a
+  comma as decimal separator. `Array.Sort` isn't stable, so sort by an
+  additional index where the order of equal values matters (e.g. the
+  neighbors of the KNeighborsClassifier).
 - Commit messages and PR titles follow Conventional Commits
   (`feat:`, `fix:`, `docs:`, `ci:`, `build:`, `style:`, `refactor:`,
   `test:`, `chore:`; `!` or `BREAKING CHANGE:` for breaking changes).

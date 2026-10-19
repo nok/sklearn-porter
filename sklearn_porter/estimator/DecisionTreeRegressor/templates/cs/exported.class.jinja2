@@ -1,0 +1,72 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private class ModelData {
+        public int[] Lefts { get; set; }
+        public int[] Rights { get; set; }
+        public double[] Thresholds { get; set; }
+        public int[] Indices { get; set; }
+        public int[] MissingGoToLeft { get; set; }
+        public double[] Values { get; set; }
+    }
+
+    private ModelData data;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+    }
+
+    // Find the leaf and return its predicted values:
+    public double[] Predict(double[] features) {
+        int node = 0;
+        while (node >= 0) {
+            if (features[this.data.Indices[node]] <= this.data.Thresholds[node] || (this.data.MissingGoToLeft[node] == 1 && double.IsNaN(features[this.data.Indices[node]]))) {
+                node = this.data.Lefts[node];
+            } else {
+                node = this.data.Rights[node];
+            }
+        }
+        double[] values = new double[{{ n_outputs }}];
+        Array.Copy(this.data.Values, (-node - 1) * {{ n_outputs }}, values, 0, {{ n_outputs }});
+        return values;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            double[] prediction = reg.Predict(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction.Length == 1 ? (object) prediction[0] : prediction) + "}");
+            {% else %}
+            for (int i = 0; i < prediction.Length; i++) {
+                Console.WriteLine("Predicted value #" + i + ": " + prediction[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

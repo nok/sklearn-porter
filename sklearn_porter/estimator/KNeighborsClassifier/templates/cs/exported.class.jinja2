@@ -1,0 +1,295 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private class ModelData {
+        public double[][] X { get; set; }
+        public int[] Y { get; set; }
+        public int K { get; set; }
+        public int N { get; set; }
+        public string Metric { get; set; }
+        public double Power { get; set; }
+    }
+
+    private ModelData data;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+    }
+
+    // A neighbor stores the index of a sample and its distance:
+    private struct Neighbor {
+        public int Index;
+        public double Dist;
+    }
+
+    // Sort the neighbors by their distances and (like a stable sort) by
+    // the indices of the samples with the same distance:
+    private static int CompareNeighbors(Neighbor n1, Neighbor n2) {
+        int result = n1.Dist.CompareTo(n2.Dist);
+        return result != 0 ? result : n1.Index.CompareTo(n2.Index);
+    }
+
+{% if is_multi_output %}
+    // The classes of all outputs are concatenated, these are their numbers:
+    private static readonly int[] OUTPUT_CLASSES = { {{ output_classes | join(', ') }} };
+
+    // Find the class with the maximum probability of each output:
+    private static int[] FindMax(double[][] probas) {
+        int[] result = new int[probas.Length];
+        for (int j = 0; j < probas.Length; j++) {
+            for (int i = 1; i < probas[j].Length; i++) {
+                if (probas[j][i] > probas[j][result[j]]) {
+                    result[j] = i;
+                }
+            }
+        }
+        return result;
+    }
+
+    // Split the concatenated values into the values of each output:
+    private static double[][] SplitOutputs(double[] nums) {
+        double[][] result = new double[OUTPUT_CLASSES.Length][];
+        int offset = 0;
+        for (int j = 0; j < OUTPUT_CLASSES.Length; j++) {
+            result[j] = new double[OUTPUT_CLASSES[j]];
+            Array.Copy(nums, offset, result[j], 0, OUTPUT_CLASSES[j]);
+            offset += OUTPUT_CLASSES[j];
+        }
+        return result;
+    }
+{% else %}
+    private static int FindMax(double[] nums) {
+        int idx = 0;
+        for (int i = 1; i < nums.Length; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
+{% endif %}
+
+    // Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
+    private static double Compute(double[] temp, double[] cand, string metric, double q) {
+        double dist = 0.0;
+        double diff;
+        if (metric == "chebyshev") {
+            for (int i = 0; i < temp.Length; i++) {
+                dist = Math.Max(dist, Math.Abs(temp[i] - cand[i]));
+            }
+            return dist;
+        }
+        if (metric == "cosine") {
+            double dot = 0.0, normTemp = 0.0, normCand = 0.0;
+            for (int i = 0; i < temp.Length; i++) {
+                dot += temp[i] * cand[i];
+                normTemp += temp[i] * temp[i];
+                normCand += cand[i] * cand[i];
+            }
+            // The distance to a zero vector is 1 like in scikit-learn:
+            if (normTemp == 0.0 || normCand == 0.0) {
+                return 1.0;
+            }
+            dist = 1.0 - dot / (Math.Sqrt(normTemp) * Math.Sqrt(normCand));
+            return Math.Min(Math.Max(dist, 0.0), 2.0);
+        }
+        if (metric == "hamming") {
+            for (int i = 0; i < temp.Length; i++) {
+                if (temp[i] != cand[i]) {
+                    dist += 1.0;
+                }
+            }
+            return dist / temp.Length;
+        }
+        for (int i = 0; i < temp.Length; i++) {
+            diff = Math.Abs(temp[i] - cand[i]);
+            if (q == 1) {
+                dist += diff;
+            } else if (q == 2) {
+                dist += diff * diff;
+            } else {
+                dist += Math.Pow(diff, q);
+            }
+        }
+        if (q == 1) {
+            return dist;
+        } else if (q == 2) {
+            return Math.Sqrt(dist);
+        }
+        return Math.Pow(dist, 1.0 / q);
+    }
+
+    // Find the distances to all samples, sorted from the nearest neighbor on:
+    private Neighbor[] FindNeighbors(double[] features) {
+        Neighbor[] neighbors = new Neighbor[this.data.X.Length];
+        for (int i = 0; i < this.data.X.Length; i++) {
+            neighbors[i].Index = i;
+            neighbors[i].Dist = Compute(this.data.X[i], features, this.data.Metric, this.data.Power);
+        }
+        Array.Sort(neighbors, CompareNeighbors);
+        return neighbors;
+    }
+
+{% include 'labels' %}
+
+
+    public {{ 'int[]' if is_multi_output else 'int' }} PredictIndex(double[] features) {
+        return FindMax(this.PredictProba(features));
+    }
+{% if is_multi_output %}
+
+    // Predict the label of each output:
+    public {{ label_type }}[] Predict(double[] features) {
+        int[] idx = this.PredictIndex(features);
+        {{ label_type }}[] result = new {{ label_type }}[idx.Length];
+        int offset = 0;
+        for (int j = 0; j < idx.Length; j++) {
+            result[j] = LABELS[offset + idx[j]];
+            offset += OUTPUT_CLASSES[j];
+        }
+        return result;
+    }
+{% else %}
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+{% endif %}
+
+{% if weights == 'distance' %}
+    // Weight the nearest neighbors by the inverse of their distances. If some
+    // neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
+    private static double[] Weigh(Neighbor[] neighbors, int k) {
+        double[] weights = new double[k];
+        bool isExact = false;
+        for (int i = 0; i < k; i++) {
+            weights[i] = 1.0 / neighbors[i].Dist;
+            if (double.IsInfinity(weights[i])) {
+                isExact = true;
+            }
+        }
+        if (isExact) {
+            for (int i = 0; i < k; i++) {
+                weights[i] = double.IsInfinity(weights[i]) ? 1.0 : 0.0;
+            }
+        }
+        return weights;
+    }
+
+{% endif %}
+{% if is_multi_output %}
+    public double[][] PredictProba(double[] features) {
+        double[] classProbas = new double[this.data.N];
+        Neighbor[] neighbors = this.FindNeighbors(features);
+        int nOutputs = this.data.Y.Length / this.data.X.Length;
+{% if weights == 'distance' %}
+        // Each neighbor votes with its weight for one class of each output:
+        double[] weights = Weigh(neighbors, this.data.K);
+        double total = 0.0;
+        for (int i = 0; i < this.data.K; i++) {
+            total += weights[i];
+            for (int j = 0; j < nOutputs; j++) {
+                classProbas[this.data.Y[neighbors[i].Index * nOutputs + j]] += weights[i];
+            }
+        }
+        for (int i = 0; i < this.data.N; i++) {
+            classProbas[i] /= total;
+        }
+{% else %}
+        // Each neighbor votes for one class of each output:
+        for (int i = 0; i < this.data.K; i++) {
+            for (int j = 0; j < nOutputs; j++) {
+                classProbas[this.data.Y[neighbors[i].Index * nOutputs + j]]++;
+            }
+        }
+        for (int i = 0; i < this.data.N; i++) {
+            classProbas[i] /= this.data.K;
+        }
+{% endif %}
+        return SplitOutputs(classProbas);
+    }
+{% else %}
+    public double[] PredictProba(double[] features) {
+        double[] classProbas = new double[this.data.N];
+        if (this.data.K == 1) {
+            int classIdx = 0;
+            double minDist = double.PositiveInfinity;
+            for (int i = 0; i < this.data.Y.Length; i++) {
+                double dist = Compute(this.data.X[i], features, this.data.Metric, this.data.Power);
+                if (dist < minDist) {
+                    minDist = dist;
+                    classIdx = this.data.Y[i];
+                }
+            }
+            classProbas[classIdx] = 1;
+            return classProbas;
+        }
+        Neighbor[] neighbors = this.FindNeighbors(features);
+{% if weights == 'distance' %}
+        double[] weights = Weigh(neighbors, this.data.K);
+        double total = 0.0;
+        for (int i = 0; i < this.data.K; i++) {
+            total += weights[i];
+            classProbas[this.data.Y[neighbors[i].Index]] += weights[i];
+        }
+        for (int i = 0; i < this.data.N; i++) {
+            classProbas[i] /= total;
+        }
+{% else %}
+        for (int i = 0; i < this.data.K; i++) {
+            classProbas[this.data.Y[neighbors[i].Index]]++;
+        }
+        for (int i = 0; i < this.data.N; i++) {
+            classProbas[i] /= this.data.K;
+        }
+{% endif %}
+        return classProbas;
+    }
+{% endif %}
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            {{ label_type }}{{ '[]' if is_multi_output }} prediction = clf.Predict(features);
+            {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.PredictProba(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
+            {% else %}
+{% if is_multi_output %}
+            Console.WriteLine("Predicted classes: " + string.Join(", ", Array.ConvertAll(prediction, p => Convert.ToString(p, CultureInfo.InvariantCulture))));
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probabilities of output #" + i + ": " + string.Join(", ", Array.ConvertAll(probabilities[i], p => p.ToString(CultureInfo.InvariantCulture))));
+            }
+{% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probability of class #" + i + ": " + probabilities[i].ToString(CultureInfo.InvariantCulture));
+            }
+{% endif %}
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

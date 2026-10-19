@@ -1,0 +1,115 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public static class {{ class_name }} {
+
+{% if is_multi_output %}
+    // The classes of all outputs are concatenated, these are their numbers:
+    private static readonly int[] OUTPUT_CLASSES = { {{ output_classes | join(', ') }} };
+
+    // Find the class with the maximum probability of each output:
+    private static int[] FindMax(double[][] probas) {
+        int[] result = new int[probas.Length];
+        for (int j = 0; j < probas.Length; j++) {
+            for (int i = 1; i < probas[j].Length; i++) {
+                if (probas[j][i] > probas[j][result[j]]) {
+                    result[j] = i;
+                }
+            }
+        }
+        return result;
+    }
+
+    // Split the concatenated values into the values of each output:
+    private static double[][] SplitOutputs(double[] nums) {
+        double[][] result = new double[OUTPUT_CLASSES.Length][];
+        int offset = 0;
+        for (int j = 0; j < OUTPUT_CLASSES.Length; j++) {
+            result[j] = new double[OUTPUT_CLASSES[j]];
+            Array.Copy(nums, offset, result[j], 0, OUTPUT_CLASSES[j]);
+            offset += OUTPUT_CLASSES[j];
+        }
+        return result;
+    }
+{% else %}
+    private static int FindMax(double[] nums) {
+        int idx = 0;
+        for (int i = 1; i < nums.Length; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
+{% endif %}
+
+{% if is_multi_output %}
+    // Normalize the values of each output:
+    private static double[] NormVals(double[] nums) {
+        double[] result = new double[nums.Length];
+        int offset = 0;
+        for (int j = 0; j < OUTPUT_CLASSES.Length; j++) {
+            double sum = 0.0;
+            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
+                sum += nums[i];
+            }
+            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
+                result[i] = sum == 0 ? 1.0 / OUTPUT_CLASSES[j] : nums[i] / sum;
+            }
+            offset += OUTPUT_CLASSES[j];
+        }
+        return result;
+    }
+{% else %}
+    private static double[] NormVals(double[] nums) {
+        double[] result = new double[nums.Length];
+        double sum = 0.0;
+        for (int i = 0; i < nums.Length; i++) {
+            sum += nums[i];
+        }
+        for (int i = 0; i < nums.Length; i++) {
+            result[i] = sum == 0 ? 1.0 / nums.Length : nums[i] / sum;
+        }
+        return result;
+    }
+{% endif %}
+
+{% include 'labels' %}
+
+
+    {{ method }}
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            {{ label_type }}{{ '[]' if is_multi_output }} prediction = {{ class_name }}.Predict(features);
+            {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = {{ class_name }}.PredictProba(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
+            {% else %}
+{% if is_multi_output %}
+            Console.WriteLine("Predicted classes: " + string.Join(", ", Array.ConvertAll(prediction, p => Convert.ToString(p, CultureInfo.InvariantCulture))));
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probabilities of output #" + i + ": " + string.Join(", ", Array.ConvertAll(probabilities[i], p => p.ToString(CultureInfo.InvariantCulture))));
+            }
+{% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probability of class #" + i + ": " + probabilities[i].ToString(CultureInfo.InvariantCulture));
+            }
+{% endif %}
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

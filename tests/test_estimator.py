@@ -66,10 +66,12 @@ from sklearn_porter.Estimator import Estimator, can, show
 from sklearn_porter.estimator.AdaBoostClassifier import (
     AdaBoostClassifier as AdaBoostClassifierPorter,
 )
+from sklearn_porter.language.cs import CSharp
 from tests.commons import (
     CANDIDATES,
     CLASSIFIERS,
     DATASETS,
+    LANGUAGES,
     REGRESSION_DATASETS,
     REGRESSORS,
     Candidate,
@@ -133,11 +135,13 @@ def test_show_output():
     table = show()
     assert 'DecisionTreeClassifier' in table
     assert 'IsolationForest' in table
+    assert 'C#' in table
     assert 'Java' in table
     assert 'JavaScript' in table
 
     table = show(language='c')
     assert 'DecisionTreeClassifier' in table
+    assert 'C#' not in table
     assert 'Java' not in table
     assert 'JavaScript' not in table
 
@@ -171,15 +175,23 @@ def test_and_compare_multiprocessed_results(fitted_tree):
 
 
 @pytest.mark.regression
-def test_file_handling(fitted_tree, tmp_root_dir):
+@pytest.mark.parametrize(
+    'language, n_files',
+    [
+        ('java', 2),  # source and class file
+        ('cs', 4),  # source, program, response file and runtime config
+    ],
+)
+def test_file_handling(fitted_tree, tmp_root_dir, language: str, n_files: int):
     x = load_iris().data
-    est = Estimator(fitted_tree, language='java')
+    est = Estimator(fitted_tree, language=language)
 
     # Delete generated files:
     tmp_dir_delete = fs_mkdir(
         tmp_root_dir,
         [
             ('test', 'file_handling_delete'),
+            ('language', language),
         ],
     )
     est.make(
@@ -192,17 +204,18 @@ def test_file_handling(fitted_tree, tmp_root_dir):
         tmp_root_dir,
         [
             ('test', 'file_handling_keep'),
+            ('language', language),
         ],
     )
     est.make(
         x[:3], n_jobs=False, directory=tmp_dir_keep, delete_created_files=False
     )
-    assert len(os.listdir(str(tmp_dir_keep))) == 2
+    assert len(os.listdir(str(tmp_dir_keep))) == n_files
 
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 def test_make_in_directory_with_special_characters(
     fitted_tree, tmp_root_dir: Path, language: str, template: str
 ):
@@ -235,7 +248,12 @@ def test_warning_on_windows(
 
 @pytest.mark.parametrize(
     'language, template',
-    [('c', 'attached'), ('go', 'exported'), ('java', 'exported')],
+    [
+        ('c', 'attached'),
+        ('cs', 'exported'),
+        ('go', 'exported'),
+        ('java', 'exported'),
+    ],
 )
 def test_system_calls_on_windows(
     fitted_tree,
@@ -249,6 +267,8 @@ def test_system_calls_on_windows(
     monkeypatch.setattr(ESTIMATOR_MODULE, 'platform', 'win32')
     monkeypatch.setattr(ESTIMATOR_MODULE, 'pathsep', ';')
     monkeypatch.setenv('SKLEARN_PORTER_PYTEST_GSON_PATH', 'gson.jar')
+    sdk = (Path('csc.dll'), [Path('System.Runtime.dll')], 'net10.0', '10.0.0')
+    monkeypatch.setattr(CSharp, 'get_sdk', staticmethod(lambda: sdk))
 
     compile_cmds, execute_cmds, inputs = [], [], []
 
@@ -256,6 +276,9 @@ def test_system_calls_on_windows(
         compile_cmds.append(cmd)
         if language in ('c', 'go'):
             Path(cmd[cmd.index('-o') + 1]).touch()  # the binary
+        elif language == 'cs':
+            out = next(arg for arg in cmd if arg.startswith('-out:'))
+            Path(out[len('-out:') :]).touch()  # the program
         return ''
 
     def run(cmd: list[str], **kwargs) -> CompletedProcess:
@@ -280,6 +303,11 @@ def test_system_calls_on_windows(
         binary = str(tmp_path / 'DecisionTreeClassifier.exe')
         assert compile_cmd[compile_cmd.index('-o') + 1] == binary
         assert execute_cmd[0] == binary
+    elif language == 'cs':
+        program = str(tmp_path / 'DecisionTreeClassifier.dll')
+        assert compile_cmd[:2] == ['dotnet', 'csc.dll']
+        assert f'-out:{program}' in compile_cmd
+        assert execute_cmd[:2] == ['dotnet', program]
     else:
         class_path = f'{tmp_path};gson.jar'
         assert compile_cmd[:3] == ['javac', '-cp', class_path]
@@ -357,7 +385,7 @@ def test_make_with_missing_results(
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 def test_make_with_samples_as_arguments(
     fitted_tree,
     tmp_root_dir: Path,
@@ -411,7 +439,7 @@ def test_make_with_samples_as_arguments(
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
 @pytest.mark.parametrize('binary', [True, False], ids=['binary', 'multi'])
 @pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
@@ -471,6 +499,8 @@ def test_text_output(
         class_path=os.pathsep.join(class_paths),
         class_name=src_path.stem,
     )
+    if language == 'cs':  # the response file and the runtime configuration
+        cmd_args.update(CSharp.prepare_compilation(src_path)[0])
     if lang.CMD_COMPILE:
         cmd = [arg.format(**cmd_args) for arg in lang.CMD_COMPILE]
         proc = run(cmd, capture_output=True, encoding='utf-8')
@@ -684,7 +714,7 @@ def test_extraction_from_randomized_search_cv():
 
 @pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
 @pytest.mark.parametrize('gamma', ['scale', 'auto'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 def test_computed_gamma_of_svm(orig_est: type, gamma: str, language: str):
     """Test the use of the computed gamma value instead of `scale` or `auto`."""
     # The unscaled iris features (X.var() != 1) lead to different values:
@@ -700,7 +730,8 @@ def test_computed_gamma_of_svm(orig_est: type, gamma: str, language: str):
 
     output = est.port()
     assert est.converter(expected) in output
-    assert gamma not in output
+    # The header of C# marks the file as `<auto-generated />`:
+    assert gamma not in output.replace('<auto-generated />', '')
 
 
 @pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
@@ -798,6 +829,7 @@ def test_tree_without_routing_of_missing_values_to_the_left():
     'language, literal',
     [
         ('c', 'INFINITY'),
+        ('cs', 'double.PositiveInfinity'),
         ('go', 'math.Inf(1)'),
         ('java', 'Double.POSITIVE_INFINITY'),
         ('js', 'Infinity'),
@@ -956,7 +988,7 @@ def test_knn_fitted_on_sparse_data():
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'orig_est',
     [*SPARSIFIABLE_CLASSIFIERS, KNeighborsClassifier()],
@@ -986,7 +1018,7 @@ def test_classifier_with_sparse_data(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'orig_est',
     [
@@ -1028,7 +1060,7 @@ def test_multi_output_k_neighbors_classifier_targets():
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'orig_est',
     [RidgeClassifier(), MLPClassifier(max_iter=20, random_state=0)],
@@ -1152,7 +1184,7 @@ def test_k_neighbors_classifier_with_unsupported_weights():
     ],  # fmt: on
 )
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 def test_make_the_inputs_outputs(
     tmp_root_dir: Path,
     x,
@@ -1201,7 +1233,7 @@ def test_make_the_inputs_outputs(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
 def test_port_all_combinations(
     candidate: Candidate, language: str, template: str
@@ -1221,7 +1253,7 @@ def test_port_all_combinations(
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize('candidate', CLASSIFIERS, ids=lambda x: x.name)
 def test_regressions_of_classifiers(
@@ -1290,7 +1322,7 @@ def test_regressions_of_classifiers(
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', REGRESSION_DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize('candidate', REGRESSORS, ids=lambda x: x.name)
 def test_regressions_of_regressors(
@@ -1371,7 +1403,7 @@ LABELS = {
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('labels', LABELS.values(), ids=list(LABELS))
 @pytest.mark.parametrize('candidate', CLASSIFIERS, ids=lambda x: x.name)
 @pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
@@ -1415,7 +1447,7 @@ def test_class_labels(
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'orig_est',
     [
@@ -1462,7 +1494,7 @@ def test_class_labels_of_multiple_outputs(
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('n_outputs', [1, 2])
 @pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
 def test_mlp_regressor_with_poisson_loss(
@@ -1728,7 +1760,7 @@ def test_gradient_boosting_with_unsupported_init(orig_est):
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('n_estimators', [3, 12])
 @pytest.mark.parametrize(
     'orig_est',
@@ -1779,7 +1811,7 @@ def test_forest_with_changed_n_estimators(
 
 @pytest.mark.regression
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'orig_est',
     [

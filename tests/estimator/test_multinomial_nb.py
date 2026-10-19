@@ -10,7 +10,7 @@ from sklearn.naive_bayes import ComplementNB, MultinomialNB
 
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import DATASETS, Dataset
+from tests.commons import DATASETS, LANGUAGES, Dataset
 from tests.utils import (
     dataset_generate_x,
     dataset_uniform_x,
@@ -106,7 +106,7 @@ MULTINOMIAL_NB_PARAMS = {
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'dataset', DATASETS + TEXT_DATASETS, ids=lambda x: x.name
 )
@@ -137,7 +137,7 @@ COMPLEMENT_NB_PARAMS = {
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'dataset', DATASETS + TEXT_DATASETS, ids=lambda x: x.name
 )
@@ -155,7 +155,7 @@ def test_estimator_complement_nb(
 
 
 @pytest.mark.parametrize('template', ['attached', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('clazz', [MultinomialNB, ComplementNB])
 def test_naive_bayes_with_a_single_class(
     tmp_root_dir: Path, clazz: type, language: str, template: str

@@ -1,3 +1,7 @@
+import json
+from pathlib import Path
+from subprocess import CalledProcessError
+
 import numpy as np
 import pytest
 from scipy.sparse import csr_matrix, issparse
@@ -14,7 +18,9 @@ from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from sklearn_porter import exceptions as exception
+from sklearn_porter.language import cs as cs_module
 from sklearn_porter.language.c import C
+from sklearn_porter.language.cs import CSharp
 from sklearn_porter.language.go import Go
 from sklearn_porter.language.java import Java
 from sklearn_porter.language.js import JavaScript
@@ -308,6 +314,7 @@ def test_unsupported_labels(y):
     ('language', 'expected'),
     [
         (C, '"a\\042b\\134c\\077\'\\303\\244"'),
+        (CSharp, '"a\\u0022b\\u005cc?\'\\u00e4"'),
         (Go, '"a\\U00000022b\\U0000005cc?\'\\U000000e4"'),
         (Java, '"a\\042b\\134c?\'\\u00e4"'),
         (JavaScript, '"a\\"b\\\\c?\'\\u00e4"'),
@@ -319,3 +326,98 @@ def test_unsupported_labels(y):
 def test_string_literals(language, expected: str):
     """Test the escapes of the string literals of all languages."""
     assert language.str_literal('a"b\\c?\'ä') == expected
+
+
+@pytest.fixture
+def dotnet_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    """Create the directories of a fake .NET installation."""
+    sdk_dir = tmp_path / 'dotnet' / 'sdk'
+    for version in ('8.0.100', '10.0.402'):
+        compiler_dir = sdk_dir / version / 'Roslyn' / 'bincore'
+        compiler_dir.mkdir(parents=True)
+        (compiler_dir / 'csc.dll').touch()
+    packs_dir = tmp_path / 'dotnet' / 'packs' / 'Microsoft.NETCore.App.Ref'
+    for version in ('8.0.21', '10.0.13'):
+        ref_dir = (
+            packs_dir / version / 'ref' / f'net{version[: version.rindex(".")]}'
+        )
+        ref_dir.mkdir(parents=True)
+        (ref_dir / 'System.Runtime.dll').touch()
+        (ref_dir / 'System.Text.Json.dll').touch()
+    (packs_dir / '.DS_Store').touch()  # no version
+
+    def check_output(cmd: list[str], **kwargs) -> str:
+        assert cmd == ['dotnet', '--list-sdks']
+        return f'8.0.100 [{sdk_dir}]\n10.0.402 [{sdk_dir}]\n'
+
+    monkeypatch.setattr(cs_module, 'check_output', check_output)
+    CSharp.get_sdk.cache_clear()
+    yield tmp_path / 'dotnet'
+    CSharp.get_sdk.cache_clear()
+
+
+def test_csharp_sdk(dotnet_root: Path):
+    """Test the compiler and the reference assemblies of the latest SDK."""
+    compiler_path, references, framework, version = CSharp.get_sdk()
+    assert compiler_path == (
+        dotnet_root / 'sdk' / '10.0.402' / 'Roslyn' / 'bincore' / 'csc.dll'
+    )
+    ref_dir = dotnet_root / 'packs' / 'Microsoft.NETCore.App.Ref' / '10.0.13'
+    assert references == [
+        ref_dir / 'ref' / 'net10.0' / 'System.Runtime.dll',
+        ref_dir / 'ref' / 'net10.0' / 'System.Text.Json.dll',
+    ]
+    assert framework == 'net10.0'
+    assert version == '10.0.0'  # rolls forward to the latest patch
+
+
+def test_csharp_sdk_without_compiler(dotnet_root: Path):
+    """Test an SDK without the compiler (e.g. another directory layout)."""
+    for path in (dotnet_root / 'sdk').glob('*/Roslyn/bincore/csc.dll'):
+        path.unlink()
+    with pytest.raises(RuntimeError, match='No .NET SDK'):
+        CSharp.get_sdk()
+
+
+@pytest.mark.parametrize(
+    'error',
+    [FileNotFoundError('dotnet'), CalledProcessError(1, ['dotnet'])],
+    ids=['missing', 'failed'],
+)
+def test_csharp_sdk_without_dotnet(
+    monkeypatch: pytest.MonkeyPatch, error: Exception
+):
+    """Test a missing or failing `dotnet` command."""
+
+    def check_output(cmd: list[str], **kwargs) -> str:
+        raise error
+
+    monkeypatch.setattr(cs_module, 'check_output', check_output)
+    CSharp.get_sdk.cache_clear()
+    try:
+        with pytest.raises(RuntimeError, match='not available'):
+            CSharp.get_sdk()
+    finally:
+        CSharp.get_sdk.cache_clear()
+
+
+def test_csharp_compilation_files(dotnet_root: Path, tmp_path: Path):
+    """Test the response file and the runtime configuration of C#."""
+    src_path = tmp_path / 'Estimator.cs'
+    cmd_args, paths = CSharp.prepare_compilation(src_path)
+    assert cmd_args['dest_path'] == str(tmp_path / 'Estimator.dll')
+    assert paths == [
+        tmp_path / 'Estimator.dll',
+        tmp_path / 'Estimator.rsp',
+        tmp_path / 'Estimator.runtimeconfig.json',
+    ]
+    references = (tmp_path / 'Estimator.rsp').read_text().splitlines()
+    assert len(references) == 2
+    assert all(r.startswith('-r:"') and r.endswith('.dll"') for r in references)
+    config = json.loads(paths[2].read_text())
+    assert config['runtimeOptions']['tfm'] == 'net10.0'
+    assert config['runtimeOptions']['framework'] == dict(
+        name='Microsoft.NETCore.App', version='10.0.0'
+    )
+    cmd = [arg.format(**cmd_args) for arg in CSharp.CMD_COMPILE or []]
+    assert f'@{tmp_path / "Estimator.rsp"}' in cmd

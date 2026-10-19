@@ -1,0 +1,30 @@
+{{ methods }}
+
+public static double[] PredictProba(double[] features) {
+    int nClasses = {{ n_classes }};
+    double[] weights = {{ '{' }}{{ weights[1:-1] }}{{ '}' }};
+    double[] probas = new double[nClasses];
+    double sumWeights = 0.0, sum = 0.0;
+    // Weighted votes of all trees (SAMME):
+    {{ method_calls }}
+    foreach (double weight in weights) {
+        sumWeights += weight;
+    }
+    // Softmax of the decision values, see `AdaBoostClassifier.decision_function`:
+    for (int i = 0; i < nClasses; i++) {
+        probas[i] = Math.Exp(probas[i] * nClasses / (sumWeights * (nClasses - 1) * (nClasses - 1)));
+        sum += probas[i];
+    }
+    for (int i = 0; i < nClasses; i++) {
+        probas[i] /= sum;
+    }
+    return probas;
+}
+
+public static int PredictIndex(double[] features) {
+    return FindMax(PredictProba(features));
+}
+
+public static {{ label_type }} Predict(double[] features) {
+    return LABELS[PredictIndex(features)];
+}

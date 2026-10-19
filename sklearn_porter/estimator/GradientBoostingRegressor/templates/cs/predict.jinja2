@@ -1,0 +1,8 @@
+// Add the values of all trees to the initial prediction:
+public double Predict(double[] features) {
+    double value = this.inits[0];
+    foreach (Tree tree in this.forest) {
+        value += tree.Compute(features);
+    }
+    return value;
+}

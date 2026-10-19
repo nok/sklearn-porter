@@ -1,0 +1,55 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    {% filter indent(4, True) %}
+    {% include 'forest' %}
+    {% endfilter %}
+
+
+    private class ModelData {
+        public Tree[] Estimators { get; set; }
+        public double Denominator { get; set; }
+        public double Offset { get; set; }
+    }
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        ModelData data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+        this.forest = data.Estimators;
+        this.denominator = data.Denominator;
+        this.offset = data.Offset;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            int prediction = clf.Predict(features);
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+    }
+}
+{% endblock %}

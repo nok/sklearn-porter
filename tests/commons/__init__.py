@@ -51,6 +51,9 @@ PORTER_N_GEN_REGRESSION_TESTS = int(
     environ.get('SKLEARN_PORTER_PYTEST_N_GEN_REGRESSION_TESTS', 15)
 )
 
+# The keys of all supported programming languages:
+LANGUAGES = ['c', 'cs', 'go', 'java', 'js', 'php', 'ruby']
+
 ROOT_DIR = (Path(__file__).parent / '..' / '..').resolve()
 TESTS_DIR = ROOT_DIR / 'tests'
 RESOURCES_DIR = ROOT_DIR / 'resources'

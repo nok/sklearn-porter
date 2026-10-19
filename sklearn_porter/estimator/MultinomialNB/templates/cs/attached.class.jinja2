@@ -1,0 +1,101 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public class {{ class_name }} {
+
+    private double[] priors;
+    private double[][] probs;
+
+    public {{ class_name }}(double[] priors, double[][] probs) {
+        this.priors = priors;
+        this.probs = probs;
+    }
+
+    private static int FindMax(double[] nums) {
+        int idx = 0;
+        for (int i = 0; i < nums.Length; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
+
+    private static double LogSumExp(double[] nums) {
+        double max = nums[FindMax(nums)];
+        double sum = 0.0;
+        for (int i = 0; i < nums.Length; i++) {
+            sum += Math.Exp(nums[i] - max);
+        }
+        return max + Math.Log(sum);
+    }
+
+    private double[] Compute(double[] features) {
+        int nClasses = this.probs.Length;
+        int nFeatures = this.probs[0].Length;
+
+        double[] jll = new double[nClasses];
+        for (int i = 0; i < nClasses; i++) {
+            double sum = 0.0;
+            for (int j = 0; j < nFeatures; j++) {
+                sum += features[j] * this.probs[i][j];
+            }
+            jll[i] = sum + this.priors[i];
+        }
+        return jll;
+    }
+
+{% include 'labels' %}
+
+
+    public int PredictIndex(double[] features) {
+        return FindMax(this.Compute(features));
+    }
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+
+    public double[] PredictProba(double[] features) {
+        double[] jll = this.Compute(features);
+        double sum = LogSumExp(jll);
+        for (int i = 0; i < jll.Length; i++) {
+            jll[i] = Math.Exp(jll[i] - sum);
+        }
+        return jll;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Model data:
+        {{ priors }}
+        {{ probs }}
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(priors, probs);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            {{ label_type }} prediction = clf.Predict(features);
+            double[] probabilities = clf.PredictProba(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
+            {% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probability of class #" + i + ": " + probabilities[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

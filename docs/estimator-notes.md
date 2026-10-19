@@ -3,7 +3,7 @@
 ## Class labels
 
 - The ported classifiers return the labels of the classes like scikit-learn (`classes_`), e.g. `-1` and `1`, `1.5` or `'setosa'`. The labels are stored in the ported code as a constant (`labels` in C and Go, `LABELS` in the other languages), also by the `exported` template.
-- `predict_index` (`predictIndex` in Java, JavaScript and PHP and `PredictIndex` in Go) returns the index of the predicted class instead, which is also the position of its probability in the result of `predict_proba`.
+- `predict_index` (`predictIndex` in Java, JavaScript and PHP and `PredictIndex` in C# and Go) returns the index of the predicted class instead, which is also the position of its probability in the result of `predict_proba`.
 
 ## Multilabel and multi-output classification
 

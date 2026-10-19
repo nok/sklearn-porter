@@ -523,6 +523,10 @@ class Estimator:
             dest_path = str(_get_binary_path(src_path))
             cmd_args['dest_path'] = dest_path
             paths_to_check.append(dest_path)
+        elif language is enum.Language.CS:
+            dest_path = str(src_path.with_suffix('.dll'))
+            cmd_args['dest_path'] = dest_path
+            paths_to_check.append(dest_path)
         elif language is enum.Language.JAVA:
             cmd_args['class_path'] = pathsep.join(class_paths)
             cmd_args['class_name'] = src_path.stem
@@ -667,6 +671,11 @@ class Estimator:
             cmd_args['src_path'] = str(src_path)
             cmd_args['dest_path'] = str(dest_path)
             created_files.append(dest_path)
+
+        elif language is enum.Language.CS:
+            args, paths = language.value.prepare_compilation(src_path)
+            cmd_args.update(args)
+            created_files.extend(paths)
 
         elif language is enum.Language.JAVA:
             cmd_args['src_path'] = str(src_path)

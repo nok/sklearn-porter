@@ -1,0 +1,91 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public class {{ class_name }} {
+
+    {% if is_binary %}
+    private double[] coeffs;
+    private double inters;
+
+    public {{ class_name }}(double[] coeffs, double inters) {
+        this.coeffs = coeffs;
+        this.inters = inters;
+    }
+    {% else %}
+    private double[][] coeffs;
+    private double[] inters;
+
+    public {{ class_name }}(double[][] coeffs, double[] inters) {
+        this.coeffs = coeffs;
+        this.inters = inters;
+    }
+    {% endif %}
+
+{% include 'labels' %}
+
+
+    {% if is_binary %}
+    public int PredictIndex(double[] features) {
+        double prob = 0.0;
+        for (int i = 0; i < this.coeffs.Length; i++) {
+            prob += this.coeffs[i] * features[i];
+        }
+        if (prob + this.inters > 0) {
+            return 1;
+        }
+        return 0;
+    }
+    {% else %}
+    public int PredictIndex(double[] features) {
+        int classIdx = 0;
+        double classVal = double.NegativeInfinity;
+        for (int i = 0; i < this.inters.Length; i++) {
+            double prob = 0.0;
+            for (int j = 0; j < this.coeffs[0].Length; j++) {
+                prob += this.coeffs[i][j] * features[j];
+            }
+            if (prob + this.inters[i] > classVal) {
+                classVal = prob + this.inters[i];
+                classIdx = i;
+            }
+        }
+        return classIdx;
+    }
+    {% endif %}
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Model data:
+        {{ coeffs }}
+        {{ inters }}
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(coeffs, inters);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            {{ label_type }} prediction = clf.Predict(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + "}");
+            {% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

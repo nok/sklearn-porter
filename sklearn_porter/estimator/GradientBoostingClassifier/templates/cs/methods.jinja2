@@ -1,0 +1,39 @@
+// Compute the probabilities of the classes from the raw predictions:
+public double[] PredictProba(double[] features) {
+    double[] raw = this.DecisionFunction(features);
+    {% if is_binary %}
+    double proba = 1.0 / (1.0 + Math.Exp(-{% if is_exponential %}2.0 * {% endif %}raw[0]));
+    return new double[] {1.0 - proba, proba};
+    {% else %}
+    double max = raw[0], sum = 0.0;
+    for (int k = 1; k < raw.Length; k++) {
+        max = Math.Max(max, raw[k]);
+    }
+    double[] probas = new double[raw.Length];
+    for (int k = 0; k < raw.Length; k++) {
+        probas[k] = Math.Exp(raw[k] - max);
+        sum += probas[k];
+    }
+    for (int k = 0; k < raw.Length; k++) {
+        probas[k] /= sum;
+    }
+    return probas;
+    {% endif %}
+}
+
+public int PredictIndex(double[] features) {
+    double[] raw = this.DecisionFunction(features);
+    {% if is_binary %}
+    return raw[0] >= 0 ? 1 : 0;
+    {% else %}
+    int idx = 0;
+    for (int k = 1; k < raw.Length; k++) {
+        idx = raw[k] > raw[idx] ? k : idx;
+    }
+    return idx;
+    {% endif %}
+}
+
+public {{ label_type }} Predict(double[] features) {
+    return LABELS[this.PredictIndex(features)];
+}

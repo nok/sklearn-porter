@@ -1,0 +1,116 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private class Tree {
+        public int[] Lefts { get; set; }
+        public int[] Rights { get; set; }
+        public double[] Thresholds { get; set; }
+        public int[] Indices { get; set; }
+        public double[] Classes { get; set; }
+        public double Weight { get; set; }
+
+        // Find the leaf and the class with its maximum fraction:
+        public int Compute(double[] features) {
+            int node = 0;
+            while (node >= 0) {
+                if (features[this.Indices[node]] <= this.Thresholds[node]) {
+                    node = this.Lefts[node];
+                } else {
+                    node = this.Rights[node];
+                }
+            }
+            int start = (-node - 1) * {{ n_classes }};
+            int idx = 0;
+            for (int i = 1; i < {{ n_classes }}; i++) {
+                idx = this.Classes[start + i] > this.Classes[start + idx] ? i : idx;
+            }
+            return idx;
+        }
+    }
+
+    private Tree[] forest;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.forest = JsonSerializer.Deserialize<Tree[]>(File.ReadAllText(file), options);
+    }
+
+    private static int FindMax(double[] nums) {
+        int idx = 0;
+        for (int i = 1; i < nums.Length; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
+
+    public double[] PredictProba(double[] features) {
+        int nClasses = {{ n_classes }};
+        double[] probas = new double[nClasses];
+        double sumWeights = 0.0, sum = 0.0;
+        // Weighted votes of all trees (SAMME):
+        foreach (Tree tree in this.forest) {
+            probas[tree.Compute(features)] += tree.Weight;
+            sumWeights += tree.Weight;
+        }
+        // Softmax of the decision values, see `AdaBoostClassifier.decision_function`:
+        for (int i = 0; i < nClasses; i++) {
+            probas[i] = Math.Exp(probas[i] * nClasses / (sumWeights * (nClasses - 1) * (nClasses - 1)));
+            sum += probas[i];
+        }
+        for (int i = 0; i < nClasses; i++) {
+            probas[i] /= sum;
+        }
+        return probas;
+    }
+
+{% include 'labels' %}
+
+
+    public int PredictIndex(double[] features) {
+        return FindMax(this.PredictProba(features));
+    }
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            {{ label_type }} prediction = clf.Predict(features);
+            double[] probabilities = clf.PredictProba(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
+            {% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probability of class #" + i + ": " + probabilities[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

@@ -32,6 +32,10 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
+        enum.Language.CS: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         enum.Language.GO: {
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,

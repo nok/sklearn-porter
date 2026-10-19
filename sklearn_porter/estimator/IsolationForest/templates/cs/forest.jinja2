@@ -1,0 +1,40 @@
+private class Tree {
+    public int[] Lefts { get; set; }
+    public int[] Rights { get; set; }
+    public double[] Thresholds { get; set; }
+    public int[] Indices { get; set; }
+    public int[] MissingGoToLeft { get; set; }
+    public double[] Values { get; set; }
+
+    // Find the leaf and return its path length:
+    public double Compute(double[] features) {
+        int node = 0;
+        while (node >= 0) {
+            if (features[this.Indices[node]] <= this.Thresholds[node] || (this.MissingGoToLeft[node] == 1 && double.IsNaN(features[this.Indices[node]]))) {
+                node = this.Lefts[node];
+            } else {
+                node = this.Rights[node];
+            }
+        }
+        return this.Values[-node - 1];
+    }
+}
+
+private Tree[] forest;
+private double denominator;
+private double offset;
+
+// The score of a sample depends on its path lengths in all trees:
+private double ScoreSamples(double[] features) {
+    double pathLength = 0.0;
+    foreach (Tree tree in this.forest) {
+        pathLength += tree.Compute(features);
+    }
+    return -Math.Pow(2.0, -(pathLength / this.denominator));
+}
+
+// A sample is an outlier (-1), if its score is lower than the offset,
+// otherwise an inlier (1):
+public int Predict(double[] features) {
+    return this.ScoreSamples(features) - this.offset < 0 ? -1 : 1;
+}

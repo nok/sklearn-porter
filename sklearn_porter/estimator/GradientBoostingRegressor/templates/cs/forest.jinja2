@@ -1,0 +1,24 @@
+private class Tree {
+    public int[] Lefts { get; set; }
+    public int[] Rights { get; set; }
+    public double[] Thresholds { get; set; }
+    public int[] Indices { get; set; }
+    public int[] MissingGoToLeft { get; set; }
+    public double[] Values { get; set; }
+
+    // Find the leaf and return its value:
+    public double Compute(double[] features) {
+        int node = 0;
+        while (node >= 0) {
+            if (features[this.Indices[node]] <= this.Thresholds[node] || (this.MissingGoToLeft[node] == 1 && double.IsNaN(features[this.Indices[node]]))) {
+                node = this.Lefts[node];
+            } else {
+                node = this.Rights[node];
+            }
+        }
+        return this.Values[-node - 1];
+    }
+}
+
+private Tree[] forest;
+private double[] inits;

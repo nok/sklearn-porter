@@ -54,13 +54,14 @@ The Docker image (Debian 12 "bookworm") contains these compilers and interpreter
 | Language   | Compiler / Interpreter |
 |------------|------------------------|
 | C          | GCC 12                 |
+| C#         | .NET SDK 10            |
 | Go         | Go 1.19                |
 | Java       | OpenJDK 17             |
 | JavaScript | Node.js 18             |
 | PHP        | PHP 8.2                |
 | Ruby       | Ruby 3.1               |
 
-In general, the generated source code works with older compilers and interpreters too. For instance, you can use Java 8 to compile and run the models.
+In general, the generated source code works with older compilers and interpreters too. For instance, you can use Java 8 to compile and run the models. The .NET SDK isn't available as Debian package for all architectures, so the [`Dockerfile`](Dockerfile) copies it from the official image `mcr.microsoft.com/dotnet/sdk`.
 
 
 ## Adding or changing an estimator

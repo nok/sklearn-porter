@@ -1,0 +1,7 @@
+{% if is_test or to_json %}
+Console.WriteLine("{\"predict\": " + ToJson(prediction.Length == 1 ? (object) prediction[0] : prediction) + "}");
+{% else %}
+for (int i = 0; i < prediction.Length; i++) {
+    Console.WriteLine("Predicted value #" + i + ": " + prediction[i].ToString(CultureInfo.InvariantCulture));
+}
+{% endif %}

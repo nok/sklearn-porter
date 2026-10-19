@@ -1,0 +1,182 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private class Tree {
+        public int[] Lefts { get; set; }
+        public int[] Rights { get; set; }
+        public double[] Thresholds { get; set; }
+        public int[] Indices { get; set; }
+        public int[] MissingGoToLeft { get; set; }
+        public double[] Classes { get; set; }
+
+        // Add the normalized values of the leaf to the probabilities:
+        public void AddProbas(double[] features, double[] probas) {
+            int node = 0;
+            while (node >= 0) {
+                if (features[this.Indices[node]] <= this.Thresholds[node] || (this.MissingGoToLeft[node] == 1 && double.IsNaN(features[this.Indices[node]]))) {
+                    node = this.Lefts[node];
+                } else {
+                    node = this.Rights[node];
+                }
+            }
+            AddNormVals(this.Classes, (-node - 1) * {{ n_classes }}, probas);
+        }
+    }
+
+    private Tree[] forest;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.forest = JsonSerializer.Deserialize<Tree[]>(File.ReadAllText(file), options);
+    }
+
+{% if is_multi_output %}
+    // The classes of all outputs are concatenated, these are their numbers:
+    private static readonly int[] OUTPUT_CLASSES = { {{ output_classes | join(', ') }} };
+
+    // Find the class with the maximum probability of each output:
+    private static int[] FindMax(double[][] probas) {
+        int[] result = new int[probas.Length];
+        for (int j = 0; j < probas.Length; j++) {
+            for (int i = 1; i < probas[j].Length; i++) {
+                if (probas[j][i] > probas[j][result[j]]) {
+                    result[j] = i;
+                }
+            }
+        }
+        return result;
+    }
+
+    // Split the concatenated values into the values of each output:
+    private static double[][] SplitOutputs(double[] nums) {
+        double[][] result = new double[OUTPUT_CLASSES.Length][];
+        int offset = 0;
+        for (int j = 0; j < OUTPUT_CLASSES.Length; j++) {
+            result[j] = new double[OUTPUT_CLASSES[j]];
+            Array.Copy(nums, offset, result[j], 0, OUTPUT_CLASSES[j]);
+            offset += OUTPUT_CLASSES[j];
+        }
+        return result;
+    }
+{% else %}
+    private static int FindMax(double[] nums) {
+        int idx = 0;
+        for (int i = 1; i < nums.Length; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
+{% endif %}
+
+{% if is_multi_output %}
+    // Add the normalized values of each output from `start` on to the probabilities:
+    private static void AddNormVals(double[] nums, int start, double[] probas) {
+        int offset = 0;
+        for (int j = 0; j < OUTPUT_CLASSES.Length; j++) {
+            double sum = 0.0;
+            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
+                sum += nums[start + i];
+            }
+            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
+                probas[i] += sum == 0 ? 1.0 / OUTPUT_CLASSES[j] : nums[start + i] / sum;
+            }
+            offset += OUTPUT_CLASSES[j];
+        }
+    }
+{% else %}
+    // Add the normalized values from `start` on to the probabilities:
+    private static void AddNormVals(double[] nums, int start, double[] probas) {
+        double sum = 0.0;
+        for (int i = 0; i < {{ n_classes }}; i++) {
+            sum += nums[start + i];
+        }
+        for (int i = 0; i < {{ n_classes }}; i++) {
+            probas[i] += sum == 0 ? 1.0 / {{ n_classes }} : nums[start + i] / sum;
+        }
+    }
+{% endif %}
+
+    public {{ 'double[][]' if is_multi_output else 'double[]' }} PredictProba(double[] features) {
+        double[] probas = new double[{{ n_classes }}];
+        foreach (Tree tree in this.forest) {
+            tree.AddProbas(features, probas);
+        }
+        for (int i = 0; i < probas.Length; i++) {
+            probas[i] /= this.forest.Length;
+        }
+        return {{ 'SplitOutputs(probas)' if is_multi_output else 'probas' }};
+    }
+
+{% include 'labels' %}
+
+
+    public {{ 'int[]' if is_multi_output else 'int' }} PredictIndex(double[] features) {
+        return FindMax(this.PredictProba(features));
+    }
+{% if is_multi_output %}
+
+    // Predict the label of each output:
+    public {{ label_type }}[] Predict(double[] features) {
+        int[] idx = this.PredictIndex(features);
+        {{ label_type }}[] result = new {{ label_type }}[idx.Length];
+        int offset = 0;
+        for (int j = 0; j < idx.Length; j++) {
+            result[j] = LABELS[offset + idx[j]];
+            offset += OUTPUT_CLASSES[j];
+        }
+        return result;
+    }
+{% else %}
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+{% endif %}
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            {{ label_type }}{{ '[]' if is_multi_output }} prediction = clf.Predict(features);
+            {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.PredictProba(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
+            {% else %}
+{% if is_multi_output %}
+            Console.WriteLine("Predicted classes: " + string.Join(", ", Array.ConvertAll(prediction, p => Convert.ToString(p, CultureInfo.InvariantCulture))));
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probabilities of output #" + i + ": " + string.Join(", ", Array.ConvertAll(probabilities[i], p => p.ToString(CultureInfo.InvariantCulture))));
+            }
+{% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probability of class #" + i + ": " + probabilities[i].ToString(CultureInfo.InvariantCulture));
+            }
+{% endif %}
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

@@ -1,0 +1,28 @@
+    // Read the features of one sample from the arguments or of several
+    // samples (one per line) from the standard input:
+    private static System.Collections.Generic.IEnumerable<double[]> ReadSamples(string[] args, int offset) {
+        if (args.Length > offset) {
+            string[] values = new string[args.Length - offset];
+            System.Array.Copy(args, offset, values, 0, values.Length);
+            yield return ParseFeatures(values);
+            yield break;
+        }
+        string line;
+        while ((line = System.Console.ReadLine()) != null) {
+            string[] values = line.Split((char[]) null, System.StringSplitOptions.RemoveEmptyEntries);
+            if (values.Length > 0) {
+                yield return ParseFeatures(values);
+            }
+        }
+    }
+
+    private static double[] ParseFeatures(string[] values) {
+        if (values.Length != {{ n_features }}) {
+            throw new System.ArgumentException("You have to pass {{ n_features }} features per sample.");
+        }
+        double[] features = new double[values.Length];
+        for (int i = 0; i < values.Length; i++) {
+            features[i] = string.Equals(values[i], "nan", System.StringComparison.OrdinalIgnoreCase) ? double.NaN : double.Parse(values[i], System.Globalization.CultureInfo.InvariantCulture);
+        }
+        return features;
+    }

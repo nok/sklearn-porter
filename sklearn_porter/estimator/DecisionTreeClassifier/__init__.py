@@ -42,6 +42,11 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             enum.Template.COMBINED: enum.ALL_METHODS,
             enum.Template.EXPORTED: enum.ALL_METHODS,
         },
+        enum.Language.CS: {
+            enum.Template.ATTACHED: enum.ALL_METHODS,
+            enum.Template.COMBINED: enum.ALL_METHODS,
+            enum.Template.EXPORTED: enum.ALL_METHODS,
+        },
         enum.Language.GO: {
             enum.Template.ATTACHED: enum.ALL_METHODS,
             enum.Template.COMBINED: enum.ALL_METHODS,
@@ -279,6 +284,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             1
             if language
             in {
+                enum.Language.CS,
                 enum.Language.JAVA,
                 enum.Language.JS,
                 enum.Language.PHP,
