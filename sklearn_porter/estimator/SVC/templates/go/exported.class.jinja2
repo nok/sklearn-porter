@@ -69,7 +69,8 @@ func (svc {{ class_name }}) PredictIndex(features []float64) int {
 		for i := range svc.Vectors {
 			var kernel float64 = 0
 			for j := range svc.Vectors[i] {
-				kernel += math.Pow(svc.Vectors[i][j] - features[j], 2)
+				diff := svc.Vectors[i][j] - features[j]
+				kernel += diff * diff
 			}
 			kernels[i] = math.Exp(-svc.Gamma * kernel)
 		}

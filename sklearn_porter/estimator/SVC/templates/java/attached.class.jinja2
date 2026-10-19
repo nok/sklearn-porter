@@ -72,7 +72,8 @@ class {{ class_name }} {
                 for (int i = 0; i < this.vectors.length; i++) {
                     kernel = 0.;
                     for (int j = 0; j < this.vectors[i].length; j++) {
-                        kernel += Math.pow(this.vectors[i][j] - features[j], 2);
+                        double diff = this.vectors[i][j] - features[j];
+                        kernel += diff * diff;
                     }
                     kernels[i] = Math.exp(-this.gamma * kernel);
                 }

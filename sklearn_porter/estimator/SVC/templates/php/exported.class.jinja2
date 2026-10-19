@@ -73,7 +73,8 @@ class {{ class_name }} {
                 for ($i = 0; $i < count($this->vectors); $i++) {
                     $kernel = 0.;
                     for ($j = 0; $j < count($this->vectors[$i]); $j++) {
-                        $kernel += pow($this->vectors[$i][$j] - $features[$j], 2);
+                        $diff = $this->vectors[$i][$j] - $features[$j];
+                        $kernel += $diff * $diff;
                     }
                     $kernels[$i] = exp(-$this->gamma * $kernel);
                 }

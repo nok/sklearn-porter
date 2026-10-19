@@ -78,7 +78,8 @@ class {{ class_name }} {
                 for (int i = 0; i < this.clf.vectors.length; i++) {
                     kernel = 0.;
                     for (int j = 0; j < this.clf.vectors[i].length; j++) {
-                        kernel += Math.pow(this.clf.vectors[i][j] - features[j], 2);
+                        double diff = this.clf.vectors[i][j] - features[j];
+                        kernel += diff * diff;
                     }
                     kernels[i] = Math.exp(-this.clf.gamma * kernel);
                 }

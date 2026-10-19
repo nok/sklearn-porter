@@ -75,7 +75,8 @@ public class {{ class_name }} {
                 for (int i = 0; i < this.data.Vectors.Length; i++) {
                     kernel = 0.0;
                     for (int j = 0; j < this.data.Vectors[i].Length; j++) {
-                        kernel += Math.Pow(this.data.Vectors[i][j] - features[j], 2);
+                        double diff = this.data.Vectors[i][j] - features[j];
+                        kernel += diff * diff;
                     }
                     kernels[i] = Math.Exp(-this.data.Gamma * kernel);
                 }
