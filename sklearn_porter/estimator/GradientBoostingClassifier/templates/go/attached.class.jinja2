@@ -33,10 +33,10 @@ type Response struct {
 
 {% include 'samples' %}
 
-func main() {
-	// Model data:
-	{{ model }}
+// Model data:
+{{ model }}
 
+func main() {
 	// Estimator:
 	clf := {{ class_name }}{Inits: []float64{ {{- inits -}} }}
 	if err := json.Unmarshal([]byte(model), &clf.Trees); err != nil {

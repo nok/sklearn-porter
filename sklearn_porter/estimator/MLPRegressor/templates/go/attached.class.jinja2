@@ -78,12 +78,12 @@ func (reg {{ class_name }}) Predict(features []float64) []float64 {
 
 {% include 'samples' %}
 
-func main() {
-	// Model data:
-	{{ layers }}
-	{{ weights }}
-	{{ bias }}
+// Model data:
+{{ layers }}
+{{ weights }}
+{{ bias }}
 
+func main() {
 	// Estimator:
 	reg := {{ class_name }}{layers, weights, bias, "{{ hidden_activation }}"}
 

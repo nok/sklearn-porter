@@ -44,15 +44,15 @@ func (reg {{ class_name }}) Predict(features []float64) []float64 {
 
 {% include 'samples' %}
 
-func main() {
-	// Model data:
-	{{ lefts }}
-	{{ rights }}
-	{{ thresholds }}
-	{{ indices }}
-	{{ missing_go_to_left }}
-	{{ values }}
+// Model data:
+{{ lefts }}
+{{ rights }}
+{{ thresholds }}
+{{ indices }}
+{{ missing_go_to_left }}
+{{ values }}
 
+func main() {
 	// Estimator:
 	reg := {{ class_name }}{lefts, rights, thresholds, indices, missingGoToLeft, values}
 

@@ -169,13 +169,13 @@ func (svc {{ class_name }}) Predict(features []float64) {{ label_type }} {
 
 {% include 'samples' %}
 
-func main() {
-	// Model data:
-	{{ vectors }}
-	{{ coeffs }}
-	{{ inters }}
-	{{ weights }}
+// Model data:
+{{ vectors }}
+{{ coeffs }}
+{{ inters }}
+{{ weights }}
 
+func main() {
 	// Estimator:
 	clf := {{ class_name }}{vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}}
 
