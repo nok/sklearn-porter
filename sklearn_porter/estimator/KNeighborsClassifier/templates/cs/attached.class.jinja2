@@ -29,13 +29,6 @@ public class {{ class_name }} {
         public double Dist;
     }
 
-    // Sort the neighbors by their distances and (like a stable sort) by
-    // the indices of the samples with the same distance:
-    private static int CompareNeighbors(Neighbor n1, Neighbor n2) {
-        int result = n1.Dist.CompareTo(n2.Dist);
-        return result != 0 ? result : n1.Index.CompareTo(n2.Index);
-    }
-
 {% if is_multi_output %}
     // The classes of all outputs are concatenated, these are their numbers:
     private static readonly int[] OUTPUT_CLASSES = { {{ output_classes | join(', ') }} };
@@ -124,14 +117,25 @@ public class {{ class_name }} {
         return Math.Pow(dist, 1.0 / q);
     }
 
-    // Find the distances to all samples, sorted from the nearest neighbor on:
+    // Find the k nearest neighbors sorted by their distances and (like a
+    // stable sort) by the indices of the samples with the same distance. A
+    // sample is only inserted if it's nearer than the k-th neighbor:
     private Neighbor[] FindNeighbors(double[] features) {
-        Neighbor[] neighbors = new Neighbor[this.X.Length];
+        Neighbor[] neighbors = new Neighbor[this.k];
+        int n = 0;
         for (int i = 0; i < this.X.Length; i++) {
-            neighbors[i].Index = i;
-            neighbors[i].Dist = Compute(this.X[i], features, this.metric, this.power);
+            double dist = Compute(this.X[i], features, this.metric, this.power);
+            if (n == this.k && !(dist < neighbors[this.k - 1].Dist)) {
+                continue;
+            }
+            int j = n < this.k ? n++ : this.k - 1;
+            while (j > 0 && dist < neighbors[j - 1].Dist) {
+                neighbors[j] = neighbors[j - 1];
+                j--;
+            }
+            neighbors[j].Index = i;
+            neighbors[j].Dist = dist;
         }
-        Array.Sort(neighbors, CompareNeighbors);
         return neighbors;
     }
 
@@ -216,19 +220,6 @@ public class {{ class_name }} {
 {% else %}
     public double[] PredictProba(double[] features) {
         double[] classProbas = new double[this.n];
-        if (this.k == 1) {
-            int classIdx = 0;
-            double minDist = double.PositiveInfinity;
-            for (int i = 0; i < this.y.Length; i++) {
-                double dist = Compute(this.X[i], features, this.metric, this.power);
-                if (dist < minDist) {
-                    minDist = dist;
-                    classIdx = this.y[i];
-                }
-            }
-            classProbas[classIdx] = 1;
-            return classProbas;
-        }
         Neighbor[] neighbors = this.FindNeighbors(features);
 {% if weights == 'distance' %}
         double[] weights = Weigh(neighbors, this.k);

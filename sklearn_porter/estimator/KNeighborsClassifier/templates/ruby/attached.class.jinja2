@@ -8,8 +8,6 @@ require 'json'
 {% endif %}
 class {{ class_name }}
 
-	INF = +1.0/0.0
-
 	def initialize(x, y, k, n, metric, power)
 		@x = x
 		@y = y
@@ -87,6 +85,24 @@ class {{ class_name }}
 		end
 	end
 
+	# Find the k nearest neighbors (index and distance) sorted by distance and
+	# index (like a stable sort). A sample is only inserted if it's nearer
+	# than the k-th neighbor:
+	def _find_neighbors(features)
+		neighbors = []
+		for i in 0 ... @x.length
+			dist = _compute @x[i], features, @metric, @power
+			next if neighbors.length == @k && !(dist < neighbors[@k - 1][1])
+			j = neighbors.length < @k ? neighbors.length : @k - 1
+			while j > 0 && dist < neighbors[j - 1][1]
+				neighbors[j] = neighbors[j - 1]
+				j -= 1
+			end
+			neighbors[j] = [i, dist]
+		end
+		neighbors
+	end
+
 {% include 'labels' %}
 
 	def predict_index(features)
@@ -125,26 +141,24 @@ class {{ class_name }}
 {% if is_multi_output %}
 	def predict_proba(features)
 		class_probas = Array.new(@n, 0.0)
-		# The neighbors are the indices of the samples sorted by their distance:
-		dists = (0 ... @x.length).sort_by { |i| [_compute(@x[i], features, @metric, @power), i] }
+		neighbors = _find_neighbors features
+		n_outputs = @y.length / @x.length
 {% if weights == 'distance' %}
-		weights = _weigh(dists.first(@k).map { |i| _compute(@x[i], features, @metric, @power) })
+		weights = _weigh(neighbors.map { |neighbor| neighbor[1] })
 		total = 0.0
 		# Each neighbor votes with its weight for one class of each output:
-		n_outputs = @y.length / @x.length
 		for i in 0 ... @k
 			total += weights[i]
 			for j in 0 ... n_outputs
-				class_probas[@y[dists[i] * n_outputs + j]] += weights[i]
+				class_probas[@y[neighbors[i][0] * n_outputs + j]] += weights[i]
 			end
 		end
 		_split_outputs(class_probas.map { |p| p / total })
 {% else %}
 		# Each neighbor votes for one class of each output:
-		n_outputs = @y.length / @x.length
 		for i in 0 ... @k
 			for j in 0 ... n_outputs
-				class_probas[@y[dists[i] * n_outputs + j]] += 1
+				class_probas[@y[neighbors[i][0] * n_outputs + j]] += 1
 			end
 		end
 		_split_outputs(class_probas.map { |p| p / @k })
@@ -153,44 +167,25 @@ class {{ class_name }}
 {% else %}
 	def predict_proba(features)
 		class_probas = Array.new(@n, 0.0)
-		if @k == 1
-			class_idx = 0
-			min_dist = INF
-			for i in 0 ... @y.length
-				dist = _compute @x[i], features, @metric, @power
-				if dist < min_dist
-					min_dist = dist
-					class_idx = @y[i]
-				end
-			end
-			class_probas[class_idx] = 1
-		else
-			dists = []
-			for i in 0 ... @y.length
-				dist = _compute @x[i], features, @metric, @power
-				dists.push [@y[i], dist, i]
-			end
-			# Sort the neighbors by distance and index (stable):
-			dists.sort_by! { |neighbor| [neighbor[1], neighbor[2]] }
+		neighbors = _find_neighbors features
 {% if weights == 'distance' %}
-			weights = _weigh(dists.first(@k).map { |neighbor| neighbor[1] })
-			total = 0.0
-			for i in 0 ... @k
-				total += weights[i]
-				class_probas[dists[i][0]] += weights[i]
-			end
-			for i in 0 ... @n
-				class_probas[i] /= total
-			end
-{% else %}
-			for i in 0 ... @k
-				class_probas[dists[i][0]] += 1
-			end
-			for i in 0 ... @n
-				class_probas[i] /= @k
-			end
-{% endif %}
+		weights = _weigh(neighbors.map { |neighbor| neighbor[1] })
+		total = 0.0
+		for i in 0 ... @k
+			total += weights[i]
+			class_probas[@y[neighbors[i][0]]] += weights[i]
 		end
+		for i in 0 ... @n
+			class_probas[i] /= total
+		end
+{% else %}
+		for i in 0 ... @k
+			class_probas[@y[neighbors[i][0]]] += 1
+		end
+		for i in 0 ... @n
+			class_probas[i] /= @k
+		end
+{% endif %}
 		class_probas
 	end
 {% endif %}
