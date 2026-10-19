@@ -17,8 +17,8 @@ enum Activation hidden_activation;
 /* Count the numbers of nested arrays: */
 int count_numbers(JsonValue *value) {
     int i, n = 0;
-    if (value->type == JSON_NUMBER) {
-        return 1;
+    if (value->numbers != NULL) {
+        return value->length;
     }
     for (i = 0; i < value->length; i++) {
         n += count_numbers(value->items[i]);
@@ -29,9 +29,9 @@ int count_numbers(JsonValue *value) {
 /* Copy the numbers of nested arrays to a flat array: */
 int flatten(JsonValue *value, double *result) {
     int i, n = 0;
-    if (value->type == JSON_NUMBER) {
-        result[0] = value->number;
-        return 1;
+    if (value->numbers != NULL) {
+        memcpy(result, value->numbers, value->length * sizeof(double));
+        return value->length;
     }
     for (i = 0; i < value->length; i++) {
         n += flatten(value->items[i], result + n);

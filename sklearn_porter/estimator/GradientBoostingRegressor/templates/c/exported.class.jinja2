@@ -26,7 +26,7 @@ void load(const char *path) {
         trees[i].missing_go_to_left = json_ints(json_get(tree, "missing_go_to_left"));
         trees[i].values = json_doubles(json_get(tree, "values"));
     }
-    init = json_get(data, "inits")->items[0]->number;
+    init = json_numbers(json_get(data, "inits"))[0];
     json_free(data);
 }
 
