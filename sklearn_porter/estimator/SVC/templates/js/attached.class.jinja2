@@ -56,7 +56,8 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
                 for (i = 0; i < this.vectors.length; i++) {
                     kernel = 0.;
                     for (j = 0; j < this.vectors[i].length; j++) {
-                        kernel += Math.pow(this.vectors[i][j] - features[j], 2);
+                        var diff = this.vectors[i][j] - features[j];
+                        kernel += diff * diff;
                     }
                     kernels[i] = Math.exp(-this.gamma * kernel);
                 }

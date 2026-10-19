@@ -78,7 +78,8 @@ int predict_index(double features[N_FEATURES]) {
             for (i = 0; i < N_VECTORS; i++) {
                 kernel = 0.;
                 for (j = 0; j < N_FEATURES; j++) {
-                    kernel += pow(vectors[i][j] - features[j], 2);
+                    double diff = vectors[i][j] - features[j];
+                    kernel += diff * diff;
                 }
                 kernels[i] = exp(-kernel_gamma * kernel);
             }
