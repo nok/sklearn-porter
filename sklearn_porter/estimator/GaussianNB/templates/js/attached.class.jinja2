@@ -1,9 +1,10 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-var {{ class_name }} = function(priors, sigmas, thetas) {
+var {{ class_name }} = function(priors, norms, sigmas, thetas) {
 
     this.priors = priors;
+    this.norms = norms;
     this.sigmas = sigmas;
     this.thetas = thetas;
 
@@ -25,21 +26,16 @@ var {{ class_name }} = function(priors, sigmas, thetas) {
         return max + Math.log(sum);
     };
 
-    var _compute = function(features, priors, sigmas, thetas) {
-        var i, il, j, jl, sum, nij,
+    var _compute = function(features, priors, norms, sigmas, thetas) {
+        var i, il, j, jl, sum, diff,
             likelihoods = new Array(sigmas.length);
         for (i = 0, il = sigmas.length; i < il; i++) {
             sum = 0.;
             for (j = 0, jl = sigmas[0].length; j < jl; j++) {
-                sum += Math.log(2. * Math.PI * sigmas[i][j]);
+                diff = features[j] - thetas[i][j];
+                sum += diff * diff / sigmas[i][j];
             }
-            nij = -0.5 * sum;
-            sum = 0.;
-            for (j = 0, jl = sigmas[0].length; j < jl; j++) {
-                sum += Math.pow(features[j] - thetas[i][j], 2.) / sigmas[i][j];
-            }
-            nij -= 0.5 * sum;
-            likelihoods[i] = Math.log(priors[i]) + nij;
+            likelihoods[i] = Math.log(priors[i]) + (norms[i] - 0.5 * sum);
         }
         return likelihoods;
     };
@@ -47,7 +43,7 @@ var {{ class_name }} = function(priors, sigmas, thetas) {
 {% include 'labels' %}
 
     this.predictIndex = function(features) {
-        return _findMax(_compute(features, this.priors, this.sigmas, this.thetas));
+        return _findMax(_compute(features, this.priors, this.norms, this.sigmas, this.thetas));
     };
 
     this.predict = function(features) {
@@ -55,7 +51,7 @@ var {{ class_name }} = function(priors, sigmas, thetas) {
     };
 
     this.predictProba = function(features) {
-        var jll = _compute(features, this.priors, this.sigmas, this.thetas);
+        var jll = _compute(features, this.priors, this.norms, this.sigmas, this.thetas);
         var sum = _logSumExp(jll);
         for (i = 0; i < jll.length; i++) {
             jll[i] = Math.exp(jll[i] - sum);
@@ -70,11 +66,12 @@ var {{ class_name }} = function(priors, sigmas, thetas) {
 var main = function () {
     // Model data:
     {{ priors }}
+    {{ norms }}
     {{ sigmas }}
     {{ thetas }}
 
     // Estimator:
-    var clf = new {{ class_name }}(priors, sigmas, thetas);
+    var clf = new {{ class_name }}(priors, norms, sigmas, thetas);
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {

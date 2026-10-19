@@ -8,11 +8,13 @@ using System.Globalization;
 public class {{ class_name }} {
 
     private double[] priors;
+    private double[] norms;
     private double[][] sigmas;
     private double[][] thetas;
 
-    public {{ class_name }}(double[] priors, double[][] sigmas, double[][] thetas) {
+    public {{ class_name }}(double[] priors, double[] norms, double[][] sigmas, double[][] thetas) {
         this.priors = priors;
+        this.norms = norms;
         this.sigmas = sigmas;
         this.thetas = thetas;
     }
@@ -39,15 +41,10 @@ public class {{ class_name }} {
         for (int i = 0; i < this.sigmas.Length; i++) {
             double sum = 0.0;
             for (int j = 0; j < this.sigmas[0].Length; j++) {
-                sum += Math.Log(2.0 * Math.PI * this.sigmas[i][j]);
+                double diff = features[j] - this.thetas[i][j];
+                sum += diff * diff / this.sigmas[i][j];
             }
-            double nij = -0.5 * sum;
-            sum = 0.0;
-            for (int j = 0; j < this.sigmas[0].Length; j++) {
-                sum += Math.Pow(features[j] - this.thetas[i][j], 2.0) / this.sigmas[i][j];
-            }
-            nij -= 0.5 * sum;
-            likelihoods[i] = Math.Log(this.priors[i]) + nij;
+            likelihoods[i] = Math.Log(this.priors[i]) + (this.norms[i] - 0.5 * sum);
         }
         return likelihoods;
     }
@@ -83,11 +80,12 @@ public class {{ class_name }} {
     public static void Main(string[] args) {
         // Model data:
         {{ priors }}
+        {{ norms }}
         {{ sigmas }}
         {{ thetas }}
 
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}(priors, sigmas, thetas);
+        {{ class_name }} clf = new {{ class_name }}(priors, norms, sigmas, thetas);
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {

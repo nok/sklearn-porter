@@ -7,10 +7,10 @@
 
 #define N_FEATURES {{ n_features }}
 #define N_CLASSES {{ n_classes }}
-#define PI 3.14159265358979323846
 
 
 {{ priors }}
+{{ norms }}
 {{ sigmas }}
 {{ thetas }}
 
@@ -35,19 +35,14 @@ double log_sum_exp(double nums[N_CLASSES]) {
 
 void compute(double *likelihoods, double features[N_FEATURES]) {
     int i, j;
-    double sum, nij;
+    double sum, diff;
     for (i = 0; i < N_CLASSES; i++) {
         sum = 0.;
         for (j = 0; j < N_FEATURES; j++) {
-            sum += log(2. * PI * sigmas[i][j]);
+            diff = features[j] - thetas[i][j];
+            sum += diff * diff / sigmas[i][j];
         }
-        nij = -0.5 * sum;
-        sum = 0.;
-        for (j = 0; j < N_FEATURES; j++) {
-            sum += pow(features[j] - thetas[i][j], 2.) / sigmas[i][j];
-        }
-        nij -= 0.5 * sum;
-        likelihoods[i] = log(priors[i]) + nij;
+        likelihoods[i] = log(priors[i]) + (norms[i] - 0.5 * sum);
     }
 }
 

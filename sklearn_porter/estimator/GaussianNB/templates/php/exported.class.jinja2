@@ -4,12 +4,14 @@
 class {{ class_name }} {
 
     private $priors;
+    private $norms;
     private $sigmas;
     private $thetas;
 
     public function __construct($path) {
         $data = json_decode(file_get_contents($path), true);
         $this->priors = $data['priors'];
+        $this->norms = $data['norms'];
         $this->sigmas = $data['sigmas'];
         $this->thetas = $data['thetas'];
     }
@@ -36,15 +38,10 @@ class {{ class_name }} {
         for ($i = 0, $il = count($this->priors); $i < $il; $i++) {
             $sum = 0.;
             for ($j = 0, $jl = count($this->sigmas[$i]); $j < $jl; $j++) {
-                $sum += log(2. * M_PI * $this->sigmas[$i][$j]);
+                $diff = $features[$j] - $this->thetas[$i][$j];
+                $sum += $diff * $diff / $this->sigmas[$i][$j];
             }
-            $nij = -0.5 * $sum;
-            $sum = 0.;
-            for ($j = 0, $jl = count($this->sigmas[$i]); $j < $jl; $j++) {
-                $sum += pow($features[$j] - $this->thetas[$i][$j], 2.) / $this->sigmas[$i][$j];
-            }
-            $nij -= 0.5 * $sum;
-            $likelihoods[$i] = log($this->priors[$i]) + $nij;
+            $likelihoods[$i] = log($this->priors[$i]) + ($this->norms[$i] - 0.5 * $sum);
         }
         return $likelihoods;
     }

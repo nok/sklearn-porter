@@ -4,11 +4,13 @@
 class {{ class_name }} {
 
     private $priors;
+    private $norms;
     private $sigmas;
     private $thetas;
 
-    public function __construct($priors, $sigmas, $thetas) {
+    public function __construct($priors, $norms, $sigmas, $thetas) {
         $this->priors = $priors;
+        $this->norms = $norms;
         $this->sigmas = $sigmas;
         $this->thetas = $thetas;
     }
@@ -35,15 +37,10 @@ class {{ class_name }} {
         for ($i = 0, $il = count($this->priors); $i < $il; $i++) {
             $sum = 0.;
             for ($j = 0, $jl = count($this->sigmas[$i]); $j < $jl; $j++) {
-                $sum += log(2. * M_PI * $this->sigmas[$i][$j]);
+                $diff = $features[$j] - $this->thetas[$i][$j];
+                $sum += $diff * $diff / $this->sigmas[$i][$j];
             }
-            $nij = -0.5 * $sum;
-            $sum = 0.;
-            for ($j = 0, $jl = count($this->sigmas[$i]); $j < $jl; $j++) {
-                $sum += pow($features[$j] - $this->thetas[$i][$j], 2.) / $this->sigmas[$i][$j];
-            }
-            $nij -= 0.5 * $sum;
-            $likelihoods[$i] = log($this->priors[$i]) + $nij;
+            $likelihoods[$i] = log($this->priors[$i]) + ($this->norms[$i] - 0.5 * $sum);
         }
         return $likelihoods;
     }
@@ -78,11 +75,12 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
 
     // Model data:
     {{ priors }}
+    {{ norms }}
     {{ sigmas }}
     {{ thetas }}
 
     // Estimator:
-    $clf = new {{ class_name }}($priors, $sigmas, $thetas);
+    $clf = new {{ class_name }}($priors, $norms, $sigmas, $thetas);
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

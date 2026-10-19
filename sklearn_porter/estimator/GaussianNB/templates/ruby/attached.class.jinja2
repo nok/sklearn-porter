@@ -7,8 +7,9 @@ require 'json'
 {% endif %}
 class {{ class_name }}
 
-	def initialize(priors, sigmas, thetas)
+	def initialize(priors, norms, sigmas, thetas)
 		@priors = priors
+		@norms = norms
 		@sigmas = sigmas
 		@thetas = thetas
 	end
@@ -35,15 +36,9 @@ class {{ class_name }}
 		for i in 0 ... @priors.length
 			sum = 0.0
 			for j in 0 ... @sigmas[i].length
-				sum += Math.log(2.0 * Math::PI * @sigmas[i][j])
-			end
-			nij = -0.5 * sum
-			sum = 0.0
-			for j in 0 ... @sigmas[i].length
 				sum += ((features[j] - @thetas[i][j]) ** 2) / @sigmas[i][j]
 			end
-			nij -= 0.5 * sum
-			likelihoods[i] = Math.log(@priors[i]) + nij
+			likelihoods[i] = Math.log(@priors[i]) + (@norms[i] - 0.5 * sum)
 		end
 		likelihoods
 	end
@@ -73,11 +68,12 @@ if __FILE__ == $0
 
 	# Model data:
 	{{ priors }}
+	{{ norms }}
 	{{ sigmas }}
 	{{ thetas }}
 
 	# Estimator:
-	clf = {{ class_name }}.new priors, sigmas, thetas
+	clf = {{ class_name }}.new priors, norms, sigmas, thetas
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|
