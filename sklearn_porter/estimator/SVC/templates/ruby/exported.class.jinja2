@@ -24,6 +24,19 @@ class {{ class_name }}
 
 {% include 'labels' %}
 
+	# The power with an integer exponent (by repeated squaring) like libsvm:
+	def _powi(base, times)
+		tmp = base
+		ret = 1.0
+		t = times.to_i
+		while t > 0
+			ret *= tmp if t % 2 == 1
+			tmp = tmp * tmp
+			t /= 2
+		end
+		ret
+	end
+
 	def predict_index(features)
 
 		kernels = Array.new(@vectors.length)
@@ -42,7 +55,7 @@ class {{ class_name }}
 				for j in 0 ... @vectors[i].length
 					kernel += @vectors[i][j] * features[j]
 				end
-				kernels[i] = (((@gamma * kernel) + @coef0) ** @degree)
+				kernels[i] = _powi((@gamma * kernel) + @coef0, @degree)
 			end
 		when "RBF"
 			for i in 0 ... @vectors.length
@@ -87,10 +100,10 @@ class {{ class_name }}
 			end
 
 			decision = 0
-			for k in starts[1] ... ends[1]
+			for k in starts[0] ... ends[0]
 				decision += kernels[k] * @coeffs[0][k]
 			end
-			for k in starts[0] ... ends[0]
+			for k in starts[1] ... ends[1]
 				decision += kernels[k] * @coeffs[0][k]
 			end
 			decision += @inters[0];
@@ -107,11 +120,11 @@ class {{ class_name }}
 		for i in 0 ... @weights.length
 			for j in i + 1 ... @weights.length
 				tmp = 0
-				for k in starts[j] ... ends[j]
-					tmp += @coeffs[i][k] * kernels[k]
-				end
 				for k in starts[i] ... ends[i]
 					tmp += @coeffs[j - 1][k] * kernels[k]
+				end
+				for k in starts[j] ... ends[j]
+					tmp += @coeffs[i][k] * kernels[k]
 				end
 				decisions[d] = tmp + @inters[d]
 				d = d + 1

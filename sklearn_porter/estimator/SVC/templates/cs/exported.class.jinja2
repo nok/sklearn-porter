@@ -34,6 +34,18 @@ public class {{ class_name }} {
 {% include 'labels' %}
 
 
+    // The power with an integer exponent (by repeated squaring) like libsvm:
+    private static double Powi(double b, int times) {
+        double tmp = b, ret = 1.0;
+        for (int t = times; t > 0; t /= 2) {
+            if (t % 2 == 1) {
+                ret *= tmp;
+            }
+            tmp = tmp * tmp;
+        }
+        return ret;
+    }
+
     public int PredictIndex(double[] features) {
         double[] kernels = new double[this.data.Vectors.Length];
         double kernel;
@@ -55,7 +67,7 @@ public class {{ class_name }} {
                     for (int j = 0; j < this.data.Vectors[i].Length; j++) {
                         kernel += this.data.Vectors[i][j] * features[j];
                     }
-                    kernels[i] = Math.Pow((this.data.Gamma * kernel) + this.data.Coef0, this.data.Degree);
+                    kernels[i] = Powi((this.data.Gamma * kernel) + this.data.Coef0, (int) this.data.Degree);
                 }
                 break;
             case Kernel.Rbf:
@@ -103,10 +115,10 @@ public class {{ class_name }} {
                 kernels[i] = -kernels[i];
             }
             double decision = 0.0;
-            for (int k = starts[1]; k < ends[1]; k++) {
+            for (int k = starts[0]; k < ends[0]; k++) {
                 decision += kernels[k] * this.data.Coeffs[0][k];
             }
-            for (int k = starts[0]; k < ends[0]; k++) {
+            for (int k = starts[1]; k < ends[1]; k++) {
                 decision += kernels[k] * this.data.Coeffs[0][k];
             }
             decision += this.data.Inters[0];
@@ -120,11 +132,11 @@ public class {{ class_name }} {
         for (int i = 0, d = 0, l = this.data.Weights.Length; i < l; i++) {
             for (int j = i + 1; j < l; j++) {
                 double tmp = 0.0;
-                for (int k = starts[j]; k < ends[j]; k++) {
-                    tmp += this.data.Coeffs[i][k] * kernels[k];
-                }
                 for (int k = starts[i]; k < ends[i]; k++) {
                     tmp += this.data.Coeffs[j - 1][k] * kernels[k];
+                }
+                for (int k = starts[j]; k < ends[j]; k++) {
+                    tmp += this.data.Coeffs[i][k] * kernels[k];
                 }
                 decisions[d] = tmp + this.data.Inters[d];
                 d++;

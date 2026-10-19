@@ -33,6 +33,18 @@ type Response struct {
 }
 
 {% endif %}
+// The power with an integer exponent (by repeated squaring) like libsvm:
+func powi(base float64, times int) float64 {
+	tmp, ret := base, 1.0
+	for t := times; t > 0; t /= 2 {
+		if t%2 == 1 {
+			ret *= tmp
+		}
+		tmp = tmp * tmp
+	}
+	return ret
+}
+
 func (svc {{ class_name }}) PredictIndex(features []float64) int {
 	kernels := make([]float64, int(len(svc.Vectors)))
 
@@ -51,7 +63,7 @@ func (svc {{ class_name }}) PredictIndex(features []float64) int {
 			for j := range svc.Vectors[i] {
 				kernel += svc.Vectors[i][j] * features[j]
 			}
-			kernels[i] = math.Pow((svc.Gamma * kernel) + svc.Coef0, svc.Degree)
+			kernels[i] = powi((svc.Gamma * kernel) + svc.Coef0, int(svc.Degree))
 		}
 	case "RBF":
 		for i := range svc.Vectors {
@@ -94,10 +106,10 @@ func (svc {{ class_name }}) PredictIndex(features []float64) int {
 			kernels[i] = -kernels[i]
 		}
 		var decision float64 = 0
-		for k := starts[1]; k < ends[1]; k++ {
+		for k := starts[0]; k < ends[0]; k++ {
 			decision += kernels[k] * svc.Coeffs[0][k]
 		}
-		for k:= starts[0]; k < ends[0]; k++ {
+		for k := starts[1]; k < ends[1]; k++ {
 			decision += kernels[k] * svc.Coeffs[0][k]
 		}
 		decision += svc.Inters[0]
@@ -111,11 +123,11 @@ func (svc {{ class_name }}) PredictIndex(features []float64) int {
 	for i, d, l := 0, 0, len(svc.Weights); i < l; i++ {
 		for j := i + 1; j < l; j++ {
 			var temp float64 = 0
-			for k := starts[j]; k < ends[j]; k++ {
-				temp += svc.Coeffs[i][k] * kernels[k]
-			}
 			for k := starts[i]; k < ends[i]; k++ {
 				temp += svc.Coeffs[j - 1][k] * kernels[k]
+			}
+			for k := starts[j]; k < ends[j]; k++ {
+				temp += svc.Coeffs[i][k] * kernels[k]
 			}
 			decisions[d] = temp + svc.Inters[d]
 			d += 1

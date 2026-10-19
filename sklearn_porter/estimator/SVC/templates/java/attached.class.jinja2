@@ -31,6 +31,18 @@ class {{ class_name }} {
 
 {% include 'labels' %}
 
+    // The power with an integer exponent (by repeated squaring) like libsvm:
+    private static double powi(double base, int times) {
+        double tmp = base, ret = 1.;
+        for (int t = times; t > 0; t /= 2) {
+            if (t % 2 == 1) {
+                ret *= tmp;
+            }
+            tmp = tmp * tmp;
+        }
+        return ret;
+    }
+
     public int predictIndex(double[] features) {
         double[] kernels = new double[vectors.length];
         double kernel;
@@ -52,7 +64,7 @@ class {{ class_name }} {
                     for (int j = 0; j < this.vectors[i].length; j++) {
                         kernel += this.vectors[i][j] * features[j];
                     }
-                    kernels[i] = Math.pow((this.gamma * kernel) + this.coef0, this.degree);
+                    kernels[i] = powi((this.gamma * kernel) + this.coef0, (int) this.degree);
                 }
                 break;
             case RBF:
@@ -100,10 +112,10 @@ class {{ class_name }} {
                 kernels[i] = -kernels[i];
             }
             double decision = 0.;
-            for (int k = starts[1]; k < ends[1]; k++) {
+            for (int k = starts[0]; k < ends[0]; k++) {
                 decision += kernels[k] * this.coeffs[0][k];
             }
-            for (int k = starts[0]; k < ends[0]; k++) {
+            for (int k = starts[1]; k < ends[1]; k++) {
                 decision += kernels[k] * this.coeffs[0][k];
             }
             decision += this.inters[0];
@@ -117,11 +129,11 @@ class {{ class_name }} {
         for (int i = 0, d = 0, l = this.weights.length; i < l; i++) {
             for (int j = i + 1; j < l; j++) {
                 double tmp = 0.;
-                for (int k = starts[j]; k < ends[j]; k++) {
-                    tmp += this.coeffs[i][k] * kernels[k];
-                }
                 for (int k = starts[i]; k < ends[i]; k++) {
                     tmp += this.coeffs[j - 1][k] * kernels[k];
+                }
+                for (int k = starts[j]; k < ends[j]; k++) {
+                    tmp += this.coeffs[i][k] * kernels[k];
                 }
                 decisions[d] = tmp + this.inters[d];
                 d++;
