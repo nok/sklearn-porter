@@ -25,21 +25,16 @@ var {{ class_name }} = function(jsonFile) {
         return max + Math.log(sum);
     };
 
-    var _compute = function(features, priors, sigmas, thetas) {
-        var i, il, j, jl, sum, nij,
+    var _compute = function(features, priors, norms, sigmas, thetas) {
+        var i, il, j, jl, sum, diff,
             likelihoods = new Array(sigmas.length);
         for (i = 0, il = sigmas.length; i < il; i++) {
             sum = 0.;
             for (j = 0, jl = sigmas[0].length; j < jl; j++) {
-                sum += Math.log(2. * Math.PI * sigmas[i][j]);
+                diff = features[j] - thetas[i][j];
+                sum += diff * diff / sigmas[i][j];
             }
-            nij = -0.5 * sum;
-            sum = 0.;
-            for (j = 0, jl = sigmas[0].length; j < jl; j++) {
-                sum += Math.pow(features[j] - thetas[i][j], 2.) / sigmas[i][j];
-            }
-            nij -= 0.5 * sum;
-            likelihoods[i] = Math.log(priors[i]) + nij;
+            likelihoods[i] = Math.log(priors[i]) + (norms[i] - 0.5 * sum);
         }
         return likelihoods;
     };
@@ -47,7 +42,7 @@ var {{ class_name }} = function(jsonFile) {
 {% include 'labels' %}
 
     this.predictIndex = function(features) {
-        return _findMax(_compute(features, this.data.priors, this.data.sigmas, this.data.thetas));
+        return _findMax(_compute(features, this.data.priors, this.data.norms, this.data.sigmas, this.data.thetas));
     };
 
     this.predict = function(features) {
@@ -55,7 +50,7 @@ var {{ class_name }} = function(jsonFile) {
     };
 
     this.predictProba = function(features) {
-        var jll = _compute(features, this.data.priors, this.data.sigmas, this.data.thetas);
+        var jll = _compute(features, this.data.priors, this.data.norms, this.data.sigmas, this.data.thetas);
         var sum = _logSumExp(jll);
         for (i = 0; i < jll.length; i++) {
             jll[i] = Math.exp(jll[i] - sum);

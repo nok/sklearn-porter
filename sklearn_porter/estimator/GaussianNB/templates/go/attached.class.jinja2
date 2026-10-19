@@ -19,6 +19,7 @@ import (
 
 type {{ class_name }} struct {
 	Priors []float64 `json:"priors"`
+	Norms []float64 `json:"norms"`
 	Sigmas [][]float64 `json:"sigmas"`
 	Thetas [][]float64 `json:"thetas"`
 }
@@ -54,15 +55,10 @@ func (clf {{ class_name }}) compute(features []float64) []float64 {
 	for i := 0; i < len(clf.Priors); i++ {
 		var sum = 0.0
 		for j := 0; j < len(clf.Sigmas[i]); j++ {
-			sum += math.Log(2.0 * math.Pi * clf.Sigmas[i][j])
+			diff := features[j] - clf.Thetas[i][j]
+			sum += diff * diff / clf.Sigmas[i][j]
 		}
-		var nij = -0.5 * sum
-		sum = 0.0
-		for j := 0; j < len(clf.Sigmas[i]); j++ {
-			sum += math.Pow(features[j] - clf.Thetas[i][j], 2.0) / clf.Sigmas[i][j]
-		}
-		nij -= 0.5 * sum
-		likelihoods[i] = math.Log(clf.Priors[i]) + nij
+		likelihoods[i] = math.Log(clf.Priors[i]) + (clf.Norms[i] - 0.5 * sum)
 	}
 	return likelihoods
 }
@@ -88,12 +84,13 @@ func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
 
 // Model data:
 {{ priors }}
+{{ norms }}
 {{ sigmas }}
 {{ thetas }}
 
 func main() {
 	// Estimator:
-	clf := {{ class_name }}{priors, sigmas, thetas}
+	clf := {{ class_name }}{priors, norms, sigmas, thetas}
 
 	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[1:], func(features []float64) {

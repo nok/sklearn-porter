@@ -9,6 +9,7 @@ class {{ class_name }}
 	def initialize(path)
 		data = JSON.parse(File.read(path))
 		@priors = data['priors']
+		@norms = data['norms']
 		@sigmas = data['sigmas']
 		@thetas = data['thetas']
 	end
@@ -35,15 +36,9 @@ class {{ class_name }}
 		for i in 0 ... @priors.length
 			sum = 0.0
 			for j in 0 ... @sigmas[i].length
-				sum += Math.log(2.0 * Math::PI * @sigmas[i][j])
-			end
-			nij = -0.5 * sum
-			sum = 0.0
-			for j in 0 ... @sigmas[i].length
 				sum += ((features[j] - @thetas[i][j]) ** 2) / @sigmas[i][j]
 			end
-			nij -= 0.5 * sum
-			likelihoods[i] = Math.log(@priors[i]) + nij
+			likelihoods[i] = Math.log(@priors[i]) + (@norms[i] - 0.5 * sum)
 		end
 		likelihoods
 	end

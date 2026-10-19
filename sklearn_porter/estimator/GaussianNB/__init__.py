@@ -2,6 +2,7 @@ from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
 
+import numpy as np
 from loguru import logger as L
 
 # scikit-learn
@@ -79,8 +80,13 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
+        # The constant terms of the joint log likelihoods of the classes,
+        # computed like scikit-learn does for each prediction:
+        norms = [-0.5 * np.sum(np.log(2.0 * np.pi * var)) for var in est.var_]
+
         self.model_data = dict(
             priors=est.class_prior_.tolist(),
+            norms=np.asarray(norms, dtype=float).tolist(),
             sigmas=est.var_.tolist(),
             thetas=est.theta_.tolist(),
         )
@@ -154,6 +160,15 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
             n=len(priors_val_converted),
         )
 
+        norms_val = self.model_data['norms']
+        norms_val_converted = list(map(converter, norms_val))
+        norms_str = tpl_arr_1.render(
+            type=tpl_double,
+            name='norms',
+            values=', '.join(norms_val_converted),
+            n=len(norms_val_converted),
+        )
+
         sigmas_val = self.model_data['sigmas']
         sigmas_str = tpl_arr_2.render(
             type=tpl_double,
@@ -189,6 +204,7 @@ class GaussianNB(EstimatorBase, EstimatorApiABC):
         plas.update(
             dict(
                 priors=priors_str,
+                norms=norms_str,
                 sigmas=sigmas_str,
                 thetas=thetas_str,
             )

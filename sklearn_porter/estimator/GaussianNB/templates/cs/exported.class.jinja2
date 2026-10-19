@@ -11,6 +11,7 @@ public class {{ class_name }} {
 
     private class ModelData {
         public double[] Priors { get; set; }
+        public double[] Norms { get; set; }
         public double[][] Sigmas { get; set; }
         public double[][] Thetas { get; set; }
     }
@@ -44,15 +45,10 @@ public class {{ class_name }} {
         for (int i = 0; i < this.data.Sigmas.Length; i++) {
             double sum = 0.0;
             for (int j = 0; j < this.data.Sigmas[0].Length; j++) {
-                sum += Math.Log(2.0 * Math.PI * this.data.Sigmas[i][j]);
+                double diff = features[j] - this.data.Thetas[i][j];
+                sum += diff * diff / this.data.Sigmas[i][j];
             }
-            double nij = -0.5 * sum;
-            sum = 0.0;
-            for (int j = 0; j < this.data.Sigmas[0].Length; j++) {
-                sum += Math.Pow(features[j] - this.data.Thetas[i][j], 2.0) / this.data.Sigmas[i][j];
-            }
-            nij -= 0.5 * sum;
-            likelihoods[i] = Math.Log(this.data.Priors[i]) + nij;
+            likelihoods[i] = Math.Log(this.data.Priors[i]) + (this.data.Norms[i] - 0.5 * sum);
         }
         return likelihoods;
     }
