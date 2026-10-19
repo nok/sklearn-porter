@@ -11,13 +11,13 @@
 #define N_OUTPUTS {{ n_outputs }}
 
 /* The classes of all outputs are concatenated, these are their numbers: */
-int output_classes[N_OUTPUTS] = { {{ output_classes | join(', ') }} };
+const int output_classes[N_OUTPUTS] = { {{ output_classes | join(', ') }} };
 {% endif %}
 
 
 {% if is_multi_output %}
 /* Find the class with the maximum value of each output: */
-void find_max(int *result, double nums[N_CLASSES]) {
+void find_max(int *result, const double nums[N_CLASSES]) {
     int i, j, offset = 0;
     for (j = 0; j < N_OUTPUTS; j++) {
         result[j] = 0;
@@ -30,7 +30,7 @@ void find_max(int *result, double nums[N_CLASSES]) {
     }
 }
 {% else %}
-int find_max(double nums[N_CLASSES]) {
+int find_max(const double nums[N_CLASSES]) {
     int i;  int idx = 0;
     for (i = 0; i < N_CLASSES; i++) {
         idx = nums[i] > nums[idx] ? i : idx;
@@ -41,7 +41,7 @@ int find_max(double nums[N_CLASSES]) {
 
 {% if is_multi_output %}
 /* Normalize the values of each output: */
-void norm_vals(double **result, double nums[N_CLASSES]) {
+void norm_vals(double **result, const double nums[N_CLASSES]) {
     int i, j, offset = 0;
     double sum;
     for (j = 0; j < N_OUTPUTS; j++) {
@@ -56,7 +56,7 @@ void norm_vals(double **result, double nums[N_CLASSES]) {
     }
 }
 {% else %}
-void norm_vals(double *result, double nums[N_CLASSES]) {
+void norm_vals(double *result, const double nums[N_CLASSES]) {
     int i;  double sum = 0.;
     for (i = 0; i < N_CLASSES; i++) {
         sum += nums[i];

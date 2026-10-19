@@ -1,8 +1,8 @@
 typedef struct {
-    int *lefts;
-    int *rights;
-    double *thresholds;
-    int *indices;
-    int *missing_go_to_left;
-    double *values; /* the value of each leaf multiplied by the learning rate */
+    const int *lefts;
+    const int *rights;
+    const double *thresholds;
+    const int *indices;
+    const int *missing_go_to_left;
+    const double *values; /* the value of each leaf multiplied by the learning rate */
 } Tree;

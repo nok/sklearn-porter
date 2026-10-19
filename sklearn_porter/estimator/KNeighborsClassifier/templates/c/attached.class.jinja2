@@ -12,7 +12,7 @@
 #define N_OUTPUTS {{ n_outputs }}
 
 /* The classes of all outputs are concatenated, these are their numbers: */
-int output_classes[N_OUTPUTS] = { {{ output_classes | join(', ') }} };
+const int output_classes[N_OUTPUTS] = { {{ output_classes | join(', ') }} };
 {% endif %}
 #define N_TEMPLATES {{ n_templates }}
 #define K {{ k }}

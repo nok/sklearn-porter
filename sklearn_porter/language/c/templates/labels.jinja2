@@ -1,7 +1,7 @@
 {% if not is_multilabel %}
 /* The labels of the classes{{ ' of all outputs' if is_multi_output }}: */
 typedef {{ label_type }} Label;
-Label labels[{{ labels | length }}] = { {{ label_values }} };
+const Label labels[{{ labels | length }}] = { {{ label_values }} };
 
 /* Print a label as JSON: */
 void print_label(Label label) {

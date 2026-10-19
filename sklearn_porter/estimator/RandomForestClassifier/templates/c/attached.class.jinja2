@@ -11,23 +11,23 @@
 #define N_OUTPUTS {{ n_outputs }}
 
 /* The classes of all outputs are concatenated, these are their numbers: */
-int output_classes[N_OUTPUTS] = { {{ output_classes | join(', ') }} };
+const int output_classes[N_OUTPUTS] = { {{ output_classes | join(', ') }} };
 {% endif %}
 #define N_ESTIMATORS {{ n_estimators }}
 
 typedef struct {
-    int *lefts;
-    int *rights;
-    double *thresholds;
-    int *indices;
-    int *missing_go_to_left;
-    double *classes; /* shape: (n_leaves * N_CLASSES) */
+    const int *lefts;
+    const int *rights;
+    const double *thresholds;
+    const int *indices;
+    const int *missing_go_to_left;
+    const double *classes; /* shape: (n_leaves * N_CLASSES) */
 } Tree;
 
 
 {{ model }}
 
-Tree trees[N_ESTIMATORS] = {
+const Tree trees[N_ESTIMATORS] = {
 {% for i in range(n_estimators) %}
     {lefts_{{ i }}, rights_{{ i }}, thresholds_{{ i }}, indices_{{ i }}, missing_go_to_left_{{ i }}, classes_{{ i }}}{% if not loop.last %},{% endif %}
 

@@ -9,18 +9,18 @@
 #define N_ESTIMATORS {{ n_estimators }}
 
 typedef struct {
-    int *lefts;
-    int *rights;
-    double *thresholds;
-    int *indices;
-    int *missing_go_to_left;
-    double *values; /* the path length of each leaf */
+    const int *lefts;
+    const int *rights;
+    const double *thresholds;
+    const int *indices;
+    const int *missing_go_to_left;
+    const double *values; /* the path length of each leaf */
 } Tree;
 
 
 {{ model }}
 
-Tree trees[N_ESTIMATORS] = {
+const Tree trees[N_ESTIMATORS] = {
 {% for i in range(n_estimators) %}
     {lefts_{{ i }}, rights_{{ i }}, thresholds_{{ i }}, indices_{{ i }}, missing_go_to_left_{{ i }}, values_{{ i }}}{% if not loop.last %},{% endif %}
 

@@ -13,7 +13,7 @@
 
 {{ model }}
 
-Tree trees[N_ESTIMATORS] = {
+const Tree trees[N_ESTIMATORS] = {
 {% for i in range(n_estimators) %}
     {lefts_{{ i }}, rights_{{ i }}, thresholds_{{ i }}, indices_{{ i }}, missing_go_to_left_{{ i }}, values_{{ i }}}{% if not loop.last %},{% endif %}
 

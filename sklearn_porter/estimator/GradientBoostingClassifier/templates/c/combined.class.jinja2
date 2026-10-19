@@ -12,7 +12,7 @@
 
 {{ trees }}
 
-double inits[N_TREES] = {{ '{' }}{{ inits }}{{ '}' }};
+const double inits[N_TREES] = {{ '{' }}{{ inits }}{{ '}' }};
 
 /* Add the values of the trees of all stages to the initial raw predictions: */
 void decision_function(double *raw, double features[N_FEATURES]) {
