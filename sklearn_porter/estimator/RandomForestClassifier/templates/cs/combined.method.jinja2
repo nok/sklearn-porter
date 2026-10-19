@@ -1,0 +1,38 @@
+{{ methods }}
+
+private static double[] Compute(double[] features) {
+    double[] probas = new double[{{ n_classes }}];
+    double[] temp;
+    {{ method_calls }}
+    for (int i = 0; i < {{ n_classes }}; i++) {
+        probas[i] /= {{ n_estimators }};
+    }
+    return probas;
+}
+
+public static {{ 'double[][]' if is_multi_output else 'double[]' }} PredictProba(double[] features) {
+    return {{ 'SplitOutputs(Compute(features))' if is_multi_output else 'Compute(features)' }};
+}
+
+public static {{ 'int[]' if is_multi_output else 'int' }} PredictIndex(double[] features) {
+    return FindMax(PredictProba(features));
+}
+{% if is_multi_output %}
+
+// Predict the label of each output:
+public static {{ label_type }}[] Predict(double[] features) {
+    int[] idx = PredictIndex(features);
+    {{ label_type }}[] result = new {{ label_type }}[idx.Length];
+    int offset = 0;
+    for (int j = 0; j < idx.Length; j++) {
+        result[j] = LABELS[offset + idx[j]];
+        offset += OUTPUT_CLASSES[j];
+    }
+    return result;
+}
+{% else %}
+
+public static {{ label_type }} Predict(double[] features) {
+    return LABELS[PredictIndex(features)];
+}
+{% endif %}

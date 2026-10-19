@@ -1,0 +1,51 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public class {{ class_name }} {
+
+    {{ trees | indent(4) }}
+
+    private static readonly double[] INITS = {{ '{' }}{{ inits }}{{ '}' }};
+
+    // Add the values of the trees of all stages to the initial raw predictions:
+    private double[] DecisionFunction(double[] features) {
+        double[] raw = (double[]) INITS.Clone();
+        {% for i in range(n_estimators) %}
+        raw[{{ i % n_trees_per_stage }}] += Compute{{ i }}(features)[0];
+        {% endfor %}
+        return raw;
+    }
+
+{% include 'labels' %}
+
+
+    {% filter indent(4, True) %}
+    {% include 'methods' %}
+    {% endfilter %}
+
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}();
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+    }
+}
+{% endblock %}

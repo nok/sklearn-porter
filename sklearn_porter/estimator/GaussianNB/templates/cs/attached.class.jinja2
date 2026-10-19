@@ -1,0 +1,107 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public class {{ class_name }} {
+
+    private double[] priors;
+    private double[][] sigmas;
+    private double[][] thetas;
+
+    public {{ class_name }}(double[] priors, double[][] sigmas, double[][] thetas) {
+        this.priors = priors;
+        this.sigmas = sigmas;
+        this.thetas = thetas;
+    }
+
+    private static int FindMax(double[] nums) {
+        int idx = 0;
+        for (int i = 0; i < nums.Length; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
+
+    private static double LogSumExp(double[] nums) {
+        double max = nums[FindMax(nums)];
+        double sum = 0.0;
+        for (int i = 0; i < nums.Length; i++) {
+            sum += Math.Exp(nums[i] - max);
+        }
+        return max + Math.Log(sum);
+    }
+
+    private double[] Compute(double[] features) {
+        double[] likelihoods = new double[this.sigmas.Length];
+        for (int i = 0; i < this.sigmas.Length; i++) {
+            double sum = 0.0;
+            for (int j = 0; j < this.sigmas[0].Length; j++) {
+                sum += Math.Log(2.0 * Math.PI * this.sigmas[i][j]);
+            }
+            double nij = -0.5 * sum;
+            sum = 0.0;
+            for (int j = 0; j < this.sigmas[0].Length; j++) {
+                sum += Math.Pow(features[j] - this.thetas[i][j], 2.0) / this.sigmas[i][j];
+            }
+            nij -= 0.5 * sum;
+            likelihoods[i] = Math.Log(this.priors[i]) + nij;
+        }
+        return likelihoods;
+    }
+
+{% include 'labels' %}
+
+
+    public int PredictIndex(double[] features) {
+        return FindMax(this.Compute(features));
+    }
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+
+    public double[] PredictProba(double[] features) {
+        double[] jll = this.Compute(features);
+        double sum = LogSumExp(jll);
+        for (int i = 0; i < jll.Length; i++) {
+            jll[i] = Math.Exp(jll[i] - sum);
+        }
+        return jll;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Model data:
+        {{ priors }}
+        {{ sigmas }}
+        {{ thetas }}
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(priors, sigmas, thetas);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            {{ label_type }} prediction = clf.Predict(features);
+            double[] probabilities = clf.PredictProba(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
+            {% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probability of class #" + i + ": " + probabilities[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

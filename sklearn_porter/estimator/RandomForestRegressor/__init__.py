@@ -49,6 +49,11 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
             enum.Template.COMBINED: {enum.Method.PREDICT},
             enum.Template.EXPORTED: {enum.Method.PREDICT},
         },
+        enum.Language.CS: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.COMBINED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
+        },
         enum.Language.GO: {
             enum.Template.ATTACHED: {enum.Method.PREDICT},
             enum.Template.COMBINED: {enum.Method.PREDICT},
@@ -231,7 +236,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         """
         Embed the model data of all trees into the source code.
 
-        C and Java get array literals per tree, all other languages parse
+        C, C# and Java get array literals per tree, all other languages parse
         the model data as JSON string.
 
         Parameters
@@ -248,7 +253,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         The model data as source code.
         """
         trees = self.model_data['estimators']
-        if language in (enum.Language.C, enum.Language.JAVA):
+        if language in (enum.Language.C, enum.Language.CS, enum.Language.JAVA):
             tpl_tree = tpls.get_template('attached.tree')
             out_trees = []
             for idx, tree in enumerate(trees):

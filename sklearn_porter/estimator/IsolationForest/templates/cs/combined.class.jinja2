@@ -1,0 +1,47 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+using System;
+
+
+public static class {{ class_name }} {
+
+    {{ trees | indent(4) }}
+
+    private const double DENOMINATOR = {{ denominator }};
+    private const double OFFSET = {{ offset }};
+
+    // The score of a sample depends on its path lengths in all trees:
+    private static double ScoreSamples(double[] features) {
+        double pathLength = 0.0;
+        {% for i in range(n_estimators) %}
+        pathLength += Compute{{ i }}(features)[0];
+        {% endfor %}
+        return -Math.Pow(2.0, -(pathLength / DENOMINATOR));
+    }
+
+    // A sample is an outlier (-1), if its score is lower than the offset,
+    // otherwise an inlier (1):
+    public static int Predict(double[] features) {
+        return ScoreSamples(features) - OFFSET < 0 ? -1 : 1;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            int prediction = {{ class_name }}.Predict(features);
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+    }
+}
+{% endblock %}

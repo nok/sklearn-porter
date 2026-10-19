@@ -1,0 +1,58 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public class {{ class_name }} {
+
+    private double[][] coeffs;
+    private double[] inters;
+
+    public {{ class_name }}(double[][] coeffs, double[] inters) {
+        this.coeffs = coeffs;
+        this.inters = inters;
+    }
+
+    public double[] Predict(double[] features) {
+        double[] values = new double[this.inters.Length];
+        for (int i = 0; i < this.inters.Length; i++) {
+            for (int j = 0; j < this.coeffs[i].Length; j++) {
+                values[i] += this.coeffs[i][j] * features[j];
+            }
+            values[i] += this.inters[i];
+        }
+        return values;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Model data:
+        {{ coeffs }}
+        {{ inters }}
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}(coeffs, inters);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            double[] prediction = reg.Predict(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson({{ 'prediction' if is_multi_output else 'prediction[0]' }}) + "}");
+            {% else %}
+            for (int i = 0; i < prediction.Length; i++) {
+                Console.WriteLine("Predicted value #" + i + ": " + prediction[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

@@ -1,0 +1,38 @@
+private class Tree {
+    public int[] Lefts { get; set; }
+    public int[] Rights { get; set; }
+    public double[] Thresholds { get; set; }
+    public int[] Indices { get; set; }
+    public int[] MissingGoToLeft { get; set; }
+    public double[] Values { get; set; }
+
+    // Find the leaf and add its predicted values to the values:
+    public void AddValues(double[] features, double[] values) {
+        int node = 0;
+        while (node >= 0) {
+            if (features[this.Indices[node]] <= this.Thresholds[node] || (this.MissingGoToLeft[node] == 1 && double.IsNaN(features[this.Indices[node]]))) {
+                node = this.Lefts[node];
+            } else {
+                node = this.Rights[node];
+            }
+        }
+        int start = (-node - 1) * {{ n_outputs }};
+        for (int j = 0; j < values.Length; j++) {
+            values[j] += this.Values[start + j];
+        }
+    }
+}
+
+private Tree[] forest;
+
+// Average the predicted values of all trees:
+public double[] Predict(double[] features) {
+    double[] values = new double[{{ n_outputs }}];
+    foreach (Tree tree in this.forest) {
+        tree.AddValues(features, values);
+    }
+    for (int j = 0; j < values.Length; j++) {
+        values[j] /= this.forest.Length;
+    }
+    return values;
+}

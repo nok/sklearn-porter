@@ -1,0 +1,4 @@
+temp = Compute{{ method_index }}(features);
+for (int i = 0; i < {{ n_classes }}; i++) {
+    probas[i] += temp[i];
+}

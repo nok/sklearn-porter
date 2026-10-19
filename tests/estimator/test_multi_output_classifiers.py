@@ -12,6 +12,7 @@ from sklearn.tree import DecisionTreeClassifier
 # sklearn-porter
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Estimator import Estimator, can
+from tests.commons import LANGUAGES
 from tests.utils import (
     dataset_generate_x,
     dataset_uniform_x,
@@ -35,7 +36,7 @@ def load_multi_output_data(name: str) -> tuple[np.ndarray, np.ndarray]:
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', ['iris', 'breast_cancer'])
 @pytest.mark.parametrize(
     'create',

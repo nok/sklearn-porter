@@ -12,7 +12,7 @@ from sklearn.ensemble import (
 # sklearn-porter
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import DATASETS, REGRESSION_DATASETS, Dataset
+from tests.commons import DATASETS, LANGUAGES, REGRESSION_DATASETS, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 
@@ -54,7 +54,7 @@ CLASSIFIER_PARAMS = {
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize('params', CLASSIFIER_PARAMS)
 def test_estimator_gradient_boosting_classifier(
@@ -106,7 +106,7 @@ REGRESSOR_PARAMS = {
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'dataset', DATASETS + REGRESSION_DATASETS, ids=lambda x: x.name
 )

@@ -1,0 +1,74 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public class {{ class_name }} {
+
+    private int[] lefts;
+    private int[] rights;
+    private double[] thresholds;
+    private int[] indices;
+    private int[] missingGoToLeft;
+    private double[] values;
+
+    public {{ class_name }}(int[] lefts, int[] rights, double[] thresholds, int[] indices, int[] missingGoToLeft, double[] values) {
+        this.lefts = lefts;
+        this.rights = rights;
+        this.thresholds = thresholds;
+        this.indices = indices;
+        this.missingGoToLeft = missingGoToLeft;
+        this.values = values;
+    }
+
+    // Find the leaf and return its predicted values:
+    public double[] Predict(double[] features) {
+        int node = 0;
+        while (node >= 0) {
+            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && double.IsNaN(features[this.indices[node]]))) {
+                node = this.lefts[node];
+            } else {
+                node = this.rights[node];
+            }
+        }
+        double[] values = new double[{{ n_outputs }}];
+        Array.Copy(this.values, (-node - 1) * {{ n_outputs }}, values, 0, {{ n_outputs }});
+        return values;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Model data:
+        {{ lefts }}
+        {{ rights }}
+        {{ thresholds }}
+        {{ indices }}
+        {{ missing_go_to_left }}
+        {{ values }}
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}(lefts, rights, thresholds, indices, missingGoToLeft, values);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            double[] prediction = reg.Predict(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction.Length == 1 ? (object) prediction[0] : prediction) + "}");
+            {% else %}
+            for (int i = 0; i < prediction.Length; i++) {
+                Console.WriteLine("Predicted value #" + i + ": " + prediction[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

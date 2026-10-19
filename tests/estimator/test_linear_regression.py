@@ -8,7 +8,7 @@ from sklearn.linear_model import ElasticNet, Lasso, LinearRegression, Ridge
 
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import REGRESSION_DATASETS, Dataset
+from tests.commons import LANGUAGES, REGRESSION_DATASETS, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 # Long running regression tests, see `make test-regression`:
@@ -16,7 +16,7 @@ pytestmark = pytest.mark.regression
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', REGRESSION_DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize(
     'estimator',

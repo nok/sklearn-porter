@@ -11,7 +11,7 @@ from sklearn_porter import exceptions as exception
 
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import DATASETS, Dataset
+from tests.commons import DATASETS, LANGUAGES, Dataset
 from tests.utils import (
     dataset_generate_x,
     dataset_uniform_x,
@@ -24,7 +24,7 @@ pytestmark = pytest.mark.regression
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize('n_neighbors', [1, 2, 3, 5])
 @pytest.mark.parametrize(
@@ -99,7 +99,7 @@ def test_estimator_k_neighbors_classifier(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize('n_neighbors', [1, 3])
 def test_estimator_k_neighbors_classifier_with_hamming_metric(
@@ -165,7 +165,7 @@ def test_estimator_k_neighbors_classifier_with_hamming_metric(
 
 
 @pytest.mark.parametrize('template', ['attached', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('n_outputs', [1, 2])
 @pytest.mark.parametrize('n_neighbors', [1, 5])
 def test_estimator_k_neighbors_classifier_with_tied_neighbors(
@@ -224,7 +224,7 @@ def test_estimator_k_neighbors_classifier_with_tied_neighbors(
 
 
 @pytest.mark.parametrize('template', ['attached', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize('n_neighbors', [1, 5])
 @pytest.mark.parametrize(
@@ -293,7 +293,7 @@ def test_estimator_k_neighbors_classifier_with_distance_weights(
 
 
 @pytest.mark.parametrize('template', ['attached', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('n_outputs', [1, 2])
 def test_estimator_k_neighbors_classifier_with_zero_distances(
     tmp_root_dir: Path,

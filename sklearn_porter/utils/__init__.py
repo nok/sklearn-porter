@@ -142,7 +142,7 @@ def missing_name(language) -> str:
     -------
     The name in the naming convention of the language.
     """
-    if language.value.KEY in ('go', 'java', 'js'):
+    if language.value.KEY in ('cs', 'go', 'java', 'js'):
         return 'missingGoToLeft'
     return 'missing_go_to_left'
 

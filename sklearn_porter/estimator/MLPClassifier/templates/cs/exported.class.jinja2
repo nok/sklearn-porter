@@ -1,0 +1,166 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private enum Activation { Identity, Logistic, Relu, Tanh, Softmax }
+
+    private static void Activate(Activation activation, double[] v) {
+        switch (activation) {
+            case Activation.Logistic:
+                for (int i = 0; i < v.Length; i++) {
+                    v[i] = 1.0 / (1.0 + Math.Exp(-v[i]));
+                }
+                break;
+            case Activation.Relu:
+                for (int i = 0; i < v.Length; i++) {
+                    v[i] = Math.Max(0, v[i]);
+                }
+                break;
+            case Activation.Tanh:
+                for (int i = 0; i < v.Length; i++) {
+                    v[i] = Math.Tanh(v[i]);
+                }
+                break;
+            case Activation.Softmax:
+                double max = double.NegativeInfinity;
+                for (int i = 0; i < v.Length; i++) {
+                    if (v[i] > max) {
+                        max = v[i];
+                    }
+                }
+                for (int i = 0; i < v.Length; i++) {
+                    v[i] = Math.Exp(v[i] - max);
+                }
+                double sum = 0.0;
+                for (int i = 0; i < v.Length; i++) {
+                    sum += v[i];
+                }
+                for (int i = 0; i < v.Length; i++) {
+                    v[i] /= sum;
+                }
+                break;
+        }
+    }
+
+    private class ModelData {
+        public int[] Layers { get; set; }
+        public double[][][] Weights { get; set; }
+        public double[][] Bias { get; set; }
+        public string HiddenActivation { get; set; }
+        public string OutputActivation { get; set; }
+    }
+
+    private ModelData data;
+    private Activation hidden;
+    private Activation output;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+        this.hidden = (Activation) Enum.Parse(typeof(Activation), this.data.HiddenActivation, true);
+        this.output = (Activation) Enum.Parse(typeof(Activation), this.data.OutputActivation, true);
+    }
+
+    // Compute the neurons of all layers, the network keeps no state:
+    private double[] FeedForward(double[] features) {
+        double[] inputs = features;
+        for (int i = 0; i < this.data.Weights.Length; i++) {
+            double[] outputs = (double[]) this.data.Bias[i].Clone();
+            for (int j = 0; j < inputs.Length; j++) {
+                for (int k = 0; k < outputs.Length; k++) {
+                    outputs[k] += inputs[j] * this.data.Weights[i][j][k];
+                }
+            }
+            if (i < this.data.Weights.Length - 1) {
+                Activate(this.hidden, outputs);
+            }
+            inputs = outputs;
+        }
+        Activate(this.output, inputs);
+        return inputs;
+    }
+
+    private static int FindMax(double[] nums) {
+        int idx = 0;
+        for (int i = 0; i < nums.Length; i++) {
+            idx = nums[i] > nums[idx] ? i : idx;
+        }
+        return idx;
+    }
+
+{% include 'labels' %}
+
+
+    public {{ 'int[]' if is_multilabel else 'int' }} {{ 'Predict' if is_multilabel else 'PredictIndex' }}(double[] features) {
+        double[] lastLayer = this.FeedForward(features);
+        {% if is_multilabel %}
+        int[] labels = new int[lastLayer.Length];
+        for (int i = 0; i < lastLayer.Length; i++) {
+            labels[i] = lastLayer[i] > 0.5 ? 1 : 0;
+        }
+        return labels;
+        {% else %}
+        if (lastLayer.Length == 1) {
+            return lastLayer[0] > 0.5 ? 1 : 0;
+        }
+        return FindMax(lastLayer);
+        {% endif %}
+    }
+{% if not is_multilabel %}
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+{% endif %}
+
+    public double[] PredictProba(double[] features) {
+        double[] lastLayer = this.FeedForward(features);
+        if (lastLayer.Length == 1) {
+            return new double[] {1 - lastLayer[0], lastLayer[0]};
+        }
+        return lastLayer;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            {{ 'int[]' if is_multilabel else label_type }} prediction = clf.Predict(features);
+            double[] probabilities = clf.PredictProba(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
+            {% else %}
+            {% if is_multilabel %}
+            Console.WriteLine("Predicted labels: " + string.Join(", ", prediction));
+            {% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            {% endif %}
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probability of class #" + i + ": " + probabilities[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

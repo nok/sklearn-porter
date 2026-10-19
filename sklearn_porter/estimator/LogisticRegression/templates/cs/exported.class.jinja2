@@ -1,0 +1,127 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private class ModelData {
+        public double[][] Coeffs { get; set; }
+        public double[] Inters { get; set; }
+    }
+
+    private ModelData data;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+    }
+
+    public double[] DecisionFunction(double[] features) {
+        double[] decisions = new double[this.data.Inters.Length];
+        for (int i = 0; i < this.data.Inters.Length; i++) {
+            for (int j = 0; j < this.data.Coeffs[i].Length; j++) {
+                decisions[i] += this.data.Coeffs[i][j] * features[j];
+            }
+            decisions[i] += this.data.Inters[i];
+        }
+        return decisions;
+    }
+
+{% include 'labels' %}
+
+
+    public {{ 'int[]' if is_multilabel else 'int' }} {{ 'Predict' if is_multilabel else 'PredictIndex' }}(double[] features) {
+        double[] decisions = this.DecisionFunction(features);
+        {% if is_multilabel %}
+        int[] labels = new int[decisions.Length];
+        for (int i = 0; i < decisions.Length; i++) {
+            labels[i] = decisions[i] > 0 ? 1 : 0;
+        }
+        return labels;
+        {% elif is_binary %}
+        return decisions[0] > 0 ? 1 : 0;
+        {% else %}
+        int classIdx = 0;
+        for (int i = 1; i < decisions.Length; i++) {
+            if (decisions[i] > decisions[classIdx]) {
+                classIdx = i;
+            }
+        }
+        return classIdx;
+        {% endif %}
+    }
+{% if not is_multilabel %}
+
+    public {{ label_type }} Predict(double[] features) {
+        return LABELS[this.PredictIndex(features)];
+    }
+{% endif %}
+{% if with_proba %}
+
+    public double[] PredictProba(double[] features) {
+        double[] decisions = this.DecisionFunction(features);
+        {% if is_binary %}
+        double prob = 1.0 / (1.0 + Math.Exp(-decisions[0]));
+        return new double[] {1.0 - prob, prob};
+        {% else %}
+        double max = decisions[0], sum = 0.0;
+        for (int i = 1; i < decisions.Length; i++) {
+            max = Math.Max(max, decisions[i]);
+        }
+        for (int i = 0; i < decisions.Length; i++) {
+            decisions[i] = Math.Exp(decisions[i] - max);
+            sum += decisions[i];
+        }
+        for (int i = 0; i < decisions.Length; i++) {
+            decisions[i] /= sum;
+        }
+        return decisions;
+        {% endif %}
+    }
+{% endif %}
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} clf = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            {{ 'int[]' if is_multilabel else label_type }} prediction = clf.Predict(features);
+            {% if with_proba %}
+            double[] probabilities = clf.PredictProba(features);
+            {% endif %}
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction){% if with_proba %} + ", \"predict_proba\": " + ToJson(probabilities){% endif %} + "}");
+            {% else %}
+            {% if is_multilabel %}
+            Console.WriteLine("Predicted labels: " + string.Join(", ", prediction));
+            {% else %}
+            Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));
+            {% endif %}
+            {% if with_proba %}
+            for (int i = 0; i < probabilities.Length; i++) {
+                Console.WriteLine("Probability of class #" + i + ": " + probabilities[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

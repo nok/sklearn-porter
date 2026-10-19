@@ -1,0 +1,10 @@
+private static Tree Tree{{ index }}() {
+    return new Tree {
+        Lefts = new int[] {{ '{' }}{{ lefts }}{{ '}' }},
+        Rights = new int[] {{ '{' }}{{ rights }}{{ '}' }},
+        Thresholds = new double[] {{ '{' }}{{ thresholds }}{{ '}' }},
+        Indices = new int[] {{ '{' }}{{ indices }}{{ '}' }},
+        Classes = new double[] {{ '{' }}{{ classes }}{{ '}' }},
+        Weight = {{ weight }}
+    };
+}

@@ -5,6 +5,7 @@ from sklearn_porter.language import (  # noqa: F401 (re-export LANGUAGES)
     LANGUAGES,
     PHP,
     C,
+    CSharp,
     Go,
     Java,
     JavaScript,
@@ -46,6 +47,7 @@ class Template(Enum):
 
 class Language(Enum):
     C = C
+    CS = CSharp
     GO = Go
     JAVA = Java
     JS = JavaScript

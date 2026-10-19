@@ -1,0 +1,102 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public class {{ class_name }} {
+
+    private enum Activation { Identity, Logistic, Relu, Tanh }
+
+    private static void Activate(Activation activation, double[] v) {
+        switch (activation) {
+            case Activation.Logistic:
+                for (int i = 0; i < v.Length; i++) {
+                    v[i] = 1.0 / (1.0 + Math.Exp(-v[i]));
+                }
+                break;
+            case Activation.Relu:
+                for (int i = 0; i < v.Length; i++) {
+                    v[i] = Math.Max(0, v[i]);
+                }
+                break;
+            case Activation.Tanh:
+                for (int i = 0; i < v.Length; i++) {
+                    v[i] = Math.Tanh(v[i]);
+                }
+                break;
+        }
+    }
+
+    private Activation hidden;
+    private double[][][] weights;
+    private double[][] bias;
+
+    public {{ class_name }}(string hidden, double[][][] weights, double[][] bias) {
+        this.hidden = (Activation) Enum.Parse(typeof(Activation), hidden, true);
+        this.weights = weights;
+        this.bias = bias;
+    }
+
+    // Compute the neurons of all layers, the network keeps no state:
+    private double[] FeedForward(double[] features) {
+        double[] inputs = features;
+        for (int i = 0; i < this.weights.Length; i++) {
+            double[] outputs = (double[]) this.bias[i].Clone();
+            for (int j = 0; j < inputs.Length; j++) {
+                for (int k = 0; k < outputs.Length; k++) {
+                    outputs[k] += inputs[j] * this.weights[i][j][k];
+                }
+            }
+            if (i < this.weights.Length - 1) {
+                Activate(this.hidden, outputs);
+            }
+            inputs = outputs;
+        }
+        return inputs;
+    }
+
+    public double[] Predict(double[] features) {
+{% if output_activation == 'exp' %}
+        double[] outputs = this.FeedForward(features);
+        // The output activation `exp` of the loss `poisson`:
+        for (int i = 0; i < outputs.Length; i++) {
+            outputs[i] = Math.Exp(outputs[i]);
+        }
+        return outputs;
+{% else %}
+        return this.FeedForward(features);
+{% endif %}
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Model data:
+        {{ weights }}
+        {{ bias }}
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}("{{ hidden_activation }}", weights, bias);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            double[] prediction = reg.Predict(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson(prediction.Length == 1 ? (object) prediction[0] : prediction) + "}");
+            {% else %}
+            for (int i = 0; i < prediction.Length; i++) {
+                Console.WriteLine("Predicted value #" + i + ": " + prediction[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

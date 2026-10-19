@@ -18,6 +18,11 @@ class RidgeClassifier(LogisticRegression, EstimatorBase):
             enum.Template.COMBINED: {enum.Method.PREDICT},
             enum.Template.EXPORTED: {enum.Method.PREDICT},
         },
+        enum.Language.CS: {
+            enum.Template.ATTACHED: {enum.Method.PREDICT},
+            enum.Template.COMBINED: {enum.Method.PREDICT},
+            enum.Template.EXPORTED: {enum.Method.PREDICT},
+        },
         enum.Language.GO: {
             enum.Template.ATTACHED: {enum.Method.PREDICT},
             enum.Template.COMBINED: {enum.Method.PREDICT},

@@ -11,18 +11,18 @@ from sklearn_porter import exceptions as exception
 
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import DATASETS, Dataset
+from tests.commons import DATASETS, LANGUAGES, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 # @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-# @pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+# @pytest.mark.parametrize('language', LANGUAGES)
 
 # Long running regression tests, see `make test-regression`:
 pytestmark = pytest.mark.regression
 
 
 @pytest.mark.parametrize('template', ['attached', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('loss', ['hinge', 'squared_hinge'])
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
 @pytest.mark.parametrize('fit_intercept', [True, False])

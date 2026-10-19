@@ -1,0 +1,10 @@
+// Add the values of the trees of all stages to the initial raw predictions:
+private double[] DecisionFunction(double[] features) {
+    double[] raw = (double[]) this.inits.Clone();
+    for (int i = 0; i < this.forest.Length; i += raw.Length) {
+        for (int k = 0; k < raw.Length; k++) {
+            raw[k] += this.forest[i + k].Compute(features);
+        }
+    }
+    return raw;
+}

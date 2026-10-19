@@ -8,7 +8,7 @@ from sklearn.ensemble import IsolationForest
 
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import DATASETS, REGRESSION_DATASETS, Dataset
+from tests.commons import DATASETS, LANGUAGES, REGRESSION_DATASETS, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 
@@ -36,7 +36,7 @@ PARAMS = {
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'dataset', DATASETS + REGRESSION_DATASETS, ids=lambda x: x.name
 )
@@ -94,7 +94,7 @@ def test_estimator_isolation_forest(
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 def test_isolation_forest_with_missing_values(
     tmp_root_dir: Path, language: str, template: str
 ):

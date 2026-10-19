@@ -1,0 +1,45 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+
+
+public static class {{ class_name }} {
+
+    public static double[] Predict(double[] features) {
+        double[] values = new double[{{ n_outputs }}];
+        {% for coeffs_row in coeffs %}
+        {% set i = loop.index0 %}
+        values[{{ i }}] =
+            {% for coeff in coeffs_row %}
+            {{ coeff }} * features[{{ loop.index0 }}] +
+            {% endfor %}
+            {{ inters[i] }};
+        {% endfor %}
+        return values;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            double[] prediction = {{ class_name }}.Predict(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson({{ 'prediction' if is_multi_output else 'prediction[0]' }}) + "}");
+            {% else %}
+            for (int i = 0; i < prediction.Length; i++) {
+                Console.WriteLine("Predicted value #" + i + ": " + prediction[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}

@@ -7,7 +7,7 @@ import pytest
 # sklearn-porter
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Estimator import Estimator, can
-from tests.commons import DATASETS, Dataset
+from tests.commons import DATASETS, LANGUAGES, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 
 # Long running regression tests, see `make test-regression`:
@@ -15,7 +15,7 @@ pytestmark = pytest.mark.regression
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
-@pytest.mark.parametrize('language', ['c', 'go', 'java', 'js', 'php', 'ruby'])
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('activation', ['relu', 'identity', 'tanh', 'logistic'])
 @pytest.mark.parametrize(
     'hidden_layer_sizes',

@@ -1,0 +1,6 @@
+{% if is_test or to_json %}
+Console.WriteLine("{\"predict\": " + ToJson(prediction) + "}");
+{% else %}
+// Get prediction (1: inlier, -1: outlier):
+Console.WriteLine("Prediction: " + prediction + " (" + (prediction == 1 ? "inlier" : "outlier") + ")");
+{% endif %}
