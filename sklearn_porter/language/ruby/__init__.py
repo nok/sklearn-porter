@@ -27,7 +27,7 @@ class Ruby(LanguageABC):
         'inf':          'Float::INFINITY',
 
         # Basics:
-        'indent':       '    ',
+        'indent':       '\t',
         'join':         ' ',
         'type':         '{{ value }}',
 

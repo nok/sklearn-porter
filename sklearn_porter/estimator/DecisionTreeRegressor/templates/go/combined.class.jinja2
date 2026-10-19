@@ -25,7 +25,7 @@ type response struct {
 // Return the predicted values:
 func Predict(features []float64) []float64 {
 	values := make([]float64, {{ n_outputs }})
-	{{ tree | indent(4, True) }}
+	{{ tree | indent('\t', True) }}
 	return values
 }
 

@@ -7,7 +7,7 @@ require 'json'
 {% endif %}
 class {{ class_name }}
 
-	def initialize (vectors, coeffs, inters, weights, kernel, gamma, coef0, degree)
+	def initialize(vectors, coeffs, inters, weights, kernel, gamma, coef0, degree)
 		@n_classes = weights.length
 
 		@vectors = vectors

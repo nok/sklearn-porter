@@ -10,7 +10,7 @@ class {{ class_name }}
 
 	INF = +1.0/0.0
 
-	def initialize (x, y, k, n, metric, power)
+	def initialize(x, y, k, n, metric, power)
 		@x = x
 		@y = y
 		@k = k
@@ -24,7 +24,7 @@ class {{ class_name }}
 	OUTPUT_CLASSES = [{{ output_classes | join(', ') }}]
 
 	# Find the class with the maximum probability of each output:
-	def _find_max (nums)
+	def _find_max(nums)
 		nums.map { |probas| probas.index(probas.max) }
 	end
 
@@ -38,7 +38,7 @@ class {{ class_name }}
 		end
 	end
 {% else %}
-	def _find_max (nums)
+	def _find_max(nums)
 		idx = 0
 		for i in 0 ... nums.length
 			idx = nums[i] > nums[idx] ? i : idx
@@ -48,7 +48,7 @@ class {{ class_name }}
 {% endif %}
 
 	# Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
-	def _compute (temp, cand, metric, q)
+	def _compute(temp, cand, metric, q)
 		if metric == 'chebyshev'
 			return (0 ... temp.length).map { |i| (temp[i] - cand[i]).abs }.max
 		end
@@ -90,8 +90,8 @@ class {{ class_name }}
 {% include 'labels' %}
 
 	def predict_index(features)
-        probas = predict_proba features
-        _find_max probas
+		probas = predict_proba features
+		_find_max probas
 	end
 
 {% if is_multi_output %}
@@ -113,7 +113,7 @@ class {{ class_name }}
 {% if weights == 'distance' %}
 	# Weight the nearest neighbors by the inverse of their distances. If some
 	# neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
-	def _weigh (dists)
+	def _weigh(dists)
 		weights = dists.map { |dist| 1.0 / dist }
 		if weights.any? { |weight| weight.infinite? }
 			weights = weights.map { |weight| weight.infinite? ? 1.0 : 0.0 }
@@ -123,7 +123,7 @@ class {{ class_name }}
 
 {% endif %}
 {% if is_multi_output %}
-	def predict_proba (features)
+	def predict_proba(features)
 		class_probas = Array.new(@n, 0.0)
 		# The neighbors are the indices of the samples sorted by their distance:
 		dists = (0 ... @x.length).sort_by { |i| [_compute(@x[i], features, @metric, @power), i] }
@@ -151,47 +151,47 @@ class {{ class_name }}
 {% endif %}
 	end
 {% else %}
-	def predict_proba (features)
-        class_probas = Array.new(@n, 0.0)
-        if @k == 1
-            class_idx = 0
-            min_dist = INF
-            for i in 0 ... @y.length
-                dist = _compute @x[i], features, @metric, @power
-                if dist < min_dist
-                    min_dist = dist
-                    class_idx = @y[i]
-                end
-            end
-            class_probas[class_idx] = 1
-        else
-            dists = []
-            for i in 0 ... @y.length
-                dist = _compute @x[i], features, @metric, @power
-                dists.push [@y[i], dist, i]
-            end
-            # Sort the neighbors by distance and index (stable):
-            dists.sort_by! { |neighbor| [neighbor[1], neighbor[2]] }
+	def predict_proba(features)
+		class_probas = Array.new(@n, 0.0)
+		if @k == 1
+			class_idx = 0
+			min_dist = INF
+			for i in 0 ... @y.length
+				dist = _compute @x[i], features, @metric, @power
+				if dist < min_dist
+					min_dist = dist
+					class_idx = @y[i]
+				end
+			end
+			class_probas[class_idx] = 1
+		else
+			dists = []
+			for i in 0 ... @y.length
+				dist = _compute @x[i], features, @metric, @power
+				dists.push [@y[i], dist, i]
+			end
+			# Sort the neighbors by distance and index (stable):
+			dists.sort_by! { |neighbor| [neighbor[1], neighbor[2]] }
 {% if weights == 'distance' %}
-            weights = _weigh(dists.first(@k).map { |neighbor| neighbor[1] })
-            total = 0.0
-            for i in 0 ... @k
-                total += weights[i]
-                class_probas[dists[i][0]] += weights[i]
-            end
-            for i in 0 ... @n
-                class_probas[i] /= total
-            end
+			weights = _weigh(dists.first(@k).map { |neighbor| neighbor[1] })
+			total = 0.0
+			for i in 0 ... @k
+				total += weights[i]
+				class_probas[dists[i][0]] += weights[i]
+			end
+			for i in 0 ... @n
+				class_probas[i] /= total
+			end
 {% else %}
-            for i in 0 ... @k
-                class_probas[dists[i][0]] += 1
-            end
-            for i in 0 ... @n
-                class_probas[i] /= @k
-            end
+			for i in 0 ... @k
+				class_probas[dists[i][0]] += 1
+			end
+			for i in 0 ... @n
+				class_probas[i] /= @k
+			end
 {% endif %}
-        end
-        class_probas
+		end
+		class_probas
 	end
 {% endif %}
 

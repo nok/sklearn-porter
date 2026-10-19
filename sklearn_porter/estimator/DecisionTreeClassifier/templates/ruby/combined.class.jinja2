@@ -13,7 +13,7 @@ class {{ class_name }}
 	OUTPUT_CLASSES = [{{ output_classes | join(', ') }}]
 
 	# Find the class with the maximum value of each output:
-	def self._find_max (nums)
+	def self._find_max(nums)
 		offset = 0
 		OUTPUT_CLASSES.map do |n|
 			idx = 0
@@ -25,7 +25,7 @@ class {{ class_name }}
 		end
 	end
 {% else %}
-	def self._find_max (nums)
+	def self._find_max(nums)
 		idx = 0
 		for i in 0 ... nums.length
 			idx = nums[i] > nums[idx] ? i : idx
@@ -36,7 +36,7 @@ class {{ class_name }}
 
 {% if is_multi_output %}
 	# Normalize the values of each output:
-	def self._norm_vals (nums)
+	def self._norm_vals(nums)
 		offset = 0
 		OUTPUT_CLASSES.map do |n|
 			sum = nums[offset, n].sum
@@ -46,7 +46,7 @@ class {{ class_name }}
 		end
 	end
 {% else %}
-	def self._norm_vals (nums)
+	def self._norm_vals(nums)
 		result = []
 		sum = 0
 		for i in 0 ... nums.length
@@ -66,9 +66,9 @@ class {{ class_name }}
 	end
 {% endif %}
 
-	def self._compute (features)
+	def self._compute(features)
 		classes = Array.new({{ n_classes }}, 0)
-		{{ tree | indent(4, True) }}
+		{{ tree | indent('\t', True) }}
 		classes
 	end
 
@@ -94,7 +94,7 @@ class {{ class_name }}
 	end
 {% endif %}
 
-	def self.predict_proba (features)
+	def self.predict_proba(features)
 		self._norm_vals self._compute features
 	end
 
