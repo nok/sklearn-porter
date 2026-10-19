@@ -27,10 +27,10 @@ type Response struct {
 
 {% include 'samples' %}
 
-func main() {
-	// Model data:
-	{{ model }}
+// Model data:
+{{ model }}
 
+func main() {
 	// Estimator:
 	reg := {{ class_name }}{Inits: []float64{ {{- inits -}} }}
 	if err := json.Unmarshal([]byte(model), &reg.Trees); err != nil {

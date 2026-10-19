@@ -86,12 +86,12 @@ func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
 
 {% include 'samples' %}
 
-func main() {
-	// Model data:
-	{{ priors }}
-	{{ sigmas }}
-	{{ thetas }}
+// Model data:
+{{ priors }}
+{{ sigmas }}
+{{ thetas }}
 
+func main() {
 	// Estimator:
 	clf := {{ class_name }}{priors, sigmas, thetas}
 

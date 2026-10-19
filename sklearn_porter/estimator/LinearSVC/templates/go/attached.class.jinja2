@@ -82,11 +82,11 @@ func (svc {{ class_name }}) Predict(features []float64) {{ label_type }} {
 
 {% include 'samples' %}
 
-func main() {
-	// Model data:
-	{{ coeffs }}
-	{{ inters }}
+// Model data:
+{{ coeffs }}
+{{ inters }}
 
+func main() {
 	// Estimator:
 	clf := {{ class_name }}{coeffs, inters}
 

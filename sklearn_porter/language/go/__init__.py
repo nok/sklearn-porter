@@ -16,7 +16,7 @@ class Go(LanguageABC):
 
     # fmt: off
     TEMPLATES = {
-        'init':         '{{ name }} := {{ value }}',
+        'init':         'var {{ name }} = {{ value }}',
 
         # if/else condition:
         'if':           'if {{ a }} {{ op }} {{ b }} {',
@@ -34,10 +34,10 @@ class Go(LanguageABC):
 
         # Arrays:
         'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
-        # ages := []int {1, 2}
-        'arr[]':        '{{ name }} := []{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
-        'arr[][]':      '{{ name }} := [][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
-        'arr[][][]':    '{{ name }} := [][][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
+        # var ages = []int {1, 2}
+        'arr[]':        'var {{ name }} = []{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
+        'arr[][]':      'var {{ name }} = [][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
+        'arr[][][]':    'var {{ name }} = [][][]{{ type }} {{ "{" }}{{ values }}{{ "}" }}',
 
         # Primitive data types:
         'int':          'int',

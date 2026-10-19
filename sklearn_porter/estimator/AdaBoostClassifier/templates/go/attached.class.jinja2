@@ -88,10 +88,10 @@ func (forest {{ class_name }}) Predict(features []float64) {{ label_type }} {
 
 {% include 'samples' %}
 
-func main() {
-	// Model data:
-	{{ model }}
+// Model data:
+{{ model }}
 
+func main() {
 	// Estimator:
 	var clf {{ class_name }}
 	if err := json.Unmarshal([]byte(model), &clf.Trees); err != nil {
