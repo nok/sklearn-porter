@@ -8,8 +8,19 @@ class C(LanguageABC):
     DEPENDENCIES = ['gcc']
     SUFFIX = 'c'
 
-    # gcc tmp/estimator.c -std=c99 -lm -o tmp/estimator
-    CMD_COMPILE = ['gcc', '{src_path}', '-std=c99', '-lm', '-o', '{dest_path}']
+    # gcc tmp/estimator.c -std=c99 -O1 -lm -o tmp/estimator
+    # -O1 speeds up the predictions as much as -O2, but compiles large code
+    # (e.g. of the `combined` templates) faster. -std=c99 disables the
+    # contraction of floating point operations (e.g. to FMA instructions).
+    CMD_COMPILE = [
+        'gcc',
+        '{src_path}',
+        '-std=c99',
+        '-O1',
+        '-lm',
+        '-o',
+        '{dest_path}',
+    ]
 
     # tmp/estimator <args>
     CMD_EXECUTE = ['{dest_path}']
