@@ -74,10 +74,16 @@ var {{ class_name }} = function(jsonFile) {
     this.feedForward = function(neurons) {
         this.data.network[0] = neurons;
         for (var i = 0; i < this.data.network.length - 1; i++) {
-            for (var j = 0; j < this.data.network[i + 1].length; j++) {
-                this.data.network[i + 1][j] = this.data.bias[i][j];
-                for (var l = 0; l < this.data.network[i].length; l++) {
-                    this.data.network[i + 1][j] += this.data.network[i][l] * this.data.weights[i][l][j];
+            var inputs = this.data.network[i];
+            var outputs = this.data.network[i + 1];
+            for (var j = 0; j < outputs.length; j++) {
+                outputs[j] = this.data.bias[i][j];
+            }
+            // Go through the weights row by row, which is faster than column by column:
+            for (var l = 0; l < inputs.length; l++) {
+                var row = this.data.weights[i][l];
+                for (var j = 0; j < outputs.length; j++) {
+                    outputs[j] += inputs[l] * row[j];
                 }
             }
             if ((i + 1) < (this.data.network.length - 1)) {
