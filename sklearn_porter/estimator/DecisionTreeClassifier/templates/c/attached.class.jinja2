@@ -84,57 +84,46 @@ void norm_vals(double *result, double nums[N_CLASSES]) {
 
 {% include 'labels' %}
 
-{% if is_multi_output %}
-void predict_index(int *result, double features[N_FEATURES], int node) {
-    if (node >= 0) {
+/* Find the leaf of a sample and get its class fractions: */
+double *compute(double features[N_FEATURES]) {
+    int node = 0;
+    while (node >= 0) {
         if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
-            predict_index(result, features, lefts[node]);
-            return;
+            node = lefts[node];
         } else {
-            predict_index(result, features, rights[node]);
-            return;
+            node = rights[node];
         }
     }
-    find_max(result, &classes[(-node - 1) * N_CLASSES]);
+    return &classes[(-node - 1) * N_CLASSES];
+}
+
+{% if is_multi_output %}
+void predict_index(int *result, double features[N_FEATURES]) {
+    find_max(result, compute(features));
 }
 
 /* Predict the label of each output: */
 void predict(Label *result, double features[N_FEATURES]) {
     int j, offset = 0;
     int idx[N_OUTPUTS];
-    predict_index(idx, features, 0);
+    predict_index(idx, features);
     for (j = 0; j < N_OUTPUTS; j++) {
         result[j] = labels[offset + idx[j]];
         offset += output_classes[j];
     }
 }
 {% else %}
-int predict_index(double features[N_FEATURES], int node) {
-    if (node >= 0) {
-        if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
-            return predict_index(features, lefts[node]);
-        } else {
-            return predict_index(features, rights[node]);
-        }
-    }
-    return find_max(&classes[(-node - 1) * N_CLASSES]);
+int predict_index(double features[N_FEATURES]) {
+    return find_max(compute(features));
 }
 
 Label predict(double features[N_FEATURES]) {
-    return labels[predict_index(features, 0)];
+    return labels[predict_index(features)];
 }
 {% endif %}
 
-void predict_proba({{ 'double **result' if is_multi_output else 'double *result' }}, double features[N_FEATURES], int node) {
-    if (node >= 0) {
-        if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
-            predict_proba(result, features, lefts[node]);
-        } else {
-            predict_proba(result, features, rights[node]);
-        }
-    } else {
-        norm_vals(result, &classes[(-node - 1) * N_CLASSES]);
-    }
+void predict_proba({{ 'double **result' if is_multi_output else 'double *result' }}, double features[N_FEATURES]) {
+    norm_vals(result, compute(features));
 }
 
 {% include 'samples' %}
@@ -150,7 +139,7 @@ int main(int argc, const char *argv[]) {
         for (int j = 0; j < N_OUTPUTS; j++) {
             probabilities[j] = malloc(output_classes[j] * sizeof(double));
         }
-        predict_proba(probabilities, features, 0);
+        predict_proba(probabilities, features);
 
         {% if is_test or to_json %}
         /* Get JSON: */
@@ -192,7 +181,7 @@ int main(int argc, const char *argv[]) {
         {% if is_test or to_json %}
         /* Get JSON: */
         double probabilities[N_CLASSES];
-        predict_proba(probabilities, features, 0);
+        predict_proba(probabilities, features);
         printf("{\"predict\": ");
         print_label(predict(features));
         printf(", \"predict_proba\": [");
@@ -211,7 +200,7 @@ int main(int argc, const char *argv[]) {
 
         /* Get class probabilities: */
         double probabilities[N_CLASSES];
-        predict_proba(probabilities, features, 0);
+        predict_proba(probabilities, features);
         for (int i = 0; i < N_CLASSES; i++) {
             printf("Probability of class #%d: %.6f\n", i, probabilities[i]);
         }
