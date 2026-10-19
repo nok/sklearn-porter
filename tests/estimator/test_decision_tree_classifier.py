@@ -80,5 +80,5 @@ def test_estimator_decision_tree_classifier(
         np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
         # The leaves are impure because of `max_leaf_nodes`:
         np.testing.assert_allclose(
-            y_proba, orig_est.predict_proba(test_x), rtol=0, atol=1e-5
+            y_proba, orig_est.predict_proba(test_x), rtol=1e-14, atol=0
         )

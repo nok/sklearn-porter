@@ -186,7 +186,7 @@ int main(int argc, const char *argv[]) {
         print_label(predict(features));
         printf(", \"predict_proba\": [");
         for (int i = 0; i < N_CLASSES; i++) {
-            printf("%.6f", probabilities[i]);
+            printf("%.17g", probabilities[i]);
             if (i < (N_CLASSES - 1)) {
                 printf(",");
             }

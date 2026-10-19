@@ -1859,9 +1859,8 @@ def test_trees_with_a_single_leaf(
         y_pred.astype(float), orig_est.predict(x[::10])
     )
     if hasattr(orig_est, 'predict_proba'):
-        # Some ported estimators print the probabilities with six decimals:
         np.testing.assert_allclose(
-            y_proba, orig_est.predict_proba(x[::10]), rtol=0, atol=1e-5
+            y_proba, orig_est.predict_proba(x[::10]), rtol=1e-14, atol=0
         )
 
 
