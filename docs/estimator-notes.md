@@ -42,3 +42,4 @@
 ## SVC and NuSVC
 
 - [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html) with `break_ties=True` can't be ported and raise a `NotSupportedYetError`.
+- The ported [SVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVC.html) and [NuSVC](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVC.html) compute the decision values like libsvm: the polynomial kernel with repeated multiplications (instead of a power function) and the sums over the support vectors in the same order. scikit-learn computes the dot products with BLAS and, depending on the CPU and the compiler, with fused multiply-add instructions, so the decision values can still differ in the last digits and samples on the decision boundary can get different predictions.

@@ -29,6 +29,19 @@ class {{ class_name }} {
 
 {% include 'labels' %}
 
+    // The power with an integer exponent (by repeated squaring) like libsvm:
+    private static function powi($base, $times) {
+        $tmp = $base;
+        $ret = 1.;
+        for ($t = (int) $times; $t > 0; $t = intdiv($t, 2)) {
+            if ($t % 2 == 1) {
+                $ret *= $tmp;
+            }
+            $tmp = $tmp * $tmp;
+        }
+        return $ret;
+    }
+
     public function predictIndex($features) {
         $kernels = array_fill(0, count($this->vectors), 0);
         switch ($this->kernel) {
@@ -49,7 +62,7 @@ class {{ class_name }} {
                     for ($j = 0; $j < count($this->vectors[$i]); $j++) {
                         $kernel += $this->vectors[$i][$j] * $features[$j];
                     }
-                    $kernels[$i] = pow(($this->gamma * $kernel) + $this->coef0, $this->degree);
+                    $kernels[$i] = self::powi(($this->gamma * $kernel) + $this->coef0, $this->degree);
                 }
                 break;
             case 'RBF':
@@ -99,10 +112,10 @@ class {{ class_name }} {
             }
 
             $decision = 0.;
-            for ($k = $starts[1]; $k < $ends[1]; $k++) {
+            for ($k = $starts[0]; $k < $ends[0]; $k++) {
                 $decision += $kernels[$k] * $this->coeffs[0][$k];
             }
-            for ($k = $starts[0]; $k < $ends[0]; $k++) {
+            for ($k = $starts[1]; $k < $ends[1]; $k++) {
                 $decision += $kernels[$k] * $this->coeffs[0][$k];
             }
             $decision += $this->inters[0];
@@ -118,11 +131,11 @@ class {{ class_name }} {
         for ($i = 0, $d = 0, $l = count($this->weights); $i < $l; $i++) {
             for ($j = $i + 1; $j < $l; $j++) {
                 $tmp = 0.;
-                for ($k = $starts[$j]; $k < $ends[$j]; $k++) {
-                    $tmp += $this->coeffs[$i][$k] * $kernels[$k];
-                }
                 for ($k = $starts[$i]; $k < $ends[$i]; $k++) {
                     $tmp += $this->coeffs[$j - 1][$k] * $kernels[$k];
+                }
+                for ($k = $starts[$j]; $k < $ends[$j]; $k++) {
+                    $tmp += $this->coeffs[$i][$k] * $kernels[$k];
                 }
                 $decisions[$d] = $tmp + $this->inters[$d];
                 $d++;

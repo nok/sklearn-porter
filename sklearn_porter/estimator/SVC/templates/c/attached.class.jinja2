@@ -23,6 +23,19 @@
 
 {% include 'labels' %}
 
+/* The power with an integer exponent (by repeated squaring) like libsvm: */
+double powi(double base, int times) {
+    double tmp = base, ret = 1.;
+    int t;
+    for (t = times; t > 0; t /= 2) {
+        if (t % 2 == 1) {
+            ret *= tmp;
+        }
+        tmp = tmp * tmp;
+    }
+    return ret;
+}
+
 int predict_index(double features[]) {
     int i, j, k, d, l;
     double kernels[N_VECTORS];
@@ -45,7 +58,7 @@ int predict_index(double features[]) {
                 for (j = 0; j < N_FEATURES; j++) {
                     kernel += vectors[i][j] * features[j];
                 }
-                kernels[i] = pow((KERNEL_GAMMA * kernel) + KERNEL_COEF, KERNEL_DEGREE);
+                kernels[i] = powi((KERNEL_GAMMA * kernel) + KERNEL_COEF, KERNEL_DEGREE);
             }
             break;
         case 'r':
@@ -96,10 +109,10 @@ int predict_index(double features[]) {
         }
 
         double decision = 0.;
-        for (k = starts[1]; k < ends[1]; k++) {
+        for (k = starts[0]; k < ends[0]; k++) {
             decision += kernels[k] * coeffs[0][k];
         }
-        for (k = starts[0]; k < ends[0]; k++) {
+        for (k = starts[1]; k < ends[1]; k++) {
             decision += kernels[k] * coeffs[0][k];
         }
         decision += inters[0];
@@ -116,11 +129,11 @@ int predict_index(double features[]) {
     for (i = 0, d = 0, l = N_WEIGHTS; i < l; i++) {
         for (j = i + 1; j < l; j++) {
             tmp = 0.;
-            for (k = starts[j]; k < ends[j]; k++) {
-                tmp += kernels[k] * coeffs[i][k];
-            }
             for (k = starts[i]; k < ends[i]; k++) {
                 tmp += kernels[k] * coeffs[j - 1][k];
+            }
+            for (k = starts[j]; k < ends[j]; k++) {
+                tmp += kernels[k] * coeffs[i][k];
             }
             decisions[d] = tmp + inters[d];
             d = d + 1;

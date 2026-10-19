@@ -19,6 +19,18 @@ var {{ class_name }} = function(jsonFile) {
 
 {% include 'labels' %}
 
+    // The power with an integer exponent (by repeated squaring) like libsvm:
+    var powi = function(base, times) {
+        var tmp = base, ret = 1., t;
+        for (t = times; t > 0; t = Math.floor(t / 2)) {
+            if (t % 2 === 1) {
+                ret *= tmp;
+            }
+            tmp = tmp * tmp;
+        }
+        return ret;
+    };
+
     this.predictIndex = function(features) {
         var kernels = new Array(this.vectors.length);
         var kernel;
@@ -41,7 +53,7 @@ var {{ class_name }} = function(jsonFile) {
                     for (j = 0; j < this.vectors[i].length; j++) {
                         kernel += this.vectors[i][j] * features[j];
                     }
-                    kernels[i] = Math.pow((this.gamma * kernel) + this.coef0, this.degree);
+                    kernels[i] = powi((this.gamma * kernel) + this.coef0, this.degree);
                 }
                 break;
             case 'RBF':
@@ -86,10 +98,10 @@ var {{ class_name }} = function(jsonFile) {
                 kernels[i] = -kernels[i];
             }
             var decision = 0.;
-            for (k = starts[1]; k < ends[1]; k++) {
+            for (k = starts[0]; k < ends[0]; k++) {
                 decision += kernels[k] * this.coeffs[0][k];
             }
-            for (k = starts[0]; k < ends[0]; k++) {
+            for (k = starts[1]; k < ends[1]; k++) {
                 decision += kernels[k] * this.coeffs[0][k];
             }
             decision += this.inters[0];
@@ -102,11 +114,11 @@ var {{ class_name }} = function(jsonFile) {
         for (i = 0, d = 0, l = this.weights.length; i < l; i++) {
             for (j = i + 1; j < l; j++) {
                 var tmp = 0.;
-                for (k = starts[j]; k < ends[j]; k++) {
-                    tmp += this.coeffs[i][k] * kernels[k];
-                }
                 for (k = starts[i]; k < ends[i]; k++) {
                     tmp += this.coeffs[j - 1][k] * kernels[k];
+                }
+                for (k = starts[j]; k < ends[j]; k++) {
+                    tmp += this.coeffs[i][k] * kernels[k];
                 }
                 decisions[d] = tmp + this.inters[d];
                 d++;
