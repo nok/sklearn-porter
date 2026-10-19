@@ -31,8 +31,10 @@ typedef struct JsonValue {
     double number;
     char *string;
     int length;
-    char **keys;
-    struct JsonValue **items;
+    int capacity;
+    char **keys; /* the keys of an object */
+    struct JsonValue **items; /* the items of an object or array */
+    double *numbers; /* the items of an array of numbers (without a value per number) */
 } JsonValue;
 
 static JsonValue *json_parse_value(const char **s);
@@ -57,15 +59,53 @@ static JsonValue *json_new(enum JsonType type) {
     return value;
 }
 
-static void json_append(JsonValue *parent, char *key, JsonValue *item) {
-    parent->items = realloc(parent->items, (parent->length + 1) * sizeof(JsonValue *));
-    parent->keys = realloc(parent->keys, (parent->length + 1) * sizeof(char *));
-    if (parent->items == NULL || parent->keys == NULL) {
+static void *json_resize(void *items, int capacity, size_t size) {
+    items = realloc(items, capacity * size);
+    if (items == NULL) {
         json_fail("out of memory");
     }
+    return items;
+}
+
+/* Grow the items of a container geometrically: */
+static int json_grow(JsonValue *parent) {
+    if (parent->length == parent->capacity) {
+        parent->capacity = parent->capacity > 0 ? 2 * parent->capacity : 8;
+        return 1;
+    }
+    return 0;
+}
+
+static void json_append(JsonValue *parent, char *key, JsonValue *item) {
+    if (json_grow(parent)) {
+        parent->items = json_resize(parent->items, parent->capacity, sizeof(JsonValue *));
+        if (parent->type == JSON_OBJECT) {
+            parent->keys = json_resize(parent->keys, parent->capacity, sizeof(char *));
+        }
+    }
     parent->items[parent->length] = item;
-    parent->keys[parent->length] = key;
+    if (parent->type == JSON_OBJECT) {
+        parent->keys[parent->length] = key;
+    }
     parent->length++;
+}
+
+static void json_append_number(JsonValue *array, double number) {
+    if (json_grow(array)) {
+        array->numbers = json_resize(array->numbers, array->capacity, sizeof(double));
+    }
+    array->numbers[array->length++] = number;
+}
+
+/* strtod also parses `Infinity`, `-Infinity` and `NaN` of Python: */
+static int json_parse_number(const char **s, double *number) {
+    char *end;
+    *number = strtod(*s, &end);
+    if (end == *s) {
+        return 0;
+    }
+    *s = end;
+    return 1;
 }
 
 static char *json_parse_string(const char **s) {
@@ -111,7 +151,16 @@ static JsonValue *json_parse_value(const char **s) {
                 }
                 (*s)++;
             }
-            json_append(value, key, json_parse_value(s));
+            /* An array whose first item is a number contains only numbers: */
+            double number;
+            json_skip(s);
+            if (value->type == JSON_ARRAY && value->items == NULL && json_parse_number(s, &number)) {
+                json_append_number(value, number);
+            } else if (value->numbers != NULL) {
+                json_fail("expected a number");
+            } else {
+                json_append(value, key, json_parse_value(s));
+            }
             json_skip(s);
             if (**s == ',') {
                 (*s)++;
@@ -132,14 +181,10 @@ static JsonValue *json_parse_value(const char **s) {
         value = json_new(JSON_NULL);
         *s += 4;
     } else {
-        /* strtod also parses `Infinity`, `-Infinity` and `NaN` of Python: */
-        char *end;
         value = json_new(JSON_NUMBER);
-        value->number = strtod(*s, &end);
-        if (end == *s) {
+        if (!json_parse_number(s, &value->number)) {
             json_fail("unexpected character");
         }
-        *s = end;
     }
     return value;
 }
@@ -175,18 +220,27 @@ JsonValue *json_get(JsonValue *object, const char *key) {
     exit(1);
 }
 
+double *json_numbers(JsonValue *array) {
+    if (array->type != JSON_ARRAY || (array->length > 0 && array->numbers == NULL)) {
+        json_fail("expected an array of numbers");
+    }
+    return array->numbers;
+}
+
 double *json_doubles(JsonValue *array) {
+    double *numbers = json_numbers(array);
     double *values = malloc((array->length > 0 ? array->length : 1) * sizeof(double));
     for (int i = 0; i < array->length; i++) {
-        values[i] = array->items[i]->number;
+        values[i] = numbers[i];
     }
     return values;
 }
 
 int *json_ints(JsonValue *array) {
+    double *numbers = json_numbers(array);
     int *values = malloc((array->length > 0 ? array->length : 1) * sizeof(int));
     for (int i = 0; i < array->length; i++) {
-        values[i] = (int) array->items[i]->number;
+        values[i] = (int) numbers[i];
     }
     return values;
 }
@@ -208,12 +262,15 @@ int **json_ints_2d(JsonValue *array) {
 }
 
 void json_free(JsonValue *value) {
-    for (int i = 0; i < value->length; i++) {
-        free(value->keys[i]);
+    for (int i = 0; value->items != NULL && i < value->length; i++) {
+        if (value->keys != NULL) {
+            free(value->keys[i]);
+        }
         json_free(value->items[i]);
     }
     free(value->keys);
     free(value->items);
+    free(value->numbers);
     free(value->string);
     free(value);
 }
