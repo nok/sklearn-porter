@@ -1,0 +1,17 @@
+{% if is_outlier_detector %}
+{% if is_test or to_json %}
+/* Get JSON: */
+printf("{\"predict\": %d}\n", prediction);
+{% else %}
+/* Get prediction (1: inlier, -1: outlier): */
+printf("Prediction: %d (%s)\n", prediction, prediction == 1 ? "inlier" : "outlier");
+{% endif %}
+{% else %}
+{% if is_test or to_json %}
+/* Get JSON: */
+printf("{\"predict\": %.17g}\n", prediction);
+{% else %}
+/* Get predicted value: */
+printf("Predicted value: %.17g\n", prediction);
+{% endif %}
+{% endif %}

@@ -1,0 +1,56 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private $vectors;
+    private $coeffs;
+    private $inter;
+    private $kernel;
+    private $gamma;
+    private $coef0;
+    private $degree;
+
+    public function __construct($path) {
+        $data = json_decode(file_get_contents($path, true), true);
+        $this->vectors = $data['vectors'];
+        $this->coeffs = $data['coeffs'];
+        $this->inter = $data['inter'];
+        $this->kernel = strtoupper($data['kernel']);
+        $this->gamma = $data['gamma'];
+        $this->coef0 = $data['coef0'];
+        $this->degree = $data['degree'];
+    }
+
+{% include 'kernel' %}
+
+}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
+
+    if (count($argv) < 2) {
+        fwrite(STDERR, "You have to pass the path to the model data.\n");
+        exit(1);
+    }
+
+    array_shift($argv);
+
+    // Model data:
+    $path = array_shift($argv);
+
+    // Estimator:
+    $est = new {{ class_name }}($path);
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        $prediction = $est->predict($features);
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+}
+{% endblock %}

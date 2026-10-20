@@ -1,0 +1,45 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	def initialize(path)
+		data = JSON.parse(File.read(path))
+		@vectors = data['vectors']
+		@coeffs = data['coeffs']
+		@inter = data['inter']
+		@kernel = data['kernel'].upcase
+		@gamma = data['gamma']
+		@coef0 = data['coef0']
+		@degree = data['degree']
+	end
+
+{% include 'kernel' %}
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+	raise "You have to pass the path to the model data." if ARGV.empty?
+
+	# Model data:
+	modelData = ARGV.shift
+
+	# Estimator:
+	est = {{ class_name }}.new modelData
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		prediction = est.predict features
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	end
+end
+{% endblock %}

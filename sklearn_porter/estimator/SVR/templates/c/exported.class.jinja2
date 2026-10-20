@@ -1,0 +1,57 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_VECTORS {{ n_vectors }}
+
+
+double **vectors;
+double *coeffs;
+double intercept;
+char kernel_type;
+double kernel_gamma;
+double kernel_coef;
+int kernel_degree;
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    vectors = json_doubles_2d(json_get(data, "vectors"));
+    coeffs = json_doubles(json_get(data, "coeffs"));
+    intercept = json_get(data, "inter")->number;
+    kernel_type = json_get(data, "kernel")->string[0];
+    kernel_gamma = json_get(data, "gamma")->number;
+    kernel_coef = json_get(data, "coef0")->number;
+    kernel_degree = (int) json_get(data, "degree")->number;
+    json_free(data);
+}
+
+{% with kernel_type='kernel_type', kernel_gamma='kernel_gamma', kernel_coef='kernel_coef', kernel_degree='kernel_degree', intercept='intercept' %}
+{% include 'kernel' %}
+{% endwith %}
+
+{% include 'samples' %}
+
+int main(int argc, const char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "You have to pass the path to the model data.\n");
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 2)) {
+        {{ 'int' if is_outlier_detector else 'double' }} prediction = predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+    return 0;
+}
+{% endblock %}

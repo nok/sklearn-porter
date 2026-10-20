@@ -49,7 +49,15 @@ from sklearn.naive_bayes import (
 )
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
-from sklearn.svm import SVC, LinearSVC, LinearSVR, NuSVC
+from sklearn.svm import (
+    SVC,
+    SVR,
+    LinearSVC,
+    LinearSVR,
+    NuSVC,
+    NuSVR,
+    OneClassSVM,
+)
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
@@ -138,6 +146,8 @@ def get_regressors() -> Iterator[Candidate]:
         HuberRegressor,
         SGDRegressor,
         LinearSVR,
+        SVR,
+        NuSVR,
     ]
     for e in _regressors:
         yield Candidate(name=e.__name__, clazz=e, create=CREATE.get(e, e))
@@ -147,6 +157,7 @@ def get_outlier_detectors() -> Iterator[Candidate]:
     """Get the available outlier detectors."""
     _outlier_detectors = [
         IsolationForest,
+        OneClassSVM,
     ]
     for e in _outlier_detectors:
         yield Candidate(name=e.__name__, clazz=e, create=e)

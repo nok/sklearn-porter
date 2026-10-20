@@ -1,0 +1,66 @@
+/* The power with an integer exponent (by repeated squaring) like libsvm: */
+double powi(double base, int times) {
+    double tmp = base, ret = 1.;
+    int t;
+    for (t = times; t > 0; t /= 2) {
+        if (t % 2 == 1) {
+            ret *= tmp;
+        }
+        tmp = tmp * tmp;
+    }
+    return ret;
+}
+
+/* The kernel of a support vector and the features: */
+double compute_kernel(const double vector[N_FEATURES], const double features[N_FEATURES]) {
+    double kernel = 0.;
+    int j;
+    switch ({{ kernel_type }}) {
+        case 'l':
+            // <x,x'>
+            for (j = 0; j < N_FEATURES; j++) {
+                kernel += vector[j] * features[j];
+            }
+            return kernel;
+        case 'p':
+            // (y<x,x'>+r)^d
+            for (j = 0; j < N_FEATURES; j++) {
+                kernel += vector[j] * features[j];
+            }
+            return powi(({{ kernel_gamma }} * kernel) + {{ kernel_coef }}, {{ kernel_degree }});
+        case 'r':
+            // exp(-y|x-x'|^2)
+            for (j = 0; j < N_FEATURES; j++) {
+                double diff = vector[j] - features[j];
+                kernel += diff * diff;
+            }
+            return exp(-{{ kernel_gamma }} * kernel);
+        default:
+            // tanh(y<x,x'>+r)
+            for (j = 0; j < N_FEATURES; j++) {
+                kernel += vector[j] * features[j];
+            }
+            return tanh(({{ kernel_gamma }} * kernel) + {{ kernel_coef }});
+    }
+}
+
+/* The sum of the weighted kernels of all support vectors and the intercept: */
+double compute_decision(const double features[N_FEATURES]) {
+    double decision = 0.;
+    int i;
+    for (i = 0; i < N_VECTORS; i++) {
+        decision += coeffs[i] * compute_kernel(vectors[i], features);
+    }
+    return decision + {{ intercept }};
+}
+
+{% if is_outlier_detector %}
+/* Predict 1 for inliers and -1 for outliers: */
+int predict(const double features[N_FEATURES]) {
+    return compute_decision(features) > 0 ? 1 : -1;
+}
+{% else %}
+double predict(const double features[N_FEATURES]) {
+    return compute_decision(features);
+}
+{% endif %}

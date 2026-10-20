@@ -1,0 +1,66 @@
+// The power with an integer exponent (by repeated squaring) like libsvm:
+func powi(base float64, times int) float64 {
+	tmp, ret := base, 1.0
+	for t := times; t > 0; t /= 2 {
+		if t%2 == 1 {
+			ret *= tmp
+		}
+		tmp = tmp * tmp
+	}
+	return ret
+}
+
+// The kernel of a support vector and the features:
+func (est {{ class_name }}) computeKernel(vector []float64, features []float64) float64 {
+	var kernel float64 = 0
+	switch strings.ToUpper(est.{{ field_kernel }}) {
+	case "LINEAR":
+		// <x,x'>
+		for j := range vector {
+			kernel += vector[j] * features[j]
+		}
+		return kernel
+	case "POLY":
+		// (y<x,x'>+r)^d
+		for j := range vector {
+			kernel += vector[j] * features[j]
+		}
+		return powi((est.{{ field_gamma }} * kernel) + est.{{ field_coef0 }}, est.{{ field_degree }})
+	case "RBF":
+		// exp(-y|x-x'|^2)
+		for j := range vector {
+			diff := vector[j] - features[j]
+			kernel += diff * diff
+		}
+		return math.Exp(-est.{{ field_gamma }} * kernel)
+	default:
+		// tanh(y<x,x'>+r)
+		for j := range vector {
+			kernel += vector[j] * features[j]
+		}
+		return math.Tanh((est.{{ field_gamma }} * kernel) + est.{{ field_coef0 }})
+	}
+}
+
+// The sum of the weighted kernels of all support vectors and the intercept:
+func (est {{ class_name }}) computeDecision(features []float64) float64 {
+	var decision float64 = 0
+	for i := range est.{{ field_vectors }} {
+		decision += est.{{ field_coeffs }}[i] * est.computeKernel(est.{{ field_vectors }}[i], features)
+	}
+	return decision + est.{{ field_inter }}
+}
+
+{% if is_outlier_detector %}
+// Predict 1 for inliers and -1 for outliers:
+func (est {{ class_name }}) Predict(features []float64) int {
+	if est.computeDecision(features) > 0 {
+		return 1
+	}
+	return -1
+}
+{% else %}
+func (est {{ class_name }}) Predict(features []float64) float64 {
+	return est.computeDecision(features)
+}
+{% endif %}

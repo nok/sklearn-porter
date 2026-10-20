@@ -1,0 +1,62 @@
+	# The power with an integer exponent (by repeated squaring) like libsvm:
+	def _powi(base, times)
+		tmp = base
+		ret = 1.0
+		t = times.to_i
+		while t > 0
+			ret *= tmp if t % 2 == 1
+			tmp = tmp * tmp
+			t /= 2
+		end
+		ret
+	end
+
+	# The kernel of a support vector and the features:
+	def _compute_kernel(vector, features)
+		kernel = 0.0
+		case @kernel
+		when 'LINEAR'
+			# <x,x'>
+			for j in 0 ... vector.length
+				kernel += vector[j] * features[j]
+			end
+			kernel
+		when 'POLY'
+			# (y<x,x'>+r)^d
+			for j in 0 ... vector.length
+				kernel += vector[j] * features[j]
+			end
+			_powi((@gamma * kernel) + @coef0, @degree)
+		when 'RBF'
+			# exp(-y|x-x'|^2)
+			for j in 0 ... vector.length
+				diff = vector[j] - features[j]
+				kernel += diff * diff
+			end
+			Math.exp(-@gamma * kernel)
+		else
+			# tanh(y<x,x'>+r)
+			for j in 0 ... vector.length
+				kernel += vector[j] * features[j]
+			end
+			Math.tanh((@gamma * kernel) + @coef0)
+		end
+	end
+
+	# The sum of the weighted kernels of all support vectors and the intercept:
+	def _compute_decision(features)
+		decision = 0.0
+		for i in 0 ... @vectors.length
+			decision += @coeffs[i] * _compute_kernel(@vectors[i], features)
+		end
+		decision + @inter
+	end
+
+	def predict(features)
+		{% if is_outlier_detector %}
+		# Predict 1 for inliers and -1 for outliers:
+		_compute_decision(features) > 0 ? 1 : -1
+		{% else %}
+		_compute_decision(features)
+		{% endif %}
+	end

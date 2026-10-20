@@ -1,0 +1,44 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% if is_test or to_json %}
+require 'json'
+
+{% endif %}
+class {{ class_name }}
+
+	def initialize(vectors, coeffs, inter, kernel, gamma, coef0, degree)
+		@vectors = vectors
+		@coeffs = coeffs
+		@inter = inter
+		@kernel = kernel.upcase
+		@gamma = gamma
+		@coef0 = coef0
+		@degree = degree
+	end
+
+{% include 'kernel' %}
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+	# Model data:
+	{{ vectors }}
+	{{ coeffs }}
+
+	# Estimator:
+	est = {{ class_name }}.new vectors, coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		prediction = est.predict features
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	end
+end
+{% endblock %}

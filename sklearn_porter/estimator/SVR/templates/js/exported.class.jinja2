@@ -1,0 +1,47 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+var {{ class_name }} = function(jsonFile) {
+    var data = JSON.parse(fs.readFileSync(jsonFile));
+
+    this.vectors = data.vectors;
+    this.coeffs = data.coeffs;
+    this.inter = data.inter;
+    this.kernel = data.kernel.toUpperCase();
+    this.gamma = data.gamma;
+    this.coef0 = data.coef0;
+    this.degree = data.degree;
+
+{% include 'kernel' %}
+};
+
+{% include 'samples' %}
+
+var main = function () {
+    if (process.argv.length < 3) {
+        throw new Error("You have to pass the path to the model data.");
+    }
+
+    // Model data:
+    var json = process.argv[2];
+
+    // Estimator:
+    var est = new {{ class_name }}(json);
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(3)).forEach(function (features) {
+        var prediction = est.predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}
