@@ -1,4 +1,5 @@
 from collections.abc import Callable, Iterator
+from functools import partial
 from os import environ
 from pathlib import Path
 from typing import NamedTuple
@@ -22,14 +23,23 @@ from sklearn.ensemble import (
     RandomForestRegressor,
 )
 from sklearn.linear_model import (
+    ARDRegression,
+    BayesianRidge,
     ElasticNet,
+    ElasticNetCV,
+    HuberRegressor,
     Lasso,
+    LassoCV,
     LinearRegression,
     LogisticRegression,
+    LogisticRegressionCV,
     Perceptron,
     Ridge,
     RidgeClassifier,
+    RidgeClassifierCV,
+    RidgeCV,
     SGDClassifier,
+    SGDRegressor,
 )
 from sklearn.naive_bayes import (
     BernoulliNB,
@@ -39,7 +49,7 @@ from sklearn.naive_bayes import (
 )
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
-from sklearn.svm import SVC, LinearSVC, NuSVC
+from sklearn.svm import SVC, LinearSVC, LinearSVR, NuSVC
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 environ['SKLEARN_PORTER_PYTEST'] = 'True'
@@ -65,6 +75,15 @@ class Candidate(NamedTuple):
     create: Callable
 
 
+# The estimators with cross-validation split the samples into 5 folds by
+# default, but some tests fit them on 3 samples only:
+CREATE = {
+    ElasticNetCV: partial(ElasticNetCV, cv=2),
+    LassoCV: partial(LassoCV, cv=2),
+    LogisticRegressionCV: partial(LogisticRegressionCV, cv=2),
+}
+
+
 class Dataset(NamedTuple):
     name: str
     data: np.ndarray
@@ -81,6 +100,7 @@ def get_classifiers() -> Iterator[Candidate]:
         GradientBoostingClassifier,
         LinearSVC,
         LogisticRegression,
+        LogisticRegressionCV,
         SVC,
         NuSVC,
         KNeighborsClassifier,
@@ -91,10 +111,11 @@ def get_classifiers() -> Iterator[Candidate]:
         MLPClassifier,
         SGDClassifier,
         RidgeClassifier,
+        RidgeClassifierCV,
         Perceptron,
     ]
     for e in _classifiers:
-        yield Candidate(name=e.__name__, clazz=e, create=e)
+        yield Candidate(name=e.__name__, clazz=e, create=CREATE.get(e, e))
 
 
 def get_regressors() -> Iterator[Candidate]:
@@ -107,11 +128,19 @@ def get_regressors() -> Iterator[Candidate]:
         MLPRegressor,
         LinearRegression,
         Ridge,
+        RidgeCV,
         Lasso,
+        LassoCV,
         ElasticNet,
+        ElasticNetCV,
+        BayesianRidge,
+        ARDRegression,
+        HuberRegressor,
+        SGDRegressor,
+        LinearSVR,
     ]
     for e in _regressors:
-        yield Candidate(name=e.__name__, clazz=e, create=e)
+        yield Candidate(name=e.__name__, clazz=e, create=CREATE.get(e, e))
 
 
 def get_outlier_detectors() -> Iterator[Candidate]:

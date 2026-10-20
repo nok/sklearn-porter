@@ -16,6 +16,7 @@ from sklearn.base import BaseEstimator, clone
 from sklearn.datasets import (
     load_diabetes,
     load_iris,
+    load_linnerud,
     make_multilabel_classification,
 )
 from sklearn.dummy import DummyClassifier
@@ -31,14 +32,23 @@ from sklearn.ensemble import (
 )
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import (
+    ARDRegression,
+    BayesianRidge,
     ElasticNet,
+    ElasticNetCV,
+    HuberRegressor,
     Lasso,
+    LassoCV,
     LinearRegression,
     LogisticRegression,
+    LogisticRegressionCV,
     Perceptron,
     Ridge,
     RidgeClassifier,
+    RidgeClassifierCV,
+    RidgeCV,
     SGDClassifier,
+    SGDRegressor,
 )
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.naive_bayes import (
@@ -50,7 +60,7 @@ from sklearn.naive_bayes import (
 from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.svm import SVC, LinearSVC, NuSVC
+from sklearn.svm import SVC, LinearSVC, LinearSVR, NuSVC
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils import get_tags
 
@@ -545,15 +555,23 @@ def test_list_of_regressors():
         [
             r.__name__
             for r in [
+                ARDRegression,
+                BayesianRidge,
                 DecisionTreeRegressor,
                 ElasticNet,
+                ElasticNetCV,
                 ExtraTreesRegressor,
                 GradientBoostingRegressor,
+                HuberRegressor,
                 Lasso,
+                LassoCV,
                 LinearRegression,
+                LinearSVR,
                 MLPRegressor,
                 RandomForestRegressor,
                 Ridge,
+                RidgeCV,
+                SGDRegressor,
             ]
         ]
     )
@@ -585,11 +603,13 @@ def test_list_of_classifiers():
         KNeighborsClassifier,
         LinearSVC,
         LogisticRegression,
+        LogisticRegressionCV,
         MultinomialNB,
         NuSVC,
         Perceptron,
         RandomForestClassifier,
         RidgeClassifier,
+        RidgeClassifierCV,
         SGDClassifier,
         SVC,
         MLPClassifier,
@@ -958,6 +978,7 @@ def test_complement_nb_model_data(n_classes: int):
 SPARSIFIABLE_CLASSIFIERS = [
     LinearSVC(random_state=0),
     LogisticRegression(max_iter=1000),
+    LogisticRegressionCV(cv=3, max_iter=1000),
     SGDClassifier(random_state=0),
     Perceptron(random_state=0),
 ]
@@ -983,6 +1004,57 @@ def test_sparsified_linear_classifier(orig_est, binary: bool):
     # The passed estimator remains unchanged:
     assert est.estimator is orig_est
     assert issparse(orig_est.coef_)
+
+
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_sparsified_sgd_regressor():
+    """Test the model data of a SGDRegressor with sparse coefficients."""
+    x, y = load_diabetes(return_X_y=True)
+    orig_est = SGDRegressor(random_state=0).fit(X=x, y=y)
+    dense_est = Estimator(orig_est)._estimator
+    orig_est.sparsify()
+    sparse_est = Estimator(orig_est)._estimator
+    assert sparse_est.model_data == dense_est.model_data
+    # The sparse matrix has one row, but there is still a single output:
+    assert sparse_est.meta_info == dense_est.meta_info
+    assert not sparse_est.meta_info['is_multi_output']
+
+
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        ARDRegression(),
+        BayesianRidge(),
+        ElasticNetCV(cv=3),
+        HuberRegressor(max_iter=1000),
+        LassoCV(cv=3),
+        LinearSVR(random_state=0),
+        RidgeCV(),
+        SGDRegressor(random_state=0),
+    ],
+    ids=lambda x: type(x).__name__,
+)
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_linear_regressor_model_data(orig_est):
+    """Test the coefficients and the intercept of linear regressors."""
+    x, y = load_diabetes(return_X_y=True)
+    orig_est.fit(X=x, y=y)
+    est = Estimator(orig_est)._estimator
+    # A single output, also if the intercept is an array (e.g. SGDRegressor):
+    assert est.meta_info['n_outputs'] == 1
+    assert not est.meta_info['is_multi_output']
+    assert est.model_data['coeffs'] == [orig_est.coef_.tolist()]
+    assert est.model_data['inters'] == np.ravel(orig_est.intercept_).tolist()
+
+
+def test_ridge_cv_with_multiple_outputs():
+    """Test the coefficients of a RidgeCV with one alpha per output."""
+    x, y = load_linnerud(return_X_y=True)
+    orig_est = RidgeCV(alpha_per_target=True).fit(X=x, y=y)
+    est = Estimator(orig_est)._estimator
+    assert est.meta_info['n_outputs'] == 3
+    assert est.meta_info['is_multi_output']
+    assert est.model_data['coeffs'] == orig_est.coef_.tolist()
 
 
 def test_knn_fitted_on_sparse_data():
@@ -1076,12 +1148,18 @@ def test_multi_output_k_neighbors_classifier_targets():
 @pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
     'orig_est',
-    [RidgeClassifier(), MLPClassifier(max_iter=20, random_state=0)],
+    [
+        RidgeClassifier(),
+        RidgeClassifierCV(),
+        MLPClassifier(max_iter=20, random_state=0),
+    ],
     ids=lambda x: type(x).__name__,
 )
 @pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
 def test_multilabel_classifier(
-    orig_est: RidgeClassifier | MLPClassifier, language: str, template: str
+    orig_est: RidgeClassifier | RidgeClassifierCV | MLPClassifier,
+    language: str,
+    template: str,
 ):
     """Test the port of classifiers fitted on a label indicator matrix."""
     if not can(orig_est, language, template, 'predict'):

@@ -6,10 +6,18 @@ import numpy as np
 from loguru import logger as L
 
 # scikit-learn
+from sklearn.linear_model import ARDRegression as ARDRegressionClass
+from sklearn.linear_model import BayesianRidge as BayesianRidgeClass
 from sklearn.linear_model import ElasticNet as ElasticNetClass
+from sklearn.linear_model import ElasticNetCV as ElasticNetCVClass
+from sklearn.linear_model import HuberRegressor as HuberRegressorClass
 from sklearn.linear_model import Lasso as LassoClass
+from sklearn.linear_model import LassoCV as LassoCVClass
 from sklearn.linear_model import LinearRegression as LinearRegressionClass
 from sklearn.linear_model import Ridge as RidgeClass
+from sklearn.linear_model import RidgeCV as RidgeCVClass
+from sklearn.linear_model import SGDRegressor as SGDRegressorClass
+from sklearn.svm import LinearSVR as LinearSVRClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -69,8 +77,16 @@ class LinearRegression(EstimatorBase, EstimatorApiABC):
         self,
         estimator: LinearRegressionClass
         | RidgeClass
+        | RidgeCVClass
         | LassoClass
-        | ElasticNetClass,
+        | LassoCVClass
+        | ElasticNetClass
+        | ElasticNetCVClass
+        | BayesianRidgeClass
+        | ARDRegressionClass
+        | HuberRegressorClass
+        | SGDRegressorClass
+        | LinearSVRClass,
     ):
         super().__init__(estimator)
         L.info(f'Create specific estimator `{self.estimator_name}`.')
@@ -87,13 +103,16 @@ class LinearRegression(EstimatorBase, EstimatorApiABC):
         # A regressor with a single output stores the coefficients as vector
         # and the intercept as scalar, a regressor with multiple outputs one
         # row of coefficients and one intercept per output:
-        coeffs = np.atleast_2d(est.coef_)
-        inters = np.broadcast_to(est.intercept_, (len(coeffs),))
+        coeffs = np.atleast_2d(est.coef_)  # ty: ignore[no-matching-overload]
+        inters = np.broadcast_to(  # ty: ignore[no-matching-overload]
+            est.intercept_, (len(coeffs),)
+        )
+        n_dims = np.ndim(est.coef_)  # ty: ignore[invalid-argument-type]
 
         self.meta_info = dict(
             n_features=coeffs.shape[1],
             n_outputs=len(coeffs),
-            is_multi_output=np.ndim(est.coef_) == 2,
+            is_multi_output=n_dims == 2,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
