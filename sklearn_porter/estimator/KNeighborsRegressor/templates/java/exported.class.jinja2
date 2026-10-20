@@ -1,0 +1,197 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import com.google.gson.Gson;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+{% if (is_test or to_json) and is_multi_output %}
+import java.util.Arrays;
+{% endif %}
+
+
+class {{ class_name }} {
+
+    private class Regressor {
+        private double[][] X;
+        private double[] y;
+        private int k;
+        private String metric;
+        private double power;
+    }
+
+    private class Neighbor {
+        int index;
+        double dist;
+
+        private Neighbor(int index, double dist) {
+            this.index = index;
+            this.dist = dist;
+        }
+    }
+
+    private Regressor reg;
+
+    public {{ class_name }}(String file) throws IOException {
+        try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
+            this.reg = new Gson().fromJson(reader, Regressor.class);
+        }
+    }
+
+    // Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
+    private static double compute(double[] temp, double[] cand, String metric, double q) {
+        double dist = 0.;
+        double diff;
+        if (metric.equals("chebyshev")) {
+            for (int i = 0, l = temp.length; i < l; i++) {
+                dist = Math.max(dist, Math.abs(temp[i] - cand[i]));
+            }
+            return dist;
+        }
+        if (metric.equals("cosine")) {
+            double dot = 0., normTemp = 0., normCand = 0.;
+            for (int i = 0, l = temp.length; i < l; i++) {
+                dot += temp[i] * cand[i];
+                normTemp += temp[i] * temp[i];
+                normCand += cand[i] * cand[i];
+            }
+            // The distance to a zero vector is 1 like in scikit-learn:
+            if (normTemp == 0. || normCand == 0.) {
+                return 1.;
+            }
+            dist = 1. - dot / (Math.sqrt(normTemp) * Math.sqrt(normCand));
+            return Math.min(Math.max(dist, 0.), 2.);
+        }
+        if (metric.equals("hamming")) {
+            for (int i = 0, l = temp.length; i < l; i++) {
+                if (temp[i] != cand[i]) {
+                    dist += 1.;
+                }
+            }
+            return dist / temp.length;
+        }
+        for (int i = 0, l = temp.length; i < l; i++) {
+            diff = Math.abs(temp[i] - cand[i]);
+            if (q == 1) {
+                dist += diff;
+            } else if (q == 2) {
+                dist += diff * diff;
+            } else {
+                dist += Math.pow(diff, q);
+            }
+        }
+        if (q == 1) {
+            return dist;
+        } else if (q == 2) {
+            return Math.sqrt(dist);
+        }
+        return Math.pow(dist, 1. / q);
+    }
+
+    // Find the k nearest neighbors sorted by distance and index (like a stable
+    // sort). A sample is only inserted if it's nearer than the k-th neighbor:
+    private Neighbor[] findNeighbors(double[] features) {
+        Neighbor[] neighbors = new Neighbor[this.reg.k];
+        int n = 0;
+        for (int i = 0; i < this.reg.X.length; i++) {
+            double dist = {{ class_name }}.compute(this.reg.X[i], features, this.reg.metric, this.reg.power);
+            if (n == this.reg.k && !(dist < neighbors[this.reg.k - 1].dist)) {
+                continue;
+            }
+            int j = n < this.reg.k ? n++ : this.reg.k - 1;
+            while (j > 0 && dist < neighbors[j - 1].dist) {
+                neighbors[j] = neighbors[j - 1];
+                j--;
+            }
+            neighbors[j] = new Neighbor(i, dist);
+        }
+        return neighbors;
+    }
+
+{% if weights == 'distance' %}
+    // Weight the nearest neighbors by the inverse of their distances. If some
+    // neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
+    private static double[] weigh(Neighbor[] neighbors, int k) {
+        double[] weights = new double[k];
+        boolean isExact = false;
+        for (int i = 0; i < k; i++) {
+            weights[i] = 1. / neighbors[i].dist;
+            if (Double.isInfinite(weights[i])) {
+                isExact = true;
+            }
+        }
+        if (isExact) {
+            for (int i = 0; i < k; i++) {
+                weights[i] = Double.isInfinite(weights[i]) ? 1. : 0.;
+            }
+        }
+        return weights;
+    }
+
+{% endif %}
+    public double[] predict(double[] features) {
+        Neighbor[] neighbors = this.findNeighbors(features);
+        int nOutputs = this.reg.y.length / this.reg.X.length;
+        double[] values = new double[nOutputs];
+{% if weights == 'distance' %}
+        // The weighted mean of the targets of the nearest neighbors:
+        double[] weights = weigh(neighbors, this.reg.k);
+        double total = 0.;
+        for (int i = 0; i < this.reg.k; i++) {
+            total += weights[i];
+        }
+        for (int j = 0; j < nOutputs; j++) {
+            for (int i = 0; i < this.reg.k; i++) {
+                values[j] += this.reg.y[neighbors[i].index * nOutputs + j] * weights[i];
+            }
+            values[j] /= total;
+        }
+{% else %}
+        // The mean of the targets of the nearest neighbors:
+        for (int j = 0; j < nOutputs; j++) {
+            for (int i = 0; i < this.reg.k; i++) {
+                values[j] += this.reg.y[neighbors[i].index * nOutputs + j];
+            }
+            values[j] /= this.reg.k;
+        }
+{% endif %}
+        return values;
+    }
+
+{% include 'samples' %}
+
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Model data:
+        String modelData = args[0];
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}(modelData);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            {% if is_test or to_json %}
+            // Get JSON:
+            double[] prediction = reg.predict(features);
+            {% if is_multi_output %}
+            System.out.println("{\"predict\": " + Arrays.toString(prediction) + "}");
+            {% else %}
+            System.out.println("{\"predict\": " + String.valueOf(prediction[0]) + "}");
+            {% endif %}
+            {% else %}
+            // Get predicted values:
+            double[] prediction = reg.predict(features);
+            for (int i = 0; i < prediction.length; i++) {
+                System.out.println("Predicted value #" + i + " : " + String.valueOf(prediction[i]));
+            }
+            {% endif %}
+        }
+
+    }
+}
+{% endblock %}

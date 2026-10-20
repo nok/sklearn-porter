@@ -1,0 +1,175 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+var {{ class_name }} = function(jsonFile) {
+    this.data = JSON.parse(fs.readFileSync(jsonFile));
+
+    var Neighbor = function(index, dist) {
+        this.index = index;
+        this.dist = dist;
+    };
+
+    // Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
+    var _compute = function(temp, cand, metric, q) {
+        var dist = 0., diff, i, l = temp.length;
+        if (metric === 'chebyshev') {
+            for (i = 0; i < l; i++) {
+                dist = Math.max(dist, Math.abs(temp[i] - cand[i]));
+            }
+            return dist;
+        }
+        if (metric === 'cosine') {
+            var dot = 0., normTemp = 0., normCand = 0.;
+            for (i = 0; i < l; i++) {
+                dot += temp[i] * cand[i];
+                normTemp += temp[i] * temp[i];
+                normCand += cand[i] * cand[i];
+            }
+            // The distance to a zero vector is 1 like in scikit-learn:
+            if (normTemp === 0 || normCand === 0) {
+                return 1.;
+            }
+            dist = 1. - dot / (Math.sqrt(normTemp) * Math.sqrt(normCand));
+            return Math.min(Math.max(dist, 0.), 2.);
+        }
+        if (metric === 'hamming') {
+            for (i = 0; i < l; i++) {
+                if (temp[i] !== cand[i]) {
+                    dist += 1.;
+                }
+            }
+            return dist / l;
+        }
+        for (i = 0; i < l; i++) {
+            diff = Math.abs(temp[i] - cand[i]);
+            if (q === 1) {
+                dist += diff;
+            } else if (q === 2) {
+                dist += diff * diff;
+            } else {
+                dist += Math.pow(diff, q);
+            }
+        }
+        if (q === 1) {
+            return dist;
+        } else if (q === 2) {
+            return Math.sqrt(dist);
+        }
+        return Math.pow(dist, 1. / q);
+    };
+
+    // Find the k nearest neighbors sorted by distance and index (like a stable
+    // sort). A sample is only inserted if it's nearer than the k-th neighbor:
+    var _findNeighbors = function(features, X, k, metric, power) {
+        var neighbors = [], i, j, dist;
+        for (i = 0; i < X.length; i++) {
+            dist = _compute(X[i], features, metric, power);
+            if (neighbors.length === k && !(dist < neighbors[k - 1].dist)) {
+                continue;
+            }
+            j = neighbors.length < k ? neighbors.length : k - 1;
+            while (j > 0 && dist < neighbors[j - 1].dist) {
+                neighbors[j] = neighbors[j - 1];
+                j--;
+            }
+            neighbors[j] = new Neighbor(i, dist);
+        }
+        return neighbors;
+    };
+
+{% if weights == 'distance' %}
+    // Weight the nearest neighbors by the inverse of their distances. If some
+    // neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
+    var _weigh = function(neighbors, k) {
+        var i, weights = new Array(k), isExact = false;
+        for (i = 0; i < k; i++) {
+            weights[i] = 1. / neighbors[i].dist;
+            if (Math.abs(weights[i]) === Infinity) {
+                isExact = true;
+            }
+        }
+        if (isExact) {
+            for (i = 0; i < k; i++) {
+                weights[i] = Math.abs(weights[i]) === Infinity ? 1. : 0.;
+            }
+        }
+        return weights;
+    };
+
+{% endif %}
+
+    this.predict = function(features) {
+        var neighbors = _findNeighbors(features, this.data.X, this.data.k, this.data.metric, this.data.power);
+        var i, j, nOutputs = this.data.y.length / this.data.X.length;
+        var values = new Array(nOutputs).fill(0);
+{% if weights == 'distance' %}
+        // The weighted mean of the targets of the nearest neighbors:
+        var weights = _weigh(neighbors, this.data.k), total = 0.;
+        for (i = 0; i < this.data.k; i++) {
+            total += weights[i];
+        }
+        for (j = 0; j < nOutputs; j++) {
+            for (i = 0; i < this.data.k; i++) {
+                values[j] += this.data.y[neighbors[i].index * nOutputs + j] * weights[i];
+            }
+            values[j] /= total;
+        }
+{% else %}
+        // The mean of the targets of the nearest neighbors:
+        for (j = 0; j < nOutputs; j++) {
+            for (i = 0; i < this.data.k; i++) {
+                values[j] += this.data.y[neighbors[i].index * nOutputs + j];
+            }
+            values[j] /= this.data.k;
+        }
+{% endif %}
+        {% if is_multi_output %}
+        return values;
+        {% else %}
+        return values[0];
+        {% endif %}
+    };
+
+};
+
+{% include 'samples' %}
+
+var main = function () {
+    if (process.argv.length < 3) {
+        throw new Error("You have to pass the path to the model data.");
+    }
+
+    // Model data:
+    var json = process.argv[2];
+
+    // Estimator:
+    var reg = new {{ class_name }}(json);
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(3)).forEach(function (features) {
+        {% if is_test or to_json %}
+        // Get JSON:
+        console.log(JSON.stringify({
+            "predict": reg.predict(features)
+        }));
+        {% else %}
+        // Get predicted values:
+        var result = reg.predict(features);
+        {% if is_multi_output %}
+        for (var i = 0; i < result.length; i++) {
+            console.log("Predicted value #" + i + ": " + result[i]);
+        }
+        {% else %}
+        console.log("Predicted value: " + result);
+        {% endif %}
+        {% endif %}
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

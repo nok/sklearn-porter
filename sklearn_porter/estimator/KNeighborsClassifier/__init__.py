@@ -7,6 +7,7 @@ from loguru import logger as L
 
 # scikit-learn
 from sklearn.neighbors import KNeighborsClassifier as KNeighborsClassifierClass
+from sklearn.neighbors import KNeighborsRegressor as KNeighborsRegressorClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -14,6 +15,65 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_labels, get_output_classes
+
+
+def get_metric(
+    estimator: KNeighborsClassifierClass | KNeighborsRegressorClass,
+) -> tuple[str, float]:
+    """
+    Get the metric and the power of the distance of a fitted estimator.
+
+    Parameters
+    ----------
+    estimator : KNeighborsClassifier or KNeighborsRegressor
+        The fitted estimator.
+
+    Returns
+    -------
+    The metric (`minkowski`, `chebyshev`, `cosine` or `hamming`) and the
+    power of the Minkowski distance.
+
+    Raises
+    ------
+    NotSupportedYetError
+        If the weights, the metric or its parameters aren't supported.
+    """
+    est = estimator  # alias
+
+    # The votes of the neighbors are equal (`uniform`) or weighted by the
+    # inverse of their distances (`distance`), callables aren't supported:
+    if est.weights not in ('uniform', 'distance'):
+        msg = 'Only the weights `uniform` and `distance` are supported.'
+        raise exception.NotSupportedYetError(msg)
+
+    # The effective metric and its parameters contain the used distance,
+    # e.g. `manhattan` for `p=1` or `{'p': 3}` from `metric_params`. The
+    # ported estimators support the metrics `minkowski`, `chebyshev`,
+    # `cosine` and `hamming`. The power is only used by the Minkowski
+    # distance, the other metrics keep the default power (`p=2`):
+    metric = est.effective_metric_
+    metric_params = est.effective_metric_params_
+    power = 2
+    if metric in ('euclidean', 'l2'):
+        metric = 'minkowski'
+    elif metric in ('manhattan', 'cityblock', 'l1'):
+        metric, power = 'minkowski', 1
+    elif metric == 'minkowski' and np.isfinite(metric_params['p']):
+        power = metric_params['p']
+    elif metric in ('minkowski', 'infinity'):  # e.g. `minkowski`, `p=inf`
+        metric = 'chebyshev'
+    elif metric not in ('chebyshev', 'cosine', 'hamming'):
+        name = getattr(metric, '__name__', metric)
+        msg = (
+            f'The metric `{name}` is not supported, only the metrics '
+            '`minkowski` (e.g. `euclidean` or `manhattan`), `chebyshev`, '
+            '`cosine` and `hamming`.'
+        )
+        raise exception.NotSupportedYetError(msg)
+    if metric_params.get('w') is not None:
+        msg = 'The weighted Minkowski distance (`w`) is not supported.'
+        raise exception.NotSupportedYetError(msg)
+    return metric, power
 
 
 class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
@@ -69,39 +129,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
                 self.estimator_name
             ) from None
 
-        # The votes of the neighbors are equal (`uniform`) or weighted by the
-        # inverse of their distances (`distance`), callables aren't supported:
-        if est.weights not in ('uniform', 'distance'):
-            msg = 'Only the weights `uniform` and `distance` are supported.'
-            raise exception.NotSupportedYetError(msg)
-
-        # The effective metric and its parameters contain the used distance,
-        # e.g. `manhattan` for `p=1` or `{'p': 3}` from `metric_params`. The
-        # ported estimators support the metrics `minkowski`, `chebyshev`,
-        # `cosine` and `hamming`. The power is only used by the Minkowski
-        # distance, the other metrics keep the default power (`p=2`):
-        metric = est.effective_metric_
-        metric_params = est.effective_metric_params_
-        power = 2
-        if metric in ('euclidean', 'l2'):
-            metric = 'minkowski'
-        elif metric in ('manhattan', 'cityblock', 'l1'):
-            metric, power = 'minkowski', 1
-        elif metric == 'minkowski' and np.isfinite(metric_params['p']):
-            power = metric_params['p']
-        elif metric in ('minkowski', 'infinity'):  # e.g. `minkowski`, `p=inf`
-            metric = 'chebyshev'
-        elif metric not in ('chebyshev', 'cosine', 'hamming'):
-            name = getattr(metric, '__name__', metric)
-            msg = (
-                f'The metric `{name}` is not supported, only the metrics '
-                '`minkowski` (e.g. `euclidean` or `manhattan`), `chebyshev`, '
-                '`cosine` and `hamming`.'
-            )
-            raise exception.NotSupportedYetError(msg)
-        if metric_params.get('w') is not None:
-            msg = 'The weighted Minkowski distance (`w`) is not supported.'
-            raise exception.NotSupportedYetError(msg)
+        metric, power = get_metric(est)
 
         # The class votes of all outputs are concatenated, `output_classes`
         # defines their segments:

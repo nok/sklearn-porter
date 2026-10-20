@@ -66,7 +66,7 @@ from sklearn.naive_bayes import (
     GaussianNB,
     MultinomialNB,
 )
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.svm import (
@@ -886,6 +886,7 @@ class Estimator:
             ExtraTreesRegressor,
             GradientBoostingRegressor,
             HuberRegressor,
+            KNeighborsRegressor,
             Lasso,
             LassoCV,
             LinearRegression,

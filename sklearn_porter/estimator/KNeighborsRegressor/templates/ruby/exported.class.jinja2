@@ -1,0 +1,151 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	def initialize(path)
+		data = JSON.parse(File.read(path))
+		@x = data['X']
+		@y = data['y']
+		@k = data['k']
+		@metric = data['metric']
+		@power = data['power']
+	end
+
+	# Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
+	def _compute(temp, cand, metric, q)
+		if metric == 'chebyshev'
+			return (0 ... temp.length).map { |i| (temp[i] - cand[i]).abs }.max
+		end
+		if metric == 'cosine'
+			dot, norm_temp, norm_cand = 0.0, 0.0, 0.0
+			for i in 0 ... temp.length
+				dot += temp[i] * cand[i]
+				norm_temp += temp[i] * temp[i]
+				norm_cand += cand[i] * cand[i]
+			end
+			# The distance to a zero vector is 1 like in scikit-learn:
+			return 1.0 if norm_temp == 0 || norm_cand == 0
+			dist = 1.0 - dot / (Math.sqrt(norm_temp) * Math.sqrt(norm_cand))
+			return [[dist, 0.0].max, 2.0].min
+		end
+		if metric == 'hamming'
+			return (0 ... temp.length).count { |i| temp[i] != cand[i] }.to_f / temp.length
+		end
+		dist = 0.0
+		for i in 0 ... temp.length
+			diff = (temp[i] - cand[i]).abs
+			if q == 1
+				dist += diff
+			elsif q == 2
+				dist += diff * diff
+			else
+				dist += diff ** q
+			end
+		end
+		if q == 1
+			dist
+		elsif q == 2
+			Math.sqrt dist
+		else
+			dist ** (1.0 / q)
+		end
+	end
+
+	# Find the k nearest neighbors (index and distance) sorted by distance and
+	# index (like a stable sort). A sample is only inserted if it's nearer
+	# than the k-th neighbor:
+	def _find_neighbors(features)
+		neighbors = []
+		for i in 0 ... @x.length
+			dist = _compute @x[i], features, @metric, @power
+			next if neighbors.length == @k && !(dist < neighbors[@k - 1][1])
+			j = neighbors.length < @k ? neighbors.length : @k - 1
+			while j > 0 && dist < neighbors[j - 1][1]
+				neighbors[j] = neighbors[j - 1]
+				j -= 1
+			end
+			neighbors[j] = [i, dist]
+		end
+		neighbors
+	end
+
+{% if weights == 'distance' %}
+	# Weight the nearest neighbors by the inverse of their distances. If some
+	# neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
+	def _weigh(dists)
+		weights = dists.map { |dist| 1.0 / dist }
+		if weights.any? { |weight| weight.infinite? }
+			weights = weights.map { |weight| weight.infinite? ? 1.0 : 0.0 }
+		end
+		weights
+	end
+
+{% endif %}
+	def predict(features)
+		neighbors = _find_neighbors features
+		n_outputs = @y.length / @x.length
+		values = Array.new(n_outputs, 0.0)
+{% if weights == 'distance' %}
+		# The weighted mean of the targets of the nearest neighbors:
+		weights = _weigh(neighbors.map { |neighbor| neighbor[1] })
+		total = 0.0
+		for i in 0 ... @k
+			total += weights[i]
+		end
+		for j in 0 ... n_outputs
+			for i in 0 ... @k
+				values[j] += @y[neighbors[i][0] * n_outputs + j] * weights[i]
+			end
+			values[j] /= total
+		end
+{% else %}
+		# The mean of the targets of the nearest neighbors:
+		for j in 0 ... n_outputs
+			for i in 0 ... @k
+				values[j] += @y[neighbors[i][0] * n_outputs + j]
+			end
+			values[j] /= @k
+		end
+{% endif %}
+		{% if is_multi_output %}
+		values
+		{% else %}
+		values[0]
+		{% endif %}
+	end
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+	{% endfilter %}
+
+	raise "You have to pass the path to the model data." if ARGV.empty?
+
+	# Model data:
+	modelData = ARGV.shift
+
+	# Estimator:
+	reg = {{ class_name }}.new modelData
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		{% if is_test or to_json %}
+		# Get JSON:
+		prediction = reg.predict features
+		puts JSON.generate({:predict => prediction})
+		{% else %}
+		# Get predicted values:
+		prediction = reg.predict features
+		Array(prediction).each_with_index do |value, i|
+			puts "Predicted value ##{i} : #{value}"
+		end
+		{% endif %}
+	end
+end
+{% endblock %}
