@@ -1,0 +1,63 @@
+    // The power with an integer exponent (by repeated squaring) like libsvm:
+    private static double powi(double base, int times) {
+        double tmp = base, ret = 1.;
+        for (int t = times; t > 0; t /= 2) {
+            if (t % 2 == 1) {
+                ret *= tmp;
+            }
+            tmp = tmp * tmp;
+        }
+        return ret;
+    }
+
+    // The kernel of a support vector and the features:
+    private double computeKernel(double[] vector, double[] features) {
+        double kernel = 0.;
+        switch (this.kernel) {
+            case LINEAR:
+                // <x,x'>
+                for (int j = 0; j < vector.length; j++) {
+                    kernel += vector[j] * features[j];
+                }
+                return kernel;
+            case POLY:
+                // (y<x,x'>+r)^d
+                for (int j = 0; j < vector.length; j++) {
+                    kernel += vector[j] * features[j];
+                }
+                return powi((this.gamma * kernel) + this.coef0, this.degree);
+            case RBF:
+                // exp(-y|x-x'|^2)
+                for (int j = 0; j < vector.length; j++) {
+                    double diff = vector[j] - features[j];
+                    kernel += diff * diff;
+                }
+                return Math.exp(-this.gamma * kernel);
+            default:
+                // tanh(y<x,x'>+r)
+                for (int j = 0; j < vector.length; j++) {
+                    kernel += vector[j] * features[j];
+                }
+                return Math.tanh((this.gamma * kernel) + this.coef0);
+        }
+    }
+
+    // The sum of the weighted kernels of all support vectors and the intercept:
+    private double computeDecision(double[] features) {
+        double decision = 0.;
+        for (int i = 0; i < this.vectors.length; i++) {
+            decision += this.coeffs[i] * this.computeKernel(this.vectors[i], features);
+        }
+        return decision + this.inter;
+    }
+
+{% if is_outlier_detector %}
+    // Predict 1 for inliers and -1 for outliers:
+    public int predict(double[] features) {
+        return this.computeDecision(features) > 0 ? 1 : -1;
+    }
+{% else %}
+    public double predict(double[] features) {
+        return this.computeDecision(features);
+    }
+{% endif %}

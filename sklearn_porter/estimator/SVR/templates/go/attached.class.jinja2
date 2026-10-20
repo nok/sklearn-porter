@@ -1,0 +1,58 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	{% if is_test or to_json %}
+	"encoding/json"
+	{% endif %}
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type {{ class_name }} struct {
+	vectors [][]float64
+	coeffs []float64
+	inter float64
+	kernel string
+	gamma float64
+	coef0 float64
+	degree int
+}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict {{ 'int' if is_outlier_detector else 'float64' }} `json:"predict"`
+}
+
+{% endif %}
+{% with field_vectors='vectors', field_coeffs='coeffs', field_inter='inter', field_kernel='kernel', field_gamma='gamma', field_coef0='coef0', field_degree='degree' %}
+{% include 'kernel' %}
+{% endwith %}
+
+{% include 'samples' %}
+
+// Model data:
+{{ vectors }}
+{{ coeffs }}
+
+func main() {
+	// Estimator:
+	est := {{ class_name }}{vectors, coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		prediction := est.Predict(features)
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	})
+
+}
+{% endblock %}

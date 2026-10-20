@@ -1,0 +1,63 @@
+    // The power with an integer exponent (by repeated squaring) like libsvm:
+    private static function powi($base, $times) {
+        $tmp = $base;
+        $ret = 1.;
+        for ($t = (int) $times; $t > 0; $t = intdiv($t, 2)) {
+            if ($t % 2 == 1) {
+                $ret *= $tmp;
+            }
+            $tmp = $tmp * $tmp;
+        }
+        return $ret;
+    }
+
+    // The kernel of a support vector and the features:
+    private function computeKernel($vector, $features) {
+        $kernel = 0.;
+        $n = count($vector);
+        switch ($this->kernel) {
+            case 'LINEAR':
+                // <x,x'>
+                for ($j = 0; $j < $n; $j++) {
+                    $kernel += $vector[$j] * $features[$j];
+                }
+                return $kernel;
+            case 'POLY':
+                // (y<x,x'>+r)^d
+                for ($j = 0; $j < $n; $j++) {
+                    $kernel += $vector[$j] * $features[$j];
+                }
+                return self::powi(($this->gamma * $kernel) + $this->coef0, $this->degree);
+            case 'RBF':
+                // exp(-y|x-x'|^2)
+                for ($j = 0; $j < $n; $j++) {
+                    $diff = $vector[$j] - $features[$j];
+                    $kernel += $diff * $diff;
+                }
+                return exp(-$this->gamma * $kernel);
+            default:
+                // tanh(y<x,x'>+r)
+                for ($j = 0; $j < $n; $j++) {
+                    $kernel += $vector[$j] * $features[$j];
+                }
+                return tanh(($this->gamma * $kernel) + $this->coef0);
+        }
+    }
+
+    // The sum of the weighted kernels of all support vectors and the intercept:
+    private function computeDecision($features) {
+        $decision = 0.;
+        for ($i = 0, $n = count($this->vectors); $i < $n; $i++) {
+            $decision += $this->coeffs[$i] * $this->computeKernel($this->vectors[$i], $features);
+        }
+        return $decision + $this->inter;
+    }
+
+    public function predict($features) {
+        {% if is_outlier_detector %}
+        // Predict 1 for inliers and -1 for outliers:
+        return $this->computeDecision($features) > 0 ? 1 : -1;
+        {% else %}
+        return $this->computeDecision($features);
+        {% endif %}
+    }

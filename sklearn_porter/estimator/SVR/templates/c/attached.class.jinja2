@@ -1,0 +1,38 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_VECTORS {{ n_vectors }}
+#define KERNEL_TYPE '{{ kernel }}'
+#define KERNEL_GAMMA {{ gamma }}
+#define KERNEL_COEF {{ coef0 }}
+#define KERNEL_DEGREE {{ degree }}
+
+{{ vectors }}
+{{ coeffs }}
+const double intercept = {{ inter }};
+
+{% with kernel_type='KERNEL_TYPE', kernel_gamma='KERNEL_GAMMA', kernel_coef='KERNEL_COEF', kernel_degree='KERNEL_DEGREE', intercept='intercept' %}
+{% include 'kernel' %}
+{% endwith %}
+
+{% include 'samples' %}
+
+int main(int argc, const char *argv[]) {
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        {{ 'int' if is_outlier_detector else 'double' }} prediction = predict(features);
+
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+    return 0;
+}
+{% endblock %}

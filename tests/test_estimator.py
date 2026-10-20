@@ -60,7 +60,15 @@ from sklearn.naive_bayes import (
 from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.svm import SVC, LinearSVC, LinearSVR, NuSVC
+from sklearn.svm import (
+    SVC,
+    SVR,
+    LinearSVC,
+    LinearSVR,
+    NuSVC,
+    NuSVR,
+    OneClassSVM,
+)
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils import get_tags
 
@@ -568,10 +576,12 @@ def test_list_of_regressors():
                 LinearRegression,
                 LinearSVR,
                 MLPRegressor,
+                NuSVR,
                 RandomForestRegressor,
                 Ridge,
                 RidgeCV,
                 SGDRegressor,
+                SVR,
             ]
         ]
     )
@@ -582,7 +592,7 @@ def test_list_of_regressors():
 def test_list_of_outlier_detectors():
     """Test and compare list of outlier detectors."""
     result = [e.__name__ for e in Estimator.outlier_detectors()]
-    assert result == ['IsolationForest']
+    assert result == ['IsolationForest', 'OneClassSVM']
     assert Estimator.estimators() == (
         Estimator.classifiers()
         + Estimator.regressors()
@@ -732,7 +742,9 @@ def test_extraction_from_randomized_search_cv():
     assert isinstance(est.estimator, SVC)
 
 
-@pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
+@pytest.mark.parametrize(
+    'orig_est', [SVC, NuSVC, SVR, NuSVR, OneClassSVM], ids=lambda x: x.__name__
+)
 @pytest.mark.parametrize('gamma', ['scale', 'auto'])
 @pytest.mark.parametrize('language', LANGUAGES)
 def test_computed_gamma_of_svm(orig_est: type, gamma: str, language: str):
@@ -763,7 +775,9 @@ def test_svm_with_break_ties(orig_est: type):
         Estimator(orig_est)
 
 
-@pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
+@pytest.mark.parametrize(
+    'orig_est', [SVC, NuSVC, SVR, NuSVR, OneClassSVM], ids=lambda x: x.__name__
+)
 def test_svm_with_precomputed_kernel(orig_est: type):
     """Test the rejection of the kernel `precomputed`, which isn't ported."""
     x, y = load_iris(return_X_y=True)
@@ -772,7 +786,9 @@ def test_svm_with_precomputed_kernel(orig_est: type):
         Estimator(orig_est)
 
 
-@pytest.mark.parametrize('orig_est', [SVC, NuSVC], ids=lambda x: x.__name__)
+@pytest.mark.parametrize(
+    'orig_est', [SVC, NuSVC, SVR, NuSVR, OneClassSVM], ids=lambda x: x.__name__
+)
 def test_svm_fitted_on_sparse_data(orig_est: type):
     """Test the model data of a SVM which was fitted on sparse data."""
     x, y = load_iris(return_X_y=True)
@@ -784,6 +800,38 @@ def test_svm_fitted_on_sparse_data(orig_est: type):
     dense_data.pop('gamma')
     assert sparse_est.model_data == dense_data
     assert sparse_est.meta_info['n_features'] == x.shape[1]
+
+
+@pytest.mark.parametrize(
+    'orig_est', [SVR, NuSVR, OneClassSVM], ids=lambda x: x.__name__
+)
+def test_svm_model_data_of_one_output(orig_est: type):
+    """Test the model data of SVMs which compute a single decision value."""
+    x, y = load_diabetes(return_X_y=True)
+    orig_est = orig_est().fit(X=x, y=y)
+    est = Estimator(orig_est)._estimator
+    model_data = est.model_data
+    assert model_data['vectors'] == orig_est.support_vectors_.tolist()
+    # The coefficients and the intercept aren't negated like by binary SVCs:
+    assert model_data['coeffs'] == orig_est.dual_coef_[0].tolist()
+    assert model_data['inter'] == orig_est.intercept_[0]
+    assert est.meta_info['n_vectors'] == len(orig_est.support_vectors_)
+    assert est.meta_info['is_outlier_detector'] == isinstance(
+        orig_est, OneClassSVM
+    )
+
+
+def test_svr_without_support_vectors():
+    """Test a SVR without support vectors, which predicts the intercept."""
+    x, y = load_diabetes(return_X_y=True)
+    orig_est = SVR(epsilon=1000).fit(X=x, y=y)
+    assert len(orig_est.support_vectors_) == 0
+    est = Estimator(orig_est)._estimator
+    # A zero vector with the coefficient 0 keeps the arrays non-empty:
+    assert est.model_data['vectors'] == [[0.0] * x.shape[1]]
+    assert est.model_data['coeffs'] == [0.0]
+    assert est.model_data['inter'] == orig_est.intercept_[0]
+    assert est.meta_info['n_vectors'] == 1
 
 
 @pytest.mark.parametrize('binary', [True, False], ids=['binary', 'multi'])

@@ -1,0 +1,63 @@
+    // The power with an integer exponent (by repeated squaring) like libsvm:
+    private static double Powi(double b, int times) {
+        double tmp = b, ret = 1.0;
+        for (int t = times; t > 0; t /= 2) {
+            if (t % 2 == 1) {
+                ret *= tmp;
+            }
+            tmp = tmp * tmp;
+        }
+        return ret;
+    }
+
+    // The kernel of a support vector and the features:
+    private double ComputeKernel(double[] vector, double[] features) {
+        double kernel = 0.0;
+        switch (this.kernel) {
+            case Kernel.Linear:
+                // <x,x'>
+                for (int j = 0; j < vector.Length; j++) {
+                    kernel += vector[j] * features[j];
+                }
+                return kernel;
+            case Kernel.Poly:
+                // (y<x,x'>+r)^d
+                for (int j = 0; j < vector.Length; j++) {
+                    kernel += vector[j] * features[j];
+                }
+                return Powi((this.gamma * kernel) + this.coef0, this.degree);
+            case Kernel.Rbf:
+                // exp(-y|x-x'|^2)
+                for (int j = 0; j < vector.Length; j++) {
+                    double diff = vector[j] - features[j];
+                    kernel += diff * diff;
+                }
+                return Math.Exp(-this.gamma * kernel);
+            default:
+                // tanh(y<x,x'>+r)
+                for (int j = 0; j < vector.Length; j++) {
+                    kernel += vector[j] * features[j];
+                }
+                return Math.Tanh((this.gamma * kernel) + this.coef0);
+        }
+    }
+
+    // The sum of the weighted kernels of all support vectors and the intercept:
+    private double ComputeDecision(double[] features) {
+        double decision = 0.0;
+        for (int i = 0; i < this.vectors.Length; i++) {
+            decision += this.coeffs[i] * this.ComputeKernel(this.vectors[i], features);
+        }
+        return decision + this.inter;
+    }
+
+{% if is_outlier_detector %}
+    // Predict 1 for inliers and -1 for outliers:
+    public int Predict(double[] features) {
+        return this.ComputeDecision(features) > 0 ? 1 : -1;
+    }
+{% else %}
+    public double Predict(double[] features) {
+        return this.ComputeDecision(features);
+    }
+{% endif %}

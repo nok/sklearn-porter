@@ -70,11 +70,14 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 - [linear_model.HuberRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.HuberRegressor.html)
 - [linear_model.SGDRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDRegressor.html)
 - [svm.LinearSVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVR.html)
+- [svm.SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html)
+- [svm.NuSVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVR.html)
 - [neural_network.MLPRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html)
 
 #### Outlier detectors
 
 - [ensemble.IsolationForest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html)
+- [svm.OneClassSVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html)
 
 ### Languages
 

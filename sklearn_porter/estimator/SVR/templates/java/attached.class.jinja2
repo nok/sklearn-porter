@@ -1,0 +1,48 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private enum Kernel { LINEAR, POLY, RBF, SIGMOID }
+
+    private double[][] vectors;
+    private double[] coeffs;
+    private double inter;
+    private Kernel kernel;
+    private double gamma;
+    private double coef0;
+    private int degree;
+
+    public {{ class_name }}(double[][] vectors, double[] coeffs, double inter, String kernel, double gamma, double coef0, int degree) {
+        this.vectors = vectors;
+        this.coeffs = coeffs;
+        this.inter = inter;
+        this.kernel = Kernel.valueOf(kernel.toUpperCase());
+        this.gamma = gamma;
+        this.coef0 = coef0;
+        this.degree = degree;
+    }
+
+{% include 'kernel' %}
+
+{% include 'samples' %}
+
+    public static void main(String[] args) {
+        // Model data:
+        {{ vectors }}
+        {{ coeffs }}
+
+        // Estimator:
+        {{ class_name }} est = new {{ class_name }}(vectors, coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            {{ 'int' if is_outlier_detector else 'double' }} prediction = est.predict(features);
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+
+    }
+}
+{% endblock %}

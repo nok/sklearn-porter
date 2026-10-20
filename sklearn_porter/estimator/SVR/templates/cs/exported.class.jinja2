@@ -1,0 +1,71 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private enum Kernel { Linear, Poly, Rbf, Sigmoid }
+
+    private class ModelData {
+        public double[][] Vectors { get; set; }
+        public double[] Coeffs { get; set; }
+        public double Inter { get; set; }
+        public string Kernel { get; set; }
+        public double Gamma { get; set; }
+        public double Coef0 { get; set; }
+        public int Degree { get; set; }
+    }
+
+    private double[][] vectors;
+    private double[] coeffs;
+    private double inter;
+    private Kernel kernel;
+    private double gamma;
+    private double coef0;
+    private int degree;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        ModelData data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+        this.vectors = data.Vectors;
+        this.coeffs = data.Coeffs;
+        this.inter = data.Inter;
+        this.kernel = (Kernel) Enum.Parse(typeof(Kernel), data.Kernel, true);
+        this.gamma = data.Gamma;
+        this.coef0 = data.Coef0;
+        this.degree = data.Degree;
+    }
+
+{% include 'kernel' %}
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} est = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            {{ 'int' if is_outlier_detector else 'double' }} prediction = est.Predict(features);
+            {% filter indent(12, True) %}
+            {% include 'output' %}
+            {% endfilter %}
+        }
+    }
+}
+{% endblock %}

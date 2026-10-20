@@ -1,0 +1,51 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private $vectors;
+    private $coeffs;
+    private $inter;
+    private $kernel;
+    private $gamma;
+    private $coef0;
+    private $degree;
+
+    public function __construct($vectors, $coeffs, $inter, $kernel, $gamma, $coef0, $degree) {
+        $this->vectors = $vectors;
+        $this->coeffs = $coeffs;
+        $this->inter = $inter;
+        $this->kernel = strtoupper($kernel);
+        $this->gamma = $gamma;
+        $this->coef0 = $coef0;
+        $this->degree = $degree;
+    }
+
+{% include 'kernel' %}
+
+}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    // Model data:
+    {{ vectors }}
+    {{ coeffs }}
+
+    // Estimator:
+    $est = new {{ class_name }}($vectors, $coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        $prediction = $est->predict($features);
+        {% filter indent(8, True) %}
+        {% include 'output' %}
+        {% endfilter %}
+    }
+
+}
+{% endblock %}

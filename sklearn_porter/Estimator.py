@@ -69,7 +69,15 @@ from sklearn.naive_bayes import (
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.svm import SVC, LinearSVC, LinearSVR, NuSVC
+from sklearn.svm import (
+    SVC,
+    SVR,
+    LinearSVC,
+    LinearSVR,
+    NuSVC,
+    NuSVR,
+    OneClassSVM,
+)
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from tabulate import tabulate
 
@@ -857,7 +865,7 @@ class Estimator:
         estimators : tuple
             A set of supported outlier detectors.
         """
-        return (IsolationForest,)
+        return (IsolationForest, OneClassSVM)
 
     @staticmethod
     def regressors() -> tuple:
@@ -883,10 +891,12 @@ class Estimator:
             LinearRegression,
             LinearSVR,
             MLPRegressor,
+            NuSVR,
             RandomForestRegressor,
             Ridge,
             RidgeCV,
             SGDRegressor,
+            SVR,
         )
 
     def __repr__(self):

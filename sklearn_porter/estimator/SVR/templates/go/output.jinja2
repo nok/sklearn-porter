@@ -1,0 +1,15 @@
+{% if is_test or to_json %}
+// Get JSON:
+res, _ := json.Marshal(&Response{Predict: prediction})
+fmt.Println(string(res))
+{% elif is_outlier_detector %}
+// Get prediction (1: inlier, -1: outlier):
+if prediction == 1 {
+	fmt.Printf("Prediction: %d (inlier)\n", prediction)
+} else {
+	fmt.Printf("Prediction: %d (outlier)\n", prediction)
+}
+{% else %}
+// Get predicted value:
+fmt.Printf("Predicted value: %v\n", prediction)
+{% endif %}

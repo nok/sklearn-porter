@@ -1,0 +1,65 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type {{ class_name }} struct {
+	Vectors [][]float64 `json:"vectors"`
+	Coeffs []float64 `json:"coeffs"`
+	Inter float64 `json:"inter"`
+	Kernel string `json:"kernel"`
+	Gamma float64 `json:"gamma"`
+	Coef0 float64 `json:"coef0"`
+	Degree int `json:"degree"`
+}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict {{ 'int' if is_outlier_detector else 'float64' }} `json:"predict"`
+}
+
+{% endif %}
+{% with field_vectors='Vectors', field_coeffs='Coeffs', field_inter='Inter', field_kernel='Kernel', field_gamma='Gamma', field_coef0='Coef0', field_degree='Degree' %}
+{% include 'kernel' %}
+{% endwith %}
+
+{% include 'samples' %}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
+		os.Exit(1)
+	}
+
+	// Model data:
+	byteValue, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	// Estimator:
+	var est {{ class_name }}
+	json.Unmarshal(byteValue, &est)
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[2:], func(features []float64) {
+		prediction := est.Predict(features)
+
+		{% filter indent('\t\t', True) %}
+		{% include 'output' %}
+		{% endfilter %}
+	})
+
+}
+{% endblock %}
