@@ -5,7 +5,7 @@ import pytest
 
 # scikit-learn
 from sklearn.datasets import make_multilabel_classification
-from sklearn.linear_model import RidgeClassifier
+from sklearn.linear_model import RidgeClassifier, RidgeClassifierCV
 from sklearn.neural_network import MLPClassifier
 
 # sklearn-porter
@@ -24,11 +24,12 @@ pytestmark = pytest.mark.regression
     'create',
     [
         RidgeClassifier,
+        RidgeClassifierCV,
         lambda: MLPClassifier(
             hidden_layer_sizes=(8,), max_iter=500, random_state=0
         ),
     ],
-    ids=['RidgeClassifier', 'MLPClassifier'],
+    ids=['RidgeClassifier', 'RidgeClassifierCV', 'MLPClassifier'],
 )
 @pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
 def test_estimator_multilabel_classifier(

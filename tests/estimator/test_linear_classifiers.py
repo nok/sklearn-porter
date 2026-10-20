@@ -7,7 +7,12 @@ import pytest
 # scikit-learn
 from sklearn.base import clone
 from sklearn.exceptions import ConvergenceWarning
-from sklearn.linear_model import Perceptron, RidgeClassifier, SGDClassifier
+from sklearn.linear_model import (
+    Perceptron,
+    RidgeClassifier,
+    RidgeClassifierCV,
+    SGDClassifier,
+)
 
 # sklearn-porter
 from sklearn_porter.Estimator import Estimator, can
@@ -18,30 +23,31 @@ from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 pytestmark = pytest.mark.regression
 
 
+ESTIMATORS = {
+    'SGDClassifier-hinge': SGDClassifier(loss='hinge', random_state=1),
+    'SGDClassifier-log_loss': SGDClassifier(loss='log_loss', random_state=1),
+    'RidgeClassifier': RidgeClassifier(),
+    'RidgeClassifierCV': RidgeClassifierCV(),
+    'RidgeClassifierCV-cv': RidgeClassifierCV(cv=3, alphas=[0.01, 1.0, 100.0]),
+    'Perceptron': Perceptron(random_state=1),
+}
+
+
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
 @pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('dataset', DATASETS, ids=lambda x: x.name)
-@pytest.mark.parametrize(
-    'estimator',
-    [
-        SGDClassifier(loss='hinge', random_state=1),
-        SGDClassifier(loss='log_loss', random_state=1),
-        RidgeClassifier(),
-        Perceptron(random_state=1),
-    ],
-    ids=lambda x: f'{x.__class__.__name__}-{x.get_params().get("loss")}',
-)
+@pytest.mark.parametrize('name', ESTIMATORS.keys())
 @pytest.mark.parametrize('fit_intercept', [True, False])
 def test_estimator_linear_classifiers(
     tmp_root_dir: Path,
     dataset: Dataset,
     template: str,
     language: str,
-    estimator,
+    name: str,
     fit_intercept: bool,
 ):
     """Test and compare different linear classifiers."""
-    orig_est = clone(estimator).set_params(fit_intercept=fit_intercept)
+    orig_est = clone(ESTIMATORS[name]).set_params(fit_intercept=fit_intercept)
 
     if not can(orig_est, language, template, 'predict'):
         pytest.skip('Skip unsupported estimator/language/template combination')
@@ -61,8 +67,7 @@ def test_estimator_linear_classifiers(
         tmp_root_dir,
         [
             ('test', 'estimator_linear_classifiers'),
-            ('estimator', orig_est.__class__.__name__),
-            ('loss', str(orig_est.get_params().get('loss'))),
+            ('estimator', name),
             ('dataset', dataset.name),
             ('language', language),
             ('template', template),

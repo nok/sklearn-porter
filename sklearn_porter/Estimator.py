@@ -39,14 +39,23 @@ from sklearn.ensemble import (
     RandomForestRegressor,
 )
 from sklearn.linear_model import (
+    ARDRegression,
+    BayesianRidge,
     ElasticNet,
+    ElasticNetCV,
+    HuberRegressor,
     Lasso,
+    LassoCV,
     LinearRegression,
     LogisticRegression,
+    LogisticRegressionCV,
     Perceptron,
     Ridge,
     RidgeClassifier,
+    RidgeClassifierCV,
+    RidgeCV,
     SGDClassifier,
+    SGDRegressor,
 )
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
@@ -60,7 +69,7 @@ from sklearn.naive_bayes import (
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.svm import SVC, LinearSVC, NuSVC
+from sklearn.svm import SVC, LinearSVC, LinearSVR, NuSVC
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from tabulate import tabulate
 
@@ -810,12 +819,14 @@ class Estimator:
             KNeighborsClassifier,
             LinearSVC,
             LogisticRegression,
+            LogisticRegressionCV,
             MLPClassifier,
             MultinomialNB,
             NuSVC,
             Perceptron,
             RandomForestClassifier,
             RidgeClassifier,
+            RidgeClassifierCV,
             SGDClassifier,
             SVC,
         )
@@ -859,15 +870,23 @@ class Estimator:
             A set of supported regressors.
         """
         return (
+            ARDRegression,
+            BayesianRidge,
             DecisionTreeRegressor,
             ElasticNet,
+            ElasticNetCV,
             ExtraTreesRegressor,
             GradientBoostingRegressor,
+            HuberRegressor,
             Lasso,
+            LassoCV,
             LinearRegression,
+            LinearSVR,
             MLPRegressor,
             RandomForestRegressor,
             Ridge,
+            RidgeCV,
+            SGDRegressor,
         )
 
     def __repr__(self):

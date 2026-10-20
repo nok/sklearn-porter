@@ -1,5 +1,6 @@
 # scikit-learn
 from sklearn.linear_model import RidgeClassifier as RidgeClassifierClass
+from sklearn.linear_model import RidgeClassifierCV as RidgeClassifierCVClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -50,5 +51,7 @@ class RidgeClassifier(LogisticRegression, EstimatorBase):
         },
     }
 
-    def __init__(self, estimator: RidgeClassifierClass):
+    def __init__(
+        self, estimator: RidgeClassifierClass | RidgeClassifierCVClass
+    ):
         super().__init__(estimator)

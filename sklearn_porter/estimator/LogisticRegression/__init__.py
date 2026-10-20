@@ -9,6 +9,7 @@ from loguru import logger as L
 from sklearn.linear_model import LogisticRegression as LogisticRegressionClass
 from sklearn.linear_model import Perceptron as PerceptronClass
 from sklearn.linear_model import RidgeClassifier as RidgeClassifierClass
+from sklearn.linear_model import RidgeClassifierCV as RidgeClassifierCVClass
 from sklearn.linear_model import SGDClassifier as SGDClassifierClass
 
 # sklearn-porter
@@ -71,6 +72,7 @@ class LogisticRegression(EstimatorBase, EstimatorApiABC):
         estimator: LogisticRegressionClass
         | SGDClassifierClass
         | RidgeClassifierClass
+        | RidgeClassifierCVClass
         | PerceptronClass,
     ):
         super().__init__(estimator)
