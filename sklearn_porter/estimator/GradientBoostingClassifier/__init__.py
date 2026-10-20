@@ -85,6 +85,9 @@ class GradientBoostingClassifier(GradientBoostingRegressor, EstimatorBase):
             is_binary=len(inits) == 1,
             # The exponential loss (only binary) halves the raw predictions:
             is_exponential=est.loss == 'exponential',
+            # A binary classifier predicts the positive class if the raw
+            # prediction is 0:
+            is_positive_at_zero=True,
             labels=labels,
             label_kind=label_kind,
         )

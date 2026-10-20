@@ -28,7 +28,7 @@ int predict_index(double features[N_FEATURES]) {
     double raw[N_TREES];
     decision_function(raw, features);
     {% if is_binary %}
-    return raw[0] >= 0 ? 1 : 0;
+    return raw[0] {{ '>=' if is_positive_at_zero else '>' }} 0 ? 1 : 0;
     {% else %}
     int idx = 0;
     for (int k = 1; k < N_CLASSES; k++) {

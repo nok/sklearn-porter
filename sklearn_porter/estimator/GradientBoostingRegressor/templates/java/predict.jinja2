@@ -4,5 +4,5 @@ public double predict(double[] features) {
     for (Tree tree : this.forest) {
         value += tree.compute(features);
     }
-    return value;
+    return {{ 'Math.exp(value)' if is_log_link else 'value' }};
 }

@@ -7,6 +7,7 @@ import pytest
 from joblib import dump
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
+from threadpoolctl import threadpool_limits
 
 from tests.commons import RESOURCES_DIR
 
@@ -32,6 +33,19 @@ def strict_php(tmp_path_factory: pytest.TempPathFactory):
     ini_path.write_text('error_reporting = E_ALL\ndisplay_errors = On\n')
     # The leading separator keeps the default scan directory:
     environ['PHP_INI_SCAN_DIR'] = pathsep + str(ini_dir)
+
+
+@pytest.fixture(scope='session', autouse=True)
+def single_thread():
+    """
+    Fixture to use a single thread of OpenMP and BLAS per test process.
+
+    The HistGradientBoosting estimators (OpenMP) and the linear algebra
+    (BLAS) use threads on all CPUs, so the parallel test processes of
+    pytest-xdist would slow each other down.
+    """
+    with threadpool_limits(limits=1):
+        yield
 
 
 @pytest.fixture(scope='session')

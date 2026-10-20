@@ -105,6 +105,8 @@ class GradientBoostingRegressor(RandomForestRegressor, EstimatorBase):
             n_estimators=len(trees),
             n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
             n_outputs=1,  # the number of values of each leaf
+            # The predictions are the raw predictions (identity link):
+            is_log_link=False,
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

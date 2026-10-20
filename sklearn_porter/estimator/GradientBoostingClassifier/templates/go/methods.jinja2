@@ -25,7 +25,7 @@ func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
 func (clf {{ class_name }}) PredictIndex(features []float64) int {
 	raw := clf.decisionFunction(features)
 	{% if is_binary %}
-	if raw[0] >= 0 {
+	if raw[0] {{ '>=' if is_positive_at_zero else '>' }} 0 {
 		return 1
 	}
 	return 0

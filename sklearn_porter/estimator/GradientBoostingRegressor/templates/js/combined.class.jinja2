@@ -15,7 +15,7 @@ var {{ class_name }} = function() {
         for (var i = 0; i < forest.length; i++) {
             value += forest[i](features)[0];
         }
-        return value;
+        return {{ 'Math.exp(value)' if is_log_link else 'value' }};
     };
 
 };
