@@ -69,7 +69,7 @@ from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter import meta
-from sklearn_porter.utils import densify, options
+from sklearn_porter.utils import densify, options, tabify
 
 # The minimal number of samples which `make()` passes to one process of the
 # ported estimator, because starting a process takes much longer than a
@@ -394,13 +394,16 @@ class Estimator:
         The transpiled estimator in the target programming language.
         """
         self._check_kwargs(kwargs)
-        return self._estimator.port(
+        out = self._estimator.port(
             language=self._language,
             template=self._template,
             class_name=self.class_name,
             converter=self.converter,
             to_json=to_json,
         )
+        if self._template == enum.Template.COMBINED and isinstance(out, str):
+            out = tabify(out)
+        return out
 
     @decorator.alias('dump')
     def save(

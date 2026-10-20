@@ -1,3 +1,4 @@
+import re
 from collections.abc import Callable
 from copy import copy
 from json import dumps
@@ -127,6 +128,29 @@ def dump_model_data(model_data: object) -> str:
     """
     out = dumps(model_data, separators=(',', ':'))
     return out.replace('Infinity', '1e999')
+
+
+_LEADING_SPACES = re.compile(r'^(?:    )+', re.MULTILINE)
+
+
+def tabify(code: str) -> str:
+    """
+    Indent code with tabs instead of spaces.
+
+    Each group of four leading spaces of a line becomes a tab. The source
+    code of the `combined` templates is deeply nested, so the indentation
+    with spaces would make up about half of it.
+
+    Parameters
+    ----------
+    code : str
+        The code indented with four spaces per level.
+
+    Returns
+    -------
+    The code indented with tabs.
+    """
+    return _LEADING_SPACES.sub(lambda m: '\t' * (len(m.group()) // 4), code)
 
 
 def missing_name(language) -> str:

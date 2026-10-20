@@ -15,6 +15,7 @@ from sklearn.base import BaseEstimator
 from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter import enums as enum
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
+from sklearn_porter.utils import tabify
 
 
 class EstimatorBase(EstimatorApiABC):
@@ -155,6 +156,8 @@ class EstimatorBase(EstimatorApiABC):
         )
         if not isinstance(ported, tuple):
             ported = (ported,)
+        if template == enum.Template.COMBINED:
+            ported = (tabify(ported[0]),) + ported[1:]
 
         # Dump ported estimator:
         suffix = language.value.SUFFIX
