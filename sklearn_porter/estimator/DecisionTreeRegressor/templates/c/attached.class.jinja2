@@ -17,7 +17,7 @@
 {{ values }}
 
 /* Find the leaf and return its predicted values: */
-double *predict(double features[N_FEATURES]) {
+const double *predict(double features[N_FEATURES]) {
     int node = 0;
     while (node >= 0) {
         if (features[indices[node]] <= thresholds[node] || (missing_go_to_left[node] && isnan(features[indices[node]]))) {
@@ -35,7 +35,7 @@ int main(int argc, const char *argv[]) {
     /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
     while (read_features(features, argc, argv, 1)) {
-        double *prediction = predict(features);
+        const double *prediction = predict(features);
 
         {% if is_test or to_json %}
         /* Get JSON: */

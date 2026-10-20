@@ -45,10 +45,10 @@ class C(LanguageABC):
 
         # Arrays:
         'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
-        # in ages[2] = {1, 2};
-        'arr[]':        '{{ type }} {{ name }}[{{ n }}] = {{ "{" }}{{ values }}{{ "}" }};',
-        'arr[][]':      '{{ type }} {{ name }}[{{ n }}][{{ m }}] = {{ "{" }}{{ values }}{{ "}" }};',
-        'arr[][][]':    '{{ type }} {{ name }}[{{ n }}][{{ m }}][{{ k }}] = {{ "{" }}{{ values }}{{ "}" }};',
+        # const int ages[2] = {1, 2};
+        'arr[]':        'const {{ type }} {{ name }}[{{ n }}] = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[][]':      'const {{ type }} {{ name }}[{{ n }}][{{ m }}] = {{ "{" }}{{ values }}{{ "}" }};',
+        'arr[][][]':    'const {{ type }} {{ name }}[{{ n }}][{{ m }}][{{ k }}] = {{ "{" }}{{ values }}{{ "}" }};',
 
         # Primitive data types:
         'int':          'int',
