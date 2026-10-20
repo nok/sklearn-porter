@@ -57,7 +57,11 @@ from sklearn.naive_bayes import (
     GaussianNB,
     MultinomialNB,
 )
-from sklearn.neighbors import KNeighborsClassifier, NearestCentroid
+from sklearn.neighbors import (
+    KNeighborsClassifier,
+    KNeighborsRegressor,
+    NearestCentroid,
+)
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.svm import (
@@ -571,6 +575,7 @@ def test_list_of_regressors():
                 ExtraTreesRegressor,
                 GradientBoostingRegressor,
                 HuberRegressor,
+                KNeighborsRegressor,
                 Lasso,
                 LassoCV,
                 LinearRegression,
@@ -1258,12 +1263,17 @@ def test_bernoulli_nb_with_binarize(binarize, threshold: float):
     ],
     ids=lambda x: str(x).replace(' ', ''),
 )
-def test_k_neighbors_classifier_with_supported_metric(
-    params: dict, metric: str, power: float
+@pytest.mark.parametrize(
+    'clazz',
+    [KNeighborsClassifier, KNeighborsRegressor],
+    ids=lambda x: x.__name__,
+)
+def test_k_neighbors_with_supported_metric(
+    clazz: type, params: dict, metric: str, power: float
 ):
     """Test the metric and the power of the ported distance."""
     x, y = load_iris(return_X_y=True)
-    orig_est = KNeighborsClassifier(**params).fit(X=x, y=y)
+    orig_est = clazz(**params).fit(X=x, y=y)
     model_data = Estimator(orig_est)._estimator.model_data
     assert model_data['metric'] == metric
     assert model_data['power'] == power
@@ -1278,30 +1288,72 @@ def test_k_neighbors_classifier_with_supported_metric(
     ],
     ids=['canberra', 'callable', 'weighted'],
 )
-def test_k_neighbors_classifier_with_unsupported_metric(
-    params: dict, match: str
+@pytest.mark.parametrize(
+    'clazz',
+    [KNeighborsClassifier, KNeighborsRegressor],
+    ids=lambda x: x.__name__,
+)
+def test_k_neighbors_with_unsupported_metric(
+    clazz: type, params: dict, match: str
 ):
     """Test the rejection of metrics which aren't ported."""
     x, y = load_iris(return_X_y=True)
-    orig_est = KNeighborsClassifier(**params).fit(X=x, y=y)
+    orig_est = clazz(**params).fit(X=x, y=y)
     with pytest.raises(exception.NotSupportedYetError, match=match):
         Estimator(orig_est)
 
 
 @pytest.mark.parametrize('weights', ['uniform', 'distance'])
-def test_k_neighbors_classifier_with_supported_weights(weights: str):
+@pytest.mark.parametrize(
+    'clazz',
+    [KNeighborsClassifier, KNeighborsRegressor],
+    ids=lambda x: x.__name__,
+)
+def test_k_neighbors_with_supported_weights(clazz: type, weights: str):
     """Test the weights of the votes of the ported neighbors."""
     x, y = load_iris(return_X_y=True)
-    orig_est = KNeighborsClassifier(weights=weights).fit(X=x, y=y)
+    orig_est = clazz(weights=weights).fit(X=x, y=y)
     assert Estimator(orig_est)._estimator.meta_info['weights'] == weights
 
 
-def test_k_neighbors_classifier_with_unsupported_weights():
+@pytest.mark.parametrize(
+    'clazz',
+    [KNeighborsClassifier, KNeighborsRegressor],
+    ids=lambda x: x.__name__,
+)
+def test_k_neighbors_with_unsupported_weights(clazz: type):
     """Test the rejection of weights which aren't ported (callables)."""
     x, y = load_iris(return_X_y=True)
-    orig_est = KNeighborsClassifier(weights=lambda d: d**2).fit(X=x, y=y)
+    orig_est = clazz(weights=lambda d: d**2).fit(X=x, y=y)
     with pytest.raises(exception.NotSupportedYetError, match='weights'):
         Estimator(orig_est)
+
+
+@pytest.mark.parametrize('n_outputs', [1, 2, 3])
+def test_k_neighbors_regressor_model_data(n_outputs: int):
+    """Test the targets of a KNeighborsRegressor with one or more outputs."""
+    x, y = load_linnerud(return_X_y=True)
+    y = y[:, 0] if n_outputs == 1 else y[:, :n_outputs]
+    orig_est = KNeighborsRegressor(n_neighbors=3).fit(X=x, y=y)
+    est = Estimator(orig_est)._estimator
+    # The targets of all outputs of a sample are stored one after another:
+    assert est.model_data['y'] == np.ravel(y).astype(float).tolist()
+    assert est.model_data['X'] == x.tolist()
+    assert est.model_data['k'] == 3
+    assert est.meta_info['n_outputs'] == n_outputs
+    assert est.meta_info['is_multi_output'] == (n_outputs > 1)
+
+
+def test_k_neighbors_regressor_fitted_on_sparse_data():
+    """Test the model data of a KNeighborsRegressor fitted on sparse data."""
+    x, y = load_diabetes(return_X_y=True)
+    dense_est = Estimator(KNeighborsRegressor().fit(X=x, y=y))._estimator
+    sparse_fit = KNeighborsRegressor().fit(X=csr_matrix(x), y=y)
+    est = Estimator(sparse_fit)
+    assert est._estimator.model_data == dense_est.model_data
+    assert est._estimator.meta_info == dense_est.meta_info
+    # The passed estimator remains unchanged:
+    assert issparse(sparse_fit._fit_X)
 
 
 @pytest.mark.regression
@@ -1488,6 +1540,8 @@ def test_regressions_of_regressors(
 
     # Samples:
     test_x = np.vstack((dataset_uniform_x(x), dataset_generate_x(x)))
+    if isinstance(orig_est, KNeighborsRegressor):
+        test_x = drop_neighbor_ties(orig_est, test_x)
 
     # Directory:
     tmp_dir = fs_mkdir(

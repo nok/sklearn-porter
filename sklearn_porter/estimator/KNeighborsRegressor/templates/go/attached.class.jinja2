@@ -1,0 +1,194 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	{% if is_test or to_json %}
+	"encoding/json"
+	{% endif %}
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type {{ class_name }} struct {
+	X [][]float64
+	Y []float64
+	K int
+	Metric string
+	Power float64
+}
+
+{% if is_test or to_json %}
+type Response struct {
+	Predict interface{} `json:"predict"`
+}
+
+{% endif %}
+type Neighbor struct {
+	index int
+	dist float64
+}
+
+// Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
+func (knn {{ class_name }}) Compute(temp []float64, cand []float64, metric string, power float64) float64 {
+	var dist float64 = 0
+	var diff float64
+	if metric == "chebyshev" {
+		for i := 0; i < len(temp); i++ {
+			dist = math.Max(dist, math.Abs(temp[i]-cand[i]))
+		}
+		return dist
+	}
+	if metric == "cosine" {
+		var dot, normTemp, normCand float64
+		for i := 0; i < len(temp); i++ {
+			dot += temp[i] * cand[i]
+			normTemp += temp[i] * temp[i]
+			normCand += cand[i] * cand[i]
+		}
+		// The distance to a zero vector is 1 like in scikit-learn:
+		if normTemp == 0 || normCand == 0 {
+			return 1
+		}
+		dist = 1 - dot/(math.Sqrt(normTemp)*math.Sqrt(normCand))
+		return math.Min(math.Max(dist, 0), 2)
+	}
+	if metric == "hamming" {
+		for i := 0; i < len(temp); i++ {
+			if temp[i] != cand[i] {
+				dist += 1
+			}
+		}
+		return dist / float64(len(temp))
+	}
+	for i := 0; i < len(temp); i++ {
+		diff = math.Abs(temp[i] - cand[i])
+		if power == 1 {
+			dist += diff
+		} else if power == 2 {
+			dist += diff * diff
+		} else {
+			dist += math.Pow(diff, power)
+		}
+	}
+	if power == 1 {
+		return dist
+	} else if power == 2 {
+		return math.Sqrt(dist)
+	}
+	return math.Pow(dist, 1.0/power)
+}
+
+// Find the k nearest neighbors sorted by distance and index (like a stable
+// sort). A sample is only inserted if it's nearer than the k-th neighbor:
+func (knn {{ class_name }}) FindNeighbors(features []float64) []Neighbor {
+	neighbors := make([]Neighbor, 0, knn.K)
+	for i := 0; i < len(knn.X); i++ {
+		dist := knn.Compute(knn.X[i], features, knn.Metric, knn.Power)
+		if len(neighbors) == knn.K && !(dist < neighbors[knn.K-1].dist) {
+			continue
+		}
+		j := len(neighbors)
+		if j < knn.K {
+			neighbors = append(neighbors, Neighbor{})
+		} else {
+			j = knn.K - 1
+		}
+		for j > 0 && dist < neighbors[j-1].dist {
+			neighbors[j] = neighbors[j-1]
+			j--
+		}
+		neighbors[j] = Neighbor{i, dist}
+	}
+	return neighbors
+}
+
+{% if weights == 'distance' %}
+// Weight the nearest neighbors by the inverse of their distances. If some
+// neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
+func weigh(neighbors []Neighbor) ([]float64, float64) {
+	weights := make([]float64, len(neighbors))
+	isExact := false
+	for i, neighbor := range neighbors {
+		weights[i] = 1 / neighbor.dist
+		if math.IsInf(weights[i], 0) {
+			isExact = true
+		}
+	}
+	total := 0.
+	for i := range weights {
+		if isExact {
+			if math.IsInf(weights[i], 0) {
+				weights[i] = 1
+			} else {
+				weights[i] = 0
+			}
+		}
+		total += weights[i]
+	}
+	return weights, total
+}
+
+{% endif %}
+func (knn {{ class_name }}) Predict(features []float64) []float64 {
+	neighbors := knn.FindNeighbors(features)
+	nOutputs := len(knn.Y) / len(knn.X)
+	values := make([]float64, nOutputs)
+{% if weights == 'distance' %}
+	// The weighted mean of the targets of the nearest neighbors:
+	weights, total := weigh(neighbors)
+	for j := 0; j < nOutputs; j++ {
+		for i := 0; i < knn.K; i++ {
+			values[j] += knn.Y[neighbors[i].index*nOutputs+j] * weights[i]
+		}
+		values[j] /= total
+	}
+{% else %}
+	// The mean of the targets of the nearest neighbors:
+	for j := 0; j < nOutputs; j++ {
+		for i := 0; i < knn.K; i++ {
+			values[j] += knn.Y[neighbors[i].index*nOutputs+j]
+		}
+		values[j] /= float64(knn.K)
+	}
+{% endif %}
+	return values
+}
+
+{% include 'samples' %}
+
+// Model data:
+{{ X }}
+{{ y }}
+
+func main() {
+	// Estimator:
+	reg := {{ class_name }}{X, y, {{ k }}, "{{ metric }}", {{ power }}}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		{% if is_test or to_json %}
+		// Get JSON:
+		prediction := reg.Predict(features)
+		{% if is_multi_output %}
+		res, _ := json.Marshal(&Response{Predict: prediction})
+		{% else %}
+		res, _ := json.Marshal(&Response{Predict: prediction[0]})
+		{% endif %}
+		fmt.Println(string(res))
+		{% else %}
+		// Get predicted values:
+		prediction := reg.Predict(features)
+		for i, value := range prediction {
+			fmt.Printf("Predicted value #%d : %v\n", i, value)
+		}
+		{% endif %}
+	})
+
+}
+{% endblock %}

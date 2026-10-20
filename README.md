@@ -72,6 +72,7 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 - [svm.LinearSVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.LinearSVR.html)
 - [svm.SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html)
 - [svm.NuSVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.NuSVR.html)
+- [neighbors.KNeighborsRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.KNeighborsRegressor.html)
 - [neural_network.MLPRegressor](https://scikit-learn.org/stable/modules/generated/sklearn.neural_network.MLPRegressor.html)
 
 #### Outlier detectors

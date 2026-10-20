@@ -47,7 +47,7 @@ from sklearn.naive_bayes import (
     GaussianNB,
     MultinomialNB,
 )
-from sklearn.neighbors import KNeighborsClassifier
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.svm import (
     SVC,
@@ -133,6 +133,7 @@ def get_regressors() -> Iterator[Candidate]:
         RandomForestRegressor,
         ExtraTreesRegressor,
         GradientBoostingRegressor,
+        KNeighborsRegressor,
         MLPRegressor,
         LinearRegression,
         Ridge,

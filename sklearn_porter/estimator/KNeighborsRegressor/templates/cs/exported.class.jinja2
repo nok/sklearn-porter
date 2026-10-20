@@ -1,0 +1,184 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.Globalization;
+using System.IO;
+using System.Text.Json;
+
+
+public class {{ class_name }} {
+
+    private class ModelData {
+        public double[][] X { get; set; }
+        public double[] Y { get; set; }
+        public int K { get; set; }
+        public string Metric { get; set; }
+        public double Power { get; set; }
+    }
+
+    private ModelData data;
+
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+    }
+
+    // A neighbor stores the index of a sample and its distance:
+    private struct Neighbor {
+        public int Index;
+        public double Dist;
+    }
+
+    // Compute the distance with the metric `minkowski`, `chebyshev`, `cosine` or `hamming`:
+    private static double Compute(double[] temp, double[] cand, string metric, double q) {
+        double dist = 0.0;
+        double diff;
+        if (metric == "chebyshev") {
+            for (int i = 0; i < temp.Length; i++) {
+                dist = Math.Max(dist, Math.Abs(temp[i] - cand[i]));
+            }
+            return dist;
+        }
+        if (metric == "cosine") {
+            double dot = 0.0, normTemp = 0.0, normCand = 0.0;
+            for (int i = 0; i < temp.Length; i++) {
+                dot += temp[i] * cand[i];
+                normTemp += temp[i] * temp[i];
+                normCand += cand[i] * cand[i];
+            }
+            // The distance to a zero vector is 1 like in scikit-learn:
+            if (normTemp == 0.0 || normCand == 0.0) {
+                return 1.0;
+            }
+            dist = 1.0 - dot / (Math.Sqrt(normTemp) * Math.Sqrt(normCand));
+            return Math.Min(Math.Max(dist, 0.0), 2.0);
+        }
+        if (metric == "hamming") {
+            for (int i = 0; i < temp.Length; i++) {
+                if (temp[i] != cand[i]) {
+                    dist += 1.0;
+                }
+            }
+            return dist / temp.Length;
+        }
+        for (int i = 0; i < temp.Length; i++) {
+            diff = Math.Abs(temp[i] - cand[i]);
+            if (q == 1) {
+                dist += diff;
+            } else if (q == 2) {
+                dist += diff * diff;
+            } else {
+                dist += Math.Pow(diff, q);
+            }
+        }
+        if (q == 1) {
+            return dist;
+        } else if (q == 2) {
+            return Math.Sqrt(dist);
+        }
+        return Math.Pow(dist, 1.0 / q);
+    }
+
+    // Find the k nearest neighbors sorted by their distances and (like a
+    // stable sort) by the indices of the samples with the same distance. A
+    // sample is only inserted if it's nearer than the k-th neighbor:
+    private Neighbor[] FindNeighbors(double[] features) {
+        Neighbor[] neighbors = new Neighbor[this.data.K];
+        int n = 0;
+        for (int i = 0; i < this.data.X.Length; i++) {
+            double dist = Compute(this.data.X[i], features, this.data.Metric, this.data.Power);
+            if (n == this.data.K && !(dist < neighbors[this.data.K - 1].Dist)) {
+                continue;
+            }
+            int j = n < this.data.K ? n++ : this.data.K - 1;
+            while (j > 0 && dist < neighbors[j - 1].Dist) {
+                neighbors[j] = neighbors[j - 1];
+                j--;
+            }
+            neighbors[j].Index = i;
+            neighbors[j].Dist = dist;
+        }
+        return neighbors;
+    }
+
+{% if weights == 'distance' %}
+    // Weight the nearest neighbors by the inverse of their distances. If some
+    // neighbors have the distance 0, only they get the weight 1 (like scikit-learn):
+    private static double[] Weigh(Neighbor[] neighbors, int k) {
+        double[] weights = new double[k];
+        bool isExact = false;
+        for (int i = 0; i < k; i++) {
+            weights[i] = 1.0 / neighbors[i].Dist;
+            if (double.IsInfinity(weights[i])) {
+                isExact = true;
+            }
+        }
+        if (isExact) {
+            for (int i = 0; i < k; i++) {
+                weights[i] = double.IsInfinity(weights[i]) ? 1.0 : 0.0;
+            }
+        }
+        return weights;
+    }
+
+{% endif %}
+    public double[] Predict(double[] features) {
+        Neighbor[] neighbors = this.FindNeighbors(features);
+        int nOutputs = this.data.Y.Length / this.data.X.Length;
+        double[] values = new double[nOutputs];
+{% if weights == 'distance' %}
+        // The weighted mean of the targets of the nearest neighbors:
+        double[] weights = Weigh(neighbors, this.data.K);
+        double total = 0.0;
+        for (int i = 0; i < this.data.K; i++) {
+            total += weights[i];
+        }
+        for (int j = 0; j < nOutputs; j++) {
+            for (int i = 0; i < this.data.K; i++) {
+                values[j] += this.data.Y[neighbors[i].Index * nOutputs + j] * weights[i];
+            }
+            values[j] /= total;
+        }
+{% else %}
+        // The mean of the targets of the nearest neighbors:
+        for (int j = 0; j < nOutputs; j++) {
+            for (int i = 0; i < this.data.K; i++) {
+                values[j] += this.data.Y[neighbors[i].Index * nOutputs + j];
+            }
+            values[j] /= this.data.K;
+        }
+{% endif %}
+        return values;
+    }
+{% if is_test or to_json %}
+
+{% include 'json' %}
+
+{% endif %}
+
+{% include 'samples' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Estimator:
+        {{ class_name }} reg = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            double[] prediction = reg.Predict(features);
+            {% if is_test or to_json %}
+            Console.WriteLine("{\"predict\": " + ToJson({{ 'prediction' if is_multi_output else 'prediction[0]' }}) + "}");
+            {% else %}
+            for (int i = 0; i < prediction.Length; i++) {
+                Console.WriteLine("Predicted value #" + i + ": " + prediction[i].ToString(CultureInfo.InvariantCulture));
+            }
+            {% endif %}
+        }
+    }
+}
+{% endblock %}
