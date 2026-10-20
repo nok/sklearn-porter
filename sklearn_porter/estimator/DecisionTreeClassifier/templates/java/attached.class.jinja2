@@ -89,21 +89,23 @@ class {{ class_name }} {
     }
 {% endif %}
 
-    private {{ 'int[]' if is_multi_output else 'int' }} predictIndex(double[] features, int node) {
-        if (node >= 0) {
+    // Find the leaf of a sample and get its class fractions:
+    private double[] compute(double[] features) {
+        int node = 0;
+        while (node >= 0) {
             if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
-                return predictIndex(features, this.lefts[node]);
+                node = this.lefts[node];
             } else {
-                return predictIndex(features, this.rights[node]);
+                node = this.rights[node];
             }
         }
-        return findMax(Arrays.copyOfRange(this.classes, (-node - 1) * {{ n_classes }}, -node * {{ n_classes }}));
+        return Arrays.copyOfRange(this.classes, (-node - 1) * {{ n_classes }}, -node * {{ n_classes }});
     }
 
 {% include 'labels' %}
 
     public {{ 'int[]' if is_multi_output else 'int' }} predictIndex(double[] features) {
-        return this.predictIndex(features, 0);
+        return findMax(this.compute(features));
     }
 {% if is_multi_output %}
 
@@ -125,19 +127,8 @@ class {{ class_name }} {
     }
 {% endif %}
 
-    private {{ 'double[][]' if is_multi_output else 'double[]' }} predictProba(double[] features, int node) {
-        if (node >= 0) {
-            if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] == 1 && Double.isNaN(features[this.indices[node]]))) {
-                return this.predictProba(features, this.lefts[node]);
-            } else {
-                return this.predictProba(features, this.rights[node]);
-            }
-        }
-        return normVals(Arrays.copyOfRange(this.classes, (-node - 1) * {{ n_classes }}, -node * {{ n_classes }}));
-    }
-
-    public {{ 'double[][]' if is_multi_output else 'double[]' }} predictProba (double[] features) {
-        return this.predictProba(features, 0);
+    public {{ 'double[][]' if is_multi_output else 'double[]' }} predictProba(double[] features) {
+        return normVals(this.compute(features));
     }
 
 {% include 'samples' %}

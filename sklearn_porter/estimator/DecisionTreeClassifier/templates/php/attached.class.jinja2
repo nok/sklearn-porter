@@ -90,16 +90,21 @@ class {{ class_name }} {
 
 {% include 'labels' %}
 
-    public function predictIndex($features) {
-        $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
-        if ($node >= 0) {
+    // Find the leaf of a sample and get its class fractions:
+    private function compute($features) {
+        $node = 0;
+        while ($node >= 0) {
             if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
-                return $this->predictIndex($features, $this->lefts[$node]);
+                $node = $this->lefts[$node];
             } else {
-                return $this->predictIndex($features, $this->rights[$node]);
+                $node = $this->rights[$node];
             }
         }
-        return $this->findMax(array_slice($this->classes, (-$node - 1) * {{ n_classes }}, {{ n_classes }}));
+        return array_slice($this->classes, (-$node - 1) * {{ n_classes }}, {{ n_classes }});
+    }
+
+    public function predictIndex($features) {
+        return $this->findMax($this->compute($features));
     }
 
 {% if is_multi_output %}
@@ -120,15 +125,7 @@ class {{ class_name }} {
 {% endif %}
 
     public function predictProba($features) {
-        $node = (func_num_args() > 1) ? func_get_arg(1) : 0;
-        if ($node >= 0) {
-            if ($features[$this->indices[$node]] <= $this->thresholds[$node] || ($this->missing_go_to_left[$node] == 1 && is_nan($features[$this->indices[$node]]))) {
-                return $this->predictProba($features, $this->lefts[$node]);
-            } else {
-                return $this->predictProba($features, $this->rights[$node]);
-            }
-        }
-        return $this->normVals(array_slice($this->classes, (-$node - 1) * {{ n_classes }}, {{ n_classes }}));
+        return $this->normVals($this->compute($features));
     }
 
 }

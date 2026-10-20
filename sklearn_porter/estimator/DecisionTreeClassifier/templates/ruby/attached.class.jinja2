@@ -75,21 +75,23 @@ class {{ class_name }}
 	end
 {% endif %}
 
-	def _compute(features, node, post)
-		if node >= 0
+	# Find the leaf of a sample and get its class fractions:
+	def _compute(features)
+		node = 0
+		while node >= 0
 			if features[@indices[node]] <= @thresholds[node] || (@missing_go_to_left[node] == 1 && features[@indices[node]].nan?)
-				return _compute features, @lefts[node], post
+				node = @lefts[node]
 			else
-				return _compute features, @rights[node], post
+				node = @rights[node]
 			end
 		end
-		post.call @classes[(-node - 1) * {{ n_classes }}, {{ n_classes }}]
+		@classes[(-node - 1) * {{ n_classes }}, {{ n_classes }}]
 	end
 
 {% include 'labels' %}
 
 	def predict_index(features)
-		_compute features, 0, post=method(:_find_max)
+		_find_max _compute(features)
 	end
 
 {% if is_multi_output %}
@@ -109,7 +111,7 @@ class {{ class_name }}
 {% endif %}
 
 	def predict_proba(features)
-		_compute features, 0, post=method(:_norm_vals)
+		_norm_vals _compute(features)
 	end
 
 end

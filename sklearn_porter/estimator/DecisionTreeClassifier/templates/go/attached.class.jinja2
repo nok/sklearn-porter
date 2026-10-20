@@ -106,19 +106,21 @@ func normVals(nums []float64) []float64 {
 }
 {% endif %}
 
-func (dtc {{ class_name }}) predictIndex(features []float64, node int) {{ '[]int' if is_multi_output else 'int' }} {
-	if node >= 0 {
+// Find the leaf of a sample and get its class fractions:
+func (dtc {{ class_name }}) compute(features []float64) []float64 {
+	node := 0
+	for node >= 0 {
 		if features[dtc.Indices[node]] <= dtc.Thresholds[node] || (dtc.MissingGoToLeft[node] == 1 && math.IsNaN(features[dtc.Indices[node]])) {
-			return dtc.predictIndex(features, dtc.Lefts[node])
+			node = dtc.Lefts[node]
 		} else {
-			return dtc.predictIndex(features, dtc.Rights[node])
+			node = dtc.Rights[node]
 		}
 	}
-	return findMax(dtc.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
+	return dtc.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}]
 }
 
 func (dtc {{ class_name }}) PredictIndex(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
-	return dtc.predictIndex(features, 0)
+	return findMax(dtc.compute(features))
 }
 
 {% if is_multi_output %}
@@ -138,19 +140,8 @@ func (dtc {{ class_name }}) Predict(features []float64) {{ label_type }} {
 }
 {% endif %}
 
-func (dtc {{ class_name }}) predictProba(features []float64, node int) {{ '[][]float64' if is_multi_output else '[]float64' }} {
-	if node >= 0 {
-		if features[dtc.Indices[node]] <= dtc.Thresholds[node] || (dtc.MissingGoToLeft[node] == 1 && math.IsNaN(features[dtc.Indices[node]])) {
-			return dtc.predictProba(features, dtc.Lefts[node])
-		} else {
-			return dtc.predictProba(features, dtc.Rights[node])
-		}
-	}
-	return normVals(dtc.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
-}
-
 func (dtc {{ class_name }}) PredictProba(features []float64) {{ '[][]float64' if is_multi_output else '[]float64' }} {
-	return dtc.predictProba(features, 0)
+	return normVals(dtc.compute(features))
 }
 
 {% include 'samples' %}

@@ -79,22 +79,23 @@ var {{ class_name }} = function(jsonFile) {
     };
 {% endif %}
 
-    this._compute = function(features, node, post) {
-        node = (typeof node !== 'undefined') ? node : 0;
-        if (node >= 0) {
+    // Find the leaf of a sample and get its class fractions:
+    this._compute = function(features) {
+        var node = 0;
+        while (node >= 0) {
             if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] === 1 && isNaN(features[this.indices[node]]))) {
-                return this._compute(features, this.lefts[node], post);
+                node = this.lefts[node];
             } else {
-                return this._compute(features, this.rights[node], post);
+                node = this.rights[node];
             }
         }
-        return post(this.classes.slice((-node - 1) * {{ n_classes }}, -node * {{ n_classes }}));
+        return this.classes.slice((-node - 1) * {{ n_classes }}, -node * {{ n_classes }});
     };
 
 {% include 'labels' %}
 
-    this.predictIndex = function(features, node) {
-        return this._compute(features, node, _findMax);
+    this.predictIndex = function(features) {
+        return _findMax(this._compute(features));
     };
 
 {% if is_multi_output %}
@@ -113,8 +114,8 @@ var {{ class_name }} = function(jsonFile) {
     };
 {% endif %}
 
-    this.predictProba = function(features, node) {
-        return this._compute(features, node, _normVals);
+    this.predictProba = function(features) {
+        return _normVals(this._compute(features));
     };
 };
 
