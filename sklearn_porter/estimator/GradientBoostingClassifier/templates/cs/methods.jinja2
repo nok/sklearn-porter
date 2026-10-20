@@ -24,7 +24,7 @@ public double[] PredictProba(double[] features) {
 public int PredictIndex(double[] features) {
     double[] raw = this.DecisionFunction(features);
     {% if is_binary %}
-    return raw[0] >= 0 ? 1 : 0;
+    return raw[0] {{ '>=' if is_positive_at_zero else '>' }} 0 ? 1 : 0;
     {% else %}
     int idx = 0;
     for (int k = 1; k < raw.Length; k++) {

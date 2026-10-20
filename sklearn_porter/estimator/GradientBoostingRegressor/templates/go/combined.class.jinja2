@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	{% endif %}
 	"fmt"
-	{% if has_missing_go_to_left or has_infinite_thresholds %}
+	{% if has_missing_go_to_left or has_infinite_thresholds or is_log_link %}
 	"math"
 	{% endif %}
 	"os"
@@ -33,7 +33,7 @@ func Predict(features []float64) float64 {
 	{% for i in range(n_estimators) %}
 	value += compute{{ i }}(features)[0]
 	{% endfor %}
-	return value
+	return {{ 'math.Exp(value)' if is_log_link else 'value' }}
 }
 
 {% include 'samples' %}

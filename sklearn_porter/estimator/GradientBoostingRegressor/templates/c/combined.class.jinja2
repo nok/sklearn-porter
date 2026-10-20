@@ -20,7 +20,7 @@ double predict(double features[N_FEATURES]) {
     compute_{{ i }}(temp, features);
     value += temp[0];
     {% endfor %}
-    return value;
+    return {{ 'exp(value)' if is_log_link else 'value' }};
 }
 
 {% include 'samples' %}

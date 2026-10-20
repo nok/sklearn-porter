@@ -16,7 +16,7 @@ end
 def predict_index(features)
 	raw = _decision_function features
 	{% if is_binary %}
-	raw[0] >= 0 ? 1 : 0
+	raw[0] {{ '>=' if is_positive_at_zero else '>' }} 0 ? 1 : 0
 	{% else %}
 	idx = 0
 	for k in 1 ... raw.length

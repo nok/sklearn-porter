@@ -17,7 +17,7 @@ class {{ class_name }}
 		@forest.each do |tree|
 			value += {{ class_name }}.compute(tree, features)
 		end
-		value
+		{{ 'Math.exp(value)' if is_log_link else 'value' }}
 	end
 
 end

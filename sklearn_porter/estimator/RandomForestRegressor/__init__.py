@@ -173,13 +173,10 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
             )
         )
         plas.update(self.meta_info)
+        trees = self._get_trees(template)
         plas.update(
-            has_missing_go_to_left=any(
-                map(has_missing_go_to_left, self.model_data['estimators'])
-            ),
-            has_infinite_thresholds=any(
-                map(has_infinite_thresholds, self.model_data['estimators'])
-            ),
+            has_missing_go_to_left=any(map(has_missing_go_to_left, trees)),
+            has_infinite_thresholds=any(map(has_infinite_thresholds, trees)),
         )
 
         # Templates:
@@ -188,7 +185,6 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         # Trees fitted on data with missing values (NaN) can have infinite
         # thresholds, which are written as literals of the language:
         converter = with_infinity(converter, tpls.get_template('inf').render())
-        trees = self.model_data['estimators']
 
         # Make 'exported' variant:
         if template == enum.Template.EXPORTED:
@@ -226,6 +222,21 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         tpl_class = tpls.get_template('combined.class')
         out_class = tpl_class.render(**plas)
         return out_class
+
+    def _get_trees(self, template: enum.Template) -> list:
+        """
+        Get the model data of the trees which are ported with a template.
+
+        Parameters
+        ----------
+        template : Template
+            The required template.
+
+        Returns
+        -------
+        The model data of all trees, see `get_tree_data()`.
+        """
+        return self.model_data['estimators']
 
     def _create_model(
         self,

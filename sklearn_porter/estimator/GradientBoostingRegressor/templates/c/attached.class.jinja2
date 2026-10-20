@@ -31,7 +31,7 @@ double predict(double features[N_FEATURES]) {
     for (int i = 0; i < N_ESTIMATORS; i++) {
         value += compute(&trees[i], features);
     }
-    return value;
+    return {{ 'exp(value)' if is_log_link else 'value' }};
 }
 
 {% include 'samples' %}

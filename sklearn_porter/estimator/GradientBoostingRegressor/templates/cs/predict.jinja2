@@ -4,5 +4,5 @@ public double Predict(double[] features) {
     foreach (Tree tree in this.forest) {
         value += tree.Compute(features);
     }
-    return value;
+    return {{ 'Math.Exp(value)' if is_log_link else 'value' }};
 }

@@ -14,7 +14,7 @@ class {{ class_name }} {
         foreach ($this->forest as $tree) {
             $value += self::compute($tree, $features);
         }
-        return $value;
+        return {{ 'exp($value)' if is_log_link else '$value' }};
     }
 
 }

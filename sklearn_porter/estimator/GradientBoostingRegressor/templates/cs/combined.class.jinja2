@@ -17,7 +17,7 @@ public static class {{ class_name }} {
         {% for i in range(n_estimators) %}
         value += Compute{{ i }}(features)[0];
         {% endfor %}
-        return value;
+        return {{ 'Math.Exp(value)' if is_log_link else 'value' }};
     }
 {% if is_test or to_json %}
 
