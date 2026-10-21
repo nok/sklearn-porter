@@ -11,9 +11,9 @@ func powi(base float64, times int) float64 {
 }
 
 // The kernel of a support vector and the features:
-func (est {{ class_name }}) computeKernel(vector []float64, features []float64) float64 {
+func (est {{ class_name }}) computeKernel(name string, vector []float64, features []float64) float64 {
 	var kernel float64 = 0
-	switch strings.ToUpper(est.{{ field_kernel }}) {
+	switch name {
 	case "LINEAR":
 		// <x,x'>
 		for j := range vector {
@@ -45,8 +45,9 @@ func (est {{ class_name }}) computeKernel(vector []float64, features []float64) 
 // The sum of the weighted kernels of all support vectors and the intercept:
 func (est {{ class_name }}) computeDecision(features []float64) float64 {
 	var decision float64 = 0
+	var name = strings.ToUpper(est.{{ field_kernel }})
 	for i := range est.{{ field_vectors }} {
-		decision += est.{{ field_coeffs }}[i] * est.computeKernel(est.{{ field_vectors }}[i], features)
+		decision += est.{{ field_coeffs }}[i] * est.computeKernel(name, est.{{ field_vectors }}[i], features)
 	}
 	return decision + est.{{ field_inter }}
 }
