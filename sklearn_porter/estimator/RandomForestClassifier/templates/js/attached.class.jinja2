@@ -12,12 +12,9 @@ var {{ class_name }} = function(modelData) {
         this.missingGoToLeft = missingGoToLeft;
         this.classes = classes;
 
-        // Copy the class fractions of a leaf:
-        var _copyVals = function(nums) {
-            return nums.slice();
-        };
-
-        this._compute = function(features, node) {
+        // Add the class fractions of the leaf to the probabilities:
+        this._addProbas = function(features, probas) {
+            var node = 0;
             while (node >= 0) {
                 if (features[this.indices[node]] <= this.thresholds[node] || (this.missingGoToLeft[node] === 1 && isNaN(features[this.indices[node]]))) {
                     node = this.lefts[node];
@@ -25,7 +22,10 @@ var {{ class_name }} = function(modelData) {
                     node = this.rights[node];
                 }
             }
-            return _copyVals(this.classes.slice((-node - 1) * {{ n_classes }}, -node * {{ n_classes }}));
+            var start = (-node - 1) * {{ n_classes }};
+            for (var i = 0; i < {{ n_classes }}; i++) {
+                probas[i] += this.classes[start + i];
+            }
         };
     };
 
@@ -78,10 +78,7 @@ var {{ class_name }} = function(modelData) {
         var probas = new Array(nClasses).fill(0);
         var i, j;
         for (i = 0; i < nTrees; i++) {
-            var temp = that.forest[i]._compute(features, 0);
-            for (j = 0; j < nClasses; j++) {
-                probas[j] += temp[j];
-            }
+            that.forest[i]._addProbas(features, probas);
         }
         for (j = 0; j < nClasses; j++) {
             probas[j] /= nTrees;
