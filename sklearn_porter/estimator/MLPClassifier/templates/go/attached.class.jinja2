@@ -75,8 +75,9 @@ func (clf {{ class_name }}) feedForward(features []float64) []float64 {
 		var outputs = make([]float64, clf.Layers[i])
 		copy(outputs, clf.Bias[i])
 		for j := 0; j < len(inputs); j++ {
+			input, row := inputs[j], clf.Weights[i][j]
 			for k := 0; k < len(outputs); k++ {
-				outputs[k] += inputs[j] * clf.Weights[i][j][k]
+				outputs[k] += input * row[k]
 			}
 		}
 		if i < len(clf.Layers) - 1 {

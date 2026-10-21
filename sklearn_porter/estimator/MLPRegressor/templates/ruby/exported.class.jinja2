@@ -32,8 +32,9 @@ class {{ class_name }}
 		for i in 0 ... @layers.length
 			outputs = @bias[i].dup
 			for j in 0 ... inputs.length
+				input, row = inputs[j], @weights[i][j]
 				for k in 0 ... outputs.length
-					outputs[k] += inputs[j] * @weights[i][j][k]
+					outputs[k] += input * row[k]
 				end
 			end
 			inputs = i < @layers.length - 1 ? _activate(@hidden, outputs) : outputs
