@@ -65,8 +65,10 @@ public class {{ class_name }} {
         for (int i = 0; i < this.weights.Length; i++) {
             double[] outputs = (double[]) this.bias[i].Clone();
             for (int j = 0; j < inputs.Length; j++) {
+                double input = inputs[j];
+                double[] row = this.weights[i][j];
                 for (int k = 0; k < outputs.Length; k++) {
-                    outputs[k] += inputs[j] * this.weights[i][j][k];
+                    outputs[k] += input * row[k];
                 }
             }
             if (i < this.weights.Length - 1) {

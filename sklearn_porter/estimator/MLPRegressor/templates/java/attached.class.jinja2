@@ -49,8 +49,10 @@ class {{ class_name }} {
         for (int i = 0; i < this.layers.length; i++) {
             double[] outputs = this.bias[i].clone();
             for (int j = 0; j < inputs.length; j++) {
+                double input = inputs[j];
+                double[] row = this.weights[i][j];
                 for (int k = 0; k < outputs.length; k++) {
-                    outputs[k] += inputs[j] * this.weights[i][j][k];
+                    outputs[k] += input * row[k];
                 }
             }
             if (i < this.layers.length - 1) {

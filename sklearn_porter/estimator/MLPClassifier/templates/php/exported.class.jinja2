@@ -64,8 +64,10 @@ class {{ class_name }} {
         for ($i = 0, $il = count($this->layers); $i < $il; $i++) {
             $outputs = $this->bias[$i];
             for ($j = 0, $jl = count($inputs); $j < $jl; $j++) {
+                $input = $inputs[$j];
+                $row = $this->weights[$i][$j];
                 for ($k = 0, $kl = count($outputs); $k < $kl; $k++) {
-                    $outputs[$k] += $inputs[$j] * $this->weights[$i][$j][$k];
+                    $outputs[$k] += $input * $row[$k];
                 }
             }
             $activation = $i < $il - 1 ? $this->hidden : $this->output;

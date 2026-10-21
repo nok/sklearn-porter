@@ -51,8 +51,9 @@ func (reg {{ class_name }}) feedForward(features []float64) []float64 {
 		var outputs = make([]float64, reg.Layers[i])
 		copy(outputs, reg.Bias[i])
 		for j := 0; j < len(inputs); j++ {
+			input, row := inputs[j], reg.Weights[i][j]
 			for k := 0; k < len(outputs); k++ {
-				outputs[k] += inputs[j] * reg.Weights[i][j][k]
+				outputs[k] += input * row[k]
 			}
 		}
 		if i < len(reg.Layers) - 1 {
