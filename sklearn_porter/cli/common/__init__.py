@@ -26,6 +26,18 @@ def arg_skip_warnings(p: ArgumentParser):
     )
 
 
+def arg_ignore_preprocessing(p: ArgumentParser):
+    p.add_argument(
+        '--ignore-preprocessing',
+        action='store_true',
+        default=False,
+        help=(
+            'Port only the final estimator of a pipeline\n'
+            'and ignore its preprocessing steps.'
+        ),
+    )
+
+
 def arg_debug(p: ArgumentParser):
     p.add_argument('--debug', action='store_true', help=SUPPRESS)
 

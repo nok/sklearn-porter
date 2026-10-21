@@ -110,6 +110,7 @@ class Estimator:
         template: str | enum.Template | None = None,
         class_name: str | None = None,
         converter: Callable[[object], str] | None = None,
+        ignore_preprocessing: bool = False,
     ):
         """
         Validate and coordinate the passed estimator for transpiling.
@@ -125,6 +126,21 @@ class Estimator:
         converter : Callable
             Change the default converter of all floating numbers from the model
             data. By default a simple string cast `str(value)` will be used.
+        ignore_preprocessing : bool, default=False
+            Port only the final estimator of a pipeline with preprocessing
+            steps (e.g. a `StandardScaler`), which can't be ported. By default
+            such a pipeline raises a `NotSupportedYetError`, because the
+            predictions of the ported estimator would differ from those of
+            the pipeline. If True, the preprocessing steps are ignored with a
+            `UserWarning`, so apply them to the input data of the ported
+            estimator yourself (also to the samples of `make()` and `test()`,
+            e.g. with `pipeline[:-1].transform(x)`).
+
+        Raises
+        ------
+        NotSupportedYetError
+            If the passed pipeline contains preprocessing steps and
+            `ignore_preprocessing` is False.
         """
         L.remove()  # remove basic logger
         L.add(stdout, level=options['logging.level'])
@@ -137,6 +153,7 @@ class Estimator:
         L.debug(f'Package: scikit-learn: v{sklearn_version}')
         L.debug(f'Package: sklearn-porter: v{self.porter_version}')
 
+        self.ignore_preprocessing = ignore_preprocessing
         self.estimator = estimator  # see @estimator.setter
 
         # Set defaults:
@@ -151,7 +168,7 @@ class Estimator:
 
     @estimator.setter
     def estimator(self, estimator: BaseEstimator):
-        orig_est = self._extract_est(estimator)
+        orig_est = self._extract_est(estimator, self.ignore_preprocessing)
         self._estimator = self._load_est(orig_est)
 
     @property
@@ -231,7 +248,9 @@ class Estimator:
         return kwargs
 
     @staticmethod
-    def _extract_est(estimator: BaseEstimator) -> BaseEstimator | None:
+    def _extract_est(
+        estimator: BaseEstimator, ignore_preprocessing: bool = False
+    ) -> BaseEstimator | None:
         """
         Extract the original estimator.
 
@@ -243,6 +262,9 @@ class Estimator:
         ----------
         estimator : BaseEstimator
             Set a fitted base estimator of scikit-learn.
+        ignore_preprocessing : bool, default=False
+            Ignore the preprocessing steps of a pipeline with a warning
+            instead of raising an error.
 
         Returns
         -------
@@ -304,6 +326,38 @@ class Estimator:
                 msg = 'There is no final estimator in the pipeline.'
                 L.error(msg)
                 raise ValueError(msg)
+            # The preprocessing steps (e.g. a `StandardScaler`) can't be
+            # ported, so the predictions of the final estimator alone would
+            # differ from those of the pipeline:
+            steps = [
+                f'`{name}` ({step.__class__.__name__})'
+                for name, step in est.steps[:-1]
+                if step is not None and step != 'passthrough'
+            ]
+            if steps:
+                plural = len(steps) > 1
+                names = ', '.join(steps)
+                kind = 'steps' if plural else 'step'
+                if not ignore_preprocessing:
+                    msg = (
+                        f'The pipeline contains the preprocessing {kind} '
+                        f"{names}, which can't be ported. Only the final "
+                        f'estimator `{final_est.__class__.__name__}` would be '
+                        'ported, so its predictions would differ from those '
+                        'of the pipeline. Pass `ignore_preprocessing=True` '
+                        'to port the final estimator anyway and apply the '
+                        'preprocessing to its input data yourself.'
+                    )
+                    L.error(msg)
+                    raise exception.NotSupportedYetError(msg)
+                them = 'them' if plural else 'it'
+                warnings.warn(
+                    f'The preprocessing {kind} {names} of the pipeline '
+                    f'{"are" if plural else "is"} ignored, so apply {them} '
+                    'to the input data of the ported estimator yourself.',
+                    UserWarning,
+                    stacklevel=4,
+                )
             est = final_est
             msg = (
                 'Extract the embedded estimator of type '
@@ -1130,6 +1184,7 @@ def port(
     class_name: str | None = None,
     converter: Callable[[object], str] | None = None,
     to_json: bool = False,
+    ignore_preprocessing: bool = False,
 ) -> str | tuple[str, str]:
     return Estimator(
         estimator,
@@ -1137,6 +1192,7 @@ def port(
         template=template,
         class_name=class_name,
         converter=converter,
+        ignore_preprocessing=ignore_preprocessing,
     ).port(to_json)
 
 
@@ -1148,6 +1204,7 @@ def save(
     converter: Callable[[object], str] | None = None,
     directory: str | Path | None = None,
     to_json: bool = False,
+    ignore_preprocessing: bool = False,
 ) -> str | tuple[str, str]:
     return Estimator(
         estimator,
@@ -1155,6 +1212,7 @@ def save(
         template=template,
         class_name=class_name,
         converter=converter,
+        ignore_preprocessing=ignore_preprocessing,
     ).save(directory=directory, to_json=to_json)
 
 
@@ -1169,6 +1227,7 @@ def make(
     directory: str | Path | None = None,
     delete_created_files: bool = True,
     check_dependencies: bool = True,
+    ignore_preprocessing: bool = False,
 ) -> (
     tuple[np.int64, np.ndarray | None]
     | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
@@ -1179,6 +1238,7 @@ def make(
         template=template,
         class_name=class_name,
         converter=converter,
+        ignore_preprocessing=ignore_preprocessing,
     ).make(
         x,
         n_jobs=n_jobs,
@@ -1199,6 +1259,7 @@ def test(
     directory: str | Path | None = None,
     delete_created_files: bool = True,
     normalize: bool = True,
+    ignore_preprocessing: bool = False,
 ) -> float:
     return Estimator(
         estimator,
@@ -1206,6 +1267,7 @@ def test(
         template=template,
         class_name=class_name,
         converter=converter,
+        ignore_preprocessing=ignore_preprocessing,
     ).test(
         x,
         n_jobs=n_jobs,

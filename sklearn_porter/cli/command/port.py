@@ -5,7 +5,12 @@ from textwrap import dedent
 
 # sklearn-porter
 from sklearn_porter import Estimator, options
-from sklearn_porter.cli.common import arg_debug, arg_help, arg_skip_warnings
+from sklearn_porter.cli.common import (
+    arg_debug,
+    arg_help,
+    arg_ignore_preprocessing,
+    arg_skip_warnings,
+)
 from sklearn_porter.cli.utils import load_model
 from sklearn_porter.language import LANGUAGES
 
@@ -20,6 +25,7 @@ def config(sub_parser):
         Examples:
           `porter port model.pkl --language js --template attached`
           `porter port model.pkl --skip-warnings`
+          `porter port pipeline.pkl --ignore-preprocessing`
     """
     )
 
@@ -54,7 +60,12 @@ def config(sub_parser):
         help='The name of the template.',
     )
 
-    for fn in (arg_skip_warnings, arg_debug, arg_help):
+    for fn in (
+        arg_ignore_preprocessing,
+        arg_skip_warnings,
+        arg_debug,
+        arg_help,
+    ):
         fn(parser)
 
     parser.set_defaults(func=main)
@@ -66,7 +77,9 @@ def main(args: dict, silent: bool = False):
 
     path = Path(args['model'])
     mdl = load_model(path, args.get('skip_warnings', False))
-    est = Estimator(mdl)
+    est = Estimator(
+        mdl, ignore_preprocessing=args.get('ignore_preprocessing', False)
+    )
 
     if language := args.get('language'):
         est.language = language

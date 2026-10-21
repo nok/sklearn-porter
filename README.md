@@ -143,11 +143,13 @@ porter show [-l {c,cs,go,java,js,php,ruby}] [-h]
 
 porter port <estimator> [-l {c,cs,go,java,js,php,ruby}]
                         [-t {attached,combined,exported}]
+                        [--ignore-preprocessing]
                         [--skip-warnings] [-h]
 
 porter save <estimator> [-l {c,cs,go,java,js,php,ruby}]
                         [-t {attached,combined,exported}]
                         [--directory DIRECTORY]
+                        [--ignore-preprocessing]
                         [--skip-warnings] [-h]
 ```
 
