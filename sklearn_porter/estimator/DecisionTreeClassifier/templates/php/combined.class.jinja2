@@ -32,49 +32,26 @@ class {{ class_name }} {
 {% endif %}
 
 {% if is_multi_output %}
-    // Normalize the values of each output:
-    private static function normVals($nums) {
+    // Split the class fractions into the values of each output:
+    private static function copyVals($nums) {
         $result = [];
         $offset = 0;
         foreach (self::OUTPUT_CLASSES as $n) {
-            $sum = 0.;
-            for ($i = 0; $i < $n; $i++) {
-                $sum += $nums[$offset + $i];
-            }
-            $probas = [];
-            for ($i = 0; $i < $n; $i++) {
-                $probas[] = $sum == 0 ? 1. / $n : $nums[$offset + $i] / $sum;
-            }
-            $result[] = $probas;
+            $result[] = array_slice($nums, $offset, $n);
             $offset += $n;
         }
         return $result;
     }
 {% else %}
-    private static function normVals($nums) {
-        $i = 0; $l = count($nums);
-        $result = [];
-        $sum = 0.;
-
-        for ($i = 0; $i < $l; $i++) {
-            $sum += $nums[$i];
-        }
-        if($sum === 0) {
-            for ($i = 0; $i < $l; $i++) {
-                $result[$i] = 1. / $l;
-            }
-        } else {
-            for ($i = 0; $i < $l; $i++) {
-                $result[$i] = $nums[$i] / $sum;
-            }
-        }
-        return $result;
+    // Copy the class fractions:
+    private static function copyVals($nums) {
+        return $nums;
     }
 {% endif %}
 
     private static function compute($features) {
         if (sizeof($features) != {{ n_features }}) { return -1; }
-        $classes = array_fill(0, {{ n_classes }}, 0);
+        $classes = array_fill(0, {{ n_classes }}, 0.);
         {{ tree | indent(4, True) }}
         return $classes;
     }
@@ -105,7 +82,7 @@ class {{ class_name }} {
 
     public static function predictProba($features) {
         $classes = {{ class_name }}::compute($features);
-        return {{ class_name }}::normVals($classes);
+        return {{ class_name }}::copyVals($classes);
     }
 
 }

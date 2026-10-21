@@ -24,7 +24,7 @@ class {{ class_name }} {
             this.classes = classes;
         }
 
-        // Add the normalized values of the leaf to the probabilities:
+        // Add the class fractions of the leaf to the probabilities:
         private void addProbas(double[] features, double[] probas) {
             int node = 0;
             while (node >= 0) {
@@ -34,7 +34,7 @@ class {{ class_name }} {
                     node = this.rights[node];
                 }
             }
-            addNormVals(this.classes, (-node - 1) * {{ n_classes }}, probas);
+            addVals(this.classes, (-node - 1) * {{ n_classes }}, probas);
         }
     }
 
@@ -80,33 +80,12 @@ class {{ class_name }} {
     }
 {% endif %}
 
-{% if is_multi_output %}
-    // Add the normalized values of each output from `start` on to the probabilities:
-    private static void addNormVals(double[] nums, int start, double[] probas) {
-        int offset = 0;
-        for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
-            double sum = 0.;
-            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
-                sum += nums[start + i];
-            }
-            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
-                probas[i] += sum == 0 ? 1. / OUTPUT_CLASSES[j] : nums[start + i] / sum;
-            }
-            offset += OUTPUT_CLASSES[j];
+    // Add the class fractions from `start` on to the probabilities:
+    private static void addVals(double[] nums, int start, double[] probas) {
+        for (int i = 0; i < {{ n_classes }}; i++) {
+            probas[i] += nums[start + i];
         }
     }
-{% else %}
-    // Add the normalized values from `start` on to the probabilities:
-    private static void addNormVals(double[] nums, int start, double[] probas) {
-        double sum = 0.;
-        for (int i = 0; i < {{ n_classes }}; i++) {
-            sum += nums[start + i];
-        }
-        for (int i = 0; i < {{ n_classes }}; i++) {
-            probas[i] += sum == 0 ? 1.0 / {{ n_classes }} : nums[start + i] / sum;
-        }
-    }
-{% endif %}
 
 {% if is_multi_output %}
     public double[][] predictProba(double[] features) {

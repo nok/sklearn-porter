@@ -40,44 +40,6 @@ class {{ class_name }} {
     }
 {% endif %}
 
-{% if is_multi_output %}
-    // Normalize the values of each output:
-    private function normVals($nums) {
-        $result = [];
-        $offset = 0;
-        foreach (self::OUTPUT_CLASSES as $n) {
-            $sum = 0.;
-            for ($i = $offset; $i < $offset + $n; $i++) {
-                $sum += $nums[$i];
-            }
-            for ($i = $offset; $i < $offset + $n; $i++) {
-                $result[$i] = $sum == 0 ? 1. / $n : $nums[$i] / $sum;
-            }
-            $offset += $n;
-        }
-        return $result;
-    }
-{% else %}
-    private function normVals($nums) {
-        $l = count($nums);
-        $result = array();
-        $sum = 0.;
-        for ($i = 0; $i < $l; $i++) {
-            $sum += $nums[$i];
-        }
-        if ($sum == 0) {
-            for ($i = 0; $i < $l; $i++) {
-                $result[$i] = 1. / $l;
-            }
-        } else {
-            for ($i = 0; $i < $l; $i++) {
-                $result[$i] = $nums[$i] / $sum;
-            }
-        }
-        return $result;
-    }
-{% endif %}
-
 {% include 'labels' %}
 
     {{ method | indent(4) }}

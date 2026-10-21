@@ -17,29 +17,10 @@ class {{ class_name }}
 			@classes = classes
 		end
 
-{% if is_multi_output %}
-		# Normalize the values of each output:
-		def _norm_vals(nums)
-			result = []
-			offset = 0
-			OUTPUT_CLASSES.each do |n|
-				sum = nums[offset, n].sum.to_f
-				for i in offset ... offset + n
-					result[i] = sum == 0 ? 1.0 / n : nums[i] / sum
-				end
-				offset += n
-			end
-			result
+		# Copy the class fractions of a leaf:
+		def _copy_vals(nums)
+			nums.map(&:to_f)
 		end
-{% else %}
-		def _norm_vals(nums)
-			sum = nums.sum.to_f
-			if sum == 0
-				return Array.new(nums.length, 1.0 / nums.length)
-			end
-			nums.map { |num| num / sum }
-		end
-{% endif %}
 
 		def compute(features)
 			node = 0
@@ -50,7 +31,7 @@ class {{ class_name }}
 					node = @rights[node]
 				end
 			end
-			_norm_vals(@classes[(-node - 1) * {{ n_classes }}, {{ n_classes }}])
+			_copy_vals(@classes[(-node - 1) * {{ n_classes }}, {{ n_classes }}])
 		end
 
 	end

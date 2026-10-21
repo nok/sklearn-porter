@@ -64,44 +64,22 @@ func findMax(nums []float64) int {
 {% endif %}
 
 {% if is_multi_output %}
-// Normalize the values of each output:
-func normVals(nums []float64) [][]float64 {
+// Split the class fractions into the values of each output:
+func copyVals(nums []float64) [][]float64 {
 	result := make([][]float64, len(outputClasses))
 	offset := 0
 	for j, n := range outputClasses {
-		sum := 0.0
-		for i := 0; i < n; i++ {
-			sum += nums[offset+i]
-		}
 		result[j] = make([]float64, n)
-		for i := 0; i < n; i++ {
-			if sum == 0 {
-				result[j][i] = float64(1) / float64(n)
-			} else {
-				result[j][i] = float64(nums[offset+i]) / float64(sum)
-			}
-		}
+		copy(result[j], nums[offset:offset+n])
 		offset += n
 	}
 	return result
 }
 {% else %}
-func normVals(nums []float64) []float64 {
-	var l = len(nums)
-	var sum = 0.0
-	for i := 0; i < l; i++ {
-		sum += nums[i]
-	}
-	result := make([]float64, l)
-	if sum == 0 {
-		for i := 0; i < l; i++ {
-			result[i] = float64(1) / float64(l)
-		}
-	} else {
-		for i := 0; i < l; i++ {
-			result[i] = float64(nums[i]) / float64(sum)
-		}
-	}
+// Copy the class fractions:
+func copyVals(nums []float64) []float64 {
+	result := make([]float64, len(nums))
+	copy(result, nums)
 	return result
 }
 {% endif %}
@@ -141,7 +119,7 @@ func (dtc {{ class_name }}) Predict(features []float64) {{ label_type }} {
 {% endif %}
 
 func (dtc {{ class_name }}) PredictProba(features []float64) {{ '[][]float64' if is_multi_output else '[]float64' }} {
-	return normVals(dtc.compute(features))
+	return copyVals(dtc.compute(features))
 }
 
 {% include 'samples' %}

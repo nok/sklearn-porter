@@ -25,35 +25,13 @@ class {{ class_name }} {
         private int[] missingGoToLeft;
         private double[] classes;
 
-{% if is_multi_output %}
-        // Add the normalized values of each output of the leaf to the probabilities:
+        // Add the class fractions of the leaf to the probabilities:
         private void addProbas(double[] features, double[] probas) {
             int start = this.findLeaf(features) * {{ n_classes }};
-            int offset = 0;
-            for (int j = 0; j < OUTPUT_CLASSES.length; j++) {
-                double sum = 0.;
-                for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
-                    sum += this.classes[start + i];
-                }
-                for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
-                    probas[i] += sum == 0 ? 1. / OUTPUT_CLASSES[j] : this.classes[start + i] / sum;
-                }
-                offset += OUTPUT_CLASSES[j];
+            for (int i = 0; i < {{ n_classes }}; i++) {
+                probas[i] += this.classes[start + i];
             }
         }
-{% else %}
-        // Add the normalized values of the leaf to the probabilities:
-        private void addProbas(double[] features, double[] probas) {
-            int start = this.findLeaf(features) * {{ n_classes }};
-            double sum = 0.;
-            for (int i = 0; i < {{ n_classes }}; i++) {
-                sum += this.classes[start + i];
-            }
-            for (int i = 0; i < {{ n_classes }}; i++) {
-                probas[i] += sum == 0 ? 1.0 / {{ n_classes }} : this.classes[start + i] / sum;
-            }
-        }
-{% endif %}
 
         // Find the leaf of the features and return its index:
         private int findLeaf(double[] features) {

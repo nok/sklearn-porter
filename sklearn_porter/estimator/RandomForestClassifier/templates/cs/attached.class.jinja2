@@ -15,7 +15,7 @@ public class {{ class_name }} {
         public int[] MissingGoToLeft { get; set; }
         public double[] Classes { get; set; }
 
-        // Add the normalized values of the leaf to the probabilities:
+        // Add the class fractions of the leaf to the probabilities:
         public void AddProbas(double[] features, double[] probas) {
             int node = 0;
             while (node >= 0) {
@@ -25,7 +25,7 @@ public class {{ class_name }} {
                     node = this.Rights[node];
                 }
             }
-            AddNormVals(this.Classes, (-node - 1) * {{ n_classes }}, probas);
+            AddVals(this.Classes, (-node - 1) * {{ n_classes }}, probas);
         }
     }
 
@@ -78,33 +78,12 @@ public class {{ class_name }} {
     }
 {% endif %}
 
-{% if is_multi_output %}
-    // Add the normalized values of each output from `start` on to the probabilities:
-    private static void AddNormVals(double[] nums, int start, double[] probas) {
-        int offset = 0;
-        for (int j = 0; j < OUTPUT_CLASSES.Length; j++) {
-            double sum = 0.0;
-            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
-                sum += nums[start + i];
-            }
-            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
-                probas[i] += sum == 0 ? 1.0 / OUTPUT_CLASSES[j] : nums[start + i] / sum;
-            }
-            offset += OUTPUT_CLASSES[j];
+    // Add the class fractions from `start` on to the probabilities:
+    private static void AddVals(double[] nums, int start, double[] probas) {
+        for (int i = 0; i < {{ n_classes }}; i++) {
+            probas[i] += nums[start + i];
         }
     }
-{% else %}
-    // Add the normalized values from `start` on to the probabilities:
-    private static void AddNormVals(double[] nums, int start, double[] probas) {
-        double sum = 0.0;
-        for (int i = 0; i < {{ n_classes }}; i++) {
-            sum += nums[start + i];
-        }
-        for (int i = 0; i < {{ n_classes }}; i++) {
-            probas[i] += sum == 0 ? 1.0 / {{ n_classes }} : nums[start + i] / sum;
-        }
-    }
-{% endif %}
 
     public {{ 'double[][]' if is_multi_output else 'double[]' }} PredictProba(double[] features) {
         double[] probas = new double[{{ n_classes }}];
