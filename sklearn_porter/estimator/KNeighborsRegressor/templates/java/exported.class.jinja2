@@ -72,20 +72,21 @@ class {{ class_name }} {
             }
             return dist / temp.length;
         }
-        for (int i = 0, l = temp.length; i < l; i++) {
-            diff = Math.abs(temp[i] - cand[i]);
-            if (q == 1) {
-                dist += diff;
-            } else if (q == 2) {
-                dist += diff * diff;
-            } else {
-                dist += Math.pow(diff, q);
-            }
-        }
         if (q == 1) {
+            for (int i = 0, l = temp.length; i < l; i++) {
+                dist += Math.abs(temp[i] - cand[i]);
+            }
             return dist;
-        } else if (q == 2) {
+        }
+        if (q == 2) {
+            for (int i = 0, l = temp.length; i < l; i++) {
+                diff = temp[i] - cand[i];
+                dist += diff * diff;
+            }
             return Math.sqrt(dist);
+        }
+        for (int i = 0, l = temp.length; i < l; i++) {
+            dist += Math.pow(Math.abs(temp[i] - cand[i]), q);
         }
         return Math.pow(dist, 1. / q);
     }

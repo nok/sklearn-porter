@@ -60,20 +60,21 @@ double compute(const double *temp, const double *cand, const char *metric, doubl
         }
         return dist / N_FEATURES;
     }
-    for (i = 0; i < N_FEATURES; i++) {
-        diff = fabs(temp[i] - cand[i]);
-        if (q == 1) {
-            dist += diff;
-        } else if (q == 2) {
-            dist += diff * diff;
-        } else {
-            dist += pow(diff, q);
-        }
-    }
     if (q == 1) {
+        for (i = 0; i < N_FEATURES; i++) {
+            dist += fabs(temp[i] - cand[i]);
+        }
         return dist;
-    } else if (q == 2) {
+    }
+    if (q == 2) {
+        for (i = 0; i < N_FEATURES; i++) {
+            diff = temp[i] - cand[i];
+            dist += diff * diff;
+        }
         return sqrt(dist);
+    }
+    for (i = 0; i < N_FEATURES; i++) {
+        dist += pow(fabs(temp[i] - cand[i]), q);
     }
     return pow(dist, 1. / q);
 }

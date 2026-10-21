@@ -59,20 +59,21 @@ public class {{ class_name }} {
             }
             return dist / temp.Length;
         }
-        for (int i = 0; i < temp.Length; i++) {
-            diff = Math.Abs(temp[i] - cand[i]);
-            if (q == 1) {
-                dist += diff;
-            } else if (q == 2) {
-                dist += diff * diff;
-            } else {
-                dist += Math.Pow(diff, q);
-            }
-        }
         if (q == 1) {
+            for (int i = 0; i < temp.Length; i++) {
+                dist += Math.Abs(temp[i] - cand[i]);
+            }
             return dist;
-        } else if (q == 2) {
+        }
+        if (q == 2) {
+            for (int i = 0; i < temp.Length; i++) {
+                diff = temp[i] - cand[i];
+                dist += diff * diff;
+            }
             return Math.Sqrt(dist);
+        }
+        for (int i = 0; i < temp.Length; i++) {
+            dist += Math.Pow(Math.Abs(temp[i] - cand[i]), q);
         }
         return Math.Pow(dist, 1.0 / q);
     }
