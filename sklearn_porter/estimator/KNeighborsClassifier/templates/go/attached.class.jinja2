@@ -109,20 +109,21 @@ func (knn {{ class_name }}) Compute(temp []float64, cand []float64, metric strin
 		}
 		return dist / float64(len(temp))
 	}
-	for i := 0; i < len(temp); i++ {
-		diff = math.Abs(temp[i] - cand[i])
-		if power == 1 {
-			dist += diff
-		} else if power == 2 {
-			dist += diff * diff
-		} else {
-			dist += math.Pow(diff, power)
-		}
-	}
 	if power == 1 {
+		for i := 0; i < len(temp); i++ {
+			dist += math.Abs(temp[i] - cand[i])
+		}
 		return dist
-	} else if power == 2 {
+	}
+	if power == 2 {
+		for i := 0; i < len(temp); i++ {
+			diff = temp[i] - cand[i]
+			dist += diff * diff
+		}
 		return math.Sqrt(dist)
+	}
+	for i := 0; i < len(temp); i++ {
+		dist += math.Pow(math.Abs(temp[i]-cand[i]), power)
 	}
 	return math.Pow(dist, 1.0/power)
 }

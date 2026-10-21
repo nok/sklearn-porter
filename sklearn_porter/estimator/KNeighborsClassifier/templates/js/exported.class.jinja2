@@ -76,20 +76,21 @@ var {{ class_name }} = function(jsonFile) {
             }
             return dist / l;
         }
-        for (i = 0; i < l; i++) {
-            diff = Math.abs(temp[i] - cand[i]);
-            if (q === 1) {
-                dist += diff;
-            } else if (q === 2) {
-                dist += diff * diff;
-            } else {
-                dist += Math.pow(diff, q);
-            }
-        }
         if (q === 1) {
+            for (i = 0; i < l; i++) {
+                dist += Math.abs(temp[i] - cand[i]);
+            }
             return dist;
-        } else if (q === 2) {
+        }
+        if (q === 2) {
+            for (i = 0; i < l; i++) {
+                diff = temp[i] - cand[i];
+                dist += diff * diff;
+            }
             return Math.sqrt(dist);
+        }
+        for (i = 0; i < l; i++) {
+            dist += Math.pow(Math.abs(temp[i] - cand[i]), q);
         }
         return Math.pow(dist, 1. / q);
     };

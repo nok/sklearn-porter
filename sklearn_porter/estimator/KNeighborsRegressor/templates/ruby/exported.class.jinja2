@@ -36,23 +36,23 @@ class {{ class_name }}
 			return (0 ... temp.length).count { |i| temp[i] != cand[i] }.to_f / temp.length
 		end
 		dist = 0.0
-		for i in 0 ... temp.length
-			diff = (temp[i] - cand[i]).abs
-			if q == 1
-				dist += diff
-			elsif q == 2
-				dist += diff * diff
-			else
-				dist += diff ** q
-			end
-		end
 		if q == 1
-			dist
-		elsif q == 2
-			Math.sqrt dist
-		else
-			dist ** (1.0 / q)
+			for i in 0 ... temp.length
+				dist += (temp[i] - cand[i]).abs
+			end
+			return dist
 		end
+		if q == 2
+			for i in 0 ... temp.length
+				diff = temp[i] - cand[i]
+				dist += diff * diff
+			end
+			return Math.sqrt dist
+		end
+		for i in 0 ... temp.length
+			dist += (temp[i] - cand[i]).abs ** q
+		end
+		dist ** (1.0 / q)
 	end
 
 	# Find the k nearest neighbors (index and distance) sorted by distance and
