@@ -17,12 +17,8 @@ class {{ class_name }}
 			@classes = classes
 		end
 
-		# Copy the class fractions of a leaf:
-		def _copy_vals(nums)
-			nums.map(&:to_f)
-		end
-
-		def compute(features)
+		# Add the class fractions of the leaf to the probabilities:
+		def add_probas(features, probas)
 			node = 0
 			while node >= 0
 				if features[@indices[node]] <= @thresholds[node] || (@missing_go_to_left[node] == 1 && features[@indices[node]].nan?)
@@ -31,7 +27,10 @@ class {{ class_name }}
 					node = @rights[node]
 				end
 			end
-			_copy_vals(@classes[(-node - 1) * {{ n_classes }}, {{ n_classes }}])
+			start = (-node - 1) * {{ n_classes }}
+			for i in 0 ... {{ n_classes }}
+				probas[i] += @classes[start + i]
+			end
 		end
 
 	end
@@ -73,20 +72,14 @@ class {{ class_name }}
 
 {% if is_multi_output %}
 	def predict_proba(features)
-		probas = nil
-		@forest.each do |tree|
-			temp = tree.compute(features)
-			probas = probas.nil? ? temp : probas.zip(temp).map { |a, b| a + b }
-		end
+		probas = Array.new({{ n_classes }}, 0.0)
+		@forest.each { |tree| tree.add_probas(features, probas) }
 		_split_outputs(probas.map { |proba| proba / @forest.length })
 	end
 {% else %}
 	def predict_proba(features)
-		probas = nil
-		@forest.each do |tree|
-			temp = tree.compute(features)
-			probas = probas.nil? ? temp : probas.zip(temp).map { |a, b| a + b }
-		end
+		probas = Array.new({{ n_classes }}, 0.0)
+		@forest.each { |tree| tree.add_probas(features, probas) }
 		probas.map { |proba| proba / @forest.length }
 	end
 {% endif %}

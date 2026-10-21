@@ -96,14 +96,9 @@ func (forest {{ class_name }}) FindMax(nums []float64) int {
 }
 {% endif %}
 
-// Copy the class fractions of a leaf:
-func (tree {{ class_name }}Tree) CopyVals(nums []float64) []float64 {
-	result := make([]float64, len(nums))
-	copy(result, nums)
-	return result
-}
-
-func (tree {{ class_name }}Tree) Compute(features []float64, node int) []float64 {
+// Add the class fractions of the leaf to the probabilities:
+func (tree {{ class_name }}Tree) AddProbas(features []float64, probas []float64) {
+	node := 0
 	for node >= 0 {
 		if features[tree.Indices[node]] <= tree.Thresholds[node] || (tree.MissingGoToLeft[node] == 1 && math.IsNaN(features[tree.Indices[node]])) {
 			node = tree.Lefts[node]
@@ -111,7 +106,10 @@ func (tree {{ class_name }}Tree) Compute(features []float64, node int) []float64
 			node = tree.Rights[node]
 		}
 	}
-	return tree.CopyVals(tree.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
+	start := (-node - 1) * {{ n_classes }}
+	for i := 0; i < {{ n_classes }}; i++ {
+		probas[i] += tree.Classes[start+i]
+	}
 }
 
 func (forest {{ class_name }}) PredictIndex(features []float64) {{ '[]int' if is_multi_output else 'int' }} {
@@ -141,10 +139,7 @@ func (forest {{ class_name }}) PredictProba(features []float64) [][]float64 {
 	var nTrees = len(forest.Trees)
 	var classProbas = make([]float64, nClasses)
 	for _, tree := range forest.Trees {
-		var tmp = tree.Compute(features, 0)
-		for i := 0; i < nClasses; i++ {
-			classProbas[i] += tmp[i]
-		}
+		tree.AddProbas(features, classProbas)
 	}
 	for i := 0; i < nClasses; i++ {
 		classProbas[i] /= float64(nTrees)
@@ -157,10 +152,7 @@ func (forest {{ class_name }}) PredictProba(features []float64) []float64 {
 	var nTrees = len(forest.Trees)
 	var classProbas = make([]float64, nClasses)
 	for _, tree := range forest.Trees {
-		var tmp = tree.Compute(features, 0)
-		for i := 0; i < nClasses; i++ {
-			classProbas[i] += tmp[i]
-		}
+		tree.AddProbas(features, classProbas)
 	}
 	for i := 0; i < nClasses; i++ {
 		classProbas[i] /= float64(nTrees)
