@@ -10,6 +10,10 @@
 - The classifiers `RidgeClassifier`, `RidgeClassifierCV` and `MLPClassifier` also support multilabel classification, i.e. if they were fitted on a label indicator matrix, the ported `predict` returns one binary value per label (without `predict_index`).
 - The classifiers `DecisionTreeClassifier`, `RandomForestClassifier`, `ExtraTreesClassifier` and `KNeighborsClassifier` also support multi-output classification, i.e. if they were fitted on a target with several columns, the ported `predict` returns the label of one class per output. Like in scikit-learn, the ported `predict_proba` returns the class probabilities of each output.
 
+## DecisionTreeClassifier, RandomForestClassifier and ExtraTreesClassifier
+
+- Like scikit-learn, the ported tree classifiers return the class fractions of the leaves (`tree_.value`, weighted by `sample_weight` and `class_weight`) as probabilities, and the forests average them over all trees in the same order. So the probabilities are identical to those of scikit-learn.
+
 ## BernoulliNB
 
 - [BernoulliNB](https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.BernoulliNB.html) with feature or class probabilities of 0 or 1 (e.g. with `alpha=0`) can't be ported and raises a `NotSupportedYetError`, because scikit-learn itself computes undefined (`NaN`) joint log likelihoods with them.

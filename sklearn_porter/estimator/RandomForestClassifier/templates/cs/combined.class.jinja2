@@ -45,37 +45,6 @@ public static class {{ class_name }} {
     }
 {% endif %}
 
-{% if is_multi_output %}
-    // Normalize the values of each output:
-    private static double[] NormVals(double[] nums) {
-        double[] result = new double[nums.Length];
-        int offset = 0;
-        for (int j = 0; j < OUTPUT_CLASSES.Length; j++) {
-            double sum = 0.0;
-            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
-                sum += nums[i];
-            }
-            for (int i = offset; i < offset + OUTPUT_CLASSES[j]; i++) {
-                result[i] = sum == 0 ? 1.0 / OUTPUT_CLASSES[j] : nums[i] / sum;
-            }
-            offset += OUTPUT_CLASSES[j];
-        }
-        return result;
-    }
-{% else %}
-    private static double[] NormVals(double[] nums) {
-        double[] result = new double[nums.Length];
-        double sum = 0.0;
-        for (int i = 0; i < nums.Length; i++) {
-            sum += nums[i];
-        }
-        for (int i = 0; i < nums.Length; i++) {
-            result[i] = sum == 0 ? 1.0 / nums.Length : nums[i] / sum;
-        }
-        return result;
-    }
-{% endif %}
-
 {% include 'labels' %}
 
 

@@ -96,47 +96,12 @@ func (forest {{ class_name }}) FindMax(nums []float64) int {
 }
 {% endif %}
 
-{% if is_multi_output %}
-// Normalize the values of each output:
-func (tree {{ class_name }}Tree) NormVals(nums []float64) []float64 {
+// Copy the class fractions of a leaf:
+func (tree {{ class_name }}Tree) CopyVals(nums []float64) []float64 {
 	result := make([]float64, len(nums))
-	offset := 0
-	for _, n := range outputClasses {
-		sum := 0.0
-		for i := offset; i < offset+n; i++ {
-			sum += nums[i]
-		}
-		for i := offset; i < offset+n; i++ {
-			if sum == 0 {
-				result[i] = 1.0 / float64(n)
-			} else {
-				result[i] = nums[i] / sum
-			}
-		}
-		offset += n
-	}
+	copy(result, nums)
 	return result
 }
-{% else %}
-func (tree {{ class_name }}Tree) NormVals(nums []float64) []float64 {
-	var nNums = len(nums)
-	var result = make([]float64, nNums)
-	var sum float64
-	for i := 0; i < nNums; i++ {
-		sum += nums[i]
-	}
-	if sum == 0 {
-		for i := 0; i < nNums; i++ {
-			result[i] = 1.0 / float64(nNums)
-		}
-	} else {
-		for i := 0; i < nNums; i++ {
-			result[i] = nums[i] / sum
-		}
-	}
-	return result
-}
-{% endif %}
 
 func (tree {{ class_name }}Tree) Compute(features []float64, node int) []float64 {
 	for node >= 0 {
@@ -146,7 +111,7 @@ func (tree {{ class_name }}Tree) Compute(features []float64, node int) []float64
 			node = tree.Rights[node]
 		}
 	}
-	return tree.NormVals(tree.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
+	return tree.CopyVals(tree.Classes[(-node-1)*{{ n_classes }} : -node*{{ n_classes }}])
 }
 
 func (forest {{ class_name }}) PredictIndex(features []float64) {{ '[]int' if is_multi_output else 'int' }} {

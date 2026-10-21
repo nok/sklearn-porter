@@ -1,5 +1,5 @@
 private function compute{{ method_index }}($features) {
-    $classes = array_fill(0, {{ n_classes }}, 0);
+    $classes = array_fill(0, {{ n_classes }}, 0.);
     {{ tree }}
-    return $this->normVals($classes);
+    return $classes;
 }

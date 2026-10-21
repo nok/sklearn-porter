@@ -38,40 +38,19 @@ var {{ class_name }} = function(lefts, rights, thresholds, indices, missingGoToL
 {% endif %}
 
 {% if is_multi_output %}
-    // Normalize the values of each output:
-    var _normVals = function(nums) {
+    // Split the class fractions into the values of each output:
+    var _copyVals = function(nums) {
         var result = [], offset = 0;
         outputClasses.forEach(function(n) {
-            var i, sum = 0., probas = [];
-            for (i = 0; i < n; i++) {
-                sum += nums[offset + i];
-            }
-            for (i = 0; i < n; i++) {
-                probas.push(sum === 0 ? 1. / n : nums[offset + i] / sum);
-            }
-            result.push(probas);
+            result.push(nums.slice(offset, offset + n));
             offset += n;
         });
         return result;
     };
 {% else %}
-    var _normVals = function(nums) {
-        var i, l = nums.length,
-            result = [],
-            sum = 0.;
-        for (i = 0; i < l; i++) {
-            sum += nums[i];
-        }
-        if(sum === 0) {
-            for (i = 0; i < l; i++) {
-                result[i] = 1.0 / l;
-            }
-        } else {
-            for (i = 0; i < l; i++) {
-                result[i] = nums[i] / sum;
-            }
-        }
-        return result;
+    // Copy the class fractions:
+    var _copyVals = function(nums) {
+        return nums.slice();
     };
 {% endif %}
 
@@ -111,7 +90,7 @@ var {{ class_name }} = function(lefts, rights, thresholds, indices, missingGoToL
 {% endif %}
 
     this.predictProba = function(features) {
-        return _normVals(this._compute(features));
+        return _copyVals(this._compute(features));
     };
 
 };

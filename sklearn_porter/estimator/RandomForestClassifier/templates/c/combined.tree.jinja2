@@ -1,5 +1,5 @@
 void compute_{{ method_index }}(double *result, double features[N_FEATURES]) {
     double classes[N_CLASSES] = {0};
     {{ tree }}
-    norm_vals(result, classes);
+    copy_vals(result, classes);
 }

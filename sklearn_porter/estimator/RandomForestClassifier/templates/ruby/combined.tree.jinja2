@@ -1,5 +1,5 @@
 def _compute_{{ method_index }}(features)
-	classes = Array.new({{ n_classes }}, 0)
+	classes = Array.new({{ n_classes }}, 0.0)
 	{{ tree }}
-	_norm_vals(classes)
+	classes
 end

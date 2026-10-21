@@ -8,30 +8,6 @@ require 'json'
 class {{ class_name }}
 
 {% if is_multi_output %}
-	# Normalize the values of each output:
-	def _norm_vals(nums)
-		result = []
-		offset = 0
-		OUTPUT_CLASSES.each do |n|
-			sum = nums[offset, n].sum.to_f
-			for i in offset ... offset + n
-				result[i] = sum == 0 ? 1.0 / n : nums[i] / sum
-			end
-			offset += n
-		end
-		result
-	end
-{% else %}
-	def _norm_vals(nums)
-		sum = nums.sum.to_f
-		if sum == 0
-			return Array.new(nums.length, 1.0 / nums.length)
-		end
-		nums.map { |num| num / sum }
-	end
-{% endif %}
-
-{% if is_multi_output %}
 	# The classes of all outputs are concatenated, these are their numbers:
 	OUTPUT_CLASSES = [{{ output_classes | join(', ') }}]
 

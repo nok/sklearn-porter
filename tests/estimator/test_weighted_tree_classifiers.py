@@ -95,6 +95,7 @@ def test_estimator_weighted_tree_classifier(
     except exception.CodeTooLarge:
         pytest.skip('The code is too large to compile (e.g. Java attached)')
     np.testing.assert_array_equal(y_pred, orig_est.predict(test_x))
-    np.testing.assert_allclose(
-        y_proba, orig_est.predict_proba(test_x), rtol=0, atol=1e-5
-    )
+    # The ported trees return the class fractions of the leaves and the
+    # forests average them like scikit-learn (only additions and a division,
+    # no functions like `exp`), so the probabilities are identical:
+    np.testing.assert_array_equal(y_proba, orig_est.predict_proba(test_x))

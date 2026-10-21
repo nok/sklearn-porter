@@ -35,39 +35,24 @@ class {{ class_name }}
 {% endif %}
 
 {% if is_multi_output %}
-	# Normalize the values of each output:
-	def self._norm_vals(nums)
+	# Split the class fractions into the values of each output:
+	def self._copy_vals(nums)
 		offset = 0
 		OUTPUT_CLASSES.map do |n|
-			sum = nums[offset, n].sum
-			probas = nums[offset, n].map { |num| sum == 0 ? 1.0 / n : num.to_f / sum }
+			probas = nums[offset, n].map(&:to_f)
 			offset += n
 			probas
 		end
 	end
 {% else %}
-	def self._norm_vals(nums)
-		result = []
-		sum = 0
-		for i in 0 ... nums.length
-			sum += nums[i]
-		end
-		if sum == 0
-			l = nums.length
-			for i in 0 ... l
-				result[i] = 1.0 / l
-			end
-		else
-			for i in 0 ... nums.length
-				result[i] = nums[i].to_f / sum
-			end
-		end
-		result
+	# Copy the class fractions:
+	def self._copy_vals(nums)
+		nums.map(&:to_f)
 	end
 {% endif %}
 
 	def self._compute(features)
-		classes = Array.new({{ n_classes }}, 0)
+		classes = Array.new({{ n_classes }}, 0.0)
 		{{ tree | indent('\t', True) }}
 		classes
 	end
@@ -95,7 +80,7 @@ class {{ class_name }}
 {% endif %}
 
 	def self.predict_proba(features)
-		self._norm_vals self._compute features
+		self._copy_vals self._compute features
 	end
 
 end
