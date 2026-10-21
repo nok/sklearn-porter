@@ -3,6 +3,130 @@
 All notable changes to this project will be documented in this file.
 
 
+## [1.0.0](https://github.com/nok/sklearn-porter/compare/v0.7.4...v1.0.0) (2026-10-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* `predict` of the ported classifiers returns the label of the class instead of its index, the index is returned by `predict_index`. The return type of `predict` in C, Go and Java depends on the type of the labels.
+* The JSON files of the exported tree estimators have a new format, so the model data has to be exported again.
+* AdaBoostClassifier is ported with the SAMME algorithm. Serialized estimators of old scikit-learn versions can't be loaded.
+* Python < 3.11 and scikit-learn < 1.8 are no longer supported.
+
+### Features
+
+* add C# as target language ([#196](https://github.com/nok/sklearn-porter/issues/196)) ([c412a28](https://github.com/nok/sklearn-porter/commit/c412a28c1db6e73ae8607ecf8bdb6c5e5dabe5ee))
+* **c:** port AdaBoostClassifier to C ([#150](https://github.com/nok/sklearn-porter/issues/150)) ([c7f0dac](https://github.com/nok/sklearn-porter/commit/c7f0dacc02b7f829ce8f7e669f111402be970325))
+* **c:** port BernoulliNB to C ([#129](https://github.com/nok/sklearn-porter/issues/129)) ([834bebc](https://github.com/nok/sklearn-porter/commit/834bebc7564bbe09dd313839fca48e78d1a74f1c))
+* **c:** port GaussianNB to C ([#128](https://github.com/nok/sklearn-porter/issues/128)) ([554a97f](https://github.com/nok/sklearn-porter/commit/554a97fe9cdb3a1c6743d41c8466b2378a947a81))
+* **c:** port KNeighborsClassifier to C ([#138](https://github.com/nok/sklearn-porter/issues/138)) ([875e697](https://github.com/nok/sklearn-porter/commit/875e6971665c8542f88a73cf90203e477aa7f5de))
+* **c:** port LinearSVC to C with the exported template ([#139](https://github.com/nok/sklearn-porter/issues/139)) ([27f75df](https://github.com/nok/sklearn-porter/commit/27f75df2402f1fca3d35597df9f56c65f292c1c0))
+* **c:** port MLPClassifier to C ([#133](https://github.com/nok/sklearn-porter/issues/133)) ([5d62b36](https://github.com/nok/sklearn-porter/commit/5d62b36b1c4dde8f5135e18ad76fe9a26f185c46))
+* **c:** port MLPRegressor to C ([#151](https://github.com/nok/sklearn-porter/issues/151)) ([07ee1d7](https://github.com/nok/sklearn-porter/commit/07ee1d75b9d7a7fbf7007022d0748cd5bb9faa4f))
+* **c:** port RandomForestClassifier and ExtraTreesClassifier to C ([#145](https://github.com/nok/sklearn-porter/issues/145)) ([ece3ba2](https://github.com/nok/sklearn-porter/commit/ece3ba206a52cb2cf58acd8b4ff97a2949b1f253))
+* **c:** port SVC and NuSVC to C with the exported template ([#140](https://github.com/nok/sklearn-porter/issues/140)) ([e957fd4](https://github.com/nok/sklearn-porter/commit/e957fd40919bd0b553bc01c222c893b6fac826fc))
+* **c:** port the DecisionTreeClassifier with the exported template ([#121](https://github.com/nok/sklearn-porter/issues/121)) ([f11f663](https://github.com/nok/sklearn-porter/commit/f11f6636f01082c1debb8bc02f18c81514bd0fb2))
+* **go:** port AdaBoostClassifier to Go ([#146](https://github.com/nok/sklearn-porter/issues/146)) ([25ae6b2](https://github.com/nok/sklearn-porter/commit/25ae6b2ee7c0359f9336125f79c1ebe924bcb62b))
+* **go:** port BernoulliNB to Go ([#126](https://github.com/nok/sklearn-porter/issues/126)) ([1a43e32](https://github.com/nok/sklearn-porter/commit/1a43e3215e364d2b935b25fea7e891de2a49834a))
+* **go:** port GaussianNB to Go ([#122](https://github.com/nok/sklearn-porter/issues/122)) ([3f04718](https://github.com/nok/sklearn-porter/commit/3f047186d1cee16043d86fb05be4fea172ae2d19))
+* **go:** port MLPClassifier to Go ([#130](https://github.com/nok/sklearn-porter/issues/130)) ([7afa171](https://github.com/nok/sklearn-porter/commit/7afa1719b3c6430f4c2e590eeb49f0ae7cc5955a))
+* **go:** port MLPRegressor to Go ([#134](https://github.com/nok/sklearn-porter/issues/134)) ([520fc82](https://github.com/nok/sklearn-porter/commit/520fc82e829406ecb1a7ebe406a3c74d9cce74dc))
+* **go:** port RandomForestClassifier and ExtraTreesClassifier to Go ([#141](https://github.com/nok/sklearn-porter/issues/141)) ([d1d3e31](https://github.com/nok/sklearn-porter/commit/d1d3e31794ea2054669dde25c4c2c7414ec7d2ec))
+* **java:** port AdaBoostClassifier to Java ([#149](https://github.com/nok/sklearn-porter/issues/149)) ([ad1ed29](https://github.com/nok/sklearn-porter/commit/ad1ed294cccf4db31bd3d86389d27d801aa8c567))
+* **java:** port MLPRegressor to Java ([#135](https://github.com/nok/sklearn-porter/issues/135)) ([6a267a8](https://github.com/nok/sklearn-porter/commit/6a267a8cb9132967b07d8b7b5ed58b5707930741))
+* **java:** port RandomForestClassifier and ExtraTreesClassifier to Java with the attached template ([#142](https://github.com/nok/sklearn-porter/issues/142)) ([5a4deb2](https://github.com/nok/sklearn-porter/commit/5a4deb2dfeb9f1490e7279818551da1e0279342a))
+* **php:** port AdaBoostClassifier to PHP ([#147](https://github.com/nok/sklearn-porter/issues/147)) ([c177d91](https://github.com/nok/sklearn-porter/commit/c177d915e0917eb50980b2112cae8590958c8364))
+* **php:** port BernoulliNB to PHP ([#123](https://github.com/nok/sklearn-porter/issues/123)) ([7aa82cc](https://github.com/nok/sklearn-porter/commit/7aa82cc154fa88af22f6804e09dbdee458fa4809))
+* **php:** port GaussianNB to PHP ([#124](https://github.com/nok/sklearn-porter/issues/124)) ([728ccea](https://github.com/nok/sklearn-porter/commit/728ccea9a7a7cfd00f7c540e370883f70e29e251))
+* **php:** port MLPClassifier to PHP ([#131](https://github.com/nok/sklearn-porter/issues/131)) ([7273702](https://github.com/nok/sklearn-porter/commit/72737028951b71a4f6198e8abc505743647a9b63))
+* **php:** port MLPRegressor to PHP ([#136](https://github.com/nok/sklearn-porter/issues/136)) ([927aca9](https://github.com/nok/sklearn-porter/commit/927aca9699b31f0bc4cfa5a93a469f7ffe41eee5))
+* **php:** port RandomForestClassifier and ExtraTreesClassifier to PHP with the combined template ([#143](https://github.com/nok/sklearn-porter/issues/143)) ([4072596](https://github.com/nok/sklearn-porter/commit/407259699027643cabf7393a35d24df6f08d63e5))
+* port DecisionTreeRegressor ([#153](https://github.com/nok/sklearn-porter/issues/153)) ([71fc099](https://github.com/nok/sklearn-porter/commit/71fc09970a497a4f475c23e893529d549d9df036))
+* port GradientBoostingClassifier and GradientBoostingRegressor ([#195](https://github.com/nok/sklearn-porter/issues/195)) ([c768365](https://github.com/nok/sklearn-porter/commit/c768365a0a44c811abd23cc2dd39a39616d5611b))
+* port IsolationForest ([#193](https://github.com/nok/sklearn-porter/issues/193)) ([84b5311](https://github.com/nok/sklearn-porter/commit/84b5311f4e7aa8059f038a07f76390a7674fdf83))
+* port KNeighborsClassifier with distance weights ([#189](https://github.com/nok/sklearn-porter/issues/189)) ([f7f2d73](https://github.com/nok/sklearn-porter/commit/f7f2d73de6fe17df2dd2158bf332367926cc90c0))
+* port LinearRegression, Ridge, Lasso and ElasticNet ([#159](https://github.com/nok/sklearn-porter/issues/159)) ([8b8c239](https://github.com/nok/sklearn-porter/commit/8b8c239a7fc2f1d3d1f5a62264160a427052589c))
+* port LogisticRegression ([#158](https://github.com/nok/sklearn-porter/issues/158)) ([4fa81e9](https://github.com/nok/sklearn-porter/commit/4fa81e9774f15dbd1f150eea085c821acbb83ed6))
+* port MultinomialNB and ComplementNB ([#192](https://github.com/nok/sklearn-porter/issues/192)) ([4314537](https://github.com/nok/sklearn-porter/commit/4314537ce36a86fbd808444638e43f9e582d471e))
+* port RandomForestRegressor and ExtraTreesRegressor ([#154](https://github.com/nok/sklearn-porter/issues/154)) ([159d241](https://github.com/nok/sklearn-porter/commit/159d2412131fbc13aa62c0c8c9a6e0821d614595))
+* port SGDClassifier, RidgeClassifier and Perceptron ([#160](https://github.com/nok/sklearn-porter/issues/160)) ([1e1356e](https://github.com/nok/sklearn-porter/commit/1e1356ee9266a55bfe7328f01fc2a3348df41e82))
+* predict batches of samples via the standard input ([#190](https://github.com/nok/sklearn-porter/issues/190)) ([1da5a10](https://github.com/nok/sklearn-porter/commit/1da5a108b96ab58568eb728f4f08344c6bfdd1ef))
+* return the class labels from the ported classifiers ([#187](https://github.com/nok/sklearn-porter/issues/187)) ([20d1fb8](https://github.com/nok/sklearn-porter/commit/20d1fb8675db98203afea0034d76d37f93a46165))
+* **ruby:** port AdaBoostClassifier to Ruby ([#148](https://github.com/nok/sklearn-porter/issues/148)) ([235c27c](https://github.com/nok/sklearn-porter/commit/235c27cd18f85711856a9329c994cd6ab9363da2))
+* **ruby:** port BernoulliNB to Ruby ([#127](https://github.com/nok/sklearn-porter/issues/127)) ([539736e](https://github.com/nok/sklearn-porter/commit/539736e943d9b021f6d5f357e02aad997adaacc1))
+* **ruby:** port GaussianNB to Ruby ([#125](https://github.com/nok/sklearn-porter/issues/125)) ([db4492d](https://github.com/nok/sklearn-porter/commit/db4492deb6e14ef7a22032744414b8479067c945))
+* **ruby:** port MLPClassifier to Ruby ([#132](https://github.com/nok/sklearn-porter/issues/132)) ([602d6bc](https://github.com/nok/sklearn-porter/commit/602d6bc76db3d41a7bbe31c39348d9f2371aeab5))
+* **ruby:** port MLPRegressor to Ruby ([#137](https://github.com/nok/sklearn-porter/issues/137)) ([3cf0038](https://github.com/nok/sklearn-porter/commit/3cf00380a693e026cfc61900a44ba82a838e125b))
+* **ruby:** port RandomForestClassifier and ExtraTreesClassifier to Ruby ([#144](https://github.com/nok/sklearn-porter/issues/144)) ([7a1beb5](https://github.com/nok/sklearn-porter/commit/7a1beb5d59a0fae68d699eb6eadcb6587a1581f7))
+* store only the splits and leaf values of ported trees ([#186](https://github.com/nok/sklearn-porter/issues/186)) ([dfa8fcd](https://github.com/nok/sklearn-porter/commit/dfa8fcd233cb06333e5b39005c262c97b613833a))
+* support HistGradientBoostingClassifier and HistGradientBoostingRegressor ([#213](https://github.com/nok/sklearn-porter/issues/213)) ([db17408](https://github.com/nok/sklearn-porter/commit/db17408099460c25970c8eb3a452fdada2229920))
+* support KNeighborsRegressor ([#212](https://github.com/nok/sklearn-porter/issues/212)) ([a7dbd27](https://github.com/nok/sklearn-porter/commit/a7dbd27a1b25d005805f4db57787ff980f92a760))
+* support more linear models (CV variants, Bayesian, Huber, SGD and LinearSVR) ([#210](https://github.com/nok/sklearn-porter/issues/210)) ([a86d913](https://github.com/nok/sklearn-porter/commit/a86d9133029a6fbf3904698684e488ee4733ee08))
+* support multilabel RidgeClassifier and MLPClassifier ([#168](https://github.com/nok/sklearn-porter/issues/168)) ([fcb691f](https://github.com/nok/sklearn-porter/commit/fcb691fdb38d5f955f29d9e7404a6063000815cd))
+* support scikit-learn &gt;= 1.8 ([#102](https://github.com/nok/sklearn-porter/issues/102)) ([4a62cc0](https://github.com/nok/sklearn-porter/commit/4a62cc027e8284864fe8c8bcaca40f7544ef626d))
+* support SVR, NuSVR and OneClassSVM ([#211](https://github.com/nok/sklearn-porter/issues/211)) ([e7348ba](https://github.com/nok/sklearn-porter/commit/e7348bab89d9962b954462ca150ce686c4aaba87))
+
+
+### Bug Fixes
+
+* apply the output activation exp of MLPRegressor with the loss poisson ([#177](https://github.com/nok/sklearn-porter/issues/177)) ([854ddd2](https://github.com/nok/sklearn-porter/commit/854ddd2d2bb89e072b0e67ae3ee12bcfce34d931))
+* binarize the features of BernoulliNB with the threshold of the estimator ([#167](https://github.com/nok/sklearn-porter/issues/167)) ([472f5b1](https://github.com/nok/sklearn-porter/commit/472f5b164caf04f2000ac328404398e50823d586))
+* compute the class probabilities of the ported Ruby decision trees in floating point ([#170](https://github.com/nok/sklearn-porter/issues/170)) ([2aa64cd](https://github.com/nok/sklearn-porter/commit/2aa64cd494dc03641676ea60c59541c75de4d8de))
+* compute the decision values of the SVC like libsvm ([#199](https://github.com/nok/sklearn-porter/issues/199)) ([bdb2ab0](https://github.com/nok/sklearn-porter/commit/bdb2ab06abf4579083a14f3da765023ed7ce36bc))
+* correct the exported MLPRegressor in JavaScript and test regressors ([#120](https://github.com/nok/sklearn-porter/issues/120)) ([0424b64](https://github.com/nok/sklearn-porter/commit/0424b643776635aee2da8b54f81316e5fd3961cd))
+* correct the probabilities of the ported classifiers ([#118](https://github.com/nok/sklearn-porter/issues/118)) ([29698cc](https://github.com/nok/sklearn-porter/commit/29698cc17fcc0c3a7b54174e510bc710d3955690))
+* decide the splits of ported trees like scikit-learn ([#119](https://github.com/nok/sklearn-porter/issues/119)) ([9cbf1d9](https://github.com/nok/sklearn-porter/commit/9cbf1d94bd1cfffb238a8a295c1b81f8e70b5678))
+* declare the properties of the ported PHP estimators explicitly ([#165](https://github.com/nok/sklearn-porter/issues/165)) ([1d0b8cb](https://github.com/nok/sklearn-porter/commit/1d0b8cb6a1a2943bc92ceeb3b1abcb3cde114e02))
+* derive the layer sizes of the ported MLPs from the fitted weights ([#178](https://github.com/nok/sklearn-porter/issues/178)) ([a987a8a](https://github.com/nok/sklearn-porter/commit/a987a8a26e5bb9d662e7b5e4588b851204f1d877))
+* **docker:** use PYTHON_VERSION for the Python of the tests ([#115](https://github.com/nok/sklearn-porter/issues/115)) ([b10306d](https://github.com/nok/sklearn-porter/commit/b10306d3972f05093ec7709cbc22d4432ea34f07))
+* import encoding/json in the exported LinearSVC for Go ([#191](https://github.com/nok/sklearn-porter/issues/191)) ([cc5b93c](https://github.com/nok/sklearn-porter/commit/cc5b93cded546bf3790fc5ded6e1ec67e3bea178))
+* **php:** pass negative feature values to the ported estimator ([#104](https://github.com/nok/sklearn-porter/issues/104)) ([e1a9394](https://github.com/nok/sklearn-porter/commit/e1a9394e38cefe78141a264a40dd7fe20a8fd6a8))
+* pick tied neighbors of the ported KNN in training order in all languages ([#180](https://github.com/nok/sklearn-porter/issues/180)) ([9f161ec](https://github.com/nok/sklearn-porter/commit/9f161ecf6036b56c8b2d64e3f2d961ee23b6223f))
+* port estimators with sparse matrices as dense arrays ([#173](https://github.com/nok/sklearn-porter/issues/173)) ([52c3c89](https://github.com/nok/sklearn-porter/commit/52c3c8925a505ef467bb0ef47b337d55e30ab803))
+* port infinite thresholds of trees and reject infinite BernoulliNB log probabilities ([#175](https://github.com/nok/sklearn-porter/issues/175)) ([c197fd7](https://github.com/nok/sklearn-porter/commit/c197fd7ff6f0f57b3efa617814abf8815af3f032))
+* port multi-output DecisionTree, RandomForest, ExtraTrees and KNeighbors classifiers ([#169](https://github.com/nok/sklearn-porter/issues/169)) ([9d2e212](https://github.com/nok/sklearn-porter/commit/9d2e21288418c334e74cfce61d9f81fd24f19fcd))
+* port support vector machines with double precision and without QualityWarning ([#163](https://github.com/nok/sklearn-porter/issues/163)) ([05a08e2](https://github.com/nok/sklearn-porter/commit/05a08e2470f06f59b738572f6914c265376e14fc))
+* port the metric of KNeighborsClassifier and support chebyshev, cosine and hamming ([#166](https://github.com/nok/sklearn-porter/issues/166)) ([b0008b9](https://github.com/nok/sklearn-porter/commit/b0008b9bcfb214c7d3f97550d3266f16eb4dbc17))
+* port the unrounded class fractions of weighted tree classifiers ([#171](https://github.com/nok/sklearn-porter/issues/171)) ([184de3c](https://github.com/nok/sklearn-porter/commit/184de3cb7a2ec573618725689f7ae111514b04ce))
+* print the probabilities of the C decision tree with full precision ([#198](https://github.com/nok/sklearn-porter/issues/198)) ([30c1cc0](https://github.com/nok/sklearn-porter/commit/30c1cc03eaea059c7f176adac8f53498692295cb))
+* quote the paths in the shell commands of make() and test() ([#172](https://github.com/nok/sklearn-porter/issues/172)) ([72b4ca5](https://github.com/nok/sklearn-porter/commit/72b4ca5969874ad428e4b1c8b1321a12d6d11611))
+* raise loading warnings in the CLI only while loading the estimator ([#162](https://github.com/nok/sklearn-porter/issues/162)) ([3350ee8](https://github.com/nok/sklearn-porter/commit/3350ee80d495c15c7f597da185022686aad7d4d3))
+* reduce the memory usage of the ported Java estimators ([#185](https://github.com/nok/sklearn-porter/issues/185)) ([ba4028a](https://github.com/nok/sklearn-porter/commit/ba4028ac8ba4a5baee4d3088a9e692779a5b6c75))
+* return new arrays from the ported MLPs in Java and JS ([#183](https://github.com/nok/sklearn-porter/issues/183)) ([c9417ce](https://github.com/nok/sklearn-porter/commit/c9417ce6522008b8c12ffad42a59dd18beb513f1))
+* route missing values of the ported trees like scikit-learn ([#174](https://github.com/nok/sklearn-porter/issues/174)) ([b5972bf](https://github.com/nok/sklearn-porter/commit/b5972bfcc318d8e8d5147e3f7417149c51bdc7eb))
+* run make() and test() without a shell and only warn on Windows ([#184](https://github.com/nok/sklearn-porter/issues/184)) ([0f763e2](https://github.com/nok/sklearn-porter/commit/0f763e2376232f8b8e5e6d42219a9ed0ff5ade39))
+* run the ported estimators in threads and report failed executions ([#116](https://github.com/nok/sklearn-porter/issues/116)) ([f8bf14c](https://github.com/nok/sklearn-porter/commit/f8bf14ca4a4b0f64bc926fcb25c0530d71ce772e))
+* **svc:** export gamma as number instead of string ([#103](https://github.com/nok/sklearn-porter/issues/103)) ([19f70e1](https://github.com/nok/sklearn-porter/commit/19f70e1b9499b63edbc03170a9b74338a8d6c403))
+* use the class fractions of the trees as probabilities like scikit-learn ([#214](https://github.com/nok/sklearn-porter/issues/214)) ([37fa16c](https://github.com/nok/sklearn-porter/commit/37fa16c1e75a5b82ced9e35432fbdf9a9f8b7730))
+* use the fitted trees of the ported forest classifiers ([#179](https://github.com/nok/sklearn-porter/issues/179)) ([3967b91](https://github.com/nok/sklearn-porter/commit/3967b91928192d6d65e5ae5f41b38bbe700fd9e7))
+
+
+### Documentation
+
+* document the differences of KNeighborsClassifier with tied neighbors ([#176](https://github.com/nok/sklearn-porter/issues/176)) ([d891fb1](https://github.com/nok/sklearn-porter/commit/d891fb1a7a6cf00dbabd34209ad2e3e1248f92b9))
+* improve README and move development docs to CONTRIBUTING.md ([#156](https://github.com/nok/sklearn-porter/issues/156)) ([7d94754](https://github.com/nok/sklearn-porter/commit/7d947545aac1a55cc5ecfa739a0b88474a4f8c2a))
+* improve the wording and the versions in the readme ([#117](https://github.com/nok/sklearn-porter/issues/117)) ([4963775](https://github.com/nok/sklearn-porter/commit/4963775748a8de159f001ee85b2947e113301584))
+* keep the save call of the readme usage example on one line ([#182](https://github.com/nok/sklearn-porter/issues/182)) ([1ab733c](https://github.com/nok/sklearn-porter/commit/1ab733c5e9e6c2b001992217f08a4016a1aaa784))
+* move the notes, limitations and known issues of the readme to separate pages ([#181](https://github.com/nok/sklearn-porter/issues/181)) ([1257f4b](https://github.com/nok/sklearn-porter/commit/1257f4be4d21dd9c49817ff62db2097fe0cc2e0e))
+* simplify and restructure README ([#161](https://github.com/nok/sklearn-porter/issues/161)) ([af1f5c5](https://github.com/nok/sklearn-porter/commit/af1f5c5101e2df9d3213297fa661c0290288f177))
+* split README known issues into limitations and known issues ([#164](https://github.com/nok/sklearn-porter/issues/164)) ([a69aae5](https://github.com/nok/sklearn-porter/commit/a69aae5c6d0820ff8860412f560b7f78faeac327))
+* update readme and add AGENTS.md ([#108](https://github.com/nok/sklearn-porter/issues/108)) ([e3c2bf5](https://github.com/nok/sklearn-porter/commit/e3c2bf5d5a785967bfe32753d64b851ec9415617))
+
+
+### Build System
+
+* **deps-dev:** update uv-build requirement to &gt;=0.12.24,&lt;0.14 ([d9f4336](https://github.com/nok/sklearn-porter/commit/d9f4336be886cf9699c43eb0eb08435cd9db2fe7))
+* migrate from setup.py and conda to uv and pyproject.toml ([#101](https://github.com/nok/sklearn-porter/issues/101)) ([b9407c1](https://github.com/nok/sklearn-porter/commit/b9407c1dfa8b024b6112b8b6fcd9607c1143ff02))
+
+
+### Continuous Integration
+
+* add GitHub Actions workflows ([#106](https://github.com/nok/sklearn-porter/issues/106)) ([0d51dae](https://github.com/nok/sklearn-porter/commit/0d51dae5173cdd83c0227505fb8620375b2ca790))
+* bump actions/checkout from 5 to 7 in the github-actions group ([#111](https://github.com/nok/sklearn-porter/issues/111)) ([ca28530](https://github.com/nok/sklearn-porter/commit/ca28530123e854a97fa5177e844369e11f8c21f3))
+* release with release-please via TestPyPI to PyPI ([#107](https://github.com/nok/sklearn-porter/issues/107)) ([1976a9b](https://github.com/nok/sklearn-porter/commit/1976a9b10a48640c1a344cfa77030dc8476f5f0e))
+* remove Travis CI ([#100](https://github.com/nok/sklearn-porter/issues/100)) ([0f6a7ca](https://github.com/nok/sklearn-porter/commit/0f6a7caf542f99f3179a236e6b38111439fb0baf))
+* show build and CI changes in the changelog ([#114](https://github.com/nok/sklearn-porter/issues/114)) ([d59f19b](https://github.com/nok/sklearn-porter/commit/d59f19b9f262f3f631f05f12dccb55406234e04f))
+
 ## 0.7.3
 
 ### Fixed
