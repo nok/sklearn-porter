@@ -11,7 +11,7 @@ from sklearn.datasets import load_iris
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 
 # sklearn-porter
-from sklearn_porter.Estimator import Estimator
+from sklearn_porter import Estimator
 from tests.utils import fs_mkdir
 
 # Long running regression tests, see `make test-regression`:

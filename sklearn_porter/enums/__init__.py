@@ -16,6 +16,7 @@ from sklearn_porter.language import (  # noqa: F401 (re-export LANGUAGES)
 class Method(Enum):
     PREDICT = 'predict'
     PREDICT_PROBA = 'predict_proba'
+    TRANSFORM = 'transform'
 
     @classmethod
     def convert(cls, method):
@@ -27,6 +28,7 @@ class Method(Enum):
         return method
 
 
+# All methods of a classifier:
 ALL_METHODS = {Method.PREDICT, Method.PREDICT_PROBA}
 
 

@@ -1,0 +1,45 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+type {{ class_name }} struct {
+	Mean  []float64
+	Scale []float64
+}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, len(transformer.Mean))
+	for i := range transformer.Mean {
+		values[i] = (features[i] - transformer.Mean[i]) / transformer.Scale[i]
+	}
+	return values
+}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+// Model data:
+{{ mean }}
+{{ scale }}
+
+func main() {
+	// Transformer:
+	transformer := {{ class_name }}{mean, scale}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

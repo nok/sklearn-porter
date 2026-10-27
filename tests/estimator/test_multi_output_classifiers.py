@@ -10,8 +10,8 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
+from sklearn_porter import Estimator, can
 from sklearn_porter import exceptions as exception
-from sklearn_porter.Estimator import Estimator, can
 from tests.commons import LANGUAGES
 from tests.utils import (
     dataset_generate_x,

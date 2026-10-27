@@ -1,0 +1,15 @@
+// Print the values of a sample (e.g. the transformed features) in one line,
+// separated by spaces, so the output can be passed to a ported estimator:
+function printValues($values) {
+    $items = array();
+    foreach ($values as $value) {
+        if (is_nan($value)) {
+            $items[] = 'NaN';
+        } elseif (is_infinite($value)) {
+            $items[] = $value > 0 ? 'Infinity' : '-Infinity';
+        } else {
+            $items[] = var_export($value, true);
+        }
+    }
+    fwrite(STDOUT, implode(' ', $items) . "\n");
+}

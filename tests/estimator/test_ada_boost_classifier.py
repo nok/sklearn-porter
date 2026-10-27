@@ -8,10 +8,9 @@ import pytest
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 
-from sklearn_porter import exceptions as exception
-
 # sklearn-porter
-from sklearn_porter.Estimator import Estimator, can
+from sklearn_porter import Estimator, can
+from sklearn_porter import exceptions as exception
 from tests.commons import DATASETS, LANGUAGES, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 

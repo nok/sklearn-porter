@@ -1,0 +1,40 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+var {{ class_name }} = function(jsonFile) {
+    this.data = JSON.parse(fs.readFileSync(jsonFile));
+
+    this.transform = function(features) {
+        var values = new Array(this.data.mean.length);
+        for (var i = 0, l = this.data.mean.length; i < l; i++) {
+            values[i] = (features[i] - this.data.mean[i]) / this.data.scale[i];
+        }
+        return values;
+    };
+};
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    if (process.argv.length < 3) {
+        throw new Error("You have to pass the path to the model data.");
+    }
+
+    // Transformer:
+    var transformer = new {{ class_name }}(process.argv[2]);
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(3)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

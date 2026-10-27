@@ -10,8 +10,8 @@ from sklearn.ensemble import (
 )
 
 # sklearn-porter
+from sklearn_porter import Estimator, can
 from sklearn_porter import exceptions as exception
-from sklearn_porter.Estimator import Estimator, can
 from tests.commons import (
     DATASETS,
     LANGUAGES,

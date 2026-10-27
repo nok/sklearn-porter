@@ -1,0 +1,53 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import com.google.gson.Gson;
+
+
+class {{ class_name }} {
+
+    private class ModelData {
+        private double[] mean;
+        private double[] scale;
+    }
+
+    private ModelData data;
+
+    public {{ class_name }}(String file) throws IOException {
+        try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
+            this.data = new Gson().fromJson(reader, ModelData.class);
+        }
+    }
+
+    public double[] transform(double[] features) {
+        double[] values = new double[this.data.mean.length];
+        for (int i = 0; i < this.data.mean.length; i++) {
+            values[i] = (features[i] - this.data.mean[i]) / this.data.scale[i];
+        }
+        return values;
+    }
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        // Transformer:
+        {{ class_name }} transformer = new {{ class_name }}(args[0]);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            printValues(transformer.transform(features));
+        }
+    }
+}
+{% endblock %}

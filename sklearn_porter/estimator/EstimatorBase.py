@@ -1,3 +1,4 @@
+import sys
 from collections.abc import Callable
 from os import environ
 from pathlib import Path
@@ -182,7 +183,8 @@ class EstimatorBase(EstimatorApiABC):
         """
         Load templates from static files and the global language files.
 
-        Template files: `sklearn_porter/estimator/SVC/templates/<language>/*txt`
+        Template files: `sklearn_porter/estimator/SVC/templates/<language>/*`
+        (or `sklearn_porter/transformer/<Name>/templates/<language>/*`)
         Language files: `sklearn_porter/language/<language>.py`
 
         Parameters
@@ -214,13 +216,22 @@ class EstimatorBase(EstimatorApiABC):
 
         # 3. Load specific templates from template files:
         # The templates of a class overwrite the templates of its bases
-        # (also of the bases of its bases):
-        ignored = {'EstimatorBase', 'EstimatorApiABC'}
-        bases = [b.__name__ for b in reversed(self.__class__.__mro__)]
-        bases = [b for b in dict.fromkeys(bases) if b not in ignored]
-        est_dir = root_dir / 'estimator'
-        for base_dir in bases:
-            tpls_dir = est_dir / base_dir / 'templates' / lang.KEY
+        # (also of the bases of its bases). The templates are in the
+        # directory of the module of each class (e.g. of an estimator in
+        # `sklearn_porter/estimator/` or of a transformer in
+        # `sklearn_porter/transformer/`):
+        ignored = {'EstimatorBase', 'EstimatorApiABC', 'TransformerBase'}
+        bases = [
+            b
+            for b in reversed(self.__class__.__mro__)
+            if b.__module__.startswith('sklearn_porter.')
+            and b.__name__ not in ignored
+        ]
+        for base in bases:
+            module_path = sys.modules[base.__module__].__file__
+            if not module_path:
+                continue
+            tpls_dir = Path(module_path).parent / 'templates' / lang.KEY
             if tpls_dir.exists():
                 tpls_paths = set(tpls_dir.glob('*.jinja2'))
                 tpls.update(

@@ -1,0 +1,29 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+public class {{ class_name }} {
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        {% for m in mean %}
+        values[{{ loop.index0 }}] = (features[{{ loop.index0 }}] - {{ m }}) / {{ scale[loop.index0] }};
+        {% endfor %}
+        return values;
+    }
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        // Transformer:
+        {{ class_name }} transformer = new {{ class_name }}();
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+}
+{% endblock %}

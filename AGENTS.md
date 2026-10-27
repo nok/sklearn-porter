@@ -2,9 +2,11 @@
 
 ## Purpose
 
-sklearn-porter transpiles trained scikit-learn estimators to C, C#, Go, Java,
-JavaScript, PHP and Ruby, e.g. for embedded systems without Python. The ported
-code must predict exactly the same classes as the original estimator.
+sklearn-porter transpiles trained scikit-learn estimators (classifiers,
+regressors, outlier detectors) and transformers (e.g. for the preprocessing)
+to C, C#, Go, Java, JavaScript, PHP and Ruby, e.g. for embedded systems
+without Python. The ported code must predict exactly the same classes as the
+original estimator and transform the features like the original transformer.
 
 - Python `>= 3.11`, `scikit-learn >= 1.8`, managed with uv
 - License: BSD 3-Clause
@@ -14,19 +16,41 @@ code must predict exactly the same classes as the original estimator.
 - **Templates** define how the model data is stored in the generated code:
   `attached` (data embedded as variables), `exported` (data in a separate
   JSON file), `combined` (data compiled into the code, e.g. nested if/else).
-- **Methods**: `predict` and, if supported, `predict_proba`.
-- **Public API** (exported in `sklearn_porter/__init__.py`): class
-  `Estimator` (incl. the method `can`), the functions `port`, `save`, `make`,
-  `test`, `show` and the dict `options`. The CLI `porter` (`show`, `port`,
-  `save`) lives in `sklearn_porter/cli/`.
+- **Methods**: `predict` and, if supported, `predict_proba` of the
+  estimators, `transform` of the transformers.
+- **Public API** (exported in `sklearn_porter/__init__.py`): the classes
+  `Porter`, `Estimator` and `Transformer` (incl. the method `can`), the
+  functions `port`, `save`, `make`, `test`, `can`, `show` and the dict
+  `options`. The CLI `porter` (`show`, `port`, `save`) lives in
+  `sklearn_porter/cli/`.
+- `Porter` (`sklearn_porter/Porter.py`) is the central class: it creates a
+  `Transformer` for a transformer (`is_transformer()`), otherwise an
+  `Estimator`, and forwards all calls to it (later it shall also port
+  pipelines of transformers and a final estimator). The functions of the
+  same module and the CLI use it.
+- `Estimator` (`sklearn_porter/Estimator.py`, ported classes in
+  `sklearn_porter/estimator/`) and `Transformer`
+  (`sklearn_porter/Transformer.py`, ported classes in
+  `sklearn_porter/transformer/`) share the base class `Base`
+  (`sklearn_porter/Base.py`: properties, `supports()`/`can`, `port`, `save`,
+  the compilation and execution in `_run()`). `Estimator` adds the pipeline
+  handling, `make()`/`predict()` and `test()`, `Transformer` adds
+  `make()`/`transform()` and `test()`. Tests patch `run`, `platform` etc. in
+  `sklearn_porter.Base`.
 - `make()` compiles and executes the ported estimator via subprocess calls,
-  `test()` compares its predictions with scikit-learn (integrity score).
+  `test()` compares its predictions (or transformed features) with
+  scikit-learn (integrity score).
 - The `main` of each ported estimator reads the features of one sample from
   its arguments or of several samples (one per line) from the standard input
   (shared template `samples` of each language) and prints one result per
   line. `make()` passes the samples in batches of at least 100 samples to
   the standard input, because starting a process (e.g. the JVM) takes much
   longer than a prediction.
+- The estimators print JSON for `make()` (`is_test` or `to_json`) and text
+  otherwise. The transformers always print the transformed features of each
+  sample in one line, separated by spaces (shared template `values` of each
+  language, round-trip precision, `NaN`, `Infinity`, `-0`), which is also
+  the input format of the ported estimators.
 
 ## Layout
 
@@ -41,11 +65,18 @@ code must predict exactly the same classes as the original estimator.
   `GradientBoostingRegressor` of `RandomForestRegressor`) loads the
   templates of all its base classes, and its own templates overwrite the ones
   with the same name.
+- `sklearn_porter/transformer/<Name>/__init__.py` and
+  `templates/<language>/*.jinja2`: the same for transformers, subclass of
+  `TransformerBase` (of `EstimatorBase`), registered in
+  `Transformer.transformers()` in `sklearn_porter/Transformer.py`. The
+  templates are loaded from the directory of the module of each class.
 - `sklearn_porter/language/<language>/__init__.py`: subclass of `LanguageABC`
   with the compile and execute commands and small code snippets.
 - `sklearn_porter/enums`, `exceptions`, `utils`, `meta`: shared helpers.
 - `tests/`: `test_estimator.py` (API, CLI, regression of all classifiers),
-  `tests/estimator/test_*.py` (parameter sweeps per estimator), fixtures in
+  `tests/estimator/test_*.py` (parameter sweeps per estimator),
+  `test_transformer.py` and `tests/transformer/test_*.py` (the same for
+  transformers), `test_porter.py` (the central class), fixtures in
   `tests/conftest.py`.
 - `README.md` is the user documentation (also shown on PyPI, so use absolute
   links there), `CONTRIBUTING.md` the developer documentation.
@@ -103,6 +134,20 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 Goal: every estimator supports all languages, templates and methods
 (`predict_proba` only for classifiers), so the README needs no support
 table.
+
+## Adding or changing a transformer
+
+1. Implement or update `sklearn_porter/transformer/<Name>/__init__.py`
+   (subclass of `TransformerBase`), including `SUPPORT` with
+   `Method.TRANSFORM`.
+2. Add or update the Jinja2 templates for every supported language and
+   template; `main` prints the result of `transform` with the template
+   `values`.
+3. Register the transformer in `Transformer.transformers()` in
+   `sklearn_porter/Transformer.py`.
+4. Add tests (fast ones in `tests/test_transformer.py`, regression tests in
+   `tests/transformer/`) and run the regression tests in Docker.
+5. Add the transformer to the list of transformers in `README.md`.
 
 ## scikit-learn specifics
 
