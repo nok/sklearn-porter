@@ -1,0 +1,34 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_FEATURES_OUT {{ n_features_out }}
+
+
+/* Write the transformed features to `values`: */
+void transform(double *values, double features[N_FEATURES]) {
+    {% for m in mean %}
+    values[{{ loop.index0 }}] = (features[{{ loop.index0 }}] - {{ m }}) / {{ scale[loop.index0] }};
+    {% endfor %}
+}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+int main(int argc, const char *argv[]) {
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        double values[N_FEATURES_OUT];
+        transform(values, features);
+        print_values(values, N_FEATURES_OUT);
+    }
+
+    return 0;
+}
+{% endblock %}

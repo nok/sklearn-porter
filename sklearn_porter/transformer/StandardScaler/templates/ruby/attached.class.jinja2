@@ -1,0 +1,36 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }}
+
+	def initialize(mean, scale)
+		@mean = mean
+		@scale = scale
+	end
+
+	def transform(features)
+		Array.new(@mean.length) { |i| (features[i] - @mean[i]) / @scale[i] }
+	end
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	# Model data:
+	{{ mean }}
+	{{ scale }}
+
+	# Transformer:
+	transformer = {{ class_name }}.new mean, scale
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

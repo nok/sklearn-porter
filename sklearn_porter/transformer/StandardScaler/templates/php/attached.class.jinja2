@@ -1,0 +1,46 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private $mean;
+    private $scale;
+
+    public function __construct($mean, $scale) {
+        $this->mean = $mean;
+        $this->scale = $scale;
+    }
+
+    public function transform($features) {
+        $values = array();
+        for ($i = 0, $l = count($this->mean); $i < $l; $i++) {
+            $values[$i] = ($features[$i] - $this->mean[$i]) / $this->scale[$i];
+        }
+        return $values;
+    }
+
+}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    // Model data:
+    {{ mean }}
+    {{ scale }}
+
+    // Transformer:
+    $transformer = new {{ class_name }}($mean, $scale);
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues($transformer->transform($features));
+    }
+
+}
+{% endblock %}

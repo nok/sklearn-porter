@@ -1,0 +1,5 @@
+# Print the values of a sample (e.g. the transformed features) in one line,
+# separated by spaces, so the output can be passed to a ported estimator:
+def print_values(values)
+	puts values.collect { |value| value.to_s }.join(' ')
+end

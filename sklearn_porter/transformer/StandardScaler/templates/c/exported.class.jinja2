@@ -1,0 +1,50 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+#define N_FEATURES {{ n_features }}
+#define N_FEATURES_OUT {{ n_features_out }}
+
+
+double *mean;
+double *scale;
+
+void load(const char *path) {
+    JsonValue *data = json_read(path);
+    mean = json_doubles(json_get(data, "mean"));
+    scale = json_doubles(json_get(data, "scale"));
+    json_free(data);
+}
+
+/* Write the transformed features to `values`: */
+void transform(double *values, double features[N_FEATURES]) {
+    for (int i = 0; i < N_FEATURES; i++) {
+        values[i] = (features[i] - mean[i]) / scale[i];
+    }
+}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+int main(int argc, const char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "You have to pass the path to the model data.\n");
+        return 1;
+    }
+
+    /* Model data: */
+    load(argv[1]);
+
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 2)) {
+        double values[N_FEATURES_OUT];
+        transform(values, features);
+        print_values(values, N_FEATURES_OUT);
+    }
+
+    return 0;
+}
+{% endblock %}

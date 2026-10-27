@@ -6,10 +6,9 @@ import pytest
 # scikit-learn
 from sklearn.ensemble import ExtraTreesRegressor, RandomForestRegressor
 
-from sklearn_porter import exceptions as exception
-
 # sklearn-porter
-from sklearn_porter.Estimator import Estimator, can
+from sklearn_porter import Estimator, can
+from sklearn_porter import exceptions as exception
 from tests.commons import LANGUAGES, REGRESSION_DATASETS, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 

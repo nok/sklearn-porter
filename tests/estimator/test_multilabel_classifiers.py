@@ -9,7 +9,7 @@ from sklearn.linear_model import RidgeClassifier, RidgeClassifierCV
 from sklearn.neural_network import MLPClassifier
 
 # sklearn-porter
-from sklearn_porter.Estimator import Estimator, can
+from sklearn_porter import Estimator, can
 from tests.commons import LANGUAGES
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 

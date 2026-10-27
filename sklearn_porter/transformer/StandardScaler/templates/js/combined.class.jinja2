@@ -1,0 +1,33 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+var {{ class_name }} = function() {
+
+    this.transform = function(features) {
+        return [
+            {% for m in mean %}
+            (features[{{ loop.index0 }}] - {{ m }}) / {{ scale[loop.index0] }}{{ ',' if not loop.last }}
+            {% endfor %}
+        ];
+    };
+
+};
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    // Transformer:
+    var transformer = new {{ class_name }}();
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

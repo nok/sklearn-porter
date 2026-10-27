@@ -4,7 +4,7 @@ from pathlib import Path
 from textwrap import dedent
 
 # sklearn-porter
-from sklearn_porter import Estimator, options
+from sklearn_porter import Porter, options
 from sklearn_porter.cli.common import (
     arg_debug,
     arg_help,
@@ -18,7 +18,7 @@ from sklearn_porter.language import LANGUAGES
 def config(sub_parser):
     header = (
         'The subcommand `port` transpiles a trained '
-        'estimator to a specific programming language.'
+        'estimator (or transformer) to a specific programming language.'
     )
     footer = dedent(
         """
@@ -77,7 +77,7 @@ def main(args: dict, silent: bool = False):
 
     path = Path(args['model'])
     mdl = load_model(path, args.get('skip_warnings', False))
-    est = Estimator(
+    est = Porter(
         mdl, ignore_preprocessing=args.get('ignore_preprocessing', False)
     )
 

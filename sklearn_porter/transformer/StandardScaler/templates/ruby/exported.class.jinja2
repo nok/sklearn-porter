@@ -1,0 +1,41 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+require 'json'
+
+
+class {{ class_name }}
+
+	def initialize(path)
+		data = JSON.parse(File.read(path))
+		@mean = data['mean']
+		@scale = data['scale']
+	end
+
+	def transform(features)
+		Array.new(@mean.length) { |i| (features[i] - @mean[i]) / @scale[i] }
+	end
+
+end
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	raise "You have to pass the path to the model data." if ARGV.empty?
+
+	# Model data:
+	path = ARGV.shift
+
+	# Transformer:
+	transformer = {{ class_name }}.new path
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

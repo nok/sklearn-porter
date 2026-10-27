@@ -1,0 +1,7 @@
+// Print the values of a sample (e.g. the transformed features) in one line,
+// separated by spaces, so the output can be passed to a ported estimator:
+var printValues = function (values) {
+    console.log(values.map(function (value) {
+        return Object.is(value, -0) ? '-0' : String(value);
+    }).join(' '));
+};

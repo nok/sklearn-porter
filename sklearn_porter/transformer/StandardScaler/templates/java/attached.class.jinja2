@@ -1,0 +1,40 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+class {{ class_name }} {
+
+    private double[] mean;
+    private double[] scale;
+
+    public {{ class_name }}(double[] mean, double[] scale) {
+        this.mean = mean;
+        this.scale = scale;
+    }
+
+    public double[] transform(double[] features) {
+        double[] values = new double[this.mean.length];
+        for (int i = 0; i < this.mean.length; i++) {
+            values[i] = (features[i] - this.mean[i]) / this.scale[i];
+        }
+        return values;
+    }
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        // Model data:
+        {{ mean }}
+        {{ scale }}
+
+        // Transformer:
+        {{ class_name }} transformer = new {{ class_name }}(mean, scale);
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+}
+{% endblock %}

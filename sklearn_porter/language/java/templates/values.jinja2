@@ -1,0 +1,13 @@
+    // Print the values of a sample (e.g. the transformed features) in one
+    // line, separated by spaces, so the output can be passed to a ported
+    // estimator:
+    private static void printValues(double[] values) {
+        StringBuilder line = new StringBuilder();
+        for (int i = 0; i < values.length; i++) {
+            if (i > 0) {
+                line.append(' ');
+            }
+            line.append(values[i]);
+        }
+        System.out.println(line);
+    }

@@ -1,0 +1,16 @@
+// Print the values of a sample (e.g. the transformed features) in one line,
+// separated by spaces, so the output can be passed to a ported estimator:
+func printValues(values []float64) {
+	items := make([]string, len(values))
+	for i, value := range values {
+		switch {
+		case math.IsInf(value, 1):
+			items[i] = "Infinity"
+		case math.IsInf(value, -1):
+			items[i] = "-Infinity"
+		default:
+			items[i] = strconv.FormatFloat(value, 'g', -1, 64)
+		}
+	}
+	fmt.Println(strings.Join(items, " "))
+}

@@ -5,9 +5,9 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/sklearn-porter.svg)](https://pypi.org/project/sklearn-porter/)
 [![License](https://img.shields.io/pypi/l/sklearn-porter.svg?color=blue)](https://github.com/nok/sklearn-porter/blob/main/LICENSE)
 
-Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators to **C**, **C#**, **Go**, **Java**, **JavaScript**, **PHP** and **Ruby**.
+Transpile trained [scikit-learn](https://github.com/scikit-learn/scikit-learn) estimators and transformers to **C**, **C#**, **Go**, **Java**, **JavaScript**, **PHP** and **Ruby**.
 
-Use the generated code to make predictions where Python isn't available or is too heavy, e.g. on embedded systems, in web browsers or in existing applications. The ported estimators make the same predictions as the original scikit-learn estimators.
+Use the generated code to make predictions where Python isn't available or is too heavy, e.g. on embedded systems, in web browsers or in existing applications. The ported estimators make the same predictions as the original scikit-learn estimators, the ported transformers (e.g. for the preprocessing) transform the features like the original transformers.
 
 Navigation: [Installation](#installation) • [Support](#support) • [Usage](#usage) • [CLI](#cli) • [Documentation](#documentation) • [Contributing](#contributing) • [Citation](#citation) • [License](#license)
 
@@ -82,9 +82,15 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 - [ensemble.IsolationForest](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.IsolationForest.html)
 - [svm.OneClassSVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html)
 
+### Transformers
+
+#### Preprocessing
+
+- [preprocessing.StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html)
+
 ### Languages
 
-The estimators are ported to **C** (`c`), **C#** (`cs`), **Go** (`go`), **Java** (`java`), **JavaScript** (`js`), **PHP** (`php`) and **Ruby** (`ruby`). The keys in parentheses select the language, e.g. `port(clf, language='cs')`.
+The estimators and transformers are ported to **C** (`c`), **C#** (`cs`), **Go** (`go`), **Java** (`java`), **JavaScript** (`js`), **PHP** (`php`) and **Ruby** (`ruby`). The keys in parentheses select the language, e.g. `port(clf, language='cs')`.
 
 ### Templates
 
@@ -131,6 +137,48 @@ Steps 4 and 5 require a compiler or interpreter for the target language (e.g. `n
 
 The [example notebook](https://github.com/nok/sklearn-porter/blob/main/examples/basics/index.pct.ipynb) shows the functional and the object-oriented API step by step.
 
+### Transformers
+
+A ported transformer has the method `transform`, which returns the transformed features of a sample, analogous to `predict` of a ported estimator. The functions `port`, `save`, `make` and `test` accept transformers too:
+
+<!-- fmt:off -->
+```python
+from sklearn.preprocessing import StandardScaler
+from sklearn_porter import Transformer
+
+# 1. Train a transformer:
+scaler = StandardScaler()
+scaler.fit(X)
+
+# 2. Port the transformer and save it:
+transformer = Transformer(scaler, language='js')
+print(transformer.port())
+transformer.save(directory='/tmp')  # /tmp/StandardScaler.js
+
+# 3. Transform the features with the ported transformer and check them:
+X_tr = transformer.transform(X[:10])
+score = transformer.test(X[:10])
+```
+<!-- fmt:on -->
+
+The ported transformer prints the transformed features of each sample in one line (separated by spaces), which is also the input format of the ported estimators.
+
+### Object-oriented API
+
+The classes `Estimator` and `Transformer` port an estimator and a transformer. The central class `Porter` accepts both and creates the matching one:
+
+<!-- fmt:off -->
+```python
+from sklearn_porter import Porter
+
+porter = Porter(clf, language='java')  # creates an `Estimator`
+y_classes, y_probas = porter.predict(X[:10])
+
+porter = Porter(scaler, language='java')  # creates a `Transformer`
+X_tr = porter.transform(X[:10])
+```
+<!-- fmt:on -->
+
 
 ## CLI
 
@@ -161,7 +209,7 @@ from joblib import dump
 dump(clf, 'estimator.joblib')
 ```
 
-Then port the saved estimator with the `port` subcommand:
+Then port the saved estimator (or transformer) with the `port` subcommand:
 
 ```bash
 porter port estimator.joblib -l js -t attached > estimator.js
@@ -178,7 +226,7 @@ porter port estimator.joblib -l js -t attached | npx terser --compress -o estima
 
 Read these pages before you use a ported estimator in production:
 
-- [Estimator Notes](https://github.com/nok/sklearn-porter/blob/main/docs/estimator-notes.md): the labels of the classes, multilabel and multi-output classification and the parameters of single estimators which can't be ported or which can lead to different predictions.
+- [Estimator Notes](https://github.com/nok/sklearn-porter/blob/main/docs/estimator-notes.md): the labels of the classes, multilabel and multi-output classification and the parameters of single estimators and transformers which can't be ported or which can lead to different predictions.
 - [Limitations](https://github.com/nok/sklearn-porter/blob/main/docs/limitations.md): pipelines, the types of the labels, the size of Java methods, the requirements of C#, sparse data and Windows.
 
 

@@ -7,7 +7,7 @@ import pytest
 from sklearn.naive_bayes import BernoulliNB
 
 # sklearn-porter
-from sklearn_porter.Estimator import Estimator, can
+from sklearn_porter import Estimator, can
 from tests.commons import DATASETS, LANGUAGES, Dataset
 from tests.utils import (
     dataset_generate_x,

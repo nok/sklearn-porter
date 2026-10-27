@@ -80,6 +80,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils import get_tags
 
 # sklearn-porter
+from sklearn_porter import Estimator, can, port, show
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.cli import utils as cli_utils
@@ -87,7 +88,6 @@ from sklearn_porter.cli.__main__ import parse_args
 from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.cli.command.show import main as show_main
-from sklearn_porter.Estimator import Estimator, can, port, show
 from sklearn_porter.estimator.AdaBoostClassifier import (
     AdaBoostClassifier as AdaBoostClassifierPorter,
 )
@@ -109,8 +109,8 @@ from tests.utils import (
     fs_mkdir,
 )
 
-# The module itself (the package exports the class of the same name):
-ESTIMATOR_MODULE = import_module('sklearn_porter.Estimator')
+# The module of the shared code (e.g. `run` and `platform`), which is patched:
+ESTIMATOR_MODULE = import_module('sklearn_porter.Base')
 
 
 def test_unsupported_estimator():

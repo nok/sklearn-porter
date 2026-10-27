@@ -7,7 +7,7 @@ import pytest
 from sklearn.tree import DecisionTreeRegressor
 
 # sklearn-porter
-from sklearn_porter.Estimator import Estimator, can
+from sklearn_porter import Estimator, can
 from tests.commons import LANGUAGES, REGRESSION_DATASETS, Dataset
 from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
 

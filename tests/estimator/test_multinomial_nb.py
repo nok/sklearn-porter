@@ -9,7 +9,7 @@ from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.naive_bayes import ComplementNB, MultinomialNB
 
 # sklearn-porter
-from sklearn_porter.Estimator import Estimator, can
+from sklearn_porter import Estimator, can
 from tests.commons import DATASETS, LANGUAGES, Dataset
 from tests.utils import (
     dataset_generate_x,

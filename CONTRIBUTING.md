@@ -75,6 +75,15 @@ In general, the generated source code works with older compilers and interpreter
 The goal is that every estimator supports all languages, templates and methods (`predict_proba` only for classifiers).
 
 
+## Adding or changing a transformer
+
+1. Implement or update `sklearn_porter/transformer/<Name>/__init__.py` as a subclass of `TransformerBase`, including the supported combinations in `SUPPORT` (with the method `transform`).
+2. Add or update the Jinja2 templates in `sklearn_porter/transformer/<Name>/templates/<language>/` for every supported language and template. The method `transform` returns the transformed features of one sample, the `main` prints them with the shared template `values` of each language (one sample per line, separated by spaces).
+3. Register the transformer in `Transformer.transformers()` in [`sklearn_porter/Transformer.py`](sklearn_porter/Transformer.py).
+4. Add tests in `tests/transformer/` and run the regression tests in Docker.
+5. Add the transformer to the list of transformers in the [README](README.md).
+
+
 ## Pull requests
 
 Commit messages and pull request titles follow [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat: add support for ...` or `fix(php): ...`. Pull requests are squash merged into `main`, so the pull request title becomes the commit message.

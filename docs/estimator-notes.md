@@ -65,3 +65,9 @@
 - The SVMs can be ported with the kernels `linear`, `poly`, `rbf` and `sigmoid` and the templates `attached` and `exported`. The kernel `precomputed` and callable kernels raise a `NotSupportedYetError`.
 - The ported [OneClassSVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html) supports only `predict`, which returns `1` for inliers (a positive decision value) and `-1` for outliers like scikit-learn. The scores (`score_samples` and `decision_function`) aren't ported.
 - A [SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html) without support vectors (e.g. with a large `epsilon`) predicts its intercept for all samples, also the ported one.
+
+## StandardScaler
+
+- The ported [StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) subtracts the mean and divides by the scale like scikit-learn, so the transformed features are identical. Without centering (`with_mean=False`) or scaling (`with_std=False`) it subtracts zero or divides by one, which doesn't change any value.
+- Missing values (`NaN`) remain missing values like in scikit-learn.
+- scikit-learn transforms samples of the type `float32` with single precision, the ported transformer always uses double precision. So pass samples of the type `float64` to compare the results.
