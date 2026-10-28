@@ -88,10 +88,6 @@ def main(args: dict, silent: bool = False):
         est.template = template
 
     out = est.port()
-    if isinstance(out, list):  # the ported steps of a pipeline
-        out = '\n\n'.join(
-            o if isinstance(o, str) else '\n\n'.join(o) for o in out
-        )
 
     if not silent:
         print(out)

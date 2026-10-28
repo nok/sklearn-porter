@@ -13,8 +13,9 @@ from sklearn.pipeline import Pipeline as SklearnPipeline
 from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
-from sklearn_porter.Base import Base, _get_qualname
-from sklearn_porter.Estimator import Estimator, _integrity_score
+from sklearn_porter.Base import Base, _get_qualname, _parse_predictions
+from sklearn_porter.Estimator import Estimator, _integrity_score, _predictions
+from sklearn_porter.pipeline.Pipeline import Pipeline as PortedPipeline
 from sklearn_porter.Transformer import Transformer
 
 
@@ -70,12 +71,12 @@ def _split_steps(
 class Pipeline(Base):
     """
     Main class which validates the passed pipeline of transformers (e.g. a
-    `StandardScaler`) and a final estimator and ports each step.
+    `StandardScaler`) and a final estimator and ports it to one source file.
 
-    The transformers are ported with `Transformer` and the final estimator
-    with `Estimator`. `make()` transforms the samples with the ported
-    transformers and makes the predictions with the ported estimator, so the
-    ported pipeline predicts like the original pipeline.
+    The transformers are validated by `Transformer` and the final estimator
+    by `Estimator`. The ported pipeline is the ported final estimator, which
+    transforms the features of each sample with the ported transformers
+    before its predictions, so it predicts like the original pipeline.
     """
 
     KIND = 'pipeline'
@@ -103,9 +104,11 @@ class Pipeline(Base):
             The template of the generated code of all steps. By default the
             default template of the final estimator will be used.
         class_name : str
-            The name of the pipeline, by default `Pipeline`. The ported steps
-            keep the class names of their estimators, e.g. `StandardScaler`
-            (with a number for repeated names, e.g. `StandardScaler2`).
+            The class name of the ported final estimator, which is also the
+            name of the generated file, by default `Pipeline`. The ported
+            transformers keep the class names of their estimators, e.g.
+            `StandardScaler` (with a number for repeated names, e.g.
+            `StandardScaler2`).
         converter : Callable
             Change the default converter of all floating numbers from the model
             data. By default a simple string cast `str(value)` will be used.
@@ -141,16 +144,34 @@ class Pipeline(Base):
         self._transformers = [Transformer(step) for _, step in preprocessing]
         self._final = Estimator(final_est)
 
-        # Unique class names (e.g. `StandardScaler` and `StandardScaler2`),
-        # so the generated files of the steps don't overwrite each other:
+        # The transformers must keep the number of features, because the
+        # ported pipeline transforms the features of each sample in place:
+        for (name, _), transformer in zip(
+            preprocessing, self._transformers, strict=True
+        ):
+            meta_info = transformer._estimator.meta_info
+            if meta_info['n_features'] != meta_info['n_features_out']:
+                msg = (
+                    f'The preprocessing step `{name}` changes the number of '
+                    "features, which can't be ported yet."
+                )
+                L.error(msg)
+                raise exception.NotSupportedYetError(msg)
+
+        # Unique class names of the ported transformers (e.g.
+        # `StandardScaler` and `StandardScaler2`) in the generated file:
         class_names = set()
-        for step in self.steps:
+        for step in self._transformers:
             class_name, i = step.class_name, 1
             while class_name in class_names:
                 i += 1
                 class_name = f'{step.class_name}{i}'
             class_names.add(class_name)
             step.class_name = class_name
+
+        self._estimator = PortedPipeline(
+            self._pipeline, self._transformers, self._final
+        )
 
     @property
     def steps(self) -> tuple[Transformer | Estimator, ...]:
@@ -280,58 +301,19 @@ class Pipeline(Base):
         preprocessing, final_est = _split_steps(pipeline)
         if not preprocessing or final_est is None:
             return False
+        if language:
+            support = PortedPipeline.SUPPORT.get(
+                enum.Language.convert(language), {}
+            )
+            if template and enum.Template.convert(template) not in support:
+                return False
+            if not support:
+                return False
         tr_method = enum.Method.TRANSFORM if method else None
         return all(
             Transformer.supports(step, language, template, tr_method)
             for _, step in preprocessing
         ) and Estimator.supports(final_est, language, template, method)
-
-    @decorator.alias('export')
-    def port(self, to_json: bool = False, **kwargs) -> list:
-        """
-        Port each step of the pipeline to the target programming language.
-
-        Parameters
-        ----------
-        to_json : bool (default: False)
-            Return the results of the final estimator as JSON string.
-
-        Returns
-        -------
-        The ported steps (the transformers and the final estimator) in the
-        order of the pipeline. The output of each ported transformer is the
-        input of the next step, so the programs can be chained with a pipe.
-        """
-        self._check_kwargs(kwargs)
-        return [step.port(to_json=to_json) for step in self.steps]
-
-    @decorator.alias('dump')
-    def save(
-        self,
-        directory: str | Path | None = None,
-        to_json: bool = False,
-        **kwargs,
-    ) -> list:
-        """
-        Port each step of the pipeline and save them.
-
-        Parameters
-        ----------
-        directory : str or Path, optional (default: current working dir)
-            Set the directory where all generated files should be saved.
-        to_json : bool (default: False)
-            Return the results of the final estimator as JSON string.
-
-        Returns
-        -------
-        The path(s) to the generated file(s) of each step in the order of the
-        pipeline.
-        """
-        self._check_kwargs(kwargs)
-        return [
-            step.save(directory=directory, to_json=to_json)
-            for step in self.steps
-        ]
 
     @decorator.alias('predict')
     def make(
@@ -349,17 +331,14 @@ class Pipeline(Base):
         """
         Make predictions with the transpiled pipeline locally.
 
-        The samples are transformed by the ported transformers one after
-        another, the ported final estimator makes the predictions.
-
         Parameters
         ----------
         x : list or np.ndarray of shape (n_samples, n_features) or (n_features)
             Input data.
         n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
-            The maximal number of processes of each step. Each process gets
-            a batch of at least 100 samples (or all samples, if there are
-            fewer).
+            The maximal number of processes to make the predictions. Each
+            process predicts a batch of at least 100 samples (or all
+            samples, if there are fewer).
         directory : str or Path, optional (default: a temporary directory)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)
@@ -372,22 +351,16 @@ class Pipeline(Base):
         -------
         Return the predictions and probabilities of the final estimator.
         """
-        self._check_kwargs(kwargs)
-        for transformer in self._transformers:
-            x = transformer.make(
-                x,
-                n_jobs=n_jobs,
-                directory=directory,
-                delete_created_files=delete_created_files,
-                check_dependencies=check_dependencies,
-            )
-        return self._final.make(
+        y = self._run(
             x,
             n_jobs=n_jobs,
             directory=directory,
             delete_created_files=delete_created_files,
             check_dependencies=check_dependencies,
+            parse=_parse_predictions,
+            **kwargs,
         )
+        return _predictions(y, self._final._estimator)
 
     @decorator.alias('integrity_score')
     def test(
@@ -411,9 +384,9 @@ class Pipeline(Base):
         x : numpy.ndarray, shape (n_samples, n_features)
             Input data.
         n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
-            The maximal number of processes of each step. Each process gets
-            a batch of at least 100 samples (or all samples, if there are
-            fewer).
+            The maximal number of processes to make the predictions. Each
+            process predicts a batch of at least 100 samples (or all
+            samples, if there are fewer).
         directory : str or Path, optional (default: a temporary directory)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)

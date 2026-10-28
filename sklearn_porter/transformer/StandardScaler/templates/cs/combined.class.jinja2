@@ -1,6 +1,7 @@
 {% extends 'base.combined.class' %}
 
 {% block content %}
+{% block class %}
 public class {{ class_name }} {
 
     public double[] Transform(double[] features) {
@@ -10,6 +11,7 @@ public class {{ class_name }} {
         {% endfor %}
         return values;
     }
+{% if not _blocks %}
 
 {% include 'samples' %}
 
@@ -17,13 +19,17 @@ public class {{ class_name }} {
 
 
     public static void Main(string[] args) {
+        {% block create %}
         // Transformer:
-        {{ class_name }} transformer = new {{ class_name }}();
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
             PrintValues(transformer.Transform(features));
         }
     }
+{% endif %}
 }
+{% endblock %}
 {% endblock %}

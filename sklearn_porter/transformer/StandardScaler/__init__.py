@@ -128,20 +128,22 @@ class StandardScaler(TransformerBase, EstimatorApiABC):
             tpl_class = tpls.get_template('combined.class')
             return tpl_class.render(**plas)
 
-        # Make 'attached' variant:
+        # Make 'attached' variant (the names of the model data get the prefix
+        # of the step of a pipeline, see `Pipeline`):
+        prefix = self.template_globals.get('prefix', '')
         tpl_double = tpls.get_template('double').render()
         tpl_arr_1 = tpls.get_template('arr[]')
         plas.update(
             dict(
                 mean=tpl_arr_1.render(
                     type=tpl_double,
-                    name='mean',
+                    name=prefix + 'mean',
                     values=', '.join(mean),
                     n=len(mean),
                 ),
                 scale=tpl_arr_1.render(
                     type=tpl_double,
-                    name='scale',
+                    name=prefix + 'scale',
                     values=', '.join(scale),
                     n=len(scale),
                 ),

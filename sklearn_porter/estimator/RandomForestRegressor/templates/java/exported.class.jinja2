@@ -32,7 +32,7 @@ class {{ class_name }} {
     private static Tree[] load(String file) throws IOException {
         TreeData[] data;
         try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
-            data = new Gson().fromJson(reader, TreeData[].class);
+            data = new Gson().fromJson({{ 'com.google.gson.JsonParser.parseReader(reader).getAsJsonObject().get("estimators")' if pipeline else 'reader' }}, TreeData[].class);
         }
         Tree[] forest = new Tree[data.length];
         for (int i = 0; i < data.length; i++) {
@@ -52,7 +52,14 @@ class {{ class_name }} {
         {{ class_name }} reg = new {{ class_name }}(load(args[0]));
 
         // Features of one sample (arguments) or several samples (standard input):
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         for (double[] features : readSamples(args, 1)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             double[] prediction = reg.predict(features);
 
             {% filter indent(12, True) %}
@@ -62,4 +69,8 @@ class {{ class_name }} {
 
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

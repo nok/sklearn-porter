@@ -1,6 +1,7 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
+{% block class %}
 public class {{ class_name }} {
 
     private double[] mean;
@@ -18,6 +19,7 @@ public class {{ class_name }} {
         }
         return values;
     }
+{% if not _blocks %}
 
 {% include 'samples' %}
 
@@ -25,17 +27,21 @@ public class {{ class_name }} {
 
 
     public static void Main(string[] args) {
+        {% block create %}
         // Model data:
         {{ mean }}
         {{ scale }}
 
         // Transformer:
-        {{ class_name }} transformer = new {{ class_name }}(mean, scale);
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}mean, {{ prefix }}scale);
+        {% endblock %}
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
             PrintValues(transformer.Transform(features));
         }
     }
+{% endif %}
 }
+{% endblock %}
 {% endblock %}

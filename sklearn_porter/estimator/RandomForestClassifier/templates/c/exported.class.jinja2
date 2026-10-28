@@ -26,7 +26,12 @@ int n_estimators;
 Tree *trees;
 
 void load(const char *path) {
+{% if pipeline %}
+    JsonValue *root = json_read(path);
+    JsonValue *data = json_get(root, "estimators");
+{% else %}
     JsonValue *data = json_read(path);
+{% endif %}
     n_estimators = data->length;
     trees = malloc(n_estimators * sizeof(Tree));
     for (int i = 0; i < n_estimators; i++) {
@@ -38,7 +43,7 @@ void load(const char *path) {
         trees[i].missing_go_to_left = json_ints(json_get(tree, "missing_go_to_left"));
         trees[i].classes = json_doubles(json_get(tree, "classes"));
     }
-    json_free(data);
+    json_free({{ 'root' if pipeline else 'data' }});
 }
 
 {% if is_multi_output %}
@@ -169,18 +174,29 @@ Label predict(double features[N_FEATURES]) {
 
 {% include 'samples' %}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 int main(int argc, const char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "You have to pass the path to the model data.\n");
         return 1;
     }
 
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     /* Model data: */
     load(argv[1]);
 
     /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
     while (read_features(features, argc, argv, 2)) {
+        {% if pipeline_transform %}
+        {{ pipeline_transform | indent('        ') }}
+        {% endif %}
         {% if is_multi_output %}
         Label prediction[N_OUTPUTS];
         predict(prediction, features);

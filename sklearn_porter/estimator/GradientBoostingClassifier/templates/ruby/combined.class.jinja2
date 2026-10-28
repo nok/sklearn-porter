@@ -30,6 +30,10 @@ class {{ class_name }}
 
 end
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 if __FILE__ == $0
 	{% filter indent('\t', True) %}
 	{% include 'samples' %}
@@ -40,7 +44,14 @@ if __FILE__ == $0
 	clf = {{ class_name }}.new
 
 	# Features of one sample (arguments) or several samples (standard input):
+	{% if pipeline_create %}
+	{{ pipeline_create | indent('\t') }}
+
+	{% endif %}
 	read_samples(ARGV) do |features|
+		{% if pipeline_transform %}
+		{{ pipeline_transform | indent('\t\t') }}
+		{% endif %}
 		{% filter indent('\t\t', True) %}
 		{% include 'output' %}
 		{% endfilter %}

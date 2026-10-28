@@ -150,9 +150,7 @@ class Porter:
         )
 
     @decorator.alias('export')
-    def port(
-        self, to_json: bool = False, **kwargs
-    ) -> str | tuple[str, str] | list:
+    def port(self, to_json: bool = False, **kwargs) -> str | tuple[str, str]:
         """
         Port or transpile the passed estimator to a target programming
         language (see `Estimator.port`, `Transformer.port` and
@@ -166,7 +164,7 @@ class Porter:
         directory: str | Path | None = None,
         to_json: bool = False,
         **kwargs,
-    ) -> str | tuple[str, str] | list:
+    ) -> str | tuple[str, str]:
         """
         Port the passed estimator to a target programming language and save
         it (see `Estimator.save`, `Transformer.save` and `Pipeline.save`).
@@ -337,7 +335,7 @@ def port(
     converter: Callable[[object], str] | None = None,
     to_json: bool = False,
     ignore_preprocessing: bool = False,
-) -> str | tuple[str, str] | list:
+) -> str | tuple[str, str]:
     return Porter(
         estimator,
         language=language,
@@ -357,7 +355,7 @@ def save(
     directory: str | Path | None = None,
     to_json: bool = False,
     ignore_preprocessing: bool = False,
-) -> str | tuple[str, str] | list:
+) -> str | tuple[str, str]:
     return Porter(
         estimator,
         language=language,

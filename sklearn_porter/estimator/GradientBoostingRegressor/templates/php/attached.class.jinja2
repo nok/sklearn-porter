@@ -19,6 +19,10 @@ class {{ class_name }} {
 
 }
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {% filter indent(4, True) %}
     {% include 'samples' %}
@@ -27,6 +31,10 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
 
     array_shift($argv);
 
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     // Model data:
     {{ model }}
 
@@ -35,6 +43,9 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {
+        {% if pipeline_transform %}
+        {{ pipeline_transform | indent('        ') }}
+        {% endif %}
         $prediction = $reg->predict($features);
 
         {% filter indent(8, True) %}

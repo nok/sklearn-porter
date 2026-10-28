@@ -1,6 +1,7 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
+{% block class %}
 class {{ class_name }} {
 
     private double[] mean;
@@ -18,23 +19,28 @@ class {{ class_name }} {
         }
         return values;
     }
+{% if not _blocks %}
 
 {% include 'samples' %}
 
 {% include 'values' %}
 
     public static void main(String[] args) {
+        {% block create %}
         // Model data:
         {{ mean }}
         {{ scale }}
 
         // Transformer:
-        {{ class_name }} transformer = new {{ class_name }}(mean, scale);
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}mean, {{ prefix }}scale);
+        {% endblock %}
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 0)) {
             printValues(transformer.transform(features));
         }
     }
+{% endif %}
 }
+{% endblock %}
 {% endblock %}

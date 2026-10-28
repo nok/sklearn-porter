@@ -46,11 +46,19 @@ var {{ class_name }} = function(jsonFile) {
 
 {% include 'samples' %}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 var main = function () {
     if (process.argv.length < 3) {
         throw new Error("You have to pass the path to the model data.");
     }
 
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     // Model data:
     var json = process.argv[2];
 
@@ -59,6 +67,9 @@ var main = function () {
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(3)).forEach(function (features) {
+        {% if pipeline_transform %}
+        {{ pipeline_transform | indent('        ') }}
+        {% endif %}
         {% if is_test or to_json %}
         // Get JSON:
         console.log(JSON.stringify({

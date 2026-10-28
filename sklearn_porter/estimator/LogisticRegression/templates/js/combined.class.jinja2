@@ -69,12 +69,23 @@ return decisions.map(function(decision) {
 
 {% include 'samples' %}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 var main = function () {
     // Estimator:
     var clf = new {{ class_name }}();
 
     // Features of one sample (arguments) or several samples (standard input):
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     readSamples(process.argv.slice(2)).forEach(function (features) {
+        {% if pipeline_transform %}
+        {{ pipeline_transform | indent('        ') }}
+        {% endif %}
         {% if is_test or to_json %}
         // Get JSON:
         console.log(JSON.stringify({

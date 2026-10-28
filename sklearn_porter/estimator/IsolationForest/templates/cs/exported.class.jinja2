@@ -44,7 +44,14 @@ public class {{ class_name }} {
         {{ class_name }} clf = new {{ class_name }}(args[0]);
 
         // Features of one sample (arguments) or several samples (standard input):
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         foreach (double[] features in ReadSamples(args, 1)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             int prediction = clf.Predict(features);
             {% filter indent(12, True) %}
             {% include 'output' %}
@@ -52,4 +59,8 @@ public class {{ class_name }} {
         }
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

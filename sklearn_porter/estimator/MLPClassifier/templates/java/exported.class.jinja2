@@ -164,6 +164,10 @@ class {{ class_name }} {
             throw new IllegalArgumentException("You have to pass the path to the exported model data.");
         }
 
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         // Model data:
         String modelData = args[0];
 
@@ -172,6 +176,9 @@ class {{ class_name }} {
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 1)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {% if is_test or to_json %}
             // Get JSON:
             {{ 'int[]' if is_multilabel else label_type }} prediction = clf.predict(features);
@@ -196,4 +203,8 @@ class {{ class_name }} {
 
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

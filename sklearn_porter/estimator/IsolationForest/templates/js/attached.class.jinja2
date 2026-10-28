@@ -12,7 +12,15 @@ var {{ class_name }} = function(estimators, denominator, offset) {
 
 {% include 'samples' %}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 var main = function () {
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     // Model data:
     {{ model }}
     var denominator = {{ denominator }};
@@ -23,6 +31,9 @@ var main = function () {
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {
+        {% if pipeline_transform %}
+        {{ pipeline_transform | indent('        ') }}
+        {% endif %}
         var prediction = clf.predict(features);
 
         {% filter indent(8, True) %}

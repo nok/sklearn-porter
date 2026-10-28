@@ -15,7 +15,15 @@ var {{ class_name }} = function(vectors, coeffs, inter, kernel, gamma, coef0, de
 
 {% include 'samples' %}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 var main = function () {
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     // Model data:
     {{ vectors }}
     {{ coeffs }}
@@ -25,6 +33,9 @@ var main = function () {
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {
+        {% if pipeline_transform %}
+        {{ pipeline_transform | indent('        ') }}
+        {% endif %}
         var prediction = est.predict(features);
 
         {% filter indent(8, True) %}

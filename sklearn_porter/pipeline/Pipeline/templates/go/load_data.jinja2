@@ -1,0 +1,12 @@
+pipelineBytes, pipelineErr := os.ReadFile(os.Args[1])
+if pipelineErr != nil {
+	fmt.Fprintln(os.Stderr, pipelineErr)
+	os.Exit(1)
+}
+var pipelineData struct {
+	Transformers []json.RawMessage `json:"transformers"`
+}
+if err := json.Unmarshal(pipelineBytes, &pipelineData); err != nil {
+	fmt.Fprintln(os.Stderr, err)
+	os.Exit(1)
+}

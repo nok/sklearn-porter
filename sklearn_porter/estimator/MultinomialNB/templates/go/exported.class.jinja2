@@ -77,12 +77,20 @@ func (clf {{ class_name }}) PredictProba(features []float64) []float64 {
 
 {% include 'samples' %}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
 		os.Exit(1)
 	}
 
+	{% if pipeline_create %}
+	{{ pipeline_create | indent('\t') }}
+
+	{% endif %}
 	// Model data:
 	modelData, err := os.ReadFile(os.Args[1])
 	if err != nil {
@@ -99,6 +107,9 @@ func main() {
 
 	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[2:], func(features []float64) {
+		{% if pipeline_transform %}
+		{{ pipeline_transform | indent('\t\t') }}
+		{% endif %}
 		{% if is_test or to_json %}
 		// Get JSON:
 		prediction := clf.Predict(features)

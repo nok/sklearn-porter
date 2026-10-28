@@ -77,7 +77,14 @@ int[] labels = new int[decisions.length];
 
     public static void main(String[] args) {
         // Features of one sample (arguments) or several samples (standard input):
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         for (double[] features : readSamples(args, 0)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {% if is_test or to_json %}
             // Get JSON:
             {{ 'int[]' if is_multilabel else label_type }} prediction = {{ class_name }}.predict(features);
@@ -104,4 +111,8 @@ int[] labels = new int[decisions.length];
 
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

@@ -35,7 +35,7 @@ public class {{ class_name }} {
 
     public {{ class_name }}(string file) {
         JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
-        this.forest = JsonSerializer.Deserialize<Tree[]>(File.ReadAllText(file), options);
+        this.forest = JsonSerializer.Deserialize<Tree[]>({{ 'System.Text.Json.JsonDocument.Parse(File.ReadAllText(file)).RootElement.GetProperty("estimators")' if pipeline else 'File.ReadAllText(file)' }}, options);
     }
 
 {% if is_multi_output %}
@@ -137,7 +137,14 @@ public class {{ class_name }} {
         {{ class_name }} clf = new {{ class_name }}(args[0]);
 
         // Features of one sample (arguments) or several samples (standard input):
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         foreach (double[] features in ReadSamples(args, 1)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {{ label_type }}{{ '[]' if is_multi_output }} prediction = clf.Predict(features);
             {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.PredictProba(features);
             {% if is_test or to_json %}
@@ -158,4 +165,8 @@ public class {{ class_name }} {
         }
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

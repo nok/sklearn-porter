@@ -12,6 +12,7 @@ import (
 	"strings"
 )
 
+{% block class %}
 type {{ class_name }} struct{}
 
 func (transformer {{ class_name }}) Transform(features []float64) []float64 {
@@ -21,14 +22,17 @@ func (transformer {{ class_name }}) Transform(features []float64) []float64 {
 	{% endfor %}
 	return values
 }
+{% endblock %}
 
 {% include 'samples' %}
 
 {% include 'values' %}
 
 func main() {
+	{% block create %}
 	// Transformer:
-	transformer := {{ class_name }}{}
+	{{ instance|default('transformer') }} := {{ class_name }}{}
+	{% endblock %}
 
 	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[1:], func(features []float64) {

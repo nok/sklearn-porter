@@ -13,6 +13,7 @@ import (
 	"strings"
 )
 
+{% block class %}
 type {{ class_name }} struct {
 	Mean  []float64 `json:"mean"`
 	Scale []float64 `json:"scale"`
@@ -25,6 +26,7 @@ func (transformer {{ class_name }}) Transform(features []float64) []float64 {
 	}
 	return values
 }
+{% endblock %}
 
 {% include 'samples' %}
 
@@ -43,12 +45,14 @@ func main() {
 		os.Exit(1)
 	}
 
+	{% block create %}
 	// Transformer:
-	var transformer {{ class_name }}
-	if err := json.Unmarshal(byteValue, &transformer); err != nil {
+	var {{ instance|default('transformer') }} {{ class_name }}
+	if err := json.Unmarshal({{ data|default('byteValue') }}, &{{ instance|default('transformer') }}); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+	{% endblock %}
 
 	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[2:], func(features []float64) {

@@ -99,11 +99,7 @@ def main(args: dict, silent: bool = False):
         directory = Path.cwd()
     paths = est.save(directory=directory)
 
-    if isinstance(paths, list):  # the saved steps of a pipeline
-        paths = tuple(
-            p for ps in paths for p in (ps if isinstance(ps, tuple) else (ps,))
-        )
-    elif not isinstance(paths, tuple):
+    if not isinstance(paths, tuple):
         paths = (paths,)
 
     out = ['Saved files:']

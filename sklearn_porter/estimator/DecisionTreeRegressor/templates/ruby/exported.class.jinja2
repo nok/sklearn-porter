@@ -35,6 +35,10 @@ class {{ class_name }}
 
 end
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 if __FILE__ == $0
 	{% filter indent('\t', True) %}
 	{% include 'samples' %}
@@ -42,6 +46,10 @@ if __FILE__ == $0
 
 	raise "You have to pass the path to the model data." if ARGV.empty?
 
+	{% if pipeline_create %}
+	{{ pipeline_create | indent('\t') }}
+
+	{% endif %}
 	# Model data:
 	model_data = ARGV.shift
 
@@ -50,6 +58,9 @@ if __FILE__ == $0
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|
+		{% if pipeline_transform %}
+		{{ pipeline_transform | indent('\t\t') }}
+		{% endif %}
 		{% if is_test or to_json %}
 		# Get JSON:
 		prediction = reg.predict features

@@ -25,6 +25,10 @@ class {{ class_name }} {
 
 }
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {% filter indent(4, True) %}
     {% include 'samples' %}
@@ -37,7 +41,14 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     $clf = new {{ class_name }}();
 
     // Features of one sample (arguments) or several samples (standard input):
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     foreach (readSamples($argv) as $features) {
+        {% if pipeline_transform %}
+        {{ pipeline_transform | indent('        ') }}
+        {% endif %}
         {% filter indent(8, True) %}
         {% include 'output' %}
         {% endfilter %}

@@ -88,6 +88,10 @@ public class {{ class_name }} {
 
 
     public static void Main(string[] args) {
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         // Model data:
         {{ coeffs }}
         {{ inters }}
@@ -97,6 +101,9 @@ public class {{ class_name }} {
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {{ 'int[]' if is_multilabel else label_type }} prediction = clf.Predict(features);
             {% if with_proba %}
             double[] probabilities = clf.PredictProba(features);
@@ -118,4 +125,8 @@ public class {{ class_name }} {
         }
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

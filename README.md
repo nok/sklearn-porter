@@ -165,7 +165,7 @@ The ported transformer prints the transformed features of each sample in one lin
 
 ### Pipelines
 
-A [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) of supported transformers and a supported final estimator (also as the best estimator of a `GridSearchCV` or `RandomizedSearchCV`) is ported step by step. The functions `port`, `save`, `make` and `test` accept pipelines too, `port` and `save` return the results of each step:
+A [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) of supported transformers and a supported final estimator (also as the best estimator of a `GridSearchCV` or `RandomizedSearchCV`) is ported to one source file: the ported final estimator, which transforms the features of each sample with the ported transformers before its prediction. The functions `port`, `save`, `make` and `test` accept pipelines too:
 
 <!-- fmt:off -->
 ```python
@@ -177,16 +177,16 @@ from sklearn_porter import make, save, test
 pipe = make_pipeline(StandardScaler(), SVC())
 pipe.fit(X, y)
 
-paths = save(pipe, language='js', directory='/tmp')  # ['/tmp/StandardScaler.js', '/tmp/SVC.js']
+path = save(pipe, language='js', directory='/tmp')  # /tmp/Pipeline.js
 y_classes, _ = make(pipe, X[:10], language='js')  # like pipe.predict(X[:10])
 score = test(pipe, X[:10], language='js')
 ```
 <!-- fmt:on -->
 
-The output of each ported transformer is the input of the next step, so the ported steps can be chained:
+The generated file is used like a ported estimator:
 
 ```bash
-node /tmp/StandardScaler.js < samples.txt | node /tmp/SVC.js
+node /tmp/Pipeline.js < samples.txt
 ```
 
 ### Object-oriented API

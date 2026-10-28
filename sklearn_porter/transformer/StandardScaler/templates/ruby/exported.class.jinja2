@@ -4,10 +4,15 @@
 require 'json'
 
 
+{% block class %}
 class {{ class_name }}
 
+{% if _blocks %}
+	def initialize(data)
+{% else %}
 	def initialize(path)
 		data = JSON.parse(File.read(path))
+{% endif %}
 		@mean = data['mean']
 		@scale = data['scale']
 	end
@@ -17,6 +22,7 @@ class {{ class_name }}
 	end
 
 end
+{% endblock %}
 
 if __FILE__ == $0
 	{% filter indent('\t', True) %}
@@ -30,8 +36,10 @@ if __FILE__ == $0
 	# Model data:
 	path = ARGV.shift
 
+	{% block create %}
 	# Transformer:
-	transformer = {{ class_name }}.new path
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ data|default('path') }}
+	{% endblock %}
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

@@ -40,14 +40,29 @@ original estimator and transform the features like the original transformer.
   `make()`/`transform()` and `test()`. Tests patch `run`, `platform` etc. in
   `sklearn_porter.Base`.
 - `Pipeline` (`sklearn_porter/Pipeline.py`, also a subclass of `Base`; it
-  imports scikit-learn's class as `SklearnPipeline`) ports each step of a
-  pipeline (also of a search) with `Transformer` and `Estimator` and keeps
-  their language, template and converter in sync. `port()` and `save()`
-  return the results of each step, `make()` chains the ported steps (the
-  output of a transformer is the input of the next step) and `test()`
-  compares with `pipeline.predict()`. Repeated class names of the steps get
-  a number (`StandardScaler2`). A single combined source file per language
-  is planned.
+  imports scikit-learn's class as `SklearnPipeline`) validates the steps of
+  a pipeline (also of a search) with `Transformer` and `Estimator` and ports
+  it to one source file with `sklearn_porter/pipeline/Pipeline/` (glue
+  templates per language): the ported final estimator (with the class name
+  of the pipeline, by default `Pipeline`) into which the ported transformers
+  are inserted. The transformers must keep the number of features, repeated
+  class names get a number (`StandardScaler2`).
+- Pipeline placeholders: every class template of an estimator contains the
+  placeholders `pipeline_classes` (before `main`, in Java and C# after the
+  class), `pipeline_create` (in `main` before the model data or the loop
+  over the samples) and `pipeline_transform` (first statement in the loop),
+  each wrapped in `{% if ... %}`, so the code of a single estimator doesn't
+  change. The templates of a transformer provide the blocks `class` (and
+  `data`, the model data outside of `main`) and `create`, which
+  `EstimatorBase` renders separately if the template global `_blocks` is set
+  (`template_globals`). In this mode the names get the prefix `{{ prefix }}`
+  (e.g. `step1_mean`, in C also the functions and defines), the instance is
+  `{{ instance }}` and the exported model data is the expression
+  `{{ data }}`; parts which only a pipeline needs are wrapped in
+  `{% if _blocks %}`. The exported JSON is the object of the final estimator
+  with the key `transformers` (a list like the trees of a forest is under
+  `estimators`, which the final estimator reads if the global `pipeline` is
+  set).
 - `make()` compiles and executes the ported estimator via subprocess calls,
   `test()` compares its predictions (or transformed features) with
   scikit-learn (integrity score).
@@ -135,7 +150,7 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 1. Implement or update `sklearn_porter/estimator/<Name>/__init__.py`,
    including `SUPPORT`.
 2. Add or update the Jinja2 templates for every supported language and
-   template.
+   template, including the pipeline placeholders (see above).
 3. Register the estimator in `Estimator.classifiers()`,
    `Estimator.regressors()` or `Estimator.outlier_detectors()` in
    `sklearn_porter/Estimator.py`.
@@ -154,11 +169,13 @@ table.
    `Method.TRANSFORM`.
 2. Add or update the Jinja2 templates for every supported language and
    template; `main` prints the result of `transform` with the template
-   `values`.
+   `values`. Provide the blocks `class` (and `data`) and `create` for
+   pipelines (see above).
 3. Register the transformer in `Transformer.transformers()` in
    `sklearn_porter/Transformer.py`.
 4. Add tests (fast ones in `tests/test_transformer.py`, regression tests in
-   `tests/transformer/`) and run the regression tests in Docker.
+   `tests/transformer/` and as step of a pipeline in `tests/pipeline/`) and
+   run the regression tests in Docker.
 5. Add the transformer to the list of transformers in `README.md`.
 
 ## scikit-learn specifics

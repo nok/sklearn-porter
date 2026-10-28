@@ -81,6 +81,10 @@ public class {{ class_name }} {
 
 
     public static void Main(string[] args) {
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         // Model data:
         {{ weights }}
         {{ bias }}
@@ -90,6 +94,9 @@ public class {{ class_name }} {
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             double[] prediction = reg.Predict(features);
             {% if is_test or to_json %}
             Console.WriteLine("{\"predict\": " + ToJson(prediction.Length == 1 ? (object) prediction[0] : prediction) + "}");
@@ -101,4 +108,8 @@ public class {{ class_name }} {
         }
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

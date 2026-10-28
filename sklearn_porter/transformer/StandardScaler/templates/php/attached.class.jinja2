@@ -1,6 +1,7 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
+{% block class %}
 class {{ class_name }} {
 
     private $mean;
@@ -20,6 +21,7 @@ class {{ class_name }} {
     }
 
 }
+{% endblock %}
 
 if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {% filter indent(4, True) %}
@@ -30,12 +32,14 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
 
     array_shift($argv);
 
+    {% block create %}
     // Model data:
     {{ mean }}
     {{ scale }}
 
     // Transformer:
-    $transformer = new {{ class_name }}($mean, $scale);
+    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}mean, ${{ prefix }}scale);
+    {% endblock %}
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

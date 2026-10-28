@@ -29,18 +29,29 @@ void predict(double *values, double features[N_FEATURES]) {
 
 {% include 'samples' %}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 int main(int argc, const char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "You have to pass the path to the model data.\n");
         return 1;
     }
 
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     /* Model data: */
     load(argv[1]);
 
     /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
     while (read_features(features, argc, argv, 2)) {
+        {% if pipeline_transform %}
+        {{ pipeline_transform | indent('        ') }}
+        {% endif %}
         double prediction[N_OUTPUTS];
         predict(prediction, features);
 

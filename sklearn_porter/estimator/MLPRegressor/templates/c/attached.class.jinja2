@@ -88,10 +88,21 @@ double *predict(double features[N_FEATURES]) {
 
 {% include 'samples' %}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 int main(int argc, const char *argv[]) {
     /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     while (read_features(features, argc, argv, 1)) {
+        {% if pipeline_transform %}
+        {{ pipeline_transform | indent('        ') }}
+        {% endif %}
         int n_outputs = layers[N_LAYERS - 1];
         double *prediction = predict(features);
 

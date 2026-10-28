@@ -86,12 +86,23 @@ func (svc {{ class_name }}) Predict(features []float64) {{ label_type }} {
 {{ coeffs }}
 {{ inters }}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 func main() {
 	// Estimator:
 	clf := {{ class_name }}{coeffs, inters}
 
 	// Features of one sample (arguments) or several samples (standard input):
+	{% if pipeline_create %}
+	{{ pipeline_create | indent('\t') }}
+
+	{% endif %}
 	readSamples(os.Args[1:], func(features []float64) {
+		{% if pipeline_transform %}
+		{{ pipeline_transform | indent('\t\t') }}
+		{% endif %}
 		{% if is_test or to_json %}
 		// Get JSON:
 		prediction := clf.Predict(features)
