@@ -13,7 +13,7 @@
 /* Write the transformed features to `values`: */
 void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
     for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
-        values[i] = {% if func == 'abs' %}fabs(features[i]){% elif func == 'sqrt' %}sqrt(features[i]){% elif func == 'exp' %}exp(features[i]){% elif func == 'expm1' %}expm1(features[i]){% elif func == 'log' %}log(features[i]){% elif func == 'log1p' %}log1p(features[i]){% elif func == 'square' %}features[i] * features[i]{% else %}features[i]{% endif %};
+        values[i] = {% if func == 'abs' %}fabs(features[i]){% elif func == 'sqrt' %}sqrt(features[i]){% elif func == 'exp' %}exp(features[i]){% elif func == 'expm1' %}expm1(features[i]){% elif func == 'log' %}log(features[i]){% elif func == 'log1p' %}log1p(features[i]){% elif func == 'floor' %}floor(features[i]){% elif func == 'ceil' %}ceil(features[i]){% elif func == 'negative' %}-features[i]{% elif func == 'reciprocal' %}1.0 / features[i]{% elif func == 'sign' %}(features[i] > 0 ? 1.0 : (features[i] < 0 ? -1.0 : features[i] + 0.0)){% elif func == 'clip' %}{% if clip_min is not none and clip_max is not none %}(features[i] < {{ clip_min }} ? {{ clip_min }} : (features[i] > {{ clip_max }} ? {{ clip_max }} : features[i])){% elif clip_min is not none %}(features[i] <= {{ clip_min }} ? {{ clip_min }} : features[i]){% else %}(features[i] > {{ clip_max }} ? {{ clip_max }} : features[i]){% endif %}{% elif func == 'square' %}features[i] * features[i]{% else %}features[i]{% endif %};
     }
 }
 {% endblock %}

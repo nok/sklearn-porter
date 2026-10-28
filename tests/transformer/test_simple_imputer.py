@@ -21,6 +21,14 @@ PARAMS = {
     'constant': dict(strategy='constant', fill_value=-1.5),
     'keep_empty_features': dict(keep_empty_features=True),
     'missing_values': dict(missing_values=-1.0, strategy='most_frequent'),
+    'add_indicator': dict(add_indicator=True),
+    'add_indicator_missing_values': dict(
+        add_indicator=True, missing_values=-1.0, strategy='constant'
+    ),
+    'empty_features': dict(empty_features=True),
+    'empty_features_add_indicator': dict(
+        empty_features=True, add_indicator=True, strategy='median'
+    ),
 }
 
 
@@ -60,9 +68,12 @@ def test_transformer_simple_imputer(
     """Test and compare the transformed features of a SimpleImputer."""
     missing = params.get('missing_values', np.nan)
     x = _with_missing_values(dataset.data, missing)
-    if params.get('keep_empty_features'):
-        x[:, -1] = np.nan  # a feature without any observed values
-    orig_est = SimpleImputer(**params).fit(x)
+    kwargs = {k: v for k, v in params.items() if k != 'empty_features'}
+    if params.get('keep_empty_features') or params.get('empty_features'):
+        # A feature without any observed values (scikit-learn drops it
+        # without `keep_empty_features=True`):
+        x[:, -1] = missing
+    orig_est = SimpleImputer(**kwargs).fit(x)
     test_x = _samples(dataset.data, missing)
     est = Transformer(orig_est, language=language, template=template)
 
@@ -78,9 +89,11 @@ def test_transformer_simple_imputer(
     )
     x_tr = est.make(test_x, directory=tmp_dir, delete_created_files=False)
     # The ported transformer replaces the missing values by the
-    # statistics like scikit-learn, so the transformed features are
-    # identical:
+    # statistics like scikit-learn (without the dropped features and with
+    # the indicators of the missing values), so the transformed features
+    # are identical:
     x_true = orig_est.transform(test_x)
+    assert x_tr.shape == x_true.shape
     np.testing.assert_array_equal(x_tr, x_true)
     np.testing.assert_array_equal(np.signbit(x_tr), np.signbit(x_true))
     assert est.test(test_x) == 1.0

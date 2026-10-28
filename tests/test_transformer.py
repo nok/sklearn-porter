@@ -32,6 +32,7 @@ from sklearn_porter import Estimator, Transformer, can, port, save, show
 from sklearn_porter import exceptions as exception
 from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
+from sklearn_porter.transformer.Normalizer import _get_sum_tree
 from tests.commons import LANGUAGES
 
 ESTIMATOR_MODULE = import_module('sklearn_porter.Base')
@@ -64,7 +65,21 @@ TRANSFORMERS = {
     ),
     'simple_imputer': (
         lambda: SimpleImputer().fit(_iris_with_missing_values()),
-        lambda t: dict(statistics=t.statistics_.tolist()),
+        lambda t: dict(
+            inputs=[0, 1, 2, 3],
+            statistics=t.statistics_.tolist(),
+            indicators=[0, 0, 0, 0],
+        ),
+    ),
+    'simple_imputer_with_indicator': (
+        lambda: SimpleImputer(add_indicator=True).fit(
+            _iris_with_missing_values()
+        ),
+        lambda t: dict(
+            inputs=[0, 1, 2, 3, 0],
+            statistics=[*t.statistics_.tolist(), 0.0],
+            indicators=[0, 0, 0, 0, 1],
+        ),
     ),
     'standard_scaler': (
         lambda: StandardScaler().fit(load_iris().data),
@@ -395,26 +410,47 @@ def test_missing_values_of_simple_imputer(language: str):
     assert '== -1.0' not in out
 
 
-def test_simple_imputer_with_empty_features():
-    """Dropped features (without observed values) aren't supported."""
+@pytest.mark.parametrize('add_indicator', [False, True])
+def test_simple_imputer_with_empty_features(add_indicator: bool):
+    """Features without observed values are dropped like in scikit-learn."""
     x = _iris_with_missing_values()
     x[:, 2] = np.nan
-    orig_est = SimpleImputer().fit(x)
-    with pytest.raises(exception.NotSupportedYetError, match='drops'):
-        Transformer(orig_est)
+    orig_est = SimpleImputer(add_indicator=add_indicator).fit(x)
+    est = Transformer(orig_est)
+    expected = dict(
+        inputs=[0, 1, 3],
+        statistics=orig_est.statistics_[[0, 1, 3]].tolist(),
+        indicators=[0, 0, 0],
+    )
+    if add_indicator:
+        # The indicators of the features with missing values in the fit:
+        expected = dict(
+            inputs=[0, 1, 3, 0, 2],
+            statistics=[*expected['statistics'], 0.0, 0.0],
+            indicators=[0, 0, 0, 1, 1],
+        )
+    assert est._estimator.model_data == expected
+    meta_info = est._estimator.meta_info
+    assert meta_info['n_features_out'] == orig_est.transform(x[:1]).shape[1]
     orig_est = SimpleImputer(keep_empty_features=True).fit(x)
     _, data = Transformer(orig_est, template='exported').port()
     assert json.loads(data)['statistics'][2] == 0.0
 
 
+def test_simple_imputer_without_features():
+    x = np.full((3, 2), np.nan)
+    orig_est = SimpleImputer().fit(x)
+    with pytest.raises(exception.NotSupportedYetError, match='no transformed'):
+        Transformer(orig_est)
+
+
 @pytest.mark.parametrize(
     'params, match',
     [
-        (dict(add_indicator=True), '`add_indicator=True`'),
         (dict(missing_values=None, strategy='constant'), '`missing_values`'),
         (dict(strategy='constant', fill_value='x'), 'numbers as statistics'),
     ],
-    ids=['add_indicator', 'missing_values_none', 'fill_value_string'],
+    ids=['missing_values_none', 'fill_value_string'],
 )
 def test_unsupported_simple_imputer(params: dict, match: str):
     if 'fill_value' in params or params.get('missing_values', 0) is None:
@@ -456,7 +492,21 @@ def test_show_of_all_transformers():
 
 @pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize(
-    'func', [None, np.abs, np.sqrt, np.square, np.exp, np.log, np.log1p]
+    'func',
+    [
+        None,
+        np.abs,
+        np.sqrt,
+        np.square,
+        np.exp,
+        np.log,
+        np.log1p,
+        np.negative,
+        np.reciprocal,
+        np.floor,
+        np.ceil,
+        np.sign,
+    ],
 )
 def test_functions_of_function_transformer(func, language: str):
     """The function is chosen in the code of the template."""
@@ -471,10 +521,52 @@ def test_functions_of_function_transformer(func, language: str):
         assert f'{x_i} * {x_i}' in out
 
 
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+@pytest.mark.parametrize(
+    'kw_args, bounds',
+    [
+        (dict(a_min=-1, a_max=2), ('-1.0', '2.0')),
+        (dict(min=0), ('0.0', None)),
+        (dict(a_min=None, a_max=1.5), (None, '1.5')),
+    ],
+    ids=['both', 'lower', 'upper'],
+)
+def test_clip_of_function_transformer(
+    kw_args: dict, bounds: tuple, language: str, template: str
+):
+    """The bounds of `np.clip` are numbers in the code."""
+    orig_est = FunctionTransformer(np.clip, kw_args=kw_args)
+    orig_est.fit(load_iris().data)
+    est = Transformer(orig_est, language=language, template=template)
+    out = est.port()
+    out = out[0] if isinstance(out, tuple) else out
+    assert '{%' not in out
+    for bound in bounds:
+        if bound is not None:
+            assert bound in out
+
+
 @pytest.mark.parametrize(
     'params',
-    [dict(func=np.sin), dict(func=np.log1p, kw_args=dict(out=None))],
-    ids=['unsupported_function', 'kw_args'],
+    [
+        dict(func=np.sin),
+        dict(func=np.log1p, kw_args=dict(out=None)),
+        dict(func=np.clip, kw_args=dict(a_min=0)),
+        dict(func=np.clip, kw_args=dict(min=None, max=None)),
+        dict(func=np.clip, kw_args=dict(min=2, max=1)),
+        dict(func=np.clip, kw_args=dict(min=[0, 1, 2, 3])),
+        dict(func=np.clip, kw_args=dict(min=np.nan)),
+    ],
+    ids=[
+        'unsupported_function',
+        'kw_args',
+        'clip_without_a_max',
+        'clip_without_bounds',
+        'clip_with_invalid_bounds',
+        'clip_with_arrays',
+        'clip_with_nan',
+    ],
 )
 def test_unsupported_function_transformer(params: dict):
     orig_est = FunctionTransformer(**params).fit(load_iris().data)
@@ -482,11 +574,55 @@ def test_unsupported_function_transformer(params: dict):
         Transformer(orig_est)
 
 
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('norm', ['l1', 'l2'])
-def test_unsupported_norm_of_normalizer(norm: str):
+def test_norms_of_normalizer(norm: str, language: str, template: str):
+    """The norms `l1` and `l2` sum the features in the order of NumPy."""
     orig_est = Normalizer(norm=norm).fit(load_iris().data)
-    with pytest.raises(exception.NotSupportedYetError, match="'max'"):
-        Transformer(orig_est)
+    out = port(orig_est, language=language, template=template)
+    out = out[0] if isinstance(out, tuple) else out
+    assert '{%' not in out
+    x = '$features' if language == 'php' else 'features'
+    if norm == 'l2':
+        term = f'{x}[0]*{x}[0]' if language == 'go' else f'{x}[0] * {x}[0]'
+        assert term in out
+    else:
+        assert f'{x}[3]' in out
+
+
+@pytest.mark.parametrize(
+    'n, expected',
+    [
+        (1, 0),
+        (3, ((0, 1), 2)),
+        (9, ((((0, 1), (2, 3)), ((4, 5), (6, 7))), 8)),
+        (
+            16,
+            (
+                (((0, 8), (1, 9)), ((2, 10), (3, 11))),
+                (((4, 12), (5, 13)), ((6, 14), (7, 15))),
+            ),
+        ),
+    ],
+)
+def test_sum_tree_of_normalizer(n: int, expected):
+    """The order of the pairwise summation of NumPy."""
+    assert _get_sum_tree(0, n) == expected
+
+
+def test_sum_tree_of_normalizer_with_many_features():
+    """More than 128 features are summed in two halves."""
+
+    def leaves(tree) -> list:
+        if isinstance(tree, int):
+            return [tree]
+        return leaves(tree[0]) + leaves(tree[1])
+
+    tree = _get_sum_tree(0, 300)
+    assert isinstance(tree, tuple)
+    assert sorted(leaves(tree)) == list(range(300))
+    assert sorted(leaves(tree[0])) == list(range(144))
 
 
 @pytest.mark.parametrize(
@@ -609,10 +745,12 @@ def test_combined_template_of_polynomial_features(language: str, template: str):
         assert f'{x}[1] * {x}[0] * {x}[0]' in out
 
 
-def test_polynomial_features_without_features():
+def test_polynomial_features_with_bias_only():
+    """The bias is the only transformed feature (with a dummy factor)."""
     orig_est = PolynomialFeatures(0).fit(load_iris().data)
-    with pytest.raises(exception.NotSupportedYetError, match='bias'):
-        Transformer(orig_est)
+    est = Transformer(orig_est)
+    assert est._estimator.model_data == dict(factors=[0], offsets=[0, 0])
+    assert est._estimator.meta_info['n_features_out'] == 1
 
 
 @pytest.mark.parametrize('language', LANGUAGES)

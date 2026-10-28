@@ -30,6 +30,7 @@ class {{ class_name }} {
 {% endif %}
 
     public double[] transform(double[] features) {
+        {% if norm == 'max' %}
         double norm = 0.0;
         for (double feature : features) {
             norm = Math.max(norm, Math.abs(feature));
@@ -37,6 +38,13 @@ class {{ class_name }} {
         if (norm < {{ min_norm }}) {
             norm = 1.0;
         }
+        {% else %}
+        {% macro norm_sum(t) %}{% if t is number %}{% if norm == 'l1' %}Math.abs(features[{{ t }}]){% else %}features[{{ t }}] * features[{{ t }}]{% endif %}{% else %}({{ norm_sum(t[0]) }} + {{ norm_sum(t[1]) }}){% endif %}{% endmacro %}
+        double norm = {% if norm == 'l2' %}Math.sqrt({{ norm_sum(norm_tree) }}){% else %}{{ norm_sum(norm_tree) }}{% endif %};
+        if (norm < {{ min_norm }}) {
+            norm = 1.0;
+        }
+        {% endif %}
         double[] values = new double[features.length];
         for (int i = 0; i < features.length; i++) {
             values[i] = features[i] / norm;

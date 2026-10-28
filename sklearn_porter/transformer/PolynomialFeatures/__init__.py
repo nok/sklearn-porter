@@ -42,18 +42,13 @@ class PolynomialFeatures(TransformerBase, EstimatorApiABC):
         # are concatenated, the factors of the transformed feature `i` are at
         # the positions `offsets[i]` to `offsets[i + 1] - 1`:
         self.column_factors = _get_factors(est, n_features)
-        if not any(self.column_factors):
-            msg = (
-                f'The transformer `{self.estimator_name}` without features '
-                '(only the bias) is not supported yet.'
-            )
-            raise exception.NotSupportedYetError(msg)
         offsets = np.cumsum([0] + [len(f) for f in self.column_factors])
         self._set_model_data(
             n_features,
             n_features_out=len(self.column_factors),
             ints=('factors', 'offsets'),
-            factors=[f for factors in self.column_factors for f in factors],
+            # A dummy factor if there is only the bias, so no array is empty:
+            factors=[f for fs in self.column_factors for f in fs] or [0],
             offsets=offsets,
         )
 

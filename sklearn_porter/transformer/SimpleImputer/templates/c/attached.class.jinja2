@@ -10,12 +10,14 @@
 #define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
 
 
+{{ inputs }}
 {{ statistics }}
+{{ indicators }}
 
 /* Write the transformed features to `values`: */
 void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
-    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
-        values[i] = {% if missing_values_nan %}isnan(features[i]){% else %}features[i] == {{ missing_values }}{% endif %} ? {{ prefix }}statistics[i] : features[i];
+    for (int i = 0; i < {{ prefix }}N_FEATURES_OUT; i++) {
+        values[i] = {% if missing_values_nan %}isnan(features[{{ prefix }}inputs[i]]){% else %}features[{{ prefix }}inputs[i]] == {{ missing_values }}{% endif %} ? ({{ prefix }}indicators[i] ? 1.0 : {{ prefix }}statistics[i]) : ({{ prefix }}indicators[i] ? 0.0 : features[{{ prefix }}inputs[i]]);
     }
 }
 {% endblock %}

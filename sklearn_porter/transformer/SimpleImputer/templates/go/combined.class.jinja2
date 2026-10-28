@@ -17,11 +17,17 @@ type {{ class_name }} struct{}
 
 func (transformer {{ class_name }}) Transform(features []float64) []float64 {
 	values := make([]float64, {{ n_features_out }})
-	{% for i in range(n_features) %}
-	values[{{ i }}] = features[{{ i }}]
-	if {% if missing_values_nan %}math.IsNaN(features[{{ i }}]){% else %}features[{{ i }}] == {{ missing_values }}{% endif %} {
+	{% for i in range(n_features_out) %}
+	{% if indicators[i] == '1' %}
+	if {% if missing_values_nan %}math.IsNaN(features[{{ inputs[i] }}]){% else %}features[{{ inputs[i] }}] == {{ missing_values }}{% endif %} {
+		values[{{ i }}] = 1
+	}
+	{% else %}
+	values[{{ i }}] = features[{{ inputs[i] }}]
+	if {% if missing_values_nan %}math.IsNaN(features[{{ inputs[i] }}]){% else %}features[{{ inputs[i] }}] == {{ missing_values }}{% endif %} {
 		values[{{ i }}] = {{ statistics[i] }}
 	}
+	{% endif %}
 	{% endfor %}
 	return values
 }

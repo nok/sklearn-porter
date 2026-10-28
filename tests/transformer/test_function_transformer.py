@@ -23,7 +23,29 @@ PARAMS = {
     'expm1': dict(func=np.expm1),
     'log': dict(func=np.log),
     'log1p': dict(func=np.log1p),
+    'negative': dict(func=np.negative),
+    'reciprocal': dict(func=np.reciprocal),
+    'floor': dict(func=np.floor),
+    'ceil': dict(func=np.ceil),
+    'sign': dict(func=np.sign),
+    'clip': dict(func=np.clip, kw_args=dict(a_min=-1.5, a_max=2)),
+    'clip_lower': dict(func=np.clip, kw_args=dict(min=0)),
+    'clip_upper': dict(func=np.clip, kw_args=dict(a_min=None, a_max=0)),
 }
+
+# The functions with correctly rounded results:
+EXACT = (
+    'absolute',
+    'identity',
+    'sqrt',
+    'square',
+    'negative',
+    'reciprocal',
+    'floor',
+    'ceil',
+    'sign',
+    'clip',
+)
 
 
 def _samples(x: np.ndarray) -> np.ndarray:
@@ -34,6 +56,8 @@ def _samples(x: np.ndarray) -> np.ndarray:
             dataset_generate_x(x, 100),
             -dataset_uniform_x(x, 20),
             dataset_uniform_x(x, 20) * 1e-10,
+            np.round(dataset_uniform_x(x, 20)) + 0.5,
+            -np.round(dataset_uniform_x(x, 20)) - 0.5,
             np.full((1, x.shape[1]), -0.0),
             np.full((1, x.shape[1]), 0.0),
             np.full((1, x.shape[1]), -1.0),
@@ -42,6 +66,14 @@ def _samples(x: np.ndarray) -> np.ndarray:
     )
     samples[::7, 0] = np.nan
     return samples
+
+
+def _name(params: dict) -> str:
+    """The name of the function and its arguments (e.g. for a directory)."""
+    func = params['func']
+    name = func.__name__ if func else 'identity'
+    kw_args = params.get('kw_args', {})
+    return '-'.join([name, *(f'{k}_{v}' for k, v in kw_args.items())])
 
 
 @pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
@@ -67,7 +99,7 @@ def test_transformer_function_transformer(
         tmp_root_dir,
         [
             ('test', 'transformer_function_transformer'),
-            ('params', '-'.join(map(str, params.values())) or 'default'),
+            ('params', _name(params)),
             ('dataset', dataset.name),
             ('language', language),
             ('template', template),
@@ -77,10 +109,14 @@ def test_transformer_function_transformer(
     with np.errstate(all='ignore'):
         x_true = orig_est.transform(test_x)
     name = orig_est.func.__name__ if orig_est.func else 'identity'
-    if name in ('absolute', 'identity', 'sqrt', 'square'):
-        # The results are correctly rounded (also the signs of the zeros):
+    if name in EXACT:
+        # The results are correctly rounded (also the signs of the zeros,
+        # the sign of `NaN` has no meaning):
         np.testing.assert_array_equal(x_tr, x_true)
-        np.testing.assert_array_equal(np.signbit(x_tr), np.signbit(x_true))
+        is_nan = np.isnan(x_true)
+        np.testing.assert_array_equal(
+            np.signbit(x_tr[~is_nan]), np.signbit(x_true[~is_nan])
+        )
     else:
         # NumPy computes `exp` and `log` with SIMD instructions depending on
         # the CPU, which can differ by a few ULP from the target languages.

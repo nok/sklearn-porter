@@ -87,16 +87,19 @@
 
 - The ported [SimpleImputer](https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html) replaces the missing values of each feature by its statistic (the mean, the median, the most frequent value or the constant `fill_value`), so the transformed features are identical.
 - The missing values (`missing_values`) can be `NaN` (default) or a number. Other missing values (e.g. `None` or `pd.NA`) and statistics which aren't numbers (e.g. a string as `fill_value`) raise a `NotSupportedYetError`.
-- Features without any observed values in the fit are dropped by scikit-learn, which changes the number of features, so they raise a `NotSupportedYetError`. Pass `keep_empty_features=True` to keep them. `add_indicator=True` (additional features) isn't supported either.
+- Features without any observed values in the fit are dropped like in scikit-learn (except with `keep_empty_features=True`). With `add_indicator=True` the indicators of the missing values (`1.0` or `0.0`) of the features with missing values in the fit follow the imputed features like in scikit-learn.
 
 ## FunctionTransformer
 
-- The ported [FunctionTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html) supports the identity (`func=None`) and the functions `np.abs`, `np.sqrt`, `np.square`, `np.exp`, `np.expm1`, `np.log` and `np.log1p` without `kw_args`. Other functions raise a `NotSupportedYetError`.
-- The identity, `np.abs`, `np.sqrt` and `np.square` return identical values. NumPy computes `np.exp` and `np.log` (and their variants) with SIMD instructions depending on the CPU, so their results can differ by a few ULP from those of the target languages. C# and Ruby have no `log1p` and `expm1`, so the ported transformer computes them with an accurate formula, which can differ by a few ULP as well.
+- The ported [FunctionTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html) supports the identity (`func=None`) and the functions `np.abs`, `np.sqrt`, `np.square`, `np.exp`, `np.expm1`, `np.log`, `np.log1p`, `np.negative`, `np.reciprocal`, `np.floor`, `np.ceil`, `np.sign` and `np.clip`. Other functions and `kw_args` of other functions raise a `NotSupportedYetError`.
+- `np.clip` needs numbers as bounds in `kw_args`: `a_min` and `a_max` (one of them can be `None`) or `min` and/or `max`. The lower bound must not be greater than the upper bound, arrays as bounds aren't supported. With one bound NumPy uses `np.maximum` or `np.minimum`, which treat `-0.0` as lower than `0.0` (e.g. on aarch64), the ported transformer does the same. On other CPUs the sign of a zero at the bound can differ.
+- The identity and the functions `np.abs`, `np.sqrt`, `np.square`, `np.negative`, `np.reciprocal`, `np.floor`, `np.ceil`, `np.sign` and `np.clip` return identical values. NumPy computes `np.exp` and `np.log` (and their variants) with SIMD instructions depending on the CPU, so their results can differ by a few ULP from those of the target languages. C# and Ruby have no `log1p` and `expm1`, so the ported transformer computes them with an accurate formula, which can differ by a few ULP as well.
 
 ## Normalizer
 
-- The ported [Normalizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Normalizer.html) supports only `norm='max'`: it divides by the maximum of the absolute values of the features of each sample (or by one, if it is close to zero) like scikit-learn. The norms `l1` and `l2` are sums, which NumPy computes in another order, so they raise a `NotSupportedYetError`.
+- The ported [Normalizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Normalizer.html) divides the features of each sample by its norm (or by one, if the norm is close to zero) like scikit-learn.
+- With `norm='max'` and `norm='l1'` the transformed features are identical: the ported transformer sums the absolute values in the order of NumPy (pairwise summation of a contiguous row, i.e. of samples in C order; NumPy sums the samples of an array in Fortran order in another order).
+- With `norm='l2'` (default) scikit-learn sums the squares with `np.einsum`, whose order depends on the CPU, so the transformed features can differ by a few ULP.
 
 ## KBinsDiscretizer
 
@@ -118,4 +121,4 @@
 
 - The ported [PolynomialFeatures](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html) multiplies the features of each transformed feature in the order of scikit-learn (each term of degree `d` is a term of degree `d - 1` multiplied by a feature), so the transformed features are identical. `degree` can be the maximal degree or a tuple of the minimal and the maximal degree, `interaction_only` and `include_bias` are supported.
 - The number of transformed features grows with the power of the degree, with many features the generated code (especially of the template `combined`) can get very large.
-- A transformer with the bias only (`degree=0`) raises a `NotSupportedYetError`.
+- scikit-learn multiplies the features of sparse matrices in another order, so the transformed features of sparse samples (e.g. of a `StandardScaler(with_mean=False)` fitted on sparse data) can differ by a few ULP from degree 3 on. Transformed features of zeros and ones (e.g. of a `OneHotEncoder`) are identical.

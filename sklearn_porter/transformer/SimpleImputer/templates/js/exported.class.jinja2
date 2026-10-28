@@ -14,9 +14,9 @@ var {{ class_name }} = function(jsonFile) {
 {% endif %}
 
     this.transform = function(features) {
-        var values = new Array(this.data.statistics.length);
-        for (var i = 0, l = this.data.statistics.length; i < l; i++) {
-            values[i] = {% if missing_values_nan %}isNaN(features[i]){% else %}features[i] == {{ missing_values }}{% endif %} ? this.data.statistics[i] : features[i];
+        var values = new Array(this.data.inputs.length);
+        for (var i = 0, l = this.data.inputs.length; i < l; i++) {
+            values[i] = {% if missing_values_nan %}isNaN(features[this.data.inputs[i]]){% else %}features[this.data.inputs[i]] == {{ missing_values }}{% endif %} ? (this.data.indicators[i] === 1 ? 1.0 : this.data.statistics[i]) : (this.data.indicators[i] === 1 ? 0.0 : features[this.data.inputs[i]]);
         }
         return values;
     };

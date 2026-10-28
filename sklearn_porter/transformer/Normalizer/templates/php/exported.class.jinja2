@@ -13,6 +13,7 @@ class {{ class_name }} {
     }
 
     public function transform($features) {
+        {% if norm == 'max' %}
         $norm = 0.0;
         foreach ($features as $feature) {
             $norm = max($norm, abs($feature));
@@ -20,6 +21,13 @@ class {{ class_name }} {
         if ($norm < {{ min_norm }}) {
             $norm = 1.0;
         }
+        {% else %}
+        {% macro norm_sum(t) %}{% if t is number %}{% if norm == 'l1' %}abs($features[{{ t }}]){% else %}$features[{{ t }}] * $features[{{ t }}]{% endif %}{% else %}({{ norm_sum(t[0]) }} + {{ norm_sum(t[1]) }}){% endif %}{% endmacro %}
+        $norm = {% if norm == 'l2' %}sqrt({{ norm_sum(norm_tree) }}){% else %}{{ norm_sum(norm_tree) }}{% endif %};
+        if ($norm < {{ min_norm }}) {
+            $norm = 1.0;
+        }
+        {% endif %}
         $values = array();
         for ($i = 0, $l = count($features); $i < $l; $i++) {
             $values[$i] = $features[$i] / $norm;

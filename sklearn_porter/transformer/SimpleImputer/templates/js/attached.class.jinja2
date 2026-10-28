@@ -2,14 +2,16 @@
 
 {% block content %}
 {% block class %}
-var {{ class_name }} = function(statistics) {
+var {{ class_name }} = function(inputs, statistics, indicators) {
 
+    this.inputs = inputs;
     this.statistics = statistics;
+    this.indicators = indicators;
 
     this.transform = function(features) {
-        var values = new Array(this.statistics.length);
-        for (var i = 0, l = this.statistics.length; i < l; i++) {
-            values[i] = {% if missing_values_nan %}isNaN(features[i]){% else %}features[i] == {{ missing_values }}{% endif %} ? this.statistics[i] : features[i];
+        var values = new Array(this.inputs.length);
+        for (var i = 0, l = this.inputs.length; i < l; i++) {
+            values[i] = {% if missing_values_nan %}isNaN(features[this.inputs[i]]){% else %}features[this.inputs[i]] == {{ missing_values }}{% endif %} ? (this.indicators[i] === 1 ? 1.0 : this.statistics[i]) : (this.indicators[i] === 1 ? 0.0 : features[this.inputs[i]]);
         }
         return values;
     };
@@ -24,10 +26,12 @@ var {{ class_name }} = function(statistics) {
 var main = function () {
     {% block create %}
     // Model data:
+    {{ inputs }}
     {{ statistics }}
+    {{ indicators }}
 
     // Transformer:
-    var {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}statistics);
+    var {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}inputs, {{ prefix }}statistics, {{ prefix }}indicators);
     {% endblock %}
 
     // Features of one sample (arguments) or several samples (standard input):

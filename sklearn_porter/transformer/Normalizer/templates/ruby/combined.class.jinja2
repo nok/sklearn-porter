@@ -5,8 +5,14 @@
 class {{ class_name }}
 
 	def transform(features)
+		{% if norm == 'max' %}
 		norm = features.map(&:abs).max
 		norm = 1.0 if norm < {{ min_norm }}
+		{% else %}
+		{% macro norm_sum(t) %}{% if t is number %}{% if norm == 'l1' %}features[{{ t }}].abs{% else %}features[{{ t }}] * features[{{ t }}]{% endif %}{% else %}({{ norm_sum(t[0]) }} + {{ norm_sum(t[1]) }}){% endif %}{% endmacro %}
+		norm = {% if norm == 'l2' %}Math.sqrt({{ norm_sum(norm_tree) }}){% else %}{{ norm_sum(norm_tree) }}{% endif +%}
+		norm = 1.0 if norm < {{ min_norm }}
+		{% endif %}
 		[
 			{% for i in range(n_features) %}
 			features[{{ i }}] / norm,

@@ -84,6 +84,17 @@ PREPROCESSING = {
     'k_bins_onehot': lambda: [
         ('k_bins', KBinsDiscretizer(n_bins=3, encode='onehot')),
     ],
+    # The indicators of the missing values (of the samples of the fit):
+    'imputer_with_indicator': lambda: [
+        ('imputer', SimpleImputer(add_indicator=True)),
+    ],
+    'normalizers': lambda: [
+        ('l1', Normalizer(norm='l1')),
+        (
+            'function',
+            FunctionTransformer(np.clip, kw_args=dict(a_min=None, a_max=0.5)),
+        ),
+    ],
 }
 
 CLASSIFIERS = {
@@ -110,6 +121,8 @@ def test_pipeline_of_classifier(
 ):
     """Compare the predictions of a ported pipeline with scikit-learn."""
     x, y = load_iris(return_X_y=True)
+    if preprocessing == 'imputer_with_indicator':
+        x[::5, 1] = np.nan
     steps = PREPROCESSING[preprocessing]() + [
         ('clf', CLASSIFIERS[classifier]())
     ]
@@ -120,7 +133,7 @@ def test_pipeline_of_classifier(
     est = Porter(pipeline, language=language, template=template)
     assert isinstance(est.ported, Pipeline)
     test_x = np.vstack((x, dataset_uniform_x(x)))
-    if preprocessing == 'all_transformers':
+    if preprocessing in ('all_transformers', 'imputer_with_indicator'):
         test_x[::7, 0] = np.nan
     tmp_dir = _tmp_dir(
         tmp_root_dir,

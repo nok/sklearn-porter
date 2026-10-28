@@ -5,6 +5,7 @@
 public class {{ class_name }} {
 
     public double[] Transform(double[] features) {
+        {% if norm == 'max' %}
         double norm = 0.0;
         foreach (double feature in features) {
             norm = System.Math.Max(norm, System.Math.Abs(feature));
@@ -12,6 +13,13 @@ public class {{ class_name }} {
         if (norm < {{ min_norm }}) {
             norm = 1.0;
         }
+        {% else %}
+        {% macro norm_sum(t) %}{% if t is number %}{% if norm == 'l1' %}System.Math.Abs(features[{{ t }}]){% else %}features[{{ t }}] * features[{{ t }}]{% endif %}{% else %}({{ norm_sum(t[0]) }} + {{ norm_sum(t[1]) }}){% endif %}{% endmacro %}
+        double norm = {% if norm == 'l2' %}System.Math.Sqrt({{ norm_sum(norm_tree) }}){% else %}{{ norm_sum(norm_tree) }}{% endif %};
+        if (norm < {{ min_norm }}) {
+            norm = 1.0;
+        }
+        {% endif %}
         double[] values = new double[{{ n_features_out }}];
         {% for i in range(n_features) %}
         values[{{ i }}] = features[{{ i }}] / norm;

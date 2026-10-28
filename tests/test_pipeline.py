@@ -146,7 +146,7 @@ def test_port_of_all_transformers(language: str, template: str):
         out, data = out
         transformers = json.loads(data)['transformers']
         assert [sorted(t) for t in transformers] == [
-            ['statistics'],
+            ['indicators', 'inputs', 'statistics'],
             ['min', 'scale'],
             ['scale'],
             ['center', 'scale'],

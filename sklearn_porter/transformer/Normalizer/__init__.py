@@ -8,7 +8,6 @@ from sklearn.preprocessing import Normalizer as NormalizerClass
 
 # sklearn-porter
 from sklearn_porter import enums as enum
-from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.transformer.TransformerBase import TransformerBase
 
@@ -37,17 +36,61 @@ class Normalizer(TransformerBase, EstimatorApiABC):
         est = transformer  # alias
         n_features = self._get_n_features(est)
 
-        # The norms `l1` and `l2` are sums, which NumPy computes in another
-        # order (pairwise summation), so only the maximum is identical:
-        if est.norm != 'max':
-            msg = (
-                f'The transformer `{self.estimator_name}` supports only '
-                "`norm='max'`."
-            )
-            raise exception.NotSupportedYetError(msg)
+        self.norm = est.norm
+        self.norm_tree = _get_sum_tree(0, n_features)
         self._set_model_data(n_features)
 
     def literals(self, converter: Callable[[object], str]) -> dict:
         # scikit-learn divides by one instead of a norm close to zero, see
         # `sklearn.preprocessing._data._handle_zeros_in_scale`:
-        return dict(min_norm=converter(10 * np.finfo(np.float64).eps))
+        return dict(
+            norm=self.norm,
+            norm_tree=self.norm_tree,
+            min_norm=converter(10 * np.finfo(np.float64).eps),
+        )
+
+
+def _get_sum_tree(start: int, n: int) -> int | tuple:
+    """
+    Get the order of the sum of `n` values in NumPy (pairwise summation).
+
+    scikit-learn computes the norm `l1` with `np.abs(X).sum(axis=1)`, which
+    sums the values of each sample (a contiguous row) like
+    `pairwise_sum` of NumPy: fewer than 8 values one after another, up to
+    128 values with 8 partial sums and more values in two halves. The norm
+    `l2` uses the same order, but scikit-learn computes the sum of the
+    squares with `np.einsum`, whose order depends on the CPU.
+
+    Parameters
+    ----------
+    start : int
+        The position of the first value.
+    n : int
+        The number of values.
+
+    Returns
+    -------
+    The position of a value or a tuple of two summands.
+    """
+    tree: int | tuple
+    if n < 8:
+        tree = start
+        for i in range(start + 1, start + n):
+            tree = (tree, i)
+        return tree
+    if n <= 128:
+        sums: list[int | tuple] = list(range(start, start + 8))
+        i = 8
+        while i < n - n % 8:
+            sums = [(s, start + i + j) for j, s in enumerate(sums)]
+            i += 8
+        tree = (
+            ((sums[0], sums[1]), (sums[2], sums[3])),
+            ((sums[4], sums[5]), (sums[6], sums[7])),
+        )
+        for k in range(i, n):
+            tree = (tree, start + k)
+        return tree
+    half = n // 2
+    half -= half % 8
+    return (_get_sum_tree(start, half), _get_sum_tree(start + half, n - half))

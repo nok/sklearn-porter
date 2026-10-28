@@ -4,12 +4,14 @@
 {% block class %}
 class {{ class_name }}
 
-	def initialize(statistics)
+	def initialize(inputs, statistics, indicators)
+		@inputs = inputs
 		@statistics = statistics
+		@indicators = indicators
 	end
 
 	def transform(features)
-		Array.new(@statistics.length) { |i| {% if missing_values_nan %}features[i].nan?{% else %}features[i] == {{ missing_values }}{% endif %} ? @statistics[i] : features[i] }
+		Array.new(@inputs.length) { |i| {% if missing_values_nan %}features[@inputs[i]].nan?{% else %}features[@inputs[i]] == {{ missing_values }}{% endif %} ? (@indicators[i] == 1 ? 1.0 : @statistics[i]) : (@indicators[i] == 1 ? 0.0 : features[@inputs[i]]) }
 	end
 
 end
@@ -24,10 +26,12 @@ if __FILE__ == $0
 
 	{% block create %}
 	# Model data:
+	{{ inputs }}
 	{{ statistics }}
+	{{ indicators }}
 
 	# Transformer:
-	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}statistics
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}inputs, {{ prefix }}statistics, {{ prefix }}indicators
 	{% endblock %}
 
 	# Features of one sample (arguments) or several samples (standard input):

@@ -7,7 +7,7 @@ public class {{ class_name }} {
     public double[] Transform(double[] features) {
         double[] values = new double[features.Length];
         for (int i = 0; i < features.Length; i++) {
-            values[i] = {% if func == 'abs' %}System.Math.Abs(features[i]){% elif func == 'sqrt' %}System.Math.Sqrt(features[i]){% elif func == 'exp' %}System.Math.Exp(features[i]){% elif func == 'expm1' %}Expm1(features[i]){% elif func == 'log' %}System.Math.Log(features[i]){% elif func == 'log1p' %}Log1p(features[i]){% elif func == 'square' %}features[i] * features[i]{% else %}features[i]{% endif %};
+            values[i] = {% if func == 'abs' %}System.Math.Abs(features[i]){% elif func == 'sqrt' %}System.Math.Sqrt(features[i]){% elif func == 'exp' %}System.Math.Exp(features[i]){% elif func == 'expm1' %}Expm1(features[i]){% elif func == 'log' %}System.Math.Log(features[i]){% elif func == 'log1p' %}Log1p(features[i]){% elif func == 'floor' %}System.Math.Floor(features[i]){% elif func == 'ceil' %}System.Math.Ceiling(features[i]){% elif func == 'negative' %}-features[i]{% elif func == 'reciprocal' %}1.0 / features[i]{% elif func == 'sign' %}(features[i] > 0 ? 1.0 : (features[i] < 0 ? -1.0 : features[i] + 0.0)){% elif func == 'clip' %}{% if clip_min is not none and clip_max is not none %}(features[i] < {{ clip_min }} ? {{ clip_min }} : (features[i] > {{ clip_max }} ? {{ clip_max }} : features[i])){% elif clip_min is not none %}(features[i] <= {{ clip_min }} ? {{ clip_min }} : features[i]){% else %}(features[i] > {{ clip_max }} ? {{ clip_max }} : features[i]){% endif %}{% elif func == 'square' %}features[i] * features[i]{% else %}features[i]{% endif %};
         }
         return values;
     }

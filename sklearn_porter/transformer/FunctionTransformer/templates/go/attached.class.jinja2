@@ -18,7 +18,35 @@ type {{ class_name }} struct{}
 func (transformer {{ class_name }}) Transform(features []float64) []float64 {
 	values := make([]float64, len(features))
 	for i := range features {
-		values[i] = {% if func == 'abs' %}math.Abs(features[i]){% elif func == 'sqrt' %}math.Sqrt(features[i]){% elif func == 'exp' %}math.Exp(features[i]){% elif func == 'expm1' %}math.Expm1(features[i]){% elif func == 'log' %}math.Log(features[i]){% elif func == 'log1p' %}math.Log1p(features[i]){% elif func == 'square' %}features[i] * features[i]{% else %}features[i]{% endif +%}
+		{% if func == 'sign' %}
+		switch {
+		case features[i] > 0:
+			values[i] = 1
+		case features[i] < 0:
+			values[i] = -1
+		default:
+			values[i] = features[i] + 0
+		}
+		{% elif func == 'clip' %}
+		values[i] = features[i]
+		{% if clip_min is not none and clip_max is not none %}
+		if values[i] < {{ clip_min }} {
+			values[i] = {{ clip_min }}
+		} else if values[i] > {{ clip_max }} {
+			values[i] = {{ clip_max }}
+		}
+		{% elif clip_min is not none %}
+		if values[i] <= {{ clip_min }} {
+			values[i] = {{ clip_min }}
+		}
+		{% else %}
+		if values[i] > {{ clip_max }} {
+			values[i] = {{ clip_max }}
+		}
+		{% endif %}
+		{% else %}
+		values[i] = {% if func == 'abs' %}math.Abs(features[i]){% elif func == 'sqrt' %}math.Sqrt(features[i]){% elif func == 'exp' %}math.Exp(features[i]){% elif func == 'expm1' %}math.Expm1(features[i]){% elif func == 'log' %}math.Log(features[i]){% elif func == 'log1p' %}math.Log1p(features[i]){% elif func == 'floor' %}math.Floor(features[i]){% elif func == 'ceil' %}math.Ceil(features[i]){% elif func == 'negative' %}-features[i]{% elif func == 'reciprocal' %}1 / features[i]{% elif func == 'square' %}features[i] * features[i]{% else %}features[i]{% endif +%}
+		{% endif %}
 	}
 	return values
 }
