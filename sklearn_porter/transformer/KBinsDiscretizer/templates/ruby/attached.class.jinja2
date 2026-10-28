@@ -10,9 +10,17 @@ class {{ class_name }}
 	end
 
 	def transform(features)
+		{% if onehot %}
+		values = Array.new({{ n_features_out }}, 0.0)
+		features.each_with_index do |x, i|
+			values[@offsets[i] + i + (@offsets[i]...@offsets[i + 1]).count { |j| x >= @edges[j] }] = 1.0
+		end
+		values
+		{% else %}
 		Array.new(features.length) do |i|
 			(@offsets[i]...@offsets[i + 1]).count { |j| features[i] >= @edges[j] }.to_f
 		end
+		{% endif %}
 	end
 
 end

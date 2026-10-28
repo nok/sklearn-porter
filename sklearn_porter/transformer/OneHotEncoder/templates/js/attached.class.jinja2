@@ -1,0 +1,46 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function(inputs, categories, missing) {
+
+    this.inputs = inputs;
+    this.categories = categories;
+    this.missing = missing;
+
+    this.transform = function(features) {
+        var values = new Array(this.inputs.length);
+        for (var i = 0, l = this.inputs.length; i < l; i++) {
+            values[i] = (this.missing[i] === 1 ? isNaN(features[this.inputs[i]]) : features[this.inputs[i]] === this.categories[i]) ? 1.0 : 0.0;
+        }
+        return values;
+    };
+
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Model data:
+    {{ inputs }}
+    {{ categories }}
+    {{ missing }}
+
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}inputs, {{ prefix }}categories, {{ prefix }}missing);
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

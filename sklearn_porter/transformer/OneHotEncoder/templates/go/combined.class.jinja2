@@ -1,0 +1,44 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+type {{ class_name }} struct{}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, {{ n_features_out }})
+	{% for i in range(n_features_out) %}
+	if {% if missing[i] == '1' %}math.IsNaN(features[{{ inputs[i] }}]){% else %}features[{{ inputs[i] }}] == {{ categories[i] }}{% endif %} {
+		values[{{ i }}] = 1
+	}
+	{% endfor %}
+	return values
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+func main() {
+	{% block create %}
+	// Transformer:
+	{{ instance|default('transformer') }} := {{ class_name }}{}
+	{% endblock %}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

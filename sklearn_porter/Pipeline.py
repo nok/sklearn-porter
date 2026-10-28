@@ -144,20 +144,6 @@ class Pipeline(Base):
         self._transformers = [Transformer(step) for _, step in preprocessing]
         self._final = Estimator(final_est)
 
-        # The transformers must keep the number of features, because the
-        # ported pipeline transforms the features of each sample in place:
-        for (name, _), transformer in zip(
-            preprocessing, self._transformers, strict=True
-        ):
-            meta_info = transformer._estimator.meta_info
-            if meta_info['n_features'] != meta_info['n_features_out']:
-                msg = (
-                    f'The preprocessing step `{name}` changes the number of '
-                    "features, which can't be ported yet."
-                )
-                L.error(msg)
-                raise exception.NotSupportedYetError(msg)
-
         # Unique class names of the ported transformers (e.g.
         # `StandardScaler` and `StandardScaler2`) in the generated file:
         class_names = set()

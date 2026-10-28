@@ -1,7 +1,0 @@
-{
-    double pipeline_values[{{ prefix }}N_FEATURES_OUT];
-    {{ prefix }}transform(pipeline_values, features);
-    for (int i = 0; i < {{ prefix }}N_FEATURES_OUT; i++) {
-        features[i] = pipeline_values[i];
-    }
-}

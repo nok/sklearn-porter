@@ -1,0 +1,50 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+public class {{ class_name }} {
+
+    private int[] inputs;
+    private double[] categories;
+    private int[] missing;
+
+    public {{ class_name }}(int[] inputs, double[] categories, int[] missing) {
+        this.inputs = inputs;
+        this.categories = categories;
+        this.missing = missing;
+    }
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[this.inputs.Length];
+        for (int i = 0; i < this.inputs.Length; i++) {
+            values[i] = (this.missing[i] == 1 ? double.IsNaN(features[this.inputs[i]]) : features[this.inputs[i]] == this.categories[i]) ? 1.0 : 0.0;
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        {% block create %}
+        // Model data:
+        {{ inputs }}
+        {{ categories }}
+        {{ missing }}
+
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}inputs, {{ prefix }}categories, {{ prefix }}missing);
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

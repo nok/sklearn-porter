@@ -9,8 +9,8 @@ var readSamples = function (args) {
             continue;
         }
         var values = line.split(/\s+/);
-        if (values.length !== {{ n_features }}) {
-            throw new Error("You have to pass {{ n_features }} features per sample.");
+        if (values.length !== {{ pipeline_n_features or n_features }}) {
+            throw new Error("You have to pass {{ pipeline_n_features or n_features }} features per sample.");
         }
         samples.push(values.map(parseFloat));
     }

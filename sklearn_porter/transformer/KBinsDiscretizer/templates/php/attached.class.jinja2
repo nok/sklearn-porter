@@ -14,6 +14,18 @@ class {{ class_name }} {
 
     public function transform($features) {
         $values = array();
+        {% if onehot %}
+        $values = array_fill(0, {{ n_features_out }}, 0.0);
+        for ($i = 0, $l = count($features); $i < $l; $i++) {
+            $bin = 0;
+            for ($j = $this->offsets[$i]; $j < $this->offsets[$i + 1]; $j++) {
+                if ($features[$i] >= $this->edges[$j]) {
+                    $bin++;
+                }
+            }
+            $values[$this->offsets[$i] + $i + $bin] = 1.0;
+        }
+        {% else %}
         for ($i = 0, $l = count($features); $i < $l; $i++) {
             $values[$i] = 0.0;
             for ($j = $this->offsets[$i]; $j < $this->offsets[$i + 1]; $j++) {
@@ -22,6 +34,7 @@ class {{ class_name }} {
                 }
             }
         }
+        {% endif %}
         return $values;
     }
 

@@ -1,0 +1,19 @@
+/* Read the features of the next sample and transform them by the
+   preprocessing steps (the number of features can change in each step): */
+int pipeline_read_features(double features[], int argc, const char *argv[], int offset);
+
+int read_features(double features[], int argc, const char *argv[], int offset) {
+    double pipeline_values0[{{ n_features }}];
+    if (!pipeline_read_features(pipeline_values0, argc, argv, offset)) {
+        return 0;
+    }
+{% for step in steps %}
+{% if loop.last %}
+    {{ step.prefix }}transform(features, pipeline_values{{ loop.index0 }});
+{% else %}
+    double pipeline_values{{ loop.index }}[{{ step.prefix }}N_FEATURES_OUT];
+    {{ step.prefix }}transform(pipeline_values{{ loop.index }}, pipeline_values{{ loop.index0 }});
+{% endif %}
+{% endfor %}
+    return 1;
+}

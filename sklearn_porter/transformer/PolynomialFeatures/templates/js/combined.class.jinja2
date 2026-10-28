@@ -1,0 +1,37 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function() {
+
+    this.transform = function(features) {
+        return [
+            {% for i in range(n_features_out) %}
+            {% for f in column_factors[i] %}features[{{ f }}]{{ ' * ' if not loop.last }}{% else %}1.0{% endfor %}{{ ',' if not loop.last }}
+            {% endfor %}
+        ];
+    };
+
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}();
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

@@ -45,8 +45,18 @@ original estimator and transform the features like the original transformer.
   it to one source file with `sklearn_porter/pipeline/Pipeline/` (glue
   templates per language): the ported final estimator (with the class name
   of the pipeline, by default `Pipeline`) into which the ported transformers
-  are inserted. The transformers must keep the number of features, repeated
-  class names get a number (`StandardScaler2`).
+  are inserted. Repeated class names get a number (`StandardScaler2`).
+  The transformers can change the number of features (`n_features_out` of
+  `_set_model_data()`): the shared template `samples` of each language
+  checks the number of features of the pipeline (template global
+  `pipeline_n_features`). In C (arrays of fixed size) the glue template
+  `read` defines `read_features`, which reads the features with the
+  renamed shared function `pipeline_read_features` and passes them through
+  the steps in separate arrays; in C# (the loop variable of `foreach` can't
+  be assigned) the glue template `chain` assigns the transformations of all
+  steps to `PipelineTransform`, which `ReadSamples` applies; the other
+  languages assign the result of each step to `features` (glue template
+  `transform`).
 - Pipeline placeholders: every class template of an estimator contains the
   placeholders `pipeline_classes` (before `main`, in Java and C# after the
   class), `pipeline_create` (in `main` before the model data or the loop
@@ -97,8 +107,10 @@ original estimator and transform the features like the original transformer.
   `Transformer.transformers()` in `sklearn_porter/Transformer.py`. The
   templates are loaded from the directory of the module of each class.
   `TransformerBase.port()` renders the model data, which consists of finite
-  arrays, mostly with one number per feature (`_set_model_data()`, e.g.
-  `mean` and `scale`; arrays of integers like the offsets of the
+  arrays, mostly with one number per feature or per transformed feature
+  (`_set_model_data()`, e.g. `mean` and `scale`, with `n_features_out` for
+  transformers which change the number of features like the
+  `OneHotEncoder`; arrays of integers like the offsets of the
   concatenated categories of the `OrdinalEncoder` are passed as `ints`), as
   arrays (`attached`), numbers in the code (`combined`) or JSON
   (`exported`); parameters which are numbers in the code of all templates

@@ -27,7 +27,9 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
     transformers, their creation and the transformation of the features of
     each sample. The templates of the transformers provide these parts as
     the blocks `class` (and `data`, the model data outside of `main`) and
-    `create`, their names get the prefix of the step (e.g. `step1_`).
+    `create`, their names get the prefix of the step (e.g. `step1_`). The
+    number of features can change in each step, the ported final estimator
+    reads the number of features of the pipeline (`pipeline_n_features`).
 
     The exported model data is the model data of the final estimator with
     the additional key `transformers`, which contains the model data of each
@@ -129,21 +131,42 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
                 dict(instance=instance, prefix=f'{instance}_', **blocks)
             )
 
+        # The number of features of the pipeline (of its first step), which
+        # the ported final estimator reads:
+        n_features = self.transformers[0]._estimator.meta_info['n_features']
+
+        glue = set(tpls.list_templates())
         classes = [s[k] for s in steps for k in ('class', 'data') if s.get(k)]
         create = [s['create'] for s in steps if s.get('create')]
         if is_exported:
             # Read the model data of the transformers (and free it, e.g. in C):
             create.insert(0, tpls.get_template('load_data').render())
-            if 'free_data' in tpls.list_templates():
+            if 'free_data' in glue:
                 create.append(tpls.get_template('free_data').render())
-        transform = [
-            tpls.get_template('transform').render(**step) for step in steps
-        ]
+        # The transformation of the features of each sample: in the loop over
+        # the samples (`transform`, the number of features of the sample can
+        # change), in the function which reads the samples (`read`, e.g. in C
+        # with arrays of fixed size) or in a function which the function
+        # which reads the samples calls (`chain`, e.g. in C#):
+        transform = []
+        if 'transform' in glue:
+            transform = [
+                tpls.get_template('transform').render(**step) for step in steps
+            ]
+        if 'read' in glue:
+            classes.append(
+                tpls.get_template('read').render(
+                    steps=steps, n_features=n_features
+                )
+            )
+        if 'chain' in glue:
+            create.append(tpls.get_template('chain').render(steps=steps))
 
         # The ported final estimator with the parts of the transformers:
         ported = self.final_est._estimator
         ported.template_globals = dict(
             pipeline=True,
+            pipeline_n_features=n_features,
             pipeline_classes='\n\n'.join(classes),
             pipeline_create='\n\n'.join(create),
             pipeline_transform='\n'.join(transform),

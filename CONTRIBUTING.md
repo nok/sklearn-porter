@@ -77,7 +77,7 @@ The goal is that every estimator supports all languages, templates and methods (
 
 ## Adding or changing a transformer
 
-1. Implement or update `sklearn_porter/transformer/<Name>/__init__.py` as a subclass of `TransformerBase`, including the supported combinations in `SUPPORT` (with the method `transform`). `TransformerBase` ports model data which consists of arrays with one number per feature (`_set_model_data()`).
+1. Implement or update `sklearn_porter/transformer/<Name>/__init__.py` as a subclass of `TransformerBase`, including the supported combinations in `SUPPORT` (with the method `transform`). `TransformerBase` ports model data which consists of arrays, e.g. with one number per feature (`_set_model_data()`, pass `n_features_out` if the transformer changes the number of features).
 2. Add or update the Jinja2 templates in `sklearn_porter/transformer/<Name>/templates/<language>/` for every supported language and template. The method `transform` returns the transformed features of one sample, the `main` prints them with the shared template `values` of each language (one sample per line, separated by spaces). The blocks `class` (and `data`) and `create` insert the transformer into a ported pipeline (see `AGENTS.md`).
 3. Register the transformer in `Transformer.transformers()` in [`sklearn_porter/Transformer.py`](sklearn_porter/Transformer.py).
 4. Add tests (fast ones in `tests/test_transformer.py`, regression tests in `tests/transformer/` and as a step of a pipeline in `tests/pipeline/`) and run the regression tests in Docker.

@@ -26,7 +26,7 @@ class TransformerBase(EstimatorBase):
     ported estimator and `make()` reads it without JSON.
 
     The model data of a transformer consists of arrays of finite numbers,
-    mostly with one number per feature (e.g. `mean` and `scale` of a
+    mostly with one number per feature or per transformed feature (e.g. `mean` and `scale` of a
     `StandardScaler`), which `port()` renders as arrays (`attached`), as
     numbers in the code (`combined`) or as JSON (`exported`). Arrays of
     integers (e.g. the offsets of the categories of each feature in a
@@ -74,7 +74,11 @@ class TransformerBase(EstimatorBase):
         return int(n_features)
 
     def _set_model_data(
-        self, n_features: int, ints: Collection[str] = (), **arrays: object
+        self,
+        n_features: int,
+        n_features_out: int | None = None,
+        ints: Collection[str] = (),
+        **arrays: object,
     ):
         """
         Set the meta info and the model data.
@@ -82,7 +86,10 @@ class TransformerBase(EstimatorBase):
         Parameters
         ----------
         n_features : int
-            The number of features (also the number of transformed features).
+            The number of features.
+        n_features_out : int or None (default: None)
+            The number of transformed features, by default the number of
+            features.
         ints : Collection[str] (default: ())
             The names of the arrays of integers.
         arrays : object
@@ -90,7 +97,9 @@ class TransformerBase(EstimatorBase):
         """
         self.meta_info = dict(
             n_features=n_features,
-            n_features_out=n_features,
+            n_features_out=n_features
+            if n_features_out is None
+            else int(n_features_out),
         )
         L.info(f'Meta info (keys): {self.meta_info.keys()}')
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')

@@ -8,7 +8,19 @@ var {{ class_name }} = function(edges, offsets) {
     this.offsets = offsets;
 
     this.transform = function(features) {
-        var values = new Array(features.length);
+        var values = new Array({{ n_features_out }});
+        {% if onehot %}
+        values.fill(0.0);
+        for (var i = 0, l = features.length; i < l; i++) {
+            var bin = 0;
+            for (var j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
+                if (features[i] >= this.edges[j]) {
+                    bin++;
+                }
+            }
+            values[this.offsets[i] + i + bin] = 1.0;
+        }
+        {% else %}
         for (var i = 0, l = features.length; i < l; i++) {
             values[i] = 0.0;
             for (var j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
@@ -17,6 +29,7 @@ var {{ class_name }} = function(edges, offsets) {
                 }
             }
         }
+        {% endif %}
         return values;
     };
 

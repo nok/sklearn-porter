@@ -1,24 +1,29 @@
+    {% if pipeline %}
+    // The transformation of the features by the preprocessing steps (see `Main`):
+    private static System.Func<double[], double[]> PipelineTransform;
+
+    {% endif %}
     // Read the features of one sample from the arguments or of several
     // samples (one per line) from the standard input:
     private static System.Collections.Generic.IEnumerable<double[]> ReadSamples(string[] args, int offset) {
         if (args.Length > offset) {
             string[] values = new string[args.Length - offset];
             System.Array.Copy(args, offset, values, 0, values.Length);
-            yield return ParseFeatures(values);
+            yield return {{ 'PipelineTransform(ParseFeatures(values))' if pipeline else 'ParseFeatures(values)' }};
             yield break;
         }
         string line;
         while ((line = System.Console.ReadLine()) != null) {
             string[] values = line.Split((char[]) null, System.StringSplitOptions.RemoveEmptyEntries);
             if (values.Length > 0) {
-                yield return ParseFeatures(values);
+                yield return {{ 'PipelineTransform(ParseFeatures(values))' if pipeline else 'ParseFeatures(values)' }};
             }
         }
     }
 
     private static double[] ParseFeatures(string[] values) {
-        if (values.Length != {{ n_features }}) {
-            throw new System.ArgumentException("You have to pass {{ n_features }} features per sample.");
+        if (values.Length != {{ pipeline_n_features or n_features }}) {
+            throw new System.ArgumentException("You have to pass {{ pipeline_n_features or n_features }} features per sample.");
         }
         double[] features = new double[values.Length];
         for (int i = 0; i < values.Length; i++) {
