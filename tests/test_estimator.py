@@ -691,9 +691,9 @@ def test_preprocessing_in_pipeline():
 def test_unsupported_preprocessing_in_pipeline():
     """Preprocessing steps which can't be ported raise an error."""
     pipeline = _fitted_pipeline(
-        [('normalizer', preprocessing.Normalizer()), ('svm', SVC())]
+        [('spline', preprocessing.SplineTransformer()), ('svm', SVC())]
     )
-    msg = r'`normalizer` \(Normalizer\).*`ignore_preprocessing=True`'
+    msg = r'`spline` \(SplineTransformer\).*`ignore_preprocessing=True`'
     with pytest.raises(exception.NotSupportedYetError, match=msg) as e:
         Estimator(pipeline)
     assert '`Porter`' not in str(e.value)
@@ -706,12 +706,12 @@ def test_preprocessing_in_pipeline_ignored():
     pipeline = _fitted_pipeline(
         [
             ('scaler', preprocessing.StandardScaler()),
-            ('normalizer', preprocessing.Normalizer()),
+            ('spline', preprocessing.SplineTransformer()),
             ('svm', SVC()),
         ]
     )
     msg = (
-        r'steps `scaler` \(StandardScaler\), `normalizer` \(Normalizer\) '
+        r'steps `scaler` \(StandardScaler\), `spline` \(SplineTransformer\) '
         'of the pipeline are ignored'
     )
     with pytest.warns(UserWarning, match=msg):

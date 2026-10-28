@@ -1,0 +1,49 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+type {{ class_name }} struct{}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	norm := 0.0
+	for _, feature := range features {
+		norm = math.Max(norm, math.Abs(feature))
+	}
+	if norm < {{ min_norm }} {
+		norm = 1.0
+	}
+	values := make([]float64, len(features))
+	for i := range features {
+		values[i] = features[i] / norm
+	}
+	return values
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+func main() {
+	{% block create %}
+	// Transformer:
+	{{ instance|default('transformer') }} := {{ class_name ~ '{' }}}
+	{% endblock %}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

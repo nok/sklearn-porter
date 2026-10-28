@@ -1,0 +1,46 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+type {{ class_name }} struct{}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, {{ n_features_out }})
+	{% for i in range(n_features) %}
+	{% for e in feature_edges[i] %}
+	if features[{{ i }}] >= {{ e }} {
+		values[{{ i }}]++
+	}
+	{% endfor %}
+	{% endfor %}
+	return values
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+func main() {
+	{% block create %}
+	// Transformer:
+	{{ instance|default('transformer') }} := {{ class_name }}{}
+	{% endblock %}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

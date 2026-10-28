@@ -17,8 +17,12 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import (
     Binarizer,
+    FunctionTransformer,
+    KBinsDiscretizer,
     MaxAbsScaler,
     MinMaxScaler,
+    Normalizer,
+    OrdinalEncoder,
     RobustScaler,
     StandardScaler,
 )
@@ -281,8 +285,12 @@ class Transformer(Base):
         """
         return (
             Binarizer,
+            FunctionTransformer,
+            KBinsDiscretizer,
             MaxAbsScaler,
             MinMaxScaler,
+            Normalizer,
+            OrdinalEncoder,
             RobustScaler,
             SimpleImputer,
             StandardScaler,

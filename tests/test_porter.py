@@ -6,7 +6,7 @@ import pytest
 # scikit-learn
 from sklearn.datasets import load_iris
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import Normalizer, StandardScaler
+from sklearn.preprocessing import SplineTransformer, StandardScaler
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -124,17 +124,19 @@ def test_porter_of_pipeline():
 def test_porter_of_pipeline_with_unsupported_steps():
     """A pipeline with unsupported steps raises the error of `Estimator`."""
     x, y = load_iris(return_X_y=True)
-    pipeline = Pipeline([('normalizer', Normalizer()), ('svm', SVC())]).fit(
+    pipeline = Pipeline([('spline', SplineTransformer()), ('svm', SVC())]).fit(
         x, y
     )
-    with pytest.raises(exception.NotSupportedYetError, match='`normalizer`'):
+    with pytest.raises(exception.NotSupportedYetError, match='`spline`'):
         Porter(pipeline)
 
 
 def test_porter_of_unsupported_transformer():
-    normalizer = Normalizer().fit(load_iris().data)
-    with pytest.raises(exception.NotSupportedYetError, match='`Normalizer`'):
-        Porter(normalizer)
+    spline = SplineTransformer().fit(load_iris().data)
+    with pytest.raises(
+        exception.NotSupportedYetError, match='`SplineTransformer`'
+    ):
+        Porter(spline)
 
 
 @pytest.mark.parametrize('obj', [None, object, 0, 'string'])
@@ -162,7 +164,7 @@ def test_can_and_show():
     assert not can(DecisionTreeClassifier, 'c', 'attached', 'transform')
     assert can(StandardScaler, 'c', 'attached', 'transform')
     assert not can(StandardScaler, 'c', 'attached', 'predict')
-    assert not can(Normalizer)
+    assert not can(SplineTransformer)
     assert not can(Pipeline)
     table = show()
     assert 'DecisionTreeClassifier' in table

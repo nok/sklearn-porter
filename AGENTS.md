@@ -97,11 +97,14 @@ original estimator and transform the features like the original transformer.
   `Transformer.transformers()` in `sklearn_porter/Transformer.py`. The
   templates are loaded from the directory of the module of each class.
   `TransformerBase.port()` renders the model data, which consists of finite
-  arrays with one number per feature (`_set_model_data()`, e.g. `mean` and
-  `scale`), as arrays (`attached`), numbers in the code (`combined`) or JSON
+  arrays, mostly with one number per feature (`_set_model_data()`, e.g.
+  `mean` and `scale`; arrays of integers like the offsets of the
+  concatenated categories of the `OrdinalEncoder` are passed as `ints`), as
+  arrays (`attached`), numbers in the code (`combined`) or JSON
   (`exported`); parameters which are numbers in the code of all templates
   (e.g. the bounds of `clip=True` of the `MinMaxScaler`) come from
-  `literals()`. Go may fuse `a * b + c` to an FMA instruction, so the
+  `literals()`, whose converter writes `NaN` and infinite values as
+  literals of the language (templates `nan` and `inf`). Go may fuse `a * b + c` to an FMA instruction, so the
   templates write `float64(a*b) + c` to keep the results identical.
 - `sklearn_porter/language/<language>/__init__.py`: subclass of `LanguageABC`
   with the compile and execute commands and small code snippets.

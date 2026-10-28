@@ -14,10 +14,14 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline as SklearnPipeline
 from sklearn.preprocessing import (
     Binarizer,
+    FunctionTransformer,
+    KBinsDiscretizer,
     MaxAbsScaler,
     MinMaxScaler,
     Normalizer,
+    OrdinalEncoder,
     RobustScaler,
+    SplineTransformer,
     StandardScaler,
 )
 from sklearn.svm import SVC
@@ -127,6 +131,10 @@ def test_port_of_all_transformers(language: str, template: str):
             ('robust', RobustScaler()),
             ('standard', StandardScaler()),
             ('binarizer', Binarizer(threshold=0.5)),
+            ('function', FunctionTransformer(np.log1p)),
+            ('normalizer', Normalizer(norm='max')),
+            ('k_bins', KBinsDiscretizer(n_bins=3, encode='ordinal')),
+            ('ordinal', OrdinalEncoder()),
             ('clf', LogisticRegression(max_iter=1000)),
         ]
     )
@@ -142,6 +150,10 @@ def test_port_of_all_transformers(language: str, template: str):
             ['center', 'scale'],
             ['mean', 'scale'],
             ['threshold'],
+            [],
+            [],
+            ['edges', 'offsets'],
+            ['categories', 'missing', 'offsets'],
         ]
     # No Jinja tags are left (two-dimensional arrays start with `{{`):
     assert '{%' not in out
@@ -150,7 +162,7 @@ def test_port_of_all_transformers(language: str, template: str):
         for name in ('SimpleImputer', 'MinMaxScaler', 'Binarizer'):
             assert name in out
     else:
-        assert 'void step6_transform(' in out
+        assert 'void step10_transform(' in out
 
 
 def test_port_without_blocks_in_output(fitted_pipeline: SklearnPipeline):
@@ -232,15 +244,15 @@ def test_pipeline_without_preprocessing():
 
 
 def test_unsupported_steps():
-    pipeline = _fit([('normalizer', Normalizer()), ('svm', SVC())])
-    with pytest.raises(exception.NotSupportedYetError, match='`normalizer`'):
+    pipeline = _fit([('spline', SplineTransformer()), ('svm', SVC())])
+    with pytest.raises(exception.NotSupportedYetError, match='`spline`'):
         Pipeline(pipeline)
     assert not Pipeline.supports(pipeline)
 
 
 def test_unsupported_final_estimator():
     pipeline = _fit(
-        [('scaler', StandardScaler()), ('normalizer', Normalizer())]
+        [('scaler', StandardScaler()), ('spline', SplineTransformer())]
     )
     with pytest.raises(ValueError):
         Pipeline(pipeline)

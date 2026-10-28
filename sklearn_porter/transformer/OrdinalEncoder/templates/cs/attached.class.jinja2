@@ -1,0 +1,60 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+public class {{ class_name }} {
+
+    private double[] categories;
+    private int[] offsets;
+    private int[] missing;
+
+    public {{ class_name }}(double[] categories, int[] offsets, int[] missing) {
+        this.categories = categories;
+        this.offsets = offsets;
+        this.missing = missing;
+    }
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[features.Length];
+        for (int i = 0; i < features.Length; i++) {
+            if (double.IsNaN(features[i])) {
+                values[i] = this.missing[i] == 1 ? {{ encoded_missing_value }} : {{ unknown_value }};
+                continue;
+            }
+            values[i] = {{ unknown_value }};
+            for (int j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
+                if (features[i] == this.categories[j]) {
+                    values[i] = j - this.offsets[i];
+                    break;
+                }
+            }
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        {% block create %}
+        // Model data:
+        {{ categories }}
+        {{ offsets }}
+        {{ missing }}
+
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}categories, {{ prefix }}offsets, {{ prefix }}missing);
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

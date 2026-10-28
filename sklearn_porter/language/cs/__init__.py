@@ -48,6 +48,7 @@ class CSharp(LanguageABC):
         'isnan':        'double.IsNaN({{ a }})',
         # Positive infinity (e.g. of thresholds):
         'inf':          'double.PositiveInfinity',
+        'nan':          'double.NaN',
 
         # Basics:
         'indent':       '    ',

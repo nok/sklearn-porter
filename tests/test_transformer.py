@@ -13,10 +13,14 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import (
     Binarizer,
+    FunctionTransformer,
+    KBinsDiscretizer,
     MaxAbsScaler,
     MinMaxScaler,
     Normalizer,
+    OrdinalEncoder,
     RobustScaler,
+    SplineTransformer,
     StandardScaler,
 )
 from sklearn.svm import SVC
@@ -63,6 +67,35 @@ TRANSFORMERS = {
     'standard_scaler': (
         lambda: StandardScaler().fit(load_iris().data),
         lambda t: dict(mean=t.mean_.tolist(), scale=t.scale_.tolist()),
+    ),
+    'function_transformer': (
+        lambda: FunctionTransformer(np.log1p).fit(load_iris().data),
+        lambda t: dict(),
+    ),
+    'normalizer': (
+        lambda: Normalizer(norm='max').fit(load_iris().data),
+        lambda t: dict(),
+    ),
+    'k_bins_discretizer': (
+        lambda: KBinsDiscretizer(n_bins=4, encode='ordinal').fit(
+            load_iris().data
+        ),
+        lambda t: dict(
+            edges=np.concatenate([e[1:-1] for e in t.bin_edges_]).tolist(),
+            offsets=[0, 3, 6, 9, 12],
+        ),
+    ),
+    'ordinal_encoder': (
+        lambda: OrdinalEncoder().fit(np.round(_iris_with_missing_values())),
+        lambda t: dict(
+            categories=np.concatenate(
+                [c[~np.isnan(c)] for c in t.categories_]
+            ).tolist(),
+            offsets=np.cumsum(
+                [0] + [np.sum(~np.isnan(c)) for c in t.categories_]
+            ).tolist(),
+            missing=[1, 0, 0, 0],
+        ),
     ),
 }
 
@@ -164,7 +197,7 @@ def test_can_with_classes():
     assert can(StandardScaler)
     assert can(StandardScaler, 'c', 'combined', 'transform')
     assert not can(StandardScaler, 'c', 'combined', 'predict')
-    assert not can(Normalizer)
+    assert not can(SplineTransformer)
 
 
 def test_unfitted_transformer():
@@ -173,9 +206,11 @@ def test_unfitted_transformer():
 
 
 def test_unsupported_transformer():
-    normalizer = Normalizer().fit(load_iris().data)
-    with pytest.raises(exception.NotSupportedYetError, match='`Normalizer`'):
-        Transformer(normalizer)
+    spline = SplineTransformer().fit(load_iris().data)
+    with pytest.raises(
+        exception.NotSupportedYetError, match='`SplineTransformer`'
+    ):
+        Transformer(spline)
 
 
 @pytest.mark.parametrize('obj', [None, object, 0, 'string'])
@@ -381,3 +416,87 @@ def test_show_of_all_transformers():
         assert name in table
     for name in ('RobustScaler', 'SimpleImputer', 'StandardScaler'):
         assert name in table
+    for name in ('FunctionTransformer', 'KBinsDiscretizer'):
+        assert name in table
+    for name in ('Normalizer', 'OrdinalEncoder'):
+        assert name in table
+
+
+@pytest.mark.parametrize('language', LANGUAGES)
+@pytest.mark.parametrize(
+    'func', [None, np.abs, np.sqrt, np.square, np.exp, np.log, np.log1p]
+)
+def test_functions_of_function_transformer(func, language: str):
+    """The function is chosen in the code of the template."""
+    x = load_iris().data
+    out = port(FunctionTransformer(func).fit(x), language=language)
+    assert '{%' not in out
+    if func is np.log1p and language in ('cs', 'ruby'):
+        # Both languages have no function `log1p`:
+        assert 'u - 1.0' in out
+    elif func is np.square:
+        x_i = '$features[$i]' if language == 'php' else 'features[i]'
+        assert f'{x_i} * {x_i}' in out
+
+
+@pytest.mark.parametrize(
+    'params',
+    [dict(func=np.sin), dict(func=np.log1p, kw_args=dict(out=None))],
+    ids=['unsupported_function', 'kw_args'],
+)
+def test_unsupported_function_transformer(params: dict):
+    orig_est = FunctionTransformer(**params).fit(load_iris().data)
+    with pytest.raises(exception.NotSupportedYetError):
+        Transformer(orig_est)
+
+
+@pytest.mark.parametrize('norm', ['l1', 'l2'])
+def test_unsupported_norm_of_normalizer(norm: str):
+    orig_est = Normalizer(norm=norm).fit(load_iris().data)
+    with pytest.raises(exception.NotSupportedYetError, match="'max'"):
+        Transformer(orig_est)
+
+
+@pytest.mark.parametrize('encode', ['onehot', 'onehot-dense'])
+def test_unsupported_encoding_of_k_bins_discretizer(encode: str):
+    orig_est = KBinsDiscretizer(n_bins=3, encode=encode).fit(load_iris().data)
+    with pytest.raises(exception.NotSupportedYetError, match="'ordinal'"):
+        Transformer(orig_est)
+
+
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_unknown_and_missing_values_of_ordinal_encoder(language: str):
+    """The values of unknown and missing categories are numbers or `NaN`."""
+    x = np.round(_iris_with_missing_values())
+    orig_est = OrdinalEncoder(
+        handle_unknown='use_encoded_value',
+        unknown_value=-1,
+        encoded_missing_value=-2,
+    ).fit(x)
+    out = port(orig_est, language=language)
+    assert '-1.0' in out
+    assert '-2.0' in out
+    nan = dict(
+        c='NAN',
+        cs='double.NaN',
+        go='math.NaN()',
+        java='Double.NaN',
+        js='NaN',
+        php='NAN',
+        ruby='Float::NAN',
+    )[language]
+    assert nan in port(OrdinalEncoder().fit(x), language=language)
+
+
+@pytest.mark.parametrize(
+    'x, params, match',
+    [
+        (np.array([['a'], ['b']], dtype=object), dict(), 'numbers'),
+        (np.array([[1], [1], [2]]), dict(max_categories=1), 'infrequent'),
+    ],
+    ids=['strings', 'infrequent_categories'],
+)
+def test_unsupported_ordinal_encoder(x: np.ndarray, params: dict, match: str):
+    orig_est = OrdinalEncoder(**params).fit(x)
+    with pytest.raises(exception.NotSupportedYetError, match=match):
+        Transformer(orig_est)

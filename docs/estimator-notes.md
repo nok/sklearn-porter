@@ -88,3 +88,21 @@
 - The ported [SimpleImputer](https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html) replaces the missing values of each feature by its statistic (the mean, the median, the most frequent value or the constant `fill_value`), so the transformed features are identical.
 - The missing values (`missing_values`) can be `NaN` (default) or a number. Other missing values (e.g. `None` or `pd.NA`) and statistics which aren't numbers (e.g. a string as `fill_value`) raise a `NotSupportedYetError`.
 - Features without any observed values in the fit are dropped by scikit-learn, which changes the number of features, so they raise a `NotSupportedYetError`. Pass `keep_empty_features=True` to keep them. `add_indicator=True` (additional features) isn't supported either.
+
+## FunctionTransformer
+
+- The ported [FunctionTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html) supports the identity (`func=None`) and the functions `np.abs`, `np.sqrt`, `np.square`, `np.exp`, `np.expm1`, `np.log` and `np.log1p` without `kw_args`. Other functions raise a `NotSupportedYetError`.
+- The identity, `np.abs`, `np.sqrt` and `np.square` return identical values. NumPy computes `np.exp` and `np.log` (and their variants) with SIMD instructions depending on the CPU, so their results can differ by a few ULP from those of the target languages. C# and Ruby have no `log1p` and `expm1`, so the ported transformer computes them with an accurate formula, which can differ by a few ULP as well.
+
+## Normalizer
+
+- The ported [Normalizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Normalizer.html) supports only `norm='max'`: it divides by the maximum of the absolute values of the features of each sample (or by one, if it is close to zero) like scikit-learn. The norms `l1` and `l2` are sums, which NumPy computes in another order, so they raise a `NotSupportedYetError`.
+
+## KBinsDiscretizer
+
+- The ported [KBinsDiscretizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html) supports only `encode='ordinal'` (the one-hot encodings are additional features): it counts the inner edges of the bins of each feature which are lower than or equal to the feature like scikit-learn, so the transformed features are identical.
+
+## OrdinalEncoder
+
+- The ported [OrdinalEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OrdinalEncoder.html) returns the position of the feature in the categories of each feature like scikit-learn. Only numbers are supported as categories; strings and infrequent categories (`max_categories` or `min_frequency`) raise a `NotSupportedYetError`.
+- Missing values (`NaN`) seen in the fit get `encoded_missing_value`. Unknown categories get `unknown_value` with `handle_unknown='use_encoded_value'`, scikit-learn raises an error for them by default, the ported transformer returns `NaN` instead.

@@ -1,6 +1,7 @@
-from collections.abc import Callable
+from collections.abc import Callable, Collection
 from copy import deepcopy
 from json import dumps
+from math import isinf, isnan
 
 import numpy as np
 from loguru import logger as L
@@ -24,10 +25,12 @@ class TransformerBase(EstimatorBase):
     template `values` of each language), so the output can be passed to a
     ported estimator and `make()` reads it without JSON.
 
-    The model data of a transformer consists of arrays with one number per
-    feature (e.g. `mean` and `scale` of a `StandardScaler`), which `port()`
-    renders as arrays (`attached`), as numbers in the code (`combined`) or
-    as JSON (`exported`).
+    The model data of a transformer consists of arrays of finite numbers,
+    mostly with one number per feature (e.g. `mean` and `scale` of a
+    `StandardScaler`), which `port()` renders as arrays (`attached`), as
+    numbers in the code (`combined`) or as JSON (`exported`). Arrays of
+    integers (e.g. the offsets of the categories of each feature in a
+    concatenated array) are rendered as such.
     """
 
     DEFAULT_METHOD = enum.Method.TRANSFORM
@@ -70,16 +73,20 @@ class TransformerBase(EstimatorBase):
             raise exception.NotFittedEstimatorError(self.estimator_name)
         return int(n_features)
 
-    def _set_model_data(self, n_features: int, **arrays: object):
+    def _set_model_data(
+        self, n_features: int, ints: Collection[str] = (), **arrays: object
+    ):
         """
-        Set the meta info and the model data (one number per feature).
+        Set the meta info and the model data.
 
         Parameters
         ----------
         n_features : int
             The number of features (also the number of transformed features).
+        ints : Collection[str] (default: ())
+            The names of the arrays of integers.
         arrays : object
-            The arrays of the model data with one number per feature.
+            The arrays of the model data, e.g. with one number per feature.
         """
         self.meta_info = dict(
             n_features=n_features,
@@ -89,7 +96,12 @@ class TransformerBase(EstimatorBase):
         L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
 
         self.model_data = {}
+        self.int_arrays = set(ints)
         for name, values in arrays.items():
+            if name in self.int_arrays:
+                values = np.asarray(values, dtype=np.int64).ravel()
+                self.model_data[name] = values.tolist()
+                continue
             values = np.asarray(values, dtype=np.float64).ravel()
             # The literals of the languages and JSON contain no `NaN` or
             # infinite values (e.g. of a feature with missing values only):
@@ -111,7 +123,8 @@ class TransformerBase(EstimatorBase):
         Parameters
         ----------
         converter : Callable
-            The converter of the floating numbers.
+            The converter of the floating numbers, which also converts
+            missing and infinite values to the literals of the language.
 
         Returns
         -------
@@ -155,10 +168,23 @@ class TransformerBase(EstimatorBase):
         plas = deepcopy(self.placeholders)  # alias
         plas.update(dict(class_name=class_name))
         plas.update(self.meta_info)
-        plas.update(self.literals(converter))
 
         # Templates:
         tpls = self._load_templates(language.value.KEY)
+
+        # Literals (e.g. parameters), also missing and infinite values:
+        nan = tpls.get_template('nan').render()
+        inf = tpls.get_template('inf').render()
+
+        def literal(value: object) -> str:
+            value = float(value)  # ty: ignore[invalid-argument-type]
+            if isnan(value):
+                return nan
+            if isinf(value):
+                return inf if value > 0 else f'-{inf}'
+            return converter(value)
+
+        plas.update(self.literals(literal))
 
         # Make 'exported' variant:
         if template == enum.Template.EXPORTED:
@@ -168,7 +194,7 @@ class TransformerBase(EstimatorBase):
             return out_class, model_data
 
         values = {
-            name: list(map(converter, data))
+            name: list(map(str if name in self.int_arrays else converter, data))
             for name, data in self.model_data.items()
         }
 
@@ -182,10 +208,11 @@ class TransformerBase(EstimatorBase):
         # of the step of a pipeline, see `Pipeline`):
         prefix = self.template_globals.get('prefix', '')
         tpl_double = tpls.get_template('double').render()
+        tpl_int = tpls.get_template('int').render()
         tpl_arr_1 = tpls.get_template('arr[]')
         for name, data in values.items():
             plas[name] = tpl_arr_1.render(
-                type=tpl_double,
+                type=tpl_int if name in self.int_arrays else tpl_double,
                 name=prefix + name,
                 values=', '.join(data),
                 n=len(data),

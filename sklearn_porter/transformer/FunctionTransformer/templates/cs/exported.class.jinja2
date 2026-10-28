@@ -1,0 +1,88 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.IO;
+using System.Text.Json;
+
+
+{% block class %}
+public class {{ class_name }} {
+
+    private class ModelData {
+    }
+
+    private ModelData data;
+
+{% if _blocks %}
+    public {{ class_name }}(System.Text.Json.JsonElement data) {
+        System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower };
+        this.data = System.Text.Json.JsonSerializer.Deserialize<ModelData>(data, options);
+    }
+{% else %}
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+    }
+{% endif %}
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[features.Length];
+        for (int i = 0; i < features.Length; i++) {
+            values[i] = {% if func == 'abs' %}System.Math.Abs(features[i]){% elif func == 'sqrt' %}System.Math.Sqrt(features[i]){% elif func == 'exp' %}System.Math.Exp(features[i]){% elif func == 'expm1' %}Expm1(features[i]){% elif func == 'log' %}System.Math.Log(features[i]){% elif func == 'log1p' %}Log1p(features[i]){% elif func == 'square' %}features[i] * features[i]{% else %}features[i]{% endif %};
+        }
+        return values;
+    }
+{% if func == 'log1p' %}
+
+    // log(1 + x), also accurate for small values of x:
+    private static double Log1p(double x) {
+        double u = 1.0 + x;
+        if (u == 1.0) {
+            return x;
+        }
+        if (x > 1.0) {
+            return System.Math.Log(u);
+        }
+        return System.Math.Log(u) * x / (u - 1.0);
+    }
+{% elif func == 'expm1' %}
+
+    // exp(x) - 1, also accurate for small values of x:
+    private static double Expm1(double x) {
+        double u = System.Math.Exp(x);
+        if (u == 1.0) {
+            return x;
+        }
+        if (System.Math.Abs(x) > 1.0) {
+            return u - 1.0;
+        }
+        return (u - 1.0) * x / System.Math.Log(u);
+    }
+{% endif %}
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('args[0]') }});
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

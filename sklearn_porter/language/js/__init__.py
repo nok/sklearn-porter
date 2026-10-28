@@ -27,6 +27,7 @@ class JavaScript(LanguageABC):
         'isnan':        'isNaN({{ a }})',
         # Positive infinity (e.g. of thresholds):
         'inf':          'Infinity',
+        'nan':          'NaN',
 
         # Basics:
         'indent':       '    ',

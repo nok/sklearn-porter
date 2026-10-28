@@ -1,0 +1,34 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    public double[] transform(double[] features) {
+        double[] values = new double[features.length];
+        for (int i = 0; i < features.length; i++) {
+            values[i] = {% if func == 'abs' %}Math.abs(features[i]){% elif func == 'sqrt' %}Math.sqrt(features[i]){% elif func == 'exp' %}Math.exp(features[i]){% elif func == 'expm1' %}Math.expm1(features[i]){% elif func == 'log' %}Math.log(features[i]){% elif func == 'log1p' %}Math.log1p(features[i]){% elif func == 'square' %}features[i] * features[i]{% else %}features[i]{% endif %};
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

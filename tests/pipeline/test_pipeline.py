@@ -16,8 +16,12 @@ from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.pipeline import Pipeline as SklearnPipeline
 from sklearn.preprocessing import (
     Binarizer,
+    FunctionTransformer,
+    KBinsDiscretizer,
     MaxAbsScaler,
     MinMaxScaler,
+    Normalizer,
+    OrdinalEncoder,
     RobustScaler,
     StandardScaler,
 )
@@ -60,6 +64,12 @@ PREPROCESSING = {
         ('standard', StandardScaler()),
     ],
     'binarizer': lambda: [('binarizer', Binarizer(threshold=3.0))],
+    'discretizers': lambda: [
+        ('function', FunctionTransformer(np.sqrt)),
+        ('k_bins', KBinsDiscretizer(n_bins=5, encode='ordinal')),
+        ('ordinal', OrdinalEncoder()),
+        ('normalizer', Normalizer(norm='max')),
+    ],
 }
 
 CLASSIFIERS = {
