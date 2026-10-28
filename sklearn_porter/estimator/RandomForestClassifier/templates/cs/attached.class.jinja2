@@ -138,7 +138,14 @@ public class {{ class_name }} {
         {{ class_name }} clf = new {{ class_name }}();
 
         // Features of one sample (arguments) or several samples (standard input):
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         foreach (double[] features in ReadSamples(args, 0)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {{ label_type }}{{ '[]' if is_multi_output }} prediction = clf.Predict(features);
             {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = clf.PredictProba(features);
             {% if is_test or to_json %}
@@ -159,4 +166,8 @@ public class {{ class_name }} {
         }
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

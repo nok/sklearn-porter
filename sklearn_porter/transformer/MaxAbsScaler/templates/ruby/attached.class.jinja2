@@ -1,0 +1,38 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	def initialize(scale)
+		@scale = scale
+	end
+
+	def transform(features)
+		Array.new(@scale.length) { |i| features[i] / @scale[i] }
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	# Model data:
+	{{ scale }}
+
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}scale
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

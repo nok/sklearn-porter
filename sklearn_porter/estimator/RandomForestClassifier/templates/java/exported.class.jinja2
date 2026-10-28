@@ -55,7 +55,7 @@ class {{ class_name }} {
         Gson gson = new Gson();
         Type listType = new TypeToken<List<Tree>>(){}.getType();
         try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
-            this.forest = gson.fromJson(reader, listType);
+            this.forest = gson.fromJson({{ 'com.google.gson.JsonParser.parseReader(reader).getAsJsonObject().get("estimators")' if pipeline else 'reader' }}, listType);
         }
         this.nTrees = this.forest.size();
         this.nClasses = {{ n_classes }};
@@ -150,6 +150,10 @@ class {{ class_name }} {
             throw new IllegalArgumentException("You have to pass the path to the exported model data.");
         }
 
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         // Model data:
         String modelData = args[0];
 
@@ -158,6 +162,9 @@ class {{ class_name }} {
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 1)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {% if is_test or to_json %}
             // Get JSON:
             {{ label_type }}{{ '[]' if is_multi_output }} prediction = clf.predict(features);
@@ -182,4 +189,8 @@ class {{ class_name }} {
 
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

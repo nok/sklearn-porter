@@ -1,13 +1,18 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
+{% block class %}
 class {{ class_name }} {
 
     private $mean;
     private $scale;
 
+{% if _blocks %}
+    public function __construct($data) {
+{% else %}
     public function __construct($path) {
         $data = json_decode(file_get_contents($path, true), true);
+{% endif %}
         $this->mean = $data['mean'];
         $this->scale = $data['scale'];
     }
@@ -21,6 +26,7 @@ class {{ class_name }} {
     }
 
 }
+{% endblock %}
 
 if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {% filter indent(4, True) %}
@@ -36,8 +42,10 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
 
     array_shift($argv);
 
+    {% block create %}
     // Transformer:
-    $transformer = new {{ class_name }}(array_shift($argv));
+    ${{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('array_shift($argv)') }});
+    {% endblock %}
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

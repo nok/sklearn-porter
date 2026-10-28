@@ -33,6 +33,7 @@ class Java(LanguageABC):
         'isnan':        'Double.isNaN({{ a }})',
         # Positive infinity (e.g. of thresholds):
         'inf':          'Double.POSITIVE_INFINITY',
+        'nan':          'Double.NaN',
 
         # Basics:
         'indent':       '    ',

@@ -1,0 +1,41 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    public double[] transform(double[] features) {
+        double norm = 0.0;
+        for (double feature : features) {
+            norm = Math.max(norm, Math.abs(feature));
+        }
+        if (norm < {{ min_norm }}) {
+            norm = 1.0;
+        }
+        double[] values = new double[features.length];
+        for (int i = 0; i < features.length; i++) {
+            values[i] = features[i] / norm;
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

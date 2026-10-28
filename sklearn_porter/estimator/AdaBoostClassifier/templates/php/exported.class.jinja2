@@ -7,7 +7,7 @@ namespace {
         private $forest;
 
         public function __construct($path) {
-            $model = json_decode(file_get_contents($path), true);
+            $model = json_decode(file_get_contents($path), true){{ "['estimators']" if pipeline }};
             $this->forest = array();
             foreach ($model as $tree) {
                 array_push($this->forest, new {{ class_name }}\Tree(
@@ -95,6 +95,10 @@ namespace {{ class_name }} {
 }
 
 namespace {
+    {% if pipeline_classes %}
+    {{ pipeline_classes | indent('    ') }}
+
+    {% endif %}
     if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
         {% filter indent(8, True) %}
         {% include 'samples' %}
@@ -107,6 +111,10 @@ namespace {
 
         array_shift($argv);
 
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         // Model data:
         $path = array_shift($argv);
 
@@ -115,6 +123,9 @@ namespace {
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (readSamples($argv) as $features) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {% if is_test or to_json %}
             // Get JSON:
             $prediction = $clf->predict($features);

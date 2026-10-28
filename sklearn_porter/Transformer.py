@@ -13,8 +13,19 @@ from sklearn.base import (
     RegressorMixin,
     TransformerMixin,
 )
+from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import (
+    Binarizer,
+    FunctionTransformer,
+    KBinsDiscretizer,
+    MaxAbsScaler,
+    MinMaxScaler,
+    Normalizer,
+    OrdinalEncoder,
+    RobustScaler,
+    StandardScaler,
+)
 
 # sklearn-porter
 from sklearn_porter import decorators as decorator
@@ -130,7 +141,10 @@ class Transformer(Base):
             raise ValueError(msg)
 
         if isinstance(est, Pipeline):
-            msg = "A pipeline can't be ported as transformer."
+            msg = (
+                "A pipeline can't be ported as transformer. Port it with "
+                '`Porter` (or `Pipeline`).'
+            )
             L.error(msg)
             raise exception.NotSupportedYetError(msg)
 
@@ -269,4 +283,15 @@ class Transformer(Base):
         transformers : tuple
             A set of supported transformers.
         """
-        return (StandardScaler,)
+        return (
+            Binarizer,
+            FunctionTransformer,
+            KBinsDiscretizer,
+            MaxAbsScaler,
+            MinMaxScaler,
+            Normalizer,
+            OrdinalEncoder,
+            RobustScaler,
+            SimpleImputer,
+            StandardScaler,
+        )

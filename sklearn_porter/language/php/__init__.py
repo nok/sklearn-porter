@@ -24,6 +24,7 @@ class PHP(LanguageABC):
         'isnan':        'is_nan({{ a }})',
         # Positive infinity (e.g. of thresholds):
         'inf':          'INF',
+        'nan':          'NAN',
 
         # Basics:
         'indent':       '    ',

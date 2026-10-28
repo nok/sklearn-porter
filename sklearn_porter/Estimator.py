@@ -1,6 +1,7 @@
 import warnings
 from collections.abc import Callable
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 # Additional installed modules:
 import numpy as np
@@ -75,6 +76,10 @@ from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Base import Base, _get_qualname, _parse_predictions
+from sklearn_porter.Transformer import Transformer
+
+if TYPE_CHECKING:
+    from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 
 
 @decorator.aliased
@@ -226,10 +231,14 @@ class Estimator(Base):
             # The preprocessing steps (e.g. a `StandardScaler`) can't be
             # ported, so the predictions of the final estimator alone would
             # differ from those of the pipeline:
-            steps = [
-                f'`{name}` ({step.__class__.__name__})'
+            preprocessing = [
+                (name, step)
                 for name, step in est.steps[:-1]
                 if step is not None and step != 'passthrough'
+            ]
+            steps = [
+                f'`{name}` ({step.__class__.__name__})'
+                for name, step in preprocessing
             ]
             if steps:
                 plural = len(steps) > 1
@@ -245,6 +254,9 @@ class Estimator(Base):
                         'to port the final estimator anyway and apply the '
                         'preprocessing to its input data yourself.'
                     )
+                    # All steps can be ported as transformers:
+                    if all(Transformer.supports(s) for _, s in preprocessing):
+                        msg += ' Or port the whole pipeline with `Porter`.'
                     L.error(msg)
                     raise exception.NotSupportedYetError(msg)
                 them = 'them' if plural else 'it'
@@ -361,35 +373,7 @@ class Estimator(Base):
             parse=_parse_predictions,
             **kwargs,
         )
-        y = list(zip(*y, strict=False))
-        y_pred = np.array(y[0])
-        meta_info = self._estimator.meta_info
-        if 'labels' in meta_info and not meta_info.get('is_multilabel'):
-            # The ported classifiers return the labels of the classes, so
-            # convert them (e.g. `1` of JSON to `1.0`) to the type of the
-            # labels of scikit-learn:
-            classes = self._estimator.estimator.classes_
-            if not isinstance(classes, list):
-                classes = [classes]
-            y_pred = y_pred.astype(np.result_type(*classes))
-        y_proba: np.ndarray | list[np.ndarray] | None = None
-        if len(y) > 1:
-            if self._estimator.meta_info.get('is_multi_output'):
-                # Multi-output classifiers return the probabilities of each
-                # output (with different numbers of classes), so create one
-                # array per output like scikit-learn:
-                n_outputs = len(y[1][0])
-                y_proba = [
-                    np.array([p[i] for p in y[1]]) for i in range(n_outputs)
-                ]
-            else:
-                y_proba = np.array(y[1])
-
-        if len(y_pred) == 1:  # a single sample
-            if isinstance(y_proba, list):  # multiple outputs
-                return y_pred[0], [p[0] for p in y_proba]
-            return y_pred[0], None if y_proba is None else y_proba[0]
-        return y_pred, y_proba
+        return _predictions(y, self._estimator)
 
     @decorator.alias('integrity_score')
     def test(
@@ -440,19 +424,9 @@ class Estimator(Base):
             delete_created_files=delete_created_files,
         )
         y_pred = y_pred[0]  # only predicts
-        if isinstance(self._estimator.estimator, RegressorMixin):
-            # Small deviations because of the floating point arithmetic:
-            is_close = np.isclose(y_true, y_pred)
-            if is_close.ndim > 1:  # multiple outputs
-                is_close = is_close.all(axis=1)
-            score = is_close.mean() if normalize else is_close.sum()
-            return float(score)
-        if np.ndim(y_true) > 1:  # multiple outputs or labels
-            is_equal = (y_true == np.reshape(y_pred, np.shape(y_true))).all(
-                axis=1
-            )
-            return float(is_equal.mean() if normalize else is_equal.sum())
-        return float(accuracy_score(y_true, y_pred, normalize=normalize))
+        return _integrity_score(
+            self._estimator.estimator, y_true, y_pred, normalize
+        )
 
     @staticmethod
     def classifiers() -> tuple:
@@ -549,3 +523,91 @@ class Estimator(Base):
             SGDRegressor,
             SVR,
         )
+
+
+def _integrity_score(
+    estimator: BaseEstimator,
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    normalize: bool = True,
+) -> float:
+    """
+    Compare the predictions of the ported and the original estimator.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The original estimator (e.g. the final estimator of a pipeline).
+    y_true : np.ndarray
+        The predictions of scikit-learn.
+    y_pred : np.ndarray
+        The predictions of the ported estimator.
+    normalize : bool, default: True
+        Whether to normalize the result or not.
+
+    Returns
+    -------
+    score : float
+        The relative (or with `normalize=False` the absolute) number of
+        equal (classifiers) or close (regressors) predictions.
+    """
+    if isinstance(estimator, RegressorMixin):
+        # Small deviations because of the floating point arithmetic:
+        is_close = np.isclose(y_true, y_pred)
+        if is_close.ndim > 1:  # multiple outputs
+            is_close = is_close.all(axis=1)
+        score = is_close.mean() if normalize else is_close.sum()
+        return float(score)
+    if np.ndim(y_true) > 1:  # multiple outputs or labels
+        is_equal = (y_true == np.reshape(y_pred, np.shape(y_true))).all(axis=1)
+        return float(is_equal.mean() if normalize else is_equal.sum())
+    return float(accuracy_score(y_true, y_pred, normalize=normalize))
+
+
+def _predictions(
+    y: list, ported_est: 'EstimatorBase'
+) -> (
+    tuple[np.int64, np.ndarray | None]
+    | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
+):
+    """
+    Convert the results of a ported estimator to predictions.
+
+    Parameters
+    ----------
+    y : list
+        The results (the prediction and the probabilities) of each sample.
+    ported_est : EstimatorBase
+        The ported estimator (e.g. the final estimator of a pipeline).
+
+    Returns
+    -------
+    Return the predictions and probabilities.
+    """
+    y = list(zip(*y, strict=False))
+    y_pred = np.array(y[0])
+    meta_info = ported_est.meta_info
+    if 'labels' in meta_info and not meta_info.get('is_multilabel'):
+        # The ported classifiers return the labels of the classes, so
+        # convert them (e.g. `1` of JSON to `1.0`) to the type of the
+        # labels of scikit-learn:
+        classes = ported_est.estimator.classes_  # ty: ignore[unresolved-attribute]
+        if not isinstance(classes, list):
+            classes = [classes]
+        y_pred = y_pred.astype(np.result_type(*classes))
+    y_proba: np.ndarray | list[np.ndarray] | None = None
+    if len(y) > 1:
+        if ported_est.meta_info.get('is_multi_output'):
+            # Multi-output classifiers return the probabilities of each
+            # output (with different numbers of classes), so create one
+            # array per output like scikit-learn:
+            n_outputs = len(y[1][0])
+            y_proba = [np.array([p[i] for p in y[1]]) for i in range(n_outputs)]
+        else:
+            y_proba = np.array(y[1])
+
+    if len(y_pred) == 1:  # a single sample
+        if isinstance(y_proba, list):  # multiple outputs
+            return y_pred[0], [p[0] for p in y_proba]
+        return y_pred[0], None if y_proba is None else y_proba[0]
+    return y_pred, y_proba

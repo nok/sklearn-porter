@@ -67,7 +67,7 @@ In general, the generated source code works with older compilers and interpreter
 ## Adding or changing an estimator
 
 1. Implement or update `sklearn_porter/estimator/<Name>/__init__.py`, including the supported combinations in `SUPPORT`.
-2. Add or update the Jinja2 templates in `sklearn_porter/estimator/<Name>/templates/<language>/` for every supported language and template.
+2. Add or update the Jinja2 templates in `sklearn_porter/estimator/<Name>/templates/<language>/` for every supported language and template, including the placeholders `pipeline_classes`, `pipeline_create` and `pipeline_transform`, which insert the transformers of a pipeline (see `AGENTS.md`).
 3. Register the estimator in `Estimator.classifiers()`, `Estimator.regressors()` or `Estimator.outlier_detectors()` in [`sklearn_porter/Estimator.py`](sklearn_porter/Estimator.py).
 4. Add tests and run the regression tests in Docker.
 5. Add the estimator to the list of classifiers, regressors or outlier detectors in the [README](README.md).
@@ -77,10 +77,10 @@ The goal is that every estimator supports all languages, templates and methods (
 
 ## Adding or changing a transformer
 
-1. Implement or update `sklearn_porter/transformer/<Name>/__init__.py` as a subclass of `TransformerBase`, including the supported combinations in `SUPPORT` (with the method `transform`).
-2. Add or update the Jinja2 templates in `sklearn_porter/transformer/<Name>/templates/<language>/` for every supported language and template. The method `transform` returns the transformed features of one sample, the `main` prints them with the shared template `values` of each language (one sample per line, separated by spaces).
+1. Implement or update `sklearn_porter/transformer/<Name>/__init__.py` as a subclass of `TransformerBase`, including the supported combinations in `SUPPORT` (with the method `transform`). `TransformerBase` ports model data which consists of arrays with one number per feature (`_set_model_data()`).
+2. Add or update the Jinja2 templates in `sklearn_porter/transformer/<Name>/templates/<language>/` for every supported language and template. The method `transform` returns the transformed features of one sample, the `main` prints them with the shared template `values` of each language (one sample per line, separated by spaces). The blocks `class` (and `data`) and `create` insert the transformer into a ported pipeline (see `AGENTS.md`).
 3. Register the transformer in `Transformer.transformers()` in [`sklearn_porter/Transformer.py`](sklearn_porter/Transformer.py).
-4. Add tests in `tests/transformer/` and run the regression tests in Docker.
+4. Add tests (fast ones in `tests/test_transformer.py`, regression tests in `tests/transformer/` and as a step of a pipeline in `tests/pipeline/`) and run the regression tests in Docker.
 5. Add the transformer to the list of transformers in the [README](README.md).
 
 

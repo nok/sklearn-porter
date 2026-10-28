@@ -1,0 +1,51 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private double[] scale;
+    private double[] min;
+
+    public {{ class_name }}(double[] scale, double[] min) {
+        this.scale = scale;
+        this.min = min;
+    }
+
+    public double[] transform(double[] features) {
+        double[] values = new double[this.scale.length];
+        for (int i = 0; i < this.scale.length; i++) {
+            values[i] = features[i] * this.scale[i] + this.min[i];
+        }
+{% if clip %}
+        for (int i = 0; i < values.length; i++) {
+            values[i] = values[i] < {{ clip_min }} ? {{ clip_min }} : (values[i] > {{ clip_max }} ? {{ clip_max }} : values[i]);
+        }
+{% endif %}
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Model data:
+        {{ scale }}
+        {{ min }}
+
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}scale, {{ prefix }}min);
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

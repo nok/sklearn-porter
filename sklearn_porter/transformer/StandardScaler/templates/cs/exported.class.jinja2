@@ -6,6 +6,7 @@ using System.IO;
 using System.Text.Json;
 
 
+{% block class %}
 public class {{ class_name }} {
 
     private class ModelData {
@@ -15,10 +16,17 @@ public class {{ class_name }} {
 
     private ModelData data;
 
+{% if _blocks %}
+    public {{ class_name }}(System.Text.Json.JsonElement data) {
+        System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower };
+        this.data = System.Text.Json.JsonSerializer.Deserialize<ModelData>(data, options);
+    }
+{% else %}
     public {{ class_name }}(string file) {
         JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
         this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
     }
+{% endif %}
 
     public double[] Transform(double[] features) {
         double[] values = new double[this.data.Mean.Length];
@@ -27,6 +35,7 @@ public class {{ class_name }} {
         }
         return values;
     }
+{% if not _blocks %}
 
 {% include 'samples' %}
 
@@ -38,13 +47,17 @@ public class {{ class_name }} {
             throw new ArgumentException("You have to pass the path to the exported model data.");
         }
 
+        {% block create %}
         // Transformer:
-        {{ class_name }} transformer = new {{ class_name }}(args[0]);
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('args[0]') }});
+        {% endblock %}
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 1)) {
             PrintValues(transformer.Transform(features));
         }
     }
+{% endif %}
 }
+{% endblock %}
 {% endblock %}

@@ -25,6 +25,7 @@ class Ruby(LanguageABC):
         'isnan':        '{{ a }}.nan?',
         # Positive infinity (e.g. of thresholds):
         'inf':          'Float::INFINITY',
+        'nan':          'Float::NAN',
 
         # Basics:
         'indent':       '\t',

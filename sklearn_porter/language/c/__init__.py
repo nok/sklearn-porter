@@ -37,6 +37,7 @@ class C(LanguageABC):
         'isnan':        'isnan({{ a }})',
         # Positive infinity (e.g. of thresholds):
         'inf':          'INFINITY',
+        'nan':          'NAN',
 
         # Basics:
         'indent':       '    ',

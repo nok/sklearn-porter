@@ -1,0 +1,47 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+public class {{ class_name }} {
+
+    private double[] center;
+    private double[] scale;
+
+    public {{ class_name }}(double[] center, double[] scale) {
+        this.center = center;
+        this.scale = scale;
+    }
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[this.center.Length];
+        for (int i = 0; i < this.center.Length; i++) {
+            values[i] = (features[i] - this.center[i]) / this.scale[i];
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        {% block create %}
+        // Model data:
+        {{ center }}
+        {{ scale }}
+
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}center, {{ prefix }}scale);
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

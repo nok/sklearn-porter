@@ -1,0 +1,59 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private double[] categories;
+    private int[] offsets;
+    private int[] missing;
+
+    public {{ class_name }}(double[] categories, int[] offsets, int[] missing) {
+        this.categories = categories;
+        this.offsets = offsets;
+        this.missing = missing;
+    }
+
+    public double[] transform(double[] features) {
+        double[] values = new double[features.length];
+        for (int i = 0; i < features.length; i++) {
+            if (Double.isNaN(features[i])) {
+                values[i] = this.missing[i] == 1 ? {{ encoded_missing_value }} : {{ unknown_value }};
+                continue;
+            }
+            values[i] = {{ unknown_value }};
+            for (int j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
+                if (features[i] == this.categories[j]) {
+                    values[i] = j - this.offsets[i];
+                    break;
+                }
+            }
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Model data:
+        {{ categories }}
+        {{ offsets }}
+        {{ missing }}
+
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}categories, {{ prefix }}offsets, {{ prefix }}missing);
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

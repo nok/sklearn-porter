@@ -1,0 +1,49 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	def initialize(categories, offsets, missing)
+		@categories = categories
+		@offsets = offsets
+		@missing = missing
+	end
+
+	def transform(features)
+		Array.new(features.length) do |i|
+			if features[i].nan?
+				@missing[i] == 1 ? {{ encoded_missing_value }} : {{ unknown_value }}
+			else
+				j = (@offsets[i]...@offsets[i + 1]).find { |k| features[i] == @categories[k] }
+				j.nil? ? {{ unknown_value }} : (j - @offsets[i]).to_f
+			end
+		end
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	# Model data:
+	{{ categories }}
+	{{ offsets }}
+	{{ missing }}
+
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}categories, {{ prefix }}offsets, {{ prefix }}missing
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

@@ -26,13 +26,24 @@ class {{ class_name }}
 
 end
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 if __FILE__ == $0
 	{% filter indent('\t', True) %}
 	{% include 'samples' %}
 	{% endfilter %}
 
 	# Features of one sample (arguments) or several samples (standard input):
+	{% if pipeline_create %}
+	{{ pipeline_create | indent('\t') }}
+
+	{% endif %}
 	read_samples(ARGV) do |features|
+		{% if pipeline_transform %}
+		{{ pipeline_transform | indent('\t\t') }}
+		{% endif %}
 		{% if is_test or to_json %}
 		# Get JSON:
 		prediction = {{ class_name }}.predict features

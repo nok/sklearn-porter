@@ -1,0 +1,67 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	def transform(features)
+		[
+			{% for i in range(n_features) %}
+			{% if func == 'abs' %}features[{{ i }}].abs{% elif func == 'sqrt' %}sqrt(features[{{ i }}]){% elif func == 'exp' %}Math.exp(features[{{ i }}]){% elif func == 'expm1' %}expm1(features[{{ i }}]){% elif func == 'log' %}log(features[{{ i }}]){% elif func == 'log1p' %}log1p(features[{{ i }}]){% elif func == 'square' %}features[{{ i }}] * features[{{ i }}]{% else %}features[{{ i }}]{% endif %},
+			{% endfor %}
+		]
+	end
+{% if func == 'sqrt' %}
+
+	# Math.sqrt raises an error for negative numbers and returns 0.0 for -0.0:
+	def sqrt(x)
+		x < 0 ? Float::NAN : (x == 0 ? x : Math.sqrt(x))
+	end
+{% elif func == 'log' %}
+
+	# Math.log raises an error for negative numbers:
+	def log(x)
+		x < 0 ? Float::NAN : Math.log(x)
+	end
+{% elif func == 'log1p' %}
+
+	# log(1 + x), also accurate for small values of x:
+	def log1p(x)
+		return Float::NAN if x < -1
+		u = 1.0 + x
+		return x if u == 1.0
+		return Math.log(u) if x > 1
+		Math.log(u) * x / (u - 1.0)
+	end
+{% elif func == 'expm1' %}
+
+	# exp(x) - 1, also accurate for small values of x:
+	def expm1(x)
+		u = Math.exp(x)
+		return x if u == 1.0
+		return u - 1.0 if x.abs > 1
+		(u - 1.0) * x / Math.log(u)
+	end
+{% endif %}
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

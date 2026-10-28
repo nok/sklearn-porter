@@ -1,0 +1,63 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private $categories;
+    private $offsets;
+    private $missing;
+
+    public function __construct($categories, $offsets, $missing) {
+        $this->categories = $categories;
+        $this->offsets = $offsets;
+        $this->missing = $missing;
+    }
+
+    public function transform($features) {
+        $values = array();
+        for ($i = 0, $l = count($features); $i < $l; $i++) {
+            if (is_nan($features[$i])) {
+                $values[$i] = $this->missing[$i] == 1 ? {{ encoded_missing_value }} : {{ unknown_value }};
+                continue;
+            }
+            $values[$i] = {{ unknown_value }};
+            for ($j = $this->offsets[$i]; $j < $this->offsets[$i + 1]; $j++) {
+                if ($features[$i] == $this->categories[$j]) {
+                    $values[$i] = (float) ($j - $this->offsets[$i]);
+                    break;
+                }
+            }
+        }
+        return $values;
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    {% block create %}
+    // Model data:
+    {{ categories }}
+    {{ offsets }}
+    {{ missing }}
+
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}categories, ${{ prefix }}offsets, ${{ prefix }}missing);
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues($transformer->transform($features));
+    }
+
+}
+{% endblock %}

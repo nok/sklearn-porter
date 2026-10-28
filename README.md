@@ -86,6 +86,15 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 
 #### Preprocessing
 
+- [impute.SimpleImputer](https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html)
+- [preprocessing.Binarizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Binarizer.html)
+- [preprocessing.FunctionTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.FunctionTransformer.html)
+- [preprocessing.KBinsDiscretizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html)
+- [preprocessing.MaxAbsScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MaxAbsScaler.html)
+- [preprocessing.MinMaxScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)
+- [preprocessing.Normalizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Normalizer.html)
+- [preprocessing.OrdinalEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OrdinalEncoder.html)
+- [preprocessing.RobustScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html)
 - [preprocessing.StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html)
 
 ### Languages
@@ -163,9 +172,35 @@ score = transformer.test(X[:10])
 
 The ported transformer prints the transformed features of each sample in one line (separated by spaces), which is also the input format of the ported estimators.
 
+### Pipelines
+
+A [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) of supported transformers and a supported final estimator (also as the best estimator of a `GridSearchCV` or `RandomizedSearchCV`) is ported to one source file: the ported final estimator, which transforms the features of each sample with the ported transformers before its prediction. The functions `port`, `save`, `make` and `test` accept pipelines too:
+
+<!-- fmt:off -->
+```python
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.svm import SVC
+from sklearn_porter import make, save, test
+
+pipe = make_pipeline(StandardScaler(), SVC())
+pipe.fit(X, y)
+
+path = save(pipe, language='js', directory='/tmp')  # /tmp/Pipeline.js
+y_classes, _ = make(pipe, X[:10], language='js')  # like pipe.predict(X[:10])
+score = test(pipe, X[:10], language='js')
+```
+<!-- fmt:on -->
+
+The generated file is used like a ported estimator:
+
+```bash
+node /tmp/Pipeline.js < samples.txt
+```
+
 ### Object-oriented API
 
-The classes `Estimator` and `Transformer` port an estimator and a transformer. The central class `Porter` accepts both and creates the matching one:
+The central class `Porter` accepts an estimator, a transformer or a pipeline and creates an `Estimator`, a `Transformer` or a `Pipeline`:
 
 <!-- fmt:off -->
 ```python
@@ -176,6 +211,9 @@ y_classes, y_probas = porter.predict(X[:10])
 
 porter = Porter(scaler, language='java')  # creates a `Transformer`
 X_tr = porter.transform(X[:10])
+
+porter = Porter(pipe, language='java')  # creates a `Pipeline`
+y_classes, y_probas = porter.predict(X[:10])
 ```
 <!-- fmt:on -->
 
@@ -209,7 +247,7 @@ from joblib import dump
 dump(clf, 'estimator.joblib')
 ```
 
-Then port the saved estimator (or transformer) with the `port` subcommand:
+Then port the saved estimator (or transformer or pipeline) with the `port` subcommand:
 
 ```bash
 porter port estimator.joblib -l js -t attached > estimator.js

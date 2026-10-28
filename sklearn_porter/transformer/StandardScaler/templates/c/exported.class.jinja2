@@ -3,26 +3,32 @@
 {% block content %}
 #include <math.h>
 
-#define N_FEATURES {{ n_features }}
-#define N_FEATURES_OUT {{ n_features_out }}
+{% block class %}
+#define {{ prefix }}N_FEATURES {{ n_features }}
+#define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
 
 
-double *mean;
-double *scale;
+double *{{ prefix }}mean;
+double *{{ prefix }}scale;
 
-void load(const char *path) {
+void {{ prefix }}load({{ 'JsonValue *data' if _blocks else 'const char *path' }}) {
+{% if not _blocks %}
     JsonValue *data = json_read(path);
-    mean = json_doubles(json_get(data, "mean"));
-    scale = json_doubles(json_get(data, "scale"));
+{% endif %}
+    {{ prefix }}mean = json_doubles(json_get(data, "mean"));
+    {{ prefix }}scale = json_doubles(json_get(data, "scale"));
+{% if not _blocks %}
     json_free(data);
+{% endif %}
 }
 
 /* Write the transformed features to `values`: */
-void transform(double *values, double features[N_FEATURES]) {
-    for (int i = 0; i < N_FEATURES; i++) {
-        values[i] = (features[i] - mean[i]) / scale[i];
+void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
+    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+        values[i] = (features[i] - {{ prefix }}mean[i]) / {{ prefix }}scale[i];
     }
 }
+{% endblock %}
 
 {% include 'samples' %}
 
@@ -34,8 +40,10 @@ int main(int argc, const char *argv[]) {
         return 1;
     }
 
+    {% block create %}
     /* Model data: */
-    load(argv[1]);
+    {{ prefix }}load({{ data|default('argv[1]') }});
+    {% endblock %}
 
     /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];

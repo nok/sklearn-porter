@@ -1,0 +1,71 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+type {{ class_name }} struct {
+	Scale []float64 `json:"scale"`
+	Min   []float64 `json:"min"`
+}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, len(transformer.Scale))
+	for i := range transformer.Scale {
+		values[i] = float64(features[i]*transformer.Scale[i]) + transformer.Min[i]
+	}
+{% if clip %}
+	for i, value := range values {
+		if value < {{ clip_min }} {
+			values[i] = {{ clip_min }}
+		} else if value > {{ clip_max }} {
+			values[i] = {{ clip_max }}
+		}
+	}
+{% endif %}
+	return values
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
+		os.Exit(1)
+	}
+
+	// Model data:
+	byteValue, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	{% block create %}
+	// Transformer:
+	var {{ instance|default('transformer') }} {{ class_name }}
+	if err := json.Unmarshal({{ data|default('byteValue') }}, &{{ instance|default('transformer') }}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	{% endblock %}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[2:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

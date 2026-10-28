@@ -39,9 +39,9 @@ MIN_BATCH_SIZE = 100
 @decorator.aliased
 class Base:
     """
-    Base class of `Estimator` and `Transformer`, which validates the passed
-    estimator, coordinates it to a concrete subclass and ports, compiles and
-    executes it.
+    Base class of `Estimator`, `Transformer` and `Pipeline`, which validates
+    the passed estimator, coordinates it to a concrete subclass and ports,
+    compiles and executes it.
     """
 
     # The kind of the passed estimator (e.g. in the overview of `__repr__`),
@@ -78,6 +78,17 @@ class Base:
             Change the default converter of all floating numbers from the model
             data. By default a simple string cast `str(value)` will be used.
         """
+        self._init_environment()
+        self.estimator = estimator  # see @estimator.setter
+
+        # Set defaults:
+        self.language = language or self._estimator.DEFAULT_LANGUAGE
+        self.template = template or self._estimator.DEFAULT_TEMPLATE
+        self.class_name = class_name or self._estimator.estimator_name
+        self.converter = converter or str
+
+    def _init_environment(self):
+        """Set up the logger and read the versions of the environment."""
         L.remove()  # remove basic logger
         L.add(stdout, level=options['logging.level'])
 
@@ -89,13 +100,10 @@ class Base:
         L.debug(f'Package: scikit-learn: v{sklearn_version}')
         L.debug(f'Package: sklearn-porter: v{self.porter_version}')
 
-        self.estimator = estimator  # see @estimator.setter
-
-        # Set defaults:
-        self.language = language or self._estimator.DEFAULT_LANGUAGE
-        self.template = template or self._estimator.DEFAULT_TEMPLATE
-        self.class_name = class_name or self._estimator.estimator_name
-        self.converter = converter or str
+    @property
+    def _name(self) -> str:
+        """The name of the ported estimator (e.g. in error messages)."""
+        return self._estimator.estimator_name
 
     @property
     def estimator(self):
@@ -116,7 +124,7 @@ class Base:
         if self.supports(self.estimator, language):
             self._language = language
         else:
-            name = self._estimator.estimator_name
+            name = self._name
             msg = (
                 f'The passed language `{language.value.KEY}` is not '
                 f'supported for the {self.KIND} `{name}`.'
@@ -133,7 +141,7 @@ class Base:
         if self.supports(self.estimator, self.language, template):
             self._template = template
         else:
-            name = self._estimator.estimator_name
+            name = self._name
             language = enum.Language.convert(self.language)
             msg = (
                 f'The passed template `{template.value}` is not '
@@ -624,7 +632,7 @@ class Base:
         report = f"""\
             {self.KIND}
             {'-' * len(self.KIND)}
-            name: {self._estimator.estimator_name}
+            name: {self._name}
 
             environment
             -----------

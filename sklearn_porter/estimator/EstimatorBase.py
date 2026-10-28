@@ -3,20 +3,41 @@ from collections.abc import Callable
 from os import environ
 from pathlib import Path
 from time import sleep
-from typing import Any
+from typing import Any, cast
 
-from jinja2 import DictLoader, Environment
+from jinja2 import DictLoader, Environment, Template
 from loguru import logger as L
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator
 
-# sklearn-porter
-from sklearn_porter import __version__ as sklearn_porter_version
 from sklearn_porter import enums as enum
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
+
+# sklearn-porter
+from sklearn_porter.meta import __version__ as sklearn_porter_version
 from sklearn_porter.utils import tabify
+
+
+class _Template(Template):
+    """
+    Template which renders only single blocks of the main template (e.g.
+    `attached.class`), if the global `_blocks` of the environment names them.
+    A pipeline uses it to insert the classes and the creation of its
+    transformers into the ported final estimator.
+    """
+
+    def render(self, *args, **kwargs):
+        blocks = cast(tuple, self.environment.globals.get('_blocks'))
+        if not blocks or not str(self.name).endswith('.class'):
+            return super().render(*args, **kwargs)
+        context = self.new_context(dict(*args, **kwargs))
+        return {
+            name: ''.join(self.blocks[name](context))
+            for name in blocks
+            if name in self.blocks
+        }
 
 
 class EstimatorBase(EstimatorApiABC):
@@ -36,12 +57,15 @@ class EstimatorBase(EstimatorApiABC):
     model_data: dict[str, Any]  # parameters, e.g. weights or coefficients
     meta_info: dict[str, Any]  # meta information, e.g. num of features
     placeholders: dict[str, Any]  # rendered templates and single information
+    # Additional globals of the templates (e.g. of a pipeline, see `Pipeline`):
+    template_globals: dict[str, Any]
 
     def __init__(self, estimator: BaseEstimator):
         self.estimator = estimator
         self.model_data = {}
         self.meta_info = {}
         self.placeholders = {}
+        self.template_globals = {}
 
         # Set name:
         self.estimator_name = estimator.__class__.__qualname__
@@ -246,9 +270,11 @@ class EstimatorBase(EstimatorApiABC):
             lstrip_blocks=True,
             loader=DictLoader(tpls),
         )
+        environment.template_class = _Template
         # The labels are available in all templates, also in the included
         # template `labels` of the language:
         environment.globals.update(self._get_label_placeholders(language))
+        environment.globals.update(self.template_globals)
         return environment
 
     def _get_label_placeholders(self, language: enum.Language) -> dict:

@@ -681,6 +681,22 @@ def test_preprocessing_in_pipeline():
     msg = r'`scaler` \(StandardScaler\).*`ignore_preprocessing=True`'
     with pytest.raises(exception.NotSupportedYetError, match=msg):
         Estimator(pipeline)
+    # The steps can be ported as transformers, so the whole pipeline can be
+    # ported with `Porter` (also by the functions):
+    with pytest.raises(exception.NotSupportedYetError, match='`Porter`'):
+        Estimator(pipeline)
+    assert 'step1.transform(features)' in port(pipeline, language='js')
+
+
+def test_unsupported_preprocessing_in_pipeline():
+    """Preprocessing steps which can't be ported raise an error."""
+    pipeline = _fitted_pipeline(
+        [('spline', preprocessing.SplineTransformer()), ('svm', SVC())]
+    )
+    msg = r'`spline` \(SplineTransformer\).*`ignore_preprocessing=True`'
+    with pytest.raises(exception.NotSupportedYetError, match=msg) as e:
+        Estimator(pipeline)
+    assert '`Porter`' not in str(e.value)
     with pytest.raises(exception.NotSupportedYetError, match=msg):
         port(pipeline, language='js')
 
@@ -690,12 +706,12 @@ def test_preprocessing_in_pipeline_ignored():
     pipeline = _fitted_pipeline(
         [
             ('scaler', preprocessing.StandardScaler()),
-            ('binarizer', preprocessing.Binarizer()),
+            ('spline', preprocessing.SplineTransformer()),
             ('svm', SVC()),
         ]
     )
     msg = (
-        r'steps `scaler` \(StandardScaler\), `binarizer` \(Binarizer\) '
+        r'steps `scaler` \(StandardScaler\), `spline` \(SplineTransformer\) '
         'of the pipeline are ignored'
     )
     with pytest.warns(UserWarning, match=msg):
@@ -2267,8 +2283,10 @@ def test_cli_ignore_preprocessing(tmp_path: Path):
     parsed = parse_args(['save', str(path)])
     assert not parsed.ignore_preprocessing
 
-    with pytest.raises(exception.NotSupportedYetError, match='`scaler`'):
-        port_main(dict(model=str(path), skip_warnings=True), silent=True)
+    # The pipeline is ported (by default to Java):
+    out = port_main(dict(model=str(path), skip_warnings=True), silent=True)
+    assert 'class StandardScaler {' in out
+    assert 'class Pipeline {' in out
     with pytest.warns(UserWarning, match='`scaler`'):
         out = port_main(
             dict(

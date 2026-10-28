@@ -46,9 +46,20 @@ func Predict(features []float64) int {
 
 {% include 'samples' %}
 
+{% if pipeline_classes %}
+{{ pipeline_classes }}
+
+{% endif %}
 func main() {
 	// Features of one sample (arguments) or several samples (standard input):
+	{% if pipeline_create %}
+	{{ pipeline_create | indent('\t') }}
+
+	{% endif %}
 	readSamples(os.Args[1:], func(features []float64) {
+		{% if pipeline_transform %}
+		{{ pipeline_transform | indent('\t\t') }}
+		{% endif %}
 		prediction := Predict(features)
 
 		{% filter indent('\t\t', True) %}

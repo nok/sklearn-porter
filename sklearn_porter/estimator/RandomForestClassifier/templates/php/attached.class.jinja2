@@ -143,6 +143,10 @@ namespace {{ class_name }} {
 }
 
 namespace {
+  {% if pipeline_classes %}
+  {{ pipeline_classes | indent('  ') }}
+
+  {% endif %}
   if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
       {% filter indent(6, True) %}
       {% include 'samples' %}
@@ -150,6 +154,10 @@ namespace {
 
       array_shift($argv);
 
+      {% if pipeline_create %}
+      {{ pipeline_create | indent('      ') }}
+
+      {% endif %}
       // Model data:
       {{ model }}
 
@@ -158,6 +166,9 @@ namespace {
 
       // Features of one sample (arguments) or several samples (standard input):
       foreach (readSamples($argv) as $features) {
+          {% if pipeline_transform %}
+          {{ pipeline_transform | indent('          ') }}
+          {% endif %}
           {% if is_test or to_json %}
           // Get JSON:
           $prediction = $clf->predict($features);

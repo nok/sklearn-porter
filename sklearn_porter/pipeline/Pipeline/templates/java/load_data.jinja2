@@ -1,0 +1,4 @@
+com.google.gson.JsonObject pipelineData;
+try (java.io.Reader pipelineReader = java.nio.file.Files.newBufferedReader(java.nio.file.Paths.get(args[0]))) {
+    pipelineData = com.google.gson.JsonParser.parseReader(pipelineReader).getAsJsonObject();
+}

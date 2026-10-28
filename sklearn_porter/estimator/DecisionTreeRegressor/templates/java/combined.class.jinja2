@@ -18,7 +18,14 @@ class {{ class_name }} {
 
     public static void main(String[] args) {
         // Features of one sample (arguments) or several samples (standard input):
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         for (double[] features : readSamples(args, 0)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {% if is_test or to_json %}
             // Get JSON:
             double[] prediction = {{ class_name }}.predict(features);
@@ -35,4 +42,8 @@ class {{ class_name }} {
 
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

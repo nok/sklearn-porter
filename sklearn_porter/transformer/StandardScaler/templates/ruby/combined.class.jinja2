@@ -1,6 +1,7 @@
 {% extends 'base.combined.class' %}
 
 {% block content %}
+{% block class %}
 class {{ class_name }}
 
 	def transform(features)
@@ -12,6 +13,7 @@ class {{ class_name }}
 	end
 
 end
+{% endblock %}
 
 if __FILE__ == $0
 	{% filter indent('\t', True) %}
@@ -20,8 +22,10 @@ if __FILE__ == $0
 	{% include 'values' %}
 	{% endfilter %}
 
+	{% block create %}
 	# Transformer:
-	transformer = {{ class_name }}.new
+	{{ instance|default('transformer') }} = {{ class_name }}.new
+	{% endblock %}
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

@@ -1,6 +1,7 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
+{% block class %}
 class {{ class_name }}
 
 	def initialize(mean, scale)
@@ -13,6 +14,7 @@ class {{ class_name }}
 	end
 
 end
+{% endblock %}
 
 if __FILE__ == $0
 	{% filter indent('\t', True) %}
@@ -21,12 +23,14 @@ if __FILE__ == $0
 	{% include 'values' %}
 	{% endfilter %}
 
+	{% block create %}
 	# Model data:
 	{{ mean }}
 	{{ scale }}
 
 	# Transformer:
-	transformer = {{ class_name }}.new mean, scale
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}mean, {{ prefix }}scale
+	{% endblock %}
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

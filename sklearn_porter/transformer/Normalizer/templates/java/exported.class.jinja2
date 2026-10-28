@@ -1,0 +1,70 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import com.google.gson.Gson;
+
+
+{% block class %}
+class {{ class_name }} {
+
+    private class ModelData {
+    }
+
+    private ModelData data;
+
+{% if _blocks %}
+    public {{ class_name }}(com.google.gson.JsonElement data) {
+        this.data = new com.google.gson.Gson().fromJson(data, ModelData.class);
+    }
+{% else %}
+    public {{ class_name }}(String file) throws IOException {
+        try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
+            this.data = new Gson().fromJson(reader, ModelData.class);
+        }
+    }
+{% endif %}
+
+    public double[] transform(double[] features) {
+        double norm = 0.0;
+        for (double feature : features) {
+            norm = Math.max(norm, Math.abs(feature));
+        }
+        if (norm < {{ min_norm }}) {
+            norm = 1.0;
+        }
+        double[] values = new double[features.length];
+        for (int i = 0; i < features.length; i++) {
+            values[i] = features[i] / norm;
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('args[0]') }});
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

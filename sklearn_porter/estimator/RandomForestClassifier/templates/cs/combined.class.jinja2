@@ -60,7 +60,14 @@ public static class {{ class_name }} {
 
     public static void Main(string[] args) {
         // Features of one sample (arguments) or several samples (standard input):
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         foreach (double[] features in ReadSamples(args, 0)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {{ label_type }}{{ '[]' if is_multi_output }} prediction = {{ class_name }}.Predict(features);
             {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = {{ class_name }}.PredictProba(features);
             {% if is_test or to_json %}
@@ -81,4 +88,8 @@ public static class {{ class_name }} {
         }
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

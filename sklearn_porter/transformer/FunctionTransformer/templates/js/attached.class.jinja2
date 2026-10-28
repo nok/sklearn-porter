@@ -1,0 +1,37 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function() {
+
+    this.transform = function(features) {
+        var values = new Array(features.length);
+        for (var i = 0, l = features.length; i < l; i++) {
+            values[i] = {% if func == 'abs' %}Math.abs(features[i]){% elif func == 'sqrt' %}Math.sqrt(features[i]){% elif func == 'exp' %}Math.exp(features[i]){% elif func == 'expm1' %}Math.expm1(features[i]){% elif func == 'log' %}Math.log(features[i]){% elif func == 'log1p' %}Math.log1p(features[i]){% elif func == 'square' %}features[i] * features[i]{% else %}features[i]{% endif %};
+        }
+        return values;
+    };
+
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}();
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

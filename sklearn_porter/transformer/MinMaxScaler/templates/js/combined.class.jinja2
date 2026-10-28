@@ -1,0 +1,43 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function() {
+
+    this.transform = function(features) {
+        var values = [
+            {% for i in range(n_features) %}
+            features[{{ i }}] * {{ scale[i] }} + {{ min[i] }}{{ ',' if not loop.last }}
+            {% endfor %}
+        ];
+{% if clip %}
+        for (var i = 0, l = values.length; i < l; i++) {
+            values[i] = values[i] < {{ clip_min }} ? {{ clip_min }} : (values[i] > {{ clip_max }} ? {{ clip_max }} : values[i]);
+        }
+{% endif %}
+        return values;
+    };
+
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}();
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

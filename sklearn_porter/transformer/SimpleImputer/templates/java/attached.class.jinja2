@@ -1,0 +1,43 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private double[] statistics;
+
+    public {{ class_name }}(double[] statistics) {
+        this.statistics = statistics;
+    }
+
+    public double[] transform(double[] features) {
+        double[] values = new double[this.statistics.length];
+        for (int i = 0; i < this.statistics.length; i++) {
+            values[i] = {% if missing_values_nan %}Double.isNaN(features[i]){% else %}features[i] == {{ missing_values }}{% endif %} ? this.statistics[i] : features[i];
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Model data:
+        {{ statistics }}
+
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}statistics);
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

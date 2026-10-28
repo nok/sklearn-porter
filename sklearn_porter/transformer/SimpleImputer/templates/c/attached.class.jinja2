@@ -1,0 +1,38 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+{% block class %}
+#define {{ prefix }}N_FEATURES {{ n_features }}
+#define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
+
+
+{{ statistics }}
+
+/* Write the transformed features to `values`: */
+void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
+    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+        values[i] = {% if missing_values_nan %}isnan(features[i]){% else %}features[i] == {{ missing_values }}{% endif %} ? {{ prefix }}statistics[i] : features[i];
+    }
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+int main(int argc, const char *argv[]) {
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        double values[N_FEATURES_OUT];
+        transform(values, features);
+        print_values(values, N_FEATURES_OUT);
+    }
+
+    return 0;
+}
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+type {{ class_name }} struct {
+	Scale []float64
+	Min   []float64
+}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, len(transformer.Scale))
+	for i := range transformer.Scale {
+		values[i] = float64(features[i]*transformer.Scale[i]) + transformer.Min[i]
+	}
+{% if clip %}
+	for i, value := range values {
+		if value < {{ clip_min }} {
+			values[i] = {{ clip_min }}
+		} else if value > {{ clip_max }} {
+			values[i] = {{ clip_max }}
+		}
+	}
+{% endif %}
+	return values
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+{% block data %}
+// Model data:
+{{ scale }}
+{{ min }}
+{% endblock %}
+
+func main() {
+	{% block create %}
+	// Transformer:
+	{{ instance|default('transformer') }} := {{ class_name ~ '{' }}{{ prefix }}scale, {{ prefix }}min}
+	{% endblock %}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+{% if _blocks %}
+    public function __construct($data) {
+{% else %}
+    public function __construct($path) {
+        $data = json_decode(file_get_contents($path, true), true);
+{% endif %}
+    }
+
+    public function transform($features) {
+        $norm = 0.0;
+        foreach ($features as $feature) {
+            $norm = max($norm, abs($feature));
+        }
+        if ($norm < {{ min_norm }}) {
+            $norm = 1.0;
+        }
+        $values = array();
+        for ($i = 0, $l = count($features); $i < $l; $i++) {
+            $values[$i] = $features[$i] / $norm;
+        }
+        return $values;
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    if (count($argv) < 2) {
+        fwrite(STDERR, "You have to pass the path to the model data.\n");
+        exit(1);
+    }
+
+    array_shift($argv);
+
+    {% block create %}
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('array_shift($argv)') }});
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues($transformer->transform($features));
+    }
+
+}
+{% endblock %}

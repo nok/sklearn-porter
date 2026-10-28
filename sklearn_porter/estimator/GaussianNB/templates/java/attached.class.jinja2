@@ -72,6 +72,10 @@ class {{ class_name }} {
 {% include 'samples' %}
 
     public static void main(String[] args) {
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         // Model data:
         {{ priors }}
         {{ norms }}
@@ -83,6 +87,9 @@ class {{ class_name }} {
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 0)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {% if is_test or to_json %}
             // Get JSON:
             {{ label_type }} prediction = clf.predict(features);
@@ -103,4 +110,8 @@ class {{ class_name }} {
 
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}

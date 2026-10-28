@@ -1,0 +1,63 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+{% block class %}
+#define {{ prefix }}N_FEATURES {{ n_features }}
+#define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
+
+
+
+void {{ prefix }}load({{ 'JsonValue *data' if _blocks else 'const char *path' }}) {
+{% if not _blocks %}
+    JsonValue *data = json_read(path);
+{% endif %}
+{% if not _blocks %}
+    json_free(data);
+{% endif %}
+}
+
+/* Write the transformed features to `values`: */
+void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
+    double norm = 0.0;
+    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+        if (fabs(features[i]) > norm) {
+            norm = fabs(features[i]);
+        }
+    }
+    if (norm < {{ min_norm }}) {
+        norm = 1.0;
+    }
+    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+        values[i] = features[i] / norm;
+    }
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+int main(int argc, const char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "You have to pass the path to the model data.\n");
+        return 1;
+    }
+
+    {% block create %}
+    /* Model data: */
+    {{ prefix }}load({{ data|default('argv[1]') }});
+    {% endblock %}
+
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 2)) {
+        double values[N_FEATURES_OUT];
+        transform(values, features);
+        print_values(values, N_FEATURES_OUT);
+    }
+
+    return 0;
+}
+{% endblock %}

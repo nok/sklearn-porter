@@ -34,7 +34,14 @@ class {{ class_name }} {
         {{ class_name }} clf = new {{ class_name }}();
 
         // Features of one sample (arguments) or several samples (standard input):
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         for (double[] features : readSamples(args, 0)) {
+            {% if pipeline_transform %}
+            {{ pipeline_transform | indent('            ') }}
+            {% endif %}
             {% filter indent(12, True) %}
             {% include 'output' %}
             {% endfilter %}
@@ -42,4 +49,8 @@ class {{ class_name }} {
 
     }
 }
+{% if pipeline_classes %}
+
+{{ pipeline_classes }}
+{% endif %}
 {% endblock %}
