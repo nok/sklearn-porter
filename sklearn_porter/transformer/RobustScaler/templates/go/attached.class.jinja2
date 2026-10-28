@@ -1,0 +1,51 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+type {{ class_name }} struct {
+	Center []float64
+	Scale  []float64
+}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, len(transformer.Center))
+	for i := range transformer.Center {
+		values[i] = (features[i] - transformer.Center[i]) / transformer.Scale[i]
+	}
+	return values
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+{% block data %}
+// Model data:
+{{ center }}
+{{ scale }}
+{% endblock %}
+
+func main() {
+	{% block create %}
+	// Transformer:
+	{{ instance|default('transformer') }} := {{ class_name ~ '{' }}{{ prefix }}center, {{ prefix }}scale}
+	{% endblock %}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

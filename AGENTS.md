@@ -96,6 +96,13 @@ original estimator and transform the features like the original transformer.
   `TransformerBase` (of `EstimatorBase`), registered in
   `Transformer.transformers()` in `sklearn_porter/Transformer.py`. The
   templates are loaded from the directory of the module of each class.
+  `TransformerBase.port()` renders the model data, which consists of finite
+  arrays with one number per feature (`_set_model_data()`, e.g. `mean` and
+  `scale`), as arrays (`attached`), numbers in the code (`combined`) or JSON
+  (`exported`); parameters which are numbers in the code of all templates
+  (e.g. the bounds of `clip=True` of the `MinMaxScaler`) come from
+  `literals()`. Go may fuse `a * b + c` to an FMA instruction, so the
+  templates write `float64(a*b) + c` to keep the results identical.
 - `sklearn_porter/language/<language>/__init__.py`: subclass of `LanguageABC`
   with the compile and execute commands and small code snippets.
 - `sklearn_porter/enums`, `exceptions`, `utils`, `meta`: shared helpers.
@@ -166,7 +173,8 @@ table.
 
 1. Implement or update `sklearn_porter/transformer/<Name>/__init__.py`
    (subclass of `TransformerBase`), including `SUPPORT` with
-   `Method.TRANSFORM`.
+   `Method.TRANSFORM`; extract the model data with `_get_n_features()` and
+   `_set_model_data()`.
 2. Add or update the Jinja2 templates for every supported language and
    template; `main` prints the result of `transform` with the template
    `values`. Provide the blocks `class` (and `data`) and `create` for

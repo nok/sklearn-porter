@@ -1,0 +1,62 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.IO;
+using System.Text.Json;
+
+
+{% block class %}
+public class {{ class_name }} {
+
+    private class ModelData {
+        public double[] Statistics { get; set; }
+    }
+
+    private ModelData data;
+
+{% if _blocks %}
+    public {{ class_name }}(System.Text.Json.JsonElement data) {
+        System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower };
+        this.data = System.Text.Json.JsonSerializer.Deserialize<ModelData>(data, options);
+    }
+{% else %}
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+    }
+{% endif %}
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[this.data.Statistics.Length];
+        for (int i = 0; i < this.data.Statistics.Length; i++) {
+            values[i] = {% if missing_values_nan %}double.IsNaN(features[i]){% else %}features[i] == {{ missing_values }}{% endif %} ? this.data.Statistics[i] : features[i];
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('args[0]') }});
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    public double[] transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        {% for i in range(n_features) %}
+        values[{{ i }}] = features[{{ i }}] * {{ scale[i] }} + {{ min[i] }};
+        {% endfor %}
+{% if clip %}
+        for (int i = 0; i < values.length; i++) {
+            values[i] = values[i] < {{ clip_min }} ? {{ clip_min }} : (values[i] > {{ clip_max }} ? {{ clip_max }} : values[i]);
+        }
+{% endif %}
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

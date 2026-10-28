@@ -1,0 +1,50 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private $center;
+    private $scale;
+
+    public function __construct($center, $scale) {
+        $this->center = $center;
+        $this->scale = $scale;
+    }
+
+    public function transform($features) {
+        $values = array();
+        for ($i = 0, $l = count($this->center); $i < $l; $i++) {
+            $values[$i] = ($features[$i] - $this->center[$i]) / $this->scale[$i];
+        }
+        return $values;
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    {% block create %}
+    // Model data:
+    {{ center }}
+    {{ scale }}
+
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}center, ${{ prefix }}scale);
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues($transformer->transform($features));
+    }
+
+}
+{% endblock %}

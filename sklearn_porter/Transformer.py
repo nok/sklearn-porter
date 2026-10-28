@@ -13,8 +13,15 @@ from sklearn.base import (
     RegressorMixin,
     TransformerMixin,
 )
+from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import (
+    Binarizer,
+    MaxAbsScaler,
+    MinMaxScaler,
+    RobustScaler,
+    StandardScaler,
+)
 
 # sklearn-porter
 from sklearn_porter import decorators as decorator
@@ -272,4 +279,11 @@ class Transformer(Base):
         transformers : tuple
             A set of supported transformers.
         """
-        return (StandardScaler,)
+        return (
+            Binarizer,
+            MaxAbsScaler,
+            MinMaxScaler,
+            RobustScaler,
+            SimpleImputer,
+            StandardScaler,
+        )

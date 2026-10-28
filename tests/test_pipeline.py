@@ -8,9 +8,18 @@ from joblib import dump
 
 # scikit-learn
 from sklearn.datasets import load_iris
+from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline as SklearnPipeline
-from sklearn.preprocessing import Binarizer, StandardScaler
+from sklearn.preprocessing import (
+    Binarizer,
+    MaxAbsScaler,
+    MinMaxScaler,
+    Normalizer,
+    RobustScaler,
+    StandardScaler,
+)
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -106,6 +115,44 @@ def test_port(fitted_pipeline: SklearnPipeline, language: str, template: str):
         assert name not in out
 
 
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_port_of_all_transformers(language: str, template: str):
+    """Port a pipeline with all transformers to one file."""
+    pipeline = _fit(
+        [
+            ('imputer', SimpleImputer()),
+            ('min_max', MinMaxScaler(clip=True)),
+            ('max_abs', MaxAbsScaler()),
+            ('robust', RobustScaler()),
+            ('standard', StandardScaler()),
+            ('binarizer', Binarizer(threshold=0.5)),
+            ('clf', LogisticRegression(max_iter=1000)),
+        ]
+    )
+    est = Pipeline(pipeline, language=language, template=template)
+    out = est.port()
+    if template == 'exported':
+        out, data = out
+        transformers = json.loads(data)['transformers']
+        assert [sorted(t) for t in transformers] == [
+            ['statistics'],
+            ['min', 'scale'],
+            ['scale'],
+            ['center', 'scale'],
+            ['mean', 'scale'],
+            ['threshold'],
+        ]
+    # No Jinja tags are left (two-dimensional arrays start with `{{`):
+    assert '{%' not in out
+    assert '{{ ' not in out
+    if language != 'c':
+        for name in ('SimpleImputer', 'MinMaxScaler', 'Binarizer'):
+            assert name in out
+    else:
+        assert 'void step6_transform(' in out
+
+
 def test_port_without_blocks_in_output(fitted_pipeline: SklearnPipeline):
     """A single transformer or estimator is ported as before."""
     for est in Pipeline(fitted_pipeline).steps:
@@ -185,14 +232,16 @@ def test_pipeline_without_preprocessing():
 
 
 def test_unsupported_steps():
-    pipeline = _fit([('binarizer', Binarizer()), ('svm', SVC())])
-    with pytest.raises(exception.NotSupportedYetError, match='`binarizer`'):
+    pipeline = _fit([('normalizer', Normalizer()), ('svm', SVC())])
+    with pytest.raises(exception.NotSupportedYetError, match='`normalizer`'):
         Pipeline(pipeline)
     assert not Pipeline.supports(pipeline)
 
 
 def test_unsupported_final_estimator():
-    pipeline = _fit([('scaler', StandardScaler()), ('binarizer', Binarizer())])
+    pipeline = _fit(
+        [('scaler', StandardScaler()), ('normalizer', Normalizer())]
+    )
     with pytest.raises(ValueError):
         Pipeline(pipeline)
     assert not Pipeline.supports(pipeline)

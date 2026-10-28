@@ -1,0 +1,38 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	def initialize(statistics)
+		@statistics = statistics
+	end
+
+	def transform(features)
+		Array.new(@statistics.length) { |i| {% if missing_values_nan %}features[i].nan?{% else %}features[i] == {{ missing_values }}{% endif %} ? @statistics[i] : features[i] }
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	# Model data:
+	{{ statistics }}
+
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}statistics
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

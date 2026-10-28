@@ -10,10 +10,17 @@ import pytest
 # scikit-learn
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.pipeline import Pipeline as SklearnPipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import (
+    Binarizer,
+    MaxAbsScaler,
+    MinMaxScaler,
+    RobustScaler,
+    StandardScaler,
+)
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
@@ -43,6 +50,16 @@ PREPROCESSING = {
         ('skipped', 'passthrough'),
         ('scaler2', StandardScaler(with_mean=False)),
     ],
+    # All transformers (the imputer replaces the missing values of the
+    # samples):
+    'all_transformers': lambda: [
+        ('imputer', SimpleImputer()),
+        ('min_max', MinMaxScaler(feature_range=(-1, 2), clip=True)),
+        ('max_abs', MaxAbsScaler()),
+        ('robust', RobustScaler()),
+        ('standard', StandardScaler()),
+    ],
+    'binarizer': lambda: [('binarizer', Binarizer(threshold=3.0))],
 }
 
 CLASSIFIERS = {
@@ -79,6 +96,8 @@ def test_pipeline_of_classifier(
     est = Porter(pipeline, language=language, template=template)
     assert isinstance(est.ported, Pipeline)
     test_x = np.vstack((x, dataset_uniform_x(x)))
+    if preprocessing == 'all_transformers':
+        test_x[::7, 0] = np.nan
     tmp_dir = _tmp_dir(
         tmp_root_dir,
         'pipeline_of_classifier',

@@ -1,0 +1,38 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    public function transform($features) {
+        return array(
+            {% for i in range(n_features) %}
+            $features[{{ i }}] / {{ scale[i] }},
+            {% endfor %}
+        );
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    {% block create %}
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}();
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues($transformer->transform($features));
+    }
+
+}
+{% endblock %}

@@ -9,8 +9,16 @@ from joblib import dump
 
 # scikit-learn
 from sklearn.datasets import load_iris
+from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import Binarizer, StandardScaler
+from sklearn.preprocessing import (
+    Binarizer,
+    MaxAbsScaler,
+    MinMaxScaler,
+    Normalizer,
+    RobustScaler,
+    StandardScaler,
+)
 from sklearn.svm import SVC
 
 # sklearn-porter
@@ -22,6 +30,41 @@ from tests.commons import LANGUAGES
 
 ESTIMATOR_MODULE = import_module('sklearn_porter.Base')
 TEMPLATES = ['attached', 'combined', 'exported']
+
+
+def _iris_with_missing_values() -> np.ndarray:
+    x = load_iris().data.copy()
+    x[::7, 0] = np.nan
+    return x
+
+
+# The transformers and their expected model data:
+TRANSFORMERS = {
+    'binarizer': (
+        lambda: Binarizer(threshold=1.5).fit(load_iris().data),
+        lambda t: dict(threshold=[1.5] * 4),
+    ),
+    'max_abs_scaler': (
+        lambda: MaxAbsScaler().fit(load_iris().data),
+        lambda t: dict(scale=t.scale_.tolist()),
+    ),
+    'min_max_scaler': (
+        lambda: MinMaxScaler(feature_range=(-1, 2)).fit(load_iris().data),
+        lambda t: dict(scale=t.scale_.tolist(), min=t.min_.tolist()),
+    ),
+    'robust_scaler': (
+        lambda: RobustScaler().fit(load_iris().data),
+        lambda t: dict(center=t.center_.tolist(), scale=t.scale_.tolist()),
+    ),
+    'simple_imputer': (
+        lambda: SimpleImputer().fit(_iris_with_missing_values()),
+        lambda t: dict(statistics=t.statistics_.tolist()),
+    ),
+    'standard_scaler': (
+        lambda: StandardScaler().fit(load_iris().data),
+        lambda t: dict(mean=t.mean_.tolist(), scale=t.scale_.tolist()),
+    ),
+}
 
 
 @pytest.fixture(scope='module')
@@ -121,7 +164,7 @@ def test_can_with_classes():
     assert can(StandardScaler)
     assert can(StandardScaler, 'c', 'combined', 'transform')
     assert not can(StandardScaler, 'c', 'combined', 'predict')
-    assert not can(Binarizer)
+    assert not can(Normalizer)
 
 
 def test_unfitted_transformer():
@@ -130,9 +173,9 @@ def test_unfitted_transformer():
 
 
 def test_unsupported_transformer():
-    binarizer = Binarizer().fit(load_iris().data)
-    with pytest.raises(exception.NotSupportedYetError, match='`Binarizer`'):
-        Transformer(binarizer)
+    normalizer = Normalizer().fit(load_iris().data)
+    with pytest.raises(exception.NotSupportedYetError, match='`Normalizer`'):
+        Transformer(normalizer)
 
 
 @pytest.mark.parametrize('obj', [None, object, 0, 'string'])
@@ -219,3 +262,122 @@ def test_cli(fitted_scaler: StandardScaler, tmp_path: Path):
         silent=True,
     )
     assert str(tmp_path / 'StandardScaler.js') in out
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+@pytest.mark.parametrize('name', TRANSFORMERS.keys())
+def test_port_of_all_transformers(name: str, language: str, template: str):
+    create, model_data = TRANSFORMERS[name]
+    orig_est = create()
+    assert can(orig_est, language, template, 'transform')
+    assert not can(orig_est, language, template, 'predict')
+    est = Transformer(orig_est, language=language, template=template)
+    assert est.class_name == type(orig_est).__name__
+    out = est.port()
+    expected = model_data(orig_est)
+    if template == 'exported':
+        out, data = out
+        assert json.loads(data) == expected
+    elif template == 'attached':
+        # The model data is in the source code:
+        for values in expected.values():
+            assert str(values[0]) in out
+    assert 'Execute a transformation' in out
+    method = 'Transform' if language in ('cs', 'go') else 'transform'
+    assert f'{method}(' in out
+
+
+@pytest.mark.parametrize(
+    'params',
+    [dict(with_centering=False), dict(with_scaling=False)],
+    ids=['without_centering', 'without_scaling'],
+)
+def test_model_data_of_robust_scaler(params: dict):
+    """Subtracting zero and dividing by one doesn't change the features."""
+    orig_est = RobustScaler(**params).fit(load_iris().data)
+    _, data = Transformer(orig_est, template='exported').port()
+    data = json.loads(data)
+    if orig_est.with_centering:
+        assert data['center'] == orig_est.center_.tolist()
+        assert data['scale'] == [1.0] * 4
+    else:
+        assert data['center'] == [0.0] * 4
+        assert data['scale'] == orig_est.scale_.tolist()
+
+
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_clip_of_min_max_scaler(language: str):
+    """The bounds of `clip=True` are numbers in the code."""
+    x = load_iris().data
+    out = port(MinMaxScaler(feature_range=(-1, 2)).fit(x), language=language)
+    assert '-1.0' not in out
+    out = port(
+        MinMaxScaler(feature_range=(-1, 2), clip=True).fit(x),
+        language=language,
+    )
+    assert '-1.0' in out
+    assert '2.0' in out
+
+
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_missing_values_of_simple_imputer(language: str):
+    """Missing values are `NaN` or a number in the code."""
+    x = load_iris().data
+    out = port(SimpleImputer(missing_values=-1).fit(x), language=language)
+    assert '== -1.0' in out
+    out = port(SimpleImputer().fit(x), language=language)
+    assert '== -1.0' not in out
+
+
+def test_simple_imputer_with_empty_features():
+    """Dropped features (without observed values) aren't supported."""
+    x = _iris_with_missing_values()
+    x[:, 2] = np.nan
+    orig_est = SimpleImputer().fit(x)
+    with pytest.raises(exception.NotSupportedYetError, match='drops'):
+        Transformer(orig_est)
+    orig_est = SimpleImputer(keep_empty_features=True).fit(x)
+    _, data = Transformer(orig_est, template='exported').port()
+    assert json.loads(data)['statistics'][2] == 0.0
+
+
+@pytest.mark.parametrize(
+    'params, match',
+    [
+        (dict(add_indicator=True), '`add_indicator=True`'),
+        (dict(missing_values=None, strategy='constant'), '`missing_values`'),
+        (dict(strategy='constant', fill_value='x'), 'numbers as statistics'),
+    ],
+    ids=['add_indicator', 'missing_values_none', 'fill_value_string'],
+)
+def test_unsupported_simple_imputer(params: dict, match: str):
+    if 'fill_value' in params or params.get('missing_values', 0) is None:
+        x = np.array([['a', 'b'], [None, 'c']], dtype=object)
+    else:
+        x = _iris_with_missing_values()
+    orig_est = SimpleImputer(**params).fit(x)
+    with pytest.raises(exception.NotSupportedYetError, match=match):
+        Transformer(orig_est)
+
+
+def test_model_data_with_missing_values():
+    """Model data with missing values (e.g. an empty feature) raises."""
+    x = load_iris().data.copy()
+    x[:, 1] = np.nan
+    with pytest.raises(exception.NotSupportedYetError, match='`mean`'):
+        Transformer(StandardScaler().fit(x))
+
+
+def test_unfitted_binarizer():
+    """A `Binarizer` passes `check_is_fitted`, but has no features."""
+    with pytest.raises(exception.NotFittedEstimatorError):
+        Transformer(Binarizer())
+
+
+def test_show_of_all_transformers():
+    table = show()
+    for name in ('Binarizer', 'MaxAbsScaler', 'MinMaxScaler'):
+        assert name in table
+    for name in ('RobustScaler', 'SimpleImputer', 'StandardScaler'):
+        assert name in table

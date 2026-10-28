@@ -1,0 +1,39 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	def transform(features)
+		values = [
+			{% for i in range(n_features) %}
+			features[{{ i }}] * {{ scale[i] }} + {{ min[i] }},
+			{% endfor %}
+		]
+{% if clip %}
+		values = values.map { |value| value < {{ clip_min }} ? {{ clip_min }} : (value > {{ clip_max }} ? {{ clip_max }} : value) }
+{% endif %}
+		values
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

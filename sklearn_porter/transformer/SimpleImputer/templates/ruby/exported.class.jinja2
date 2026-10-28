@@ -1,0 +1,48 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+require 'json'
+
+
+{% block class %}
+class {{ class_name }}
+
+{% if _blocks %}
+	def initialize(data)
+{% else %}
+	def initialize(path)
+		data = JSON.parse(File.read(path))
+{% endif %}
+		@statistics = data['statistics']
+	end
+
+	def transform(features)
+		Array.new(@statistics.length) { |i| {% if missing_values_nan %}features[i].nan?{% else %}features[i] == {{ missing_values }}{% endif %} ? @statistics[i] : features[i] }
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	raise "You have to pass the path to the model data." if ARGV.empty?
+
+	# Model data:
+	path = ARGV.shift
+
+	{% block create %}
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ data|default('path') }}
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

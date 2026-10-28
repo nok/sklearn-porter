@@ -66,8 +66,25 @@
 - The ported [OneClassSVM](https://scikit-learn.org/stable/modules/generated/sklearn.svm.OneClassSVM.html) supports only `predict`, which returns `1` for inliers (a positive decision value) and `-1` for outliers like scikit-learn. The scores (`score_samples` and `decision_function`) aren't ported.
 - A [SVR](https://scikit-learn.org/stable/modules/generated/sklearn.svm.SVR.html) without support vectors (e.g. with a large `epsilon`) predicts its intercept for all samples, also the ported one.
 
-## StandardScaler
+## Transformers
 
-- The ported [StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) subtracts the mean and divides by the scale like scikit-learn, so the transformed features are identical. Without centering (`with_mean=False`) or scaling (`with_std=False`) it subtracts zero or divides by one, which doesn't change any value.
+- The model data of the transformers (e.g. the mean of a feature) must be finite numbers. A transformer with missing or infinite values in its model data (e.g. a [StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) fitted on a feature with missing values only) raises a `NotSupportedYetError`.
+- scikit-learn transforms samples of the type `float32` with single precision, the ported transformers always use double precision. So pass samples of the type `float64` to compare the results.
+
+## StandardScaler, MinMaxScaler, MaxAbsScaler and RobustScaler
+
+- The ported scalers compute the transformed features with the same operations in the same order as scikit-learn, so the transformed features are identical: the [StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) and the [RobustScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html) subtract the mean (or the center) and divide by the scale, the [MinMaxScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html) multiplies by the scale and adds the minimum (without fused multiply-add) and the [MaxAbsScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MaxAbsScaler.html) divides by the maximum absolute value.
+- Without centering (`with_mean=False` or `with_centering=False`) or scaling (`with_std=False` or `with_scaling=False`) the scalers subtract zero or divide by one, which doesn't change any value.
+- The [MinMaxScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html) with `clip=True` clips the transformed features to `feature_range` like scikit-learn; the bounds are numbers in the code, also with the template `exported`.
 - Missing values (`NaN`) remain missing values like in scikit-learn.
-- scikit-learn transforms samples of the type `float32` with single precision, the ported transformer always uses double precision. So pass samples of the type `float64` to compare the results.
+
+## Binarizer
+
+- The ported [Binarizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Binarizer.html) returns `1.0` for features greater than the threshold and `0.0` otherwise. The threshold is stored once per feature in the model data.
+- scikit-learn rejects samples with missing values (`NaN`), the ported transformer returns `0.0` for them.
+
+## SimpleImputer
+
+- The ported [SimpleImputer](https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html) replaces the missing values of each feature by its statistic (the mean, the median, the most frequent value or the constant `fill_value`), so the transformed features are identical.
+- The missing values (`missing_values`) can be `NaN` (default) or a number. Other missing values (e.g. `None` or `pd.NA`) and statistics which aren't numbers (e.g. a string as `fill_value`) raise a `NotSupportedYetError`.
+- Features without any observed values in the fit are dropped by scikit-learn, which changes the number of features, so they raise a `NotSupportedYetError`. Pass `keep_empty_features=True` to keep them. `add_indicator=True` (additional features) isn't supported either.
