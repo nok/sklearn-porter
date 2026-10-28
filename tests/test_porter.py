@@ -21,6 +21,7 @@ from sklearn_porter import (
     save,
     show,
 )
+from sklearn_porter import Pipeline as PortedPipeline
 from sklearn_porter import exceptions as exception
 
 
@@ -101,19 +102,31 @@ def test_porter_wrong_kind(
 
 
 def test_porter_of_pipeline():
-    """A pipeline is ported like with `Estimator` (only its final
-    estimator, see `ignore_preprocessing`)."""
+    """A pipeline with supported steps creates a `Pipeline`, with the
+    opt-out `ignore_preprocessing` an `Estimator` (of the final estimator)."""
     x, y = load_iris(return_X_y=True)
     pipeline = Pipeline([('scaler', StandardScaler()), ('svm', SVC())]).fit(
         x, y
     )
-    with pytest.raises(exception.NotSupportedYetError, match='`scaler`'):
-        Porter(pipeline)
+    porter = Porter(pipeline, language='go')
+    assert isinstance(porter.ported, PortedPipeline)
+    assert porter.estimator is pipeline
+    assert porter.language == 'go'
+    with pytest.raises(AttributeError, match='use `predict` instead'):
+        porter.transform(x)
     with warnings.catch_warnings():
         warnings.simplefilter('ignore', UserWarning)
         porter = Porter(pipeline, ignore_preprocessing=True)
     assert isinstance(porter.ported, Estimator)
     assert porter.estimator is pipeline[-1]
+
+
+def test_porter_of_pipeline_with_unsupported_steps():
+    """A pipeline with unsupported steps raises the error of `Estimator`."""
+    x, y = load_iris(return_X_y=True)
+    pipeline = Pipeline([('binarizer', Binarizer()), ('svm', SVC())]).fit(x, y)
+    with pytest.raises(exception.NotSupportedYetError, match='`binarizer`'):
+        Porter(pipeline)
 
 
 def test_porter_of_unsupported_transformer():

@@ -130,7 +130,10 @@ class Transformer(Base):
             raise ValueError(msg)
 
         if isinstance(est, Pipeline):
-            msg = "A pipeline can't be ported as transformer."
+            msg = (
+                "A pipeline can't be ported as transformer. Port it with "
+                '`Porter` (or `Pipeline`).'
+            )
             L.error(msg)
             raise exception.NotSupportedYetError(msg)
 

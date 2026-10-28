@@ -75,6 +75,7 @@ from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Base import Base, _get_qualname, _parse_predictions
+from sklearn_porter.Transformer import Transformer
 
 
 @decorator.aliased
@@ -226,10 +227,14 @@ class Estimator(Base):
             # The preprocessing steps (e.g. a `StandardScaler`) can't be
             # ported, so the predictions of the final estimator alone would
             # differ from those of the pipeline:
-            steps = [
-                f'`{name}` ({step.__class__.__name__})'
+            preprocessing = [
+                (name, step)
                 for name, step in est.steps[:-1]
                 if step is not None and step != 'passthrough'
+            ]
+            steps = [
+                f'`{name}` ({step.__class__.__name__})'
+                for name, step in preprocessing
             ]
             if steps:
                 plural = len(steps) > 1
@@ -245,6 +250,9 @@ class Estimator(Base):
                         'to port the final estimator anyway and apply the '
                         'preprocessing to its input data yourself.'
                     )
+                    # All steps can be ported as transformers:
+                    if all(Transformer.supports(s) for _, s in preprocessing):
+                        msg += ' Or port the whole pipeline with `Porter`.'
                     L.error(msg)
                     raise exception.NotSupportedYetError(msg)
                 them = 'them' if plural else 'it'
@@ -440,19 +448,9 @@ class Estimator(Base):
             delete_created_files=delete_created_files,
         )
         y_pred = y_pred[0]  # only predicts
-        if isinstance(self._estimator.estimator, RegressorMixin):
-            # Small deviations because of the floating point arithmetic:
-            is_close = np.isclose(y_true, y_pred)
-            if is_close.ndim > 1:  # multiple outputs
-                is_close = is_close.all(axis=1)
-            score = is_close.mean() if normalize else is_close.sum()
-            return float(score)
-        if np.ndim(y_true) > 1:  # multiple outputs or labels
-            is_equal = (y_true == np.reshape(y_pred, np.shape(y_true))).all(
-                axis=1
-            )
-            return float(is_equal.mean() if normalize else is_equal.sum())
-        return float(accuracy_score(y_true, y_pred, normalize=normalize))
+        return _integrity_score(
+            self._estimator.estimator, y_true, y_pred, normalize
+        )
 
     @staticmethod
     def classifiers() -> tuple:
@@ -549,3 +547,42 @@ class Estimator(Base):
             SGDRegressor,
             SVR,
         )
+
+
+def _integrity_score(
+    estimator: BaseEstimator,
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    normalize: bool = True,
+) -> float:
+    """
+    Compare the predictions of the ported and the original estimator.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The original estimator (e.g. the final estimator of a pipeline).
+    y_true : np.ndarray
+        The predictions of scikit-learn.
+    y_pred : np.ndarray
+        The predictions of the ported estimator.
+    normalize : bool, default: True
+        Whether to normalize the result or not.
+
+    Returns
+    -------
+    score : float
+        The relative (or with `normalize=False` the absolute) number of
+        equal (classifiers) or close (regressors) predictions.
+    """
+    if isinstance(estimator, RegressorMixin):
+        # Small deviations because of the floating point arithmetic:
+        is_close = np.isclose(y_true, y_pred)
+        if is_close.ndim > 1:  # multiple outputs
+            is_close = is_close.all(axis=1)
+        score = is_close.mean() if normalize else is_close.sum()
+        return float(score)
+    if np.ndim(y_true) > 1:  # multiple outputs or labels
+        is_equal = (y_true == np.reshape(y_pred, np.shape(y_true))).all(axis=1)
+        return float(is_equal.mean() if normalize else is_equal.sum())
+    return float(accuracy_score(y_true, y_pred, normalize=normalize))

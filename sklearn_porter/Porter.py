@@ -13,6 +13,7 @@ from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter.Base import _get_qualname
 from sklearn_porter.Estimator import Estimator
+from sklearn_porter.Pipeline import Pipeline
 from sklearn_porter.Transformer import Transformer, is_transformer
 
 
@@ -20,11 +21,13 @@ from sklearn_porter.Transformer import Transformer, is_transformer
 class Porter:
     """
     Central class which ports a fitted estimator (a classifier, a regressor
-    or an outlier detector) or a fitted transformer (e.g. a `StandardScaler`)
-    of scikit-learn.
+    or an outlier detector), a fitted transformer (e.g. a `StandardScaler`)
+    or a fitted pipeline of transformers and a final estimator of
+    scikit-learn.
 
-    It creates an `Estimator` for an estimator and a `Transformer` for a
-    transformer and forwards all calls to it.
+    It creates a `Transformer` for a transformer, a `Pipeline` for a
+    pipeline whose steps are all supported and otherwise an `Estimator`,
+    and forwards all calls to it.
     """
 
     def __init__(
@@ -37,12 +40,12 @@ class Porter:
         ignore_preprocessing: bool = False,
     ):
         """
-        Validate and coordinate the passed estimator or transformer.
+        Validate and coordinate the passed estimator, transformer or pipeline.
 
         Parameters
         ----------
         estimator : BaseEstimator
-            Set a fitted estimator or transformer of scikit-learn.
+            Set a fitted estimator, transformer or pipeline of scikit-learn.
         language : str or Language, optional
             The target programming language. By default the default language
             of the estimator will be used.
@@ -58,19 +61,15 @@ class Porter:
             data. By default a simple string cast `str(value)` will be used.
         ignore_preprocessing : bool, default=False
             Port only the final estimator of a pipeline with preprocessing
-            steps (see `Estimator`).
+            steps (see `Estimator`), even if the steps could be ported.
 
         Raises
         ------
         NotSupportedYetError
-            If the passed pipeline contains preprocessing steps and
-            `ignore_preprocessing` is False.
+            If the passed pipeline contains preprocessing steps which can't
+            be ported and `ignore_preprocessing` is False.
         """
-        # A pipeline (also of a search) is passed to `Estimator`, which ports
-        # only its final estimator (see `ignore_preprocessing`). This is the
-        # place to port the transformers and the final estimator of a
-        # pipeline later.
-        self._ported: Estimator | Transformer
+        self._ported: Estimator | Transformer | Pipeline
         if is_transformer(estimator):
             self._ported = Transformer(
                 estimator,
@@ -79,7 +78,17 @@ class Porter:
                 class_name=class_name,
                 converter=converter,
             )
+        elif not ignore_preprocessing and Pipeline.supports(estimator):
+            self._ported = Pipeline(
+                estimator,
+                language=language,
+                template=template,
+                class_name=class_name,
+                converter=converter,
+            )
         else:
+            # Also a pipeline (or a search) with unsupported (or ignored)
+            # preprocessing steps, see `ignore_preprocessing`:
             self._ported = Estimator(
                 estimator,
                 language=language,
@@ -90,8 +99,8 @@ class Porter:
             )
 
     @property
-    def ported(self) -> Estimator | Transformer:
-        """The created `Estimator` or `Transformer`."""
+    def ported(self) -> Estimator | Transformer | Pipeline:
+        """The created `Estimator`, `Transformer` or `Pipeline`."""
         return self._ported
 
     @property
@@ -141,10 +150,13 @@ class Porter:
         )
 
     @decorator.alias('export')
-    def port(self, to_json: bool = False, **kwargs) -> str | tuple[str, str]:
+    def port(
+        self, to_json: bool = False, **kwargs
+    ) -> str | tuple[str, str] | list:
         """
         Port or transpile the passed estimator to a target programming
-        language (see `Estimator.port` and `Transformer.port`).
+        language (see `Estimator.port`, `Transformer.port` and
+        `Pipeline.port`).
         """
         return self._ported.port(to_json=to_json, **kwargs)
 
@@ -154,10 +166,10 @@ class Porter:
         directory: str | Path | None = None,
         to_json: bool = False,
         **kwargs,
-    ) -> str | tuple[str, str]:
+    ) -> str | tuple[str, str] | list:
         """
         Port the passed estimator to a target programming language and save
-        it (see `Estimator.save` and `Transformer.save`).
+        it (see `Estimator.save`, `Transformer.save` and `Pipeline.save`).
         """
         return self._ported.save(directory=directory, to_json=to_json, **kwargs)
 
@@ -171,8 +183,9 @@ class Porter:
         | np.ndarray
     ):
         """
-        Make predictions (`Estimator.make`) or transform the samples
-        (`Transformer.make`) with the transpiled estimator locally.
+        Make predictions (`Estimator.make` and `Pipeline.make`) or transform
+        the samples (`Transformer.make`) with the transpiled estimator
+        locally.
         """
         return self._ported.make(x, **kwargs)
 
@@ -185,17 +198,17 @@ class Porter:
         | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
     ):
         """
-        Make predictions with the transpiled estimator locally (see
-        `Estimator.make`).
+        Make predictions with the transpiled estimator or pipeline locally
+        (see `Estimator.make` and `Pipeline.make`).
 
         Raises
         ------
         AttributeError
             If the passed estimator is a transformer.
         """
-        if not isinstance(self._ported, Estimator):
+        if isinstance(self._ported, Transformer):
             msg = (
-                f'The transformer `{self._ported._estimator.estimator_name}` '
+                f'The transformer `{self._ported._name}` '
                 "can't predict, use `transform` instead."
             )
             raise AttributeError(msg)
@@ -213,7 +226,7 @@ class Porter:
         """
         if not isinstance(self._ported, Transformer):
             msg = (
-                f'The estimator `{self._ported._estimator.estimator_name}` '
+                f'The {self._ported.KIND} `{self._ported._name}` '
                 "can't transform, use `predict` instead."
             )
             raise AttributeError(msg)
@@ -223,7 +236,7 @@ class Porter:
     def test(self, x, **kwargs) -> float:
         """
         Compute the integrity score of the ported estimator (see
-        `Estimator.test` and `Transformer.test`).
+        `Estimator.test`, `Transformer.test` and `Pipeline.test`).
         """
         return self._ported.test(x, **kwargs)
 
@@ -308,10 +321,11 @@ def can(
     -------
     True by a supported combination.
     """
-    return Estimator.supports(
-        estimator, language=language, template=template, method=method
-    ) or Transformer.supports(
-        estimator, language=language, template=template, method=method
+    return any(
+        clazz.supports(
+            estimator, language=language, template=template, method=method
+        )
+        for clazz in (Estimator, Transformer, Pipeline)
     )
 
 
@@ -323,7 +337,7 @@ def port(
     converter: Callable[[object], str] | None = None,
     to_json: bool = False,
     ignore_preprocessing: bool = False,
-) -> str | tuple[str, str]:
+) -> str | tuple[str, str] | list:
     return Porter(
         estimator,
         language=language,
@@ -343,7 +357,7 @@ def save(
     directory: str | Path | None = None,
     to_json: bool = False,
     ignore_preprocessing: bool = False,
-) -> str | tuple[str, str]:
+) -> str | tuple[str, str] | list:
     return Porter(
         estimator,
         language=language,

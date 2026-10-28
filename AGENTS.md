@@ -19,15 +19,17 @@ original estimator and transform the features like the original transformer.
 - **Methods**: `predict` and, if supported, `predict_proba` of the
   estimators, `transform` of the transformers.
 - **Public API** (exported in `sklearn_porter/__init__.py`): the classes
-  `Porter`, `Estimator` and `Transformer` (incl. the method `can`), the
+  `Porter`, `Estimator`, `Transformer` and `Pipeline` (incl. the method
+  `can`), the
   functions `port`, `save`, `make`, `test`, `can`, `show` and the dict
   `options`. The CLI `porter` (`show`, `port`, `save`) lives in
   `sklearn_porter/cli/`.
-- `Porter` (`sklearn_porter/Porter.py`) is the central class: it creates a
-  `Transformer` for a transformer (`is_transformer()`), otherwise an
-  `Estimator`, and forwards all calls to it (later it shall also port
-  pipelines of transformers and a final estimator). The functions of the
-  same module and the CLI use it.
+- `Porter` (`sklearn_porter/Porter.py`) is the central class (users always
+  go through it): it creates a `Transformer` for a transformer
+  (`is_transformer()`), a `Pipeline` for a pipeline whose preprocessing
+  steps and final estimator are all supported (`Pipeline.supports()`, not
+  with `ignore_preprocessing=True`), otherwise an `Estimator`, and forwards
+  all calls to it. The functions of the same module and the CLI use it.
 - `Estimator` (`sklearn_porter/Estimator.py`, ported classes in
   `sklearn_porter/estimator/`) and `Transformer`
   (`sklearn_porter/Transformer.py`, ported classes in
@@ -37,6 +39,15 @@ original estimator and transform the features like the original transformer.
   handling, `make()`/`predict()` and `test()`, `Transformer` adds
   `make()`/`transform()` and `test()`. Tests patch `run`, `platform` etc. in
   `sklearn_porter.Base`.
+- `Pipeline` (`sklearn_porter/Pipeline.py`, also a subclass of `Base`; it
+  imports scikit-learn's class as `SklearnPipeline`) ports each step of a
+  pipeline (also of a search) with `Transformer` and `Estimator` and keeps
+  their language, template and converter in sync. `port()` and `save()`
+  return the results of each step, `make()` chains the ported steps (the
+  output of a transformer is the input of the next step) and `test()`
+  compares with `pipeline.predict()`. Repeated class names of the steps get
+  a number (`StandardScaler2`). A single combined source file per language
+  is planned.
 - `make()` compiles and executes the ported estimator via subprocess calls,
   `test()` compares its predictions (or transformed features) with
   scikit-learn (integrity score).
@@ -76,7 +87,8 @@ original estimator and transform the features like the original transformer.
 - `tests/`: `test_estimator.py` (API, CLI, regression of all classifiers),
   `tests/estimator/test_*.py` (parameter sweeps per estimator),
   `test_transformer.py` and `tests/transformer/test_*.py` (the same for
-  transformers), `test_porter.py` (the central class), fixtures in
+  transformers), `test_pipeline.py` and `tests/pipeline/test_pipeline.py`
+  (pipelines), `test_porter.py` (the central class), fixtures in
   `tests/conftest.py`.
 - `README.md` is the user documentation (also shown on PyPI, so use absolute
   links there), `CONTRIBUTING.md` the developer documentation.
