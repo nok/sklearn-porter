@@ -6,8 +6,8 @@ class {{ class_name }}
 
 	def transform(features)
 		[
-			{% for i in range(n_features) %}
-			{% if missing_values_nan %}features[{{ i }}].nan?{% else %}features[{{ i }}] == {{ missing_values }}{% endif %} ? {{ statistics[i] }} : features[{{ i }}],
+			{% for i in range(n_features_out) %}
+			{% if indicators[i] == '1' %}({% if missing_values_nan %}features[{{ inputs[i] }}].nan?{% else %}features[{{ inputs[i] }}] == {{ missing_values }}{% endif %} ? 1.0 : 0.0){% else %}({% if missing_values_nan %}features[{{ inputs[i] }}].nan?{% else %}features[{{ inputs[i] }}] == {{ missing_values }}{% endif %} ? {{ statistics[i] }} : features[{{ inputs[i] }}]){% endif %},
 			{% endfor %}
 		]
 	end

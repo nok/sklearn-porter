@@ -4,16 +4,20 @@
 {% block class %}
 class {{ class_name }} {
 
+    private $inputs;
     private $statistics;
+    private $indicators;
 
-    public function __construct($statistics) {
+    public function __construct($inputs, $statistics, $indicators) {
+        $this->inputs = $inputs;
         $this->statistics = $statistics;
+        $this->indicators = $indicators;
     }
 
     public function transform($features) {
         $values = array();
-        for ($i = 0, $l = count($this->statistics); $i < $l; $i++) {
-            $values[$i] = {% if missing_values_nan %}is_nan($features[$i]){% else %}$features[$i] == {{ missing_values }}{% endif %} ? $this->statistics[$i] : $features[$i];
+        for ($i = 0, $l = count($this->inputs); $i < $l; $i++) {
+            $values[$i] = {% if missing_values_nan %}is_nan($features[$this->inputs[$i]]){% else %}$features[$this->inputs[$i]] == {{ missing_values }}{% endif %} ? ($this->indicators[$i] == 1 ? 1.0 : $this->statistics[$i]) : ($this->indicators[$i] == 1 ? 0.0 : $features[$this->inputs[$i]]);
         }
         return $values;
     }
@@ -32,10 +36,12 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
 
     {% block create %}
     // Model data:
+    {{ inputs }}
     {{ statistics }}
+    {{ indicators }}
 
     // Transformer:
-    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}statistics);
+    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}inputs, ${{ prefix }}statistics, ${{ prefix }}indicators);
     {% endblock %}
 
     // Features of one sample (arguments) or several samples (standard input):

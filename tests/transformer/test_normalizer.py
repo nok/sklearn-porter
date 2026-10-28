@@ -16,6 +16,8 @@ pytestmark = pytest.mark.regression
 
 PARAMS = {
     'max': dict(norm='max'),
+    'l1': dict(norm='l1'),
+    'l2': dict(norm='l2'),
 }
 
 
@@ -64,10 +66,16 @@ def test_transformer_normalizer(
         ],
     )
     x_tr = est.make(test_x, directory=tmp_dir, delete_created_files=False)
-    # The ported transformer divides by the maximum of the absolute values
-    # like scikit-learn (or by one, if it is close to zero), so the
-    # transformed features are identical:
+    # The ported transformer divides by the norm like scikit-learn (or by
+    # one, if it is close to zero):
     x_true = orig_est.transform(test_x)
-    np.testing.assert_array_equal(x_tr, x_true)
+    if orig_est.norm == 'l2':
+        # scikit-learn sums the squares with `np.einsum`, whose order
+        # depends on the CPU, so the norms can differ by a few ULP:
+        np.testing.assert_allclose(x_tr, x_true, rtol=1e-14, atol=0)
+    else:
+        # The maximum and the sum of the absolute values in the order of
+        # NumPy (pairwise summation) are identical:
+        np.testing.assert_array_equal(x_tr, x_true)
     np.testing.assert_array_equal(np.signbit(x_tr), np.signbit(x_true))
     assert est.test(test_x) == 1.0

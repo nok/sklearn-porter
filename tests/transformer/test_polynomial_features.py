@@ -21,6 +21,7 @@ PARAMS = {
     ),
     'degree_2_3': dict(degree=(2, 3)),
     'degree_2_3_without_bias': dict(degree=(2, 3), include_bias=False),
+    'bias_only': dict(degree=0),
 }
 
 

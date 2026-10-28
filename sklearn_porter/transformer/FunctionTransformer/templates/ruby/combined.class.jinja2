@@ -7,7 +7,7 @@ class {{ class_name }}
 	def transform(features)
 		[
 			{% for i in range(n_features) %}
-			{% if func == 'abs' %}features[{{ i }}].abs{% elif func == 'sqrt' %}sqrt(features[{{ i }}]){% elif func == 'exp' %}Math.exp(features[{{ i }}]){% elif func == 'expm1' %}expm1(features[{{ i }}]){% elif func == 'log' %}log(features[{{ i }}]){% elif func == 'log1p' %}log1p(features[{{ i }}]){% elif func == 'square' %}features[{{ i }}] * features[{{ i }}]{% else %}features[{{ i }}]{% endif %},
+			{% if func == 'abs' %}features[{{ i }}].abs{% elif func == 'sqrt' %}sqrt(features[{{ i }}]){% elif func == 'exp' %}Math.exp(features[{{ i }}]){% elif func == 'expm1' %}expm1(features[{{ i }}]){% elif func == 'log' %}log(features[{{ i }}]){% elif func == 'log1p' %}log1p(features[{{ i }}]){% elif func == 'floor' %}floor(features[{{ i }}]){% elif func == 'ceil' %}ceil(features[{{ i }}]){% elif func == 'negative' %}-features[{{ i }}]{% elif func == 'reciprocal' %}1.0 / features[{{ i }}]{% elif func == 'sign' %}(features[{{ i }}] > 0 ? 1.0 : (features[{{ i }}] < 0 ? -1.0 : features[{{ i }}] + 0.0)){% elif func == 'clip' %}{% if clip_min is not none and clip_max is not none %}(features[{{ i }}] < {{ clip_min }} ? {{ clip_min }} : (features[{{ i }}] > {{ clip_max }} ? {{ clip_max }} : features[{{ i }}])){% elif clip_min is not none %}(features[{{ i }}] <= {{ clip_min }} ? {{ clip_min }} : features[{{ i }}]){% else %}(features[{{ i }}] > {{ clip_max }} ? {{ clip_max }} : features[{{ i }}]){% endif %}{% elif func == 'square' %}features[{{ i }}] * features[{{ i }}]{% else %}features[{{ i }}]{% endif %},
 			{% endfor %}
 		]
 	end
@@ -41,6 +41,20 @@ class {{ class_name }}
 		return x if u == 1.0
 		return u - 1.0 if x.abs > 1
 		(u - 1.0) * x / Math.log(u)
+	end
+{% elif func == 'floor' %}
+
+	# Float#floor returns an integer (and raises an error for NaN):
+	def floor(x)
+		x.nan? || x.infinite? || x.zero? ? x : x.floor.to_f
+	end
+{% elif func == 'ceil' %}
+
+	# Float#ceil returns an integer (and raises an error for NaN):
+	def ceil(x)
+		return x if x.nan? || x.infinite? || x.zero?
+		value = x.ceil.to_f
+		value.zero? && x < 0 ? -0.0 : value
 	end
 {% endif %}
 

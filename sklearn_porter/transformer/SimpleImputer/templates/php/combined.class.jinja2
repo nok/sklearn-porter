@@ -6,8 +6,8 @@ class {{ class_name }} {
 
     public function transform($features) {
         return array(
-            {% for i in range(n_features) %}
-            {% if missing_values_nan %}is_nan($features[{{ i }}]){% else %}$features[{{ i }}] == {{ missing_values }}{% endif %} ? {{ statistics[i] }} : $features[{{ i }}],
+            {% for i in range(n_features_out) %}
+            {% if indicators[i] == '1' %}({% if missing_values_nan %}is_nan($features[{{ inputs[i] }}]){% else %}$features[{{ inputs[i] }}] == {{ missing_values }}{% endif %} ? 1.0 : 0.0){% else %}({% if missing_values_nan %}is_nan($features[{{ inputs[i] }}]){% else %}$features[{{ inputs[i] }}] == {{ missing_values }}{% endif %} ? {{ statistics[i] }} : $features[{{ inputs[i] }}]){% endif %},
             {% endfor %}
         );
     }

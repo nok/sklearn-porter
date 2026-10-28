@@ -15,15 +15,22 @@ import (
 
 {% block class %}
 type {{ class_name }} struct {
+	Inputs     []int `json:"inputs"`
 	Statistics []float64 `json:"statistics"`
+	Indicators []int `json:"indicators"`
 }
 
 func (transformer {{ class_name }}) Transform(features []float64) []float64 {
-	values := make([]float64, len(transformer.Statistics))
-	for i := range transformer.Statistics {
-		values[i] = features[i]
-		if {% if missing_values_nan %}math.IsNaN(features[i]){% else %}features[i] == {{ missing_values }}{% endif %} {
-			values[i] = transformer.Statistics[i]
+	values := make([]float64, len(transformer.Inputs))
+	for i := range transformer.Inputs {
+		if x := features[transformer.Inputs[i]]; {% if missing_values_nan %}math.IsNaN(x){% else %}x == {{ missing_values }}{% endif %} {
+			if transformer.Indicators[i] == 1 {
+				values[i] = 1
+			} else {
+				values[i] = transformer.Statistics[i]
+			}
+		} else if transformer.Indicators[i] == 0 {
+			values[i] = x
 		}
 	}
 	return values

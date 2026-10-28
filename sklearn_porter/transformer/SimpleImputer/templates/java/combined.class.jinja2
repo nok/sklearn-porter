@@ -6,8 +6,8 @@ class {{ class_name }} {
 
     public double[] transform(double[] features) {
         double[] values = new double[{{ n_features_out }}];
-        {% for i in range(n_features) %}
-        values[{{ i }}] = {% if missing_values_nan %}Double.isNaN(features[{{ i }}]){% else %}features[{{ i }}] == {{ missing_values }}{% endif %} ? {{ statistics[i] }} : features[{{ i }}];
+        {% for i in range(n_features_out) %}
+        values[{{ i }}] = {% if indicators[i] == '1' %}({% if missing_values_nan %}Double.isNaN(features[{{ inputs[i] }}]){% else %}features[{{ inputs[i] }}] == {{ missing_values }}{% endif %} ? 1.0 : 0.0){% else %}({% if missing_values_nan %}Double.isNaN(features[{{ inputs[i] }}]){% else %}features[{{ inputs[i] }}] == {{ missing_values }}{% endif %} ? {{ statistics[i] }} : features[{{ inputs[i] }}]){% endif %};
         {% endfor %}
         return values;
     }

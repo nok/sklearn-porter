@@ -38,14 +38,6 @@ class SimpleImputer(TransformerBase, EstimatorApiABC):
         est = transformer  # alias
         n_features = self._get_n_features(est)
 
-        # The indicators of the missing values are additional features:
-        if est.add_indicator:
-            msg = (
-                f'The transformer `{self.estimator_name}` with '
-                '`add_indicator=True` is not supported yet.'
-            )
-            raise exception.NotSupportedYetError(msg)
-
         # Missing values are `NaN` or a number:
         missing_values = est.missing_values
         is_number = isinstance(missing_values, Real)
@@ -70,15 +62,31 @@ class SimpleImputer(TransformerBase, EstimatorApiABC):
 
         # scikit-learn drops the features without any observed values in
         # the fit (their statistics are `NaN`), except with
-        # `keep_empty_features=True`:
-        if np.isnan(statistics).any():
+        # `keep_empty_features=True`. With `add_indicator=True` the
+        # indicators of the missing values of the features with missing
+        # values in the fit (also of the dropped features) follow. Each
+        # transformed feature is the imputed feature `inputs[i]` (with the
+        # statistic `statistics[i]`) or its indicator (`indicators[i]`):
+        kept = np.flatnonzero(~np.isnan(statistics))
+        indicated = []
+        if est.add_indicator:
+            features = est.indicator_.features_  # ty: ignore[unresolved-attribute]
+            indicated = np.asarray(features, dtype=int)
+        inputs = [*kept.tolist(), *list(map(int, indicated))]
+        if not inputs:
             msg = (
-                f'The transformer `{self.estimator_name}` drops features '
-                'without any observed values, which is not supported yet. '
-                'Pass `keep_empty_features=True` to keep them.'
+                f'The transformer `{self.estimator_name}` has no transformed '
+                'features.'
             )
             raise exception.NotSupportedYetError(msg)
-        self._set_model_data(n_features, statistics=statistics)
+        self._set_model_data(
+            n_features,
+            n_features_out=len(inputs),
+            ints=('inputs', 'indicators'),
+            inputs=inputs,
+            statistics=[*statistics[kept].tolist(), *[0.0] * len(indicated)],
+            indicators=[0] * len(kept) + [1] * len(indicated),
+        )
 
     def literals(self, converter: Callable[[object], str]) -> dict:
         is_nan = bool(np.isnan(self.missing_values))
