@@ -29,7 +29,18 @@ public class {{ class_name }} {
 {% endif %}
 
     public double[] Transform(double[] features) {
-        double[] values = new double[features.Length];
+        double[] values = new double[{{ n_features_out }}];
+        {% if onehot %}
+        for (int i = 0; i < features.Length; i++) {
+            int bin = 0;
+            for (int j = this.data.Offsets[i]; j < this.data.Offsets[i + 1]; j++) {
+                if (features[i] >= this.data.Edges[j]) {
+                    bin++;
+                }
+            }
+            values[this.data.Offsets[i] + i + bin] = 1.0;
+        }
+        {% else %}
         for (int i = 0; i < features.Length; i++) {
             for (int j = this.data.Offsets[i]; j < this.data.Offsets[i + 1]; j++) {
                 if (features[i] >= this.data.Edges[j]) {
@@ -37,6 +48,7 @@ public class {{ class_name }} {
                 }
             }
         }
+        {% endif %}
         return values;
     }
 {% if not _blocks %}

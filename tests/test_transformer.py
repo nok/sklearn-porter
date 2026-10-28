@@ -18,7 +18,9 @@ from sklearn.preprocessing import (
     MaxAbsScaler,
     MinMaxScaler,
     Normalizer,
+    OneHotEncoder,
     OrdinalEncoder,
+    PolynomialFeatures,
     RobustScaler,
     SplineTransformer,
     StandardScaler,
@@ -95,6 +97,34 @@ TRANSFORMERS = {
                 [0] + [np.sum(~np.isnan(c)) for c in t.categories_]
             ).tolist(),
             missing=[1, 0, 0, 0],
+        ),
+    ),
+    'one_hot_encoder': (
+        lambda: OneHotEncoder().fit(np.round(_iris_with_missing_values())),
+        lambda t: dict(
+            inputs=[i for i, c in enumerate(t.categories_) for _ in c],
+            categories=np.nan_to_num(np.concatenate(t.categories_)).tolist(),
+            missing=np.isnan(np.concatenate(t.categories_))
+            .astype(int)
+            .tolist(),
+        ),
+    ),
+    'polynomial_features': (
+        lambda: PolynomialFeatures(2).fit(load_iris().data[:, :3]),
+        lambda t: dict(
+            # 1, x0, x1, x2, x0 x0, x1 x0, x2 x0, x1 x1, x2 x1, x2 x2 (a term
+            # of the previous degree multiplied by a feature):
+            factors=[0, 1, 2, 0, 0, 1, 0, 2, 0, 1, 1, 2, 1, 2, 2],
+            offsets=[0, 0, 1, 2, 3, 5, 7, 9, 11, 13, 15],
+        ),
+    ),
+    'k_bins_discretizer_onehot': (
+        lambda: KBinsDiscretizer(n_bins=4, encode='onehot-dense').fit(
+            load_iris().data
+        ),
+        lambda t: dict(
+            edges=np.concatenate([e[1:-1] for e in t.bin_edges_]).tolist(),
+            offsets=[0, 3, 6, 9, 12],
         ),
     ),
 }
@@ -420,6 +450,8 @@ def test_show_of_all_transformers():
         assert name in table
     for name in ('Normalizer', 'OrdinalEncoder'):
         assert name in table
+    for name in ('OneHotEncoder', 'PolynomialFeatures'):
+        assert name in table
 
 
 @pytest.mark.parametrize('language', LANGUAGES)
@@ -457,10 +489,129 @@ def test_unsupported_norm_of_normalizer(norm: str):
         Transformer(orig_est)
 
 
+@pytest.mark.parametrize(
+    'create, n_features_out',
+    [
+        (lambda: OneHotEncoder(), lambda t: len(t.get_feature_names_out())),
+        (
+            lambda: OneHotEncoder(drop='first', handle_unknown='ignore'),
+            lambda t: len(t.get_feature_names_out()),
+        ),
+        (lambda: PolynomialFeatures(3), lambda t: t.n_output_features_),
+        (
+            lambda: KBinsDiscretizer(n_bins=3, encode='onehot'),
+            lambda t: int(sum(t.n_bins_)),
+        ),
+        (
+            lambda: KBinsDiscretizer(n_bins=3, encode='ordinal'),
+            lambda t: t.n_features_in_,
+        ),
+    ],
+    ids=[
+        'one_hot_encoder',
+        'one_hot_encoder_with_drop',
+        'polynomial_features',
+        'k_bins_discretizer_onehot',
+        'k_bins_discretizer_ordinal',
+    ],
+)
+def test_number_of_transformed_features(create, n_features_out):
+    """Some transformers change the number of features."""
+    orig_est = create().fit(np.round(load_iris().data))
+    meta_info = Transformer(orig_est)._estimator.meta_info
+    assert meta_info['n_features'] == 4
+    assert meta_info['n_features_out'] == n_features_out(orig_est)
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
 @pytest.mark.parametrize('encode', ['onehot', 'onehot-dense'])
-def test_unsupported_encoding_of_k_bins_discretizer(encode: str):
+def test_onehot_encoding_of_k_bins_discretizer(
+    encode: str, language: str, template: str
+):
     orig_est = KBinsDiscretizer(n_bins=3, encode=encode).fit(load_iris().data)
-    with pytest.raises(exception.NotSupportedYetError, match="'ordinal'"):
+    out = port(orig_est, language=language, template=template)
+    out = out[0] if isinstance(out, tuple) else out
+    assert '{%' not in out
+    if template == 'combined':
+        # The bins of the first feature (the first bin is unbounded below):
+        x = '$features[0]' if language == 'php' else 'features[0]'
+        edges = orig_est.bin_edges_[0]
+        assert f'{x} < {float(edges[1])!r}' in out
+        assert f'{x} >= {float(edges[1])!r}' in out
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_drop_of_one_hot_encoder(language: str, template: str):
+    """The dropped categories are no transformed features."""
+    x = np.array([[0, 1], [1, 2], [2, 1]], dtype=float)
+    orig_est = OneHotEncoder(drop=[0, 2]).fit(x)
+    est = Transformer(orig_est, language=language, template=template)
+    assert est._estimator.model_data == dict(
+        inputs=[0, 0, 1], categories=[1.0, 2.0, 1.0], missing=[0, 0, 0]
+    )
+    out = est.port()
+    out = out[0] if isinstance(out, tuple) else out
+    assert '{%' not in out
+
+
+@pytest.mark.parametrize(
+    'x, params, match',
+    [
+        (np.array([['a'], ['b']], dtype=object), dict(), 'numbers'),
+        (np.array([[1], [1], [2]]), dict(max_categories=1), 'infrequent'),
+        (np.array([[1], [1]]), dict(drop='first'), 'no transformed'),
+    ],
+    ids=['strings', 'infrequent_categories', 'no_features'],
+)
+def test_unsupported_one_hot_encoder(x: np.ndarray, params: dict, match: str):
+    orig_est = OneHotEncoder(**params).fit(x)
+    with pytest.raises(exception.NotSupportedYetError, match=match):
+        Transformer(orig_est)
+
+
+@pytest.mark.parametrize(
+    'params',
+    [
+        dict(degree=1),
+        dict(degree=3),
+        dict(degree=3, include_bias=False),
+        dict(degree=3, interaction_only=True),
+        dict(degree=(2, 3)),
+        dict(degree=(2, 3), include_bias=False),
+        dict(degree=(3, 3), interaction_only=True),
+    ],
+)
+def test_factors_of_polynomial_features(params: dict):
+    """The factors of each transformed feature match the powers."""
+    orig_est = PolynomialFeatures(**params).fit(load_iris().data)
+    model_data = Transformer(orig_est)._estimator.model_data
+    offsets, factors = model_data['offsets'], model_data['factors']
+    powers = np.zeros_like(orig_est.powers_)
+    for i in range(len(offsets) - 1):
+        for j in factors[offsets[i] : offsets[i + 1]]:
+            powers[i, j] += 1
+    assert np.array_equal(powers, orig_est.powers_)
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_combined_template_of_polynomial_features(language: str, template: str):
+    """The products are multiplied in the order of scikit-learn."""
+    orig_est = PolynomialFeatures(3).fit(load_iris().data[:, :2])
+    out = port(orig_est, language=language, template=template)
+    out = out[0] if isinstance(out, tuple) else out
+    assert '{%' not in out
+    if template == 'combined':
+        x = '$features' if language == 'php' else 'features'
+        # x0² x1 is (x1 x0) x0:
+        assert f'{x}[1] * {x}[0] * {x}[0]' in out
+
+
+def test_polynomial_features_without_features():
+    orig_est = PolynomialFeatures(0).fit(load_iris().data)
+    with pytest.raises(exception.NotSupportedYetError, match='bias'):
         Transformer(orig_est)
 
 

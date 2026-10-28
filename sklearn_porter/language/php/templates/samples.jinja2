@@ -8,8 +8,8 @@ function readSamples($args) {
         if (count($values) == 0) {
             continue;
         }
-        if (count($values) != {{ n_features }}) {
-            fwrite(STDERR, "You have to pass {{ n_features }} features per sample.\n");
+        if (count($values) != {{ pipeline_n_features or n_features }}) {
+            fwrite(STDERR, "You have to pass {{ pipeline_n_features or n_features }} features per sample.\n");
             exit(1);
         }
         $samples[] = array_map(function ($value) {

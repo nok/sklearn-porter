@@ -21,7 +21,9 @@ from sklearn.preprocessing import (
     MaxAbsScaler,
     MinMaxScaler,
     Normalizer,
+    OneHotEncoder,
     OrdinalEncoder,
+    PolynomialFeatures,
     RobustScaler,
     StandardScaler,
 )
@@ -69,6 +71,18 @@ PREPROCESSING = {
         ('k_bins', KBinsDiscretizer(n_bins=5, encode='ordinal')),
         ('ordinal', OrdinalEncoder()),
         ('normalizer', Normalizer(norm='max')),
+    ],
+    # Transformers which change the number of features:
+    'one_hot_encoder': lambda: [
+        ('k_bins', KBinsDiscretizer(n_bins=4, encode='ordinal')),
+        ('one_hot', OneHotEncoder(drop='first')),
+    ],
+    'polynomial_features': lambda: [
+        ('poly', PolynomialFeatures(2)),
+        ('scaler', StandardScaler()),
+    ],
+    'k_bins_onehot': lambda: [
+        ('k_bins', KBinsDiscretizer(n_bins=3, encode='onehot')),
     ],
 }
 

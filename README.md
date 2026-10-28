@@ -93,7 +93,9 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 - [preprocessing.MaxAbsScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MaxAbsScaler.html)
 - [preprocessing.MinMaxScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)
 - [preprocessing.Normalizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.Normalizer.html)
+- [preprocessing.OneHotEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html)
 - [preprocessing.OrdinalEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OrdinalEncoder.html)
+- [preprocessing.PolynomialFeatures](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html)
 - [preprocessing.RobustScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html)
 - [preprocessing.StandardScaler](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html)
 
@@ -174,7 +176,7 @@ The ported transformer prints the transformed features of each sample in one lin
 
 ### Pipelines
 
-A [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) of supported transformers and a supported final estimator (also as the best estimator of a `GridSearchCV` or `RandomizedSearchCV`) is ported to one source file: the ported final estimator, which transforms the features of each sample with the ported transformers before its prediction. The functions `port`, `save`, `make` and `test` accept pipelines too:
+A [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) of supported transformers and a supported final estimator (also as the best estimator of a `GridSearchCV` or `RandomizedSearchCV`) is ported to one source file: the ported final estimator, which transforms the features of each sample with the ported transformers before its prediction. The transformers can change the number of features (e.g. a `OneHotEncoder`), the ported pipeline reads the features of the pipeline. The functions `port`, `save`, `make` and `test` accept pipelines too:
 
 <!-- fmt:off -->
 ```python

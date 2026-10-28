@@ -32,7 +32,18 @@ class {{ class_name }} {
 {% endif %}
 
     public double[] transform(double[] features) {
-        double[] values = new double[features.length];
+        double[] values = new double[{{ n_features_out }}];
+        {% if onehot %}
+        for (int i = 0; i < features.length; i++) {
+            int bin = 0;
+            for (int j = this.data.offsets[i]; j < this.data.offsets[i + 1]; j++) {
+                if (features[i] >= this.data.edges[j]) {
+                    bin++;
+                }
+            }
+            values[this.data.offsets[i] + i + bin] = 1.0;
+        }
+        {% else %}
         for (int i = 0; i < features.length; i++) {
             for (int j = this.data.offsets[i]; j < this.data.offsets[i + 1]; j++) {
                 if (features[i] >= this.data.edges[j]) {
@@ -40,6 +51,7 @@ class {{ class_name }} {
                 }
             }
         }
+        {% endif %}
         return values;
     }
 {% if not _blocks %}

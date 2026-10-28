@@ -17,12 +17,22 @@ type {{ class_name }} struct{}
 
 func (transformer {{ class_name }}) Transform(features []float64) []float64 {
 	values := make([]float64, {{ n_features_out }})
-	{% for i in range(n_features) %}
+	{% for i in range(n_features_out) %}
+	{% if onehot %}
+	{% if column_lower[i] is none and column_upper[i] is none %}
+	values[{{ i }}] = 1
+	{% else %}
+	if {% if column_lower[i] is not none %}features[{{ column_inputs[i] }}] >= {{ column_lower[i] }}{% endif %}{% if column_lower[i] is not none and column_upper[i] is not none %} && {% endif %}{% if column_upper[i] is not none %}features[{{ column_inputs[i] }}] < {{ column_upper[i] }}{% endif %} {
+		values[{{ i }}] = 1
+	}
+	{% endif %}
+	{% else %}
 	{% for e in feature_edges[i] %}
 	if features[{{ i }}] >= {{ e }} {
 		values[{{ i }}]++
 	}
 	{% endfor %}
+	{% endif %}
 	{% endfor %}
 	return values
 }

@@ -6,8 +6,8 @@ var {{ class_name }} = function() {
 
     this.transform = function(features) {
         return [
-            {% for i in range(n_features) %}
-            {% for e in feature_edges[i] %}(features[{{ i }}] >= {{ e }} ? 1.0 : 0.0){{ ' + ' if not loop.last }}{% else %}0.0{% endfor %}{{ ',' if not loop.last }}
+            {% for i in range(n_features_out) %}
+            {% if onehot %}{% if column_lower[i] is none and column_upper[i] is none %}1.0{% else %}({% if column_lower[i] is not none %}features[{{ column_inputs[i] }}] >= {{ column_lower[i] }}{% endif %}{% if column_lower[i] is not none and column_upper[i] is not none %} && {% endif %}{% if column_upper[i] is not none %}features[{{ column_inputs[i] }}] < {{ column_upper[i] }}{% endif %}) ? 1.0 : 0.0{% endif %}{% else %}{% for e in feature_edges[i] %}(features[{{ i }}] >= {{ e }} ? 1.0 : 0.0){{ ' + ' if not loop.last }}{% else %}0.0{% endfor %}{% endif %}{{ ',' if not loop.last }}
             {% endfor %}
         ];
     };

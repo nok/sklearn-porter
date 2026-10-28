@@ -100,9 +100,22 @@
 
 ## KBinsDiscretizer
 
-- The ported [KBinsDiscretizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html) supports only `encode='ordinal'` (the one-hot encodings are additional features): it counts the inner edges of the bins of each feature which are lower than or equal to the feature like scikit-learn, so the transformed features are identical.
+- The ported [KBinsDiscretizer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.KBinsDiscretizer.html) counts the inner edges of the bins of each feature which are lower than or equal to the feature like scikit-learn, so the transformed features are identical.
+- With `encode='onehot'` or `encode='onehot-dense'` each bin is a transformed feature, which is `1.0` for the bin of the feature and `0.0` otherwise. The ported transformer always returns all transformed features (also for the sparse matrix of `encode='onehot'`).
 
 ## OrdinalEncoder
 
 - The ported [OrdinalEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OrdinalEncoder.html) returns the position of the feature in the categories of each feature like scikit-learn. Only numbers are supported as categories; strings and infrequent categories (`max_categories` or `min_frequency`) raise a `NotSupportedYetError`.
 - Missing values (`NaN`) seen in the fit get `encoded_missing_value`. Unknown categories get `unknown_value` with `handle_unknown='use_encoded_value'`, scikit-learn raises an error for them by default, the ported transformer returns `NaN` instead.
+
+## OneHotEncoder
+
+- The ported [OneHotEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.OneHotEncoder.html) returns one transformed feature per category of each feature (without the dropped categories of `drop`), which is `1.0` if the feature is the category and `0.0` otherwise, like scikit-learn. The ported transformer always returns all transformed features (also for the sparse matrix of `sparse_output=True`).
+- Only numbers are supported as categories; strings and infrequent categories (`max_categories` or `min_frequency`) raise a `NotSupportedYetError`. Missing values (`NaN`) seen in the fit are a category.
+- Unknown categories get only zeros with `handle_unknown='ignore'` (or `'infrequent_if_exist'` and `'warn'` without infrequent categories), scikit-learn raises an error for them by default, the ported transformer returns zeros as well.
+
+## PolynomialFeatures
+
+- The ported [PolynomialFeatures](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html) multiplies the features of each transformed feature in the order of scikit-learn (each term of degree `d` is a term of degree `d - 1` multiplied by a feature), so the transformed features are identical. `degree` can be the maximal degree or a tuple of the minimal and the maximal degree, `interaction_only` and `include_bias` are supported.
+- The number of transformed features grows with the power of the degree, with many features the generated code (especially of the template `combined`) can get very large.
+- A transformer with the bias only (`degree=0`) raises a `NotSupportedYetError`.

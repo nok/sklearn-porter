@@ -1,0 +1,35 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+public class {{ class_name }} {
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        {% for i in range(n_features_out) %}
+        values[{{ i }}] = {% for f in column_factors[i] %}features[{{ f }}]{{ ' * ' if not loop.last }}{% else %}1.0{% endfor %};
+        {% endfor %}
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

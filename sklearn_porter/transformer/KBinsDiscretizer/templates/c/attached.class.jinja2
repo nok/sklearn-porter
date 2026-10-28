@@ -15,6 +15,20 @@
 
 /* Write the transformed features to `values`: */
 void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
+    {% if onehot %}
+    for (int i = 0; i < {{ prefix }}N_FEATURES_OUT; i++) {
+        values[i] = 0.0;
+    }
+    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+        int bin = 0;
+        for (int j = {{ prefix }}offsets[i]; j < {{ prefix }}offsets[i + 1]; j++) {
+            if (features[i] >= {{ prefix }}edges[j]) {
+                bin++;
+            }
+        }
+        values[{{ prefix }}offsets[i] + i + bin] = 1.0;
+    }
+    {% else %}
     for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
         values[i] = 0.0;
         for (int j = {{ prefix }}offsets[i]; j < {{ prefix }}offsets[i + 1]; j++) {
@@ -23,6 +37,7 @@ void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURE
             }
         }
     }
+    {% endif %}
 }
 {% endblock %}
 

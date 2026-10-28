@@ -19,7 +19,9 @@ from sklearn.preprocessing import (
     MaxAbsScaler,
     MinMaxScaler,
     Normalizer,
+    OneHotEncoder,
     OrdinalEncoder,
+    PolynomialFeatures,
     RobustScaler,
     SplineTransformer,
     StandardScaler,
@@ -163,6 +165,45 @@ def test_port_of_all_transformers(language: str, template: str):
             assert name in out
     else:
         assert 'void step10_transform(' in out
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_port_with_changing_number_of_features(language: str, template: str):
+    """The transformers can change the number of features."""
+    pipeline = _fit(
+        [
+            ('k_bins', KBinsDiscretizer(n_bins=3, encode='ordinal')),
+            ('one_hot', OneHotEncoder(handle_unknown='ignore')),
+            ('poly', PolynomialFeatures(2, interaction_only=True)),
+            ('clf', LogisticRegression(max_iter=1000)),
+        ]
+    )
+    est = Pipeline(pipeline, language=language, template=template)
+    out = est.port()
+    if template == 'exported':
+        out, data = out
+        transformers = json.loads(data)['transformers']
+        assert [sorted(t) for t in transformers] == [
+            ['edges', 'offsets'],
+            ['categories', 'inputs', 'missing'],
+            ['factors', 'offsets'],
+        ]
+    assert '{%' not in out
+    assert '{{ ' not in out
+    # The ported pipeline reads the features of the pipeline:
+    assert 'You have to pass 4 features per sample.' in out or (
+        language == 'c' and 'pipeline_read_features' in out
+    )
+    if language == 'c':
+        assert 'double pipeline_values0[4];' in out
+        assert 'double pipeline_values2[step2_N_FEATURES_OUT];' in out
+        assert 'step3_transform(features, pipeline_values2);' in out
+    elif language == 'cs':
+        assert (
+            'PipelineTransform = pipelineFeatures => step3.Transform('
+            'step2.Transform(step1.Transform(pipelineFeatures)));'
+        ) in out
 
 
 def test_port_without_blocks_in_output(fitted_pipeline: SklearnPipeline):

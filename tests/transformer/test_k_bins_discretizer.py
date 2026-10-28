@@ -3,6 +3,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from scipy.sparse import issparse
 
 # scikit-learn
 from sklearn.preprocessing import KBinsDiscretizer
@@ -19,6 +20,8 @@ PARAMS = {
     'quantile': dict(n_bins=3, encode='ordinal'),
     'uniform': dict(n_bins=4, encode='ordinal', strategy='uniform'),
     'kmeans': dict(n_bins=5, encode='ordinal', strategy='kmeans'),
+    'onehot': dict(n_bins=3, encode='onehot'),
+    'onehot_dense': dict(n_bins=4, encode='onehot-dense', strategy='uniform'),
 }
 
 
@@ -75,7 +78,11 @@ def test_transformer_k_bins_discretizer(
     )
     x_tr = est.make(test_x, directory=tmp_dir, delete_created_files=False)
     # The ported transformer counts the inner edges of the bins which are
-    # lower than or equal to the feature like scikit-learn:
+    # lower than or equal to the feature like scikit-learn (and sets the
+    # transformed feature of this bin to 1 with `encode='onehot'`):
     x_true = orig_est.transform(test_x)
+    if issparse(x_true):
+        x_true = x_true.toarray()
+    assert x_tr.shape == x_true.shape
     np.testing.assert_array_equal(x_tr, x_true)
     assert est.test(test_x) == 1.0
