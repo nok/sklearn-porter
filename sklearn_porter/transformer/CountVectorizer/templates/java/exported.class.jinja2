@@ -20,11 +20,17 @@ class {{ class_name }} {
         {% if n_stop_words %}
         private String[] stop_words;
         {% endif %}
+        {% if tfidf %}
+        private double[] idf;
+        {% endif %}
     }
 
     private java.util.Map<String, Integer> vocabulary = new java.util.HashMap<>();
     {% if n_stop_words %}
     private java.util.Set<String> stopWords = new java.util.HashSet<>();
+    {% endif %}
+    {% if tfidf %}
+    private double[] idf;
     {% endif %}
 
 {% if _blocks %}
@@ -44,11 +50,17 @@ class {{ class_name }} {
         {% if n_stop_words %}
         String[] stopWords = data.stop_words;
         {% endif %}
+        {% if tfidf %}
+        double[] idf = data.idf;
+        {% endif %}
         for (int i = 0; i < vocabulary.length; i++) {
             this.vocabulary.put(vocabulary[i], i);
         }
         {% if n_stop_words %}
         this.stopWords.addAll(java.util.Arrays.asList(stopWords));
+        {% endif %}
+        {% if tfidf %}
+        this.idf = idf;
         {% endif %}
     }
 
@@ -78,6 +90,29 @@ class {{ class_name }} {
                 }
             }
         }
+        {% if tfidf %}
+        // Weight the counts with the idf and normalize them (tf-idf):
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] != 0.0) {
+                values[i] = {% if sublinear_tf %}(Math.log(values[i]) + 1.0){% else %}values[i]{% endif %} * idf[i];
+            }
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        double norm = 0.0;
+        for (int i = 0; i < values.length; i++) {
+            norm += {% if norm == 'l1' %}Math.abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = Math.sqrt(norm);
+            {% endif %}
+            for (int i = 0; i < values.length; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        {% endif %}
         return values;
     }
 {% if not _blocks %}

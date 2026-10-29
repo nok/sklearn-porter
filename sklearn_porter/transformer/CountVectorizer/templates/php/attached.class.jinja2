@@ -8,11 +8,17 @@ class {{ class_name }} {
     {% if n_stop_words %}
     private $stopWords;
     {% endif %}
+    {% if tfidf %}
+    private $idf;
+    {% endif %}
 
-    public function __construct($vocabulary{% if n_stop_words %}, $stopWords{% endif %}) {
+    public function __construct($vocabulary{% if n_stop_words %}, $stopWords{% endif %}{% if tfidf %}, $idf{% endif %}) {
         $this->vocabulary = array_flip($vocabulary);
         {% if n_stop_words %}
         $this->stopWords = array_flip($stopWords);
+        {% endif %}
+        {% if tfidf %}
+        $this->idf = $idf;
         {% endif %}
     }
 
@@ -46,6 +52,29 @@ class {{ class_name }} {
                 }
             }
         }
+        {% if tfidf %}
+        // Weight the counts with the idf and normalize them (tf-idf):
+        foreach ($values as $i => $value) {
+            if ($value != 0) {
+                $values[$i] = {% if sublinear_tf %}(log($value) + 1.0){% else %}$value{% endif %} * $this->idf[$i];
+            }
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        $norm = 0.0;
+        foreach ($values as $value) {
+            $norm += {% if norm == 'l1' %}abs($value){% else %}$value * $value{% endif %};
+        }
+        if ($norm != 0.0) {
+            {% if norm == 'l2' %}
+            $norm = sqrt($norm);
+            {% endif %}
+            foreach ($values as $i => $value) {
+                $values[$i] = $value / $norm;
+            }
+        }
+        {% endif %}
+        {% endif %}
         return $values;
     }
 
@@ -67,9 +96,12 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {% if n_stop_words %}
     {{ stop_words }}
     {% endif %}
+    {% if tfidf %}
+    {{ idf }}
+    {% endif %}
 
     // Transformer:
-    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}vocabulary{% if n_stop_words %}, ${{ prefix }}stop_words{% endif %});
+    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}vocabulary{% if n_stop_words %}, ${{ prefix }}stop_words{% endif %}{% if tfidf %}, ${{ prefix }}idf{% endif %});
     {% endblock %}
 
     // One document (arguments) or several documents (standard input):

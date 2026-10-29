@@ -83,12 +83,32 @@ class CountVectorizer(TransformerBase, EstimatorApiABC):
         arrays = dict(vocabulary=vocabulary)
         if stop_words:
             arrays.update(stop_words=stop_words)
+        strs = tuple(arrays)
+        arrays.update(self._get_weights(est, n_features))
         self._set_model_data(
-            n_features, n_features_out=n_features, strs=arrays, **arrays
+            n_features, n_features_out=n_features, strs=strs, **arrays
         )
         # The order of the terms in the code of C (sorted like `strcmp`),
         # because the order of the code points is the order of UTF-8:
         self.order = sorted(range(n_features), key=vocabulary.__getitem__)
+
+    def _get_weights(self, est: CountVectorizerClass, n_features: int) -> dict:
+        """
+        Get the arrays of the weights of the counts, e.g. the idf of a
+        `TfidfVectorizer` (template variant `tfidf`).
+
+        Parameters
+        ----------
+        est : CountVectorizerClass
+            The vectorizer of scikit-learn.
+        n_features : int
+            The number of features (the size of the vocabulary).
+
+        Returns
+        -------
+        The arrays of the weights (none of a `CountVectorizer`).
+        """
+        return {}
 
     def _check_params(self, est: CountVectorizerClass):
         """Check that the parameters of the vectorizer are supported."""

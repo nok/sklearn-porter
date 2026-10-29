@@ -15,7 +15,11 @@ from sklearn.base import (
     TransformerMixin,
 )
 from sklearn.compose import ColumnTransformer
-from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import (
+    CountVectorizer,
+    TfidfTransformer,
+    TfidfVectorizer,
+)
 from sklearn.feature_selection import (
     RFE,
     RFECV,
@@ -69,8 +73,8 @@ def is_transformer(estimator: object) -> bool:
     True if the object is a transformer (e.g. a `StandardScaler`), but not a
     classifier, a regressor or an outlier detector.
     """
-    # The text vectorizers (e.g. a `CountVectorizer`) aren't a
-    # `TransformerMixin`:
+    # The text vectorizers (e.g. a `CountVectorizer` or its subclass
+    # `TfidfVectorizer`) aren't a `TransformerMixin`:
     is_vectorizer = isinstance(estimator, CountVectorizer)
     return (
         isinstance(estimator, TransformerMixin) or is_vectorizer
@@ -425,6 +429,7 @@ class Transformer(Base):
             StandardScaler,
             TargetEncoder,
             TfidfTransformer,
+            TfidfVectorizer,
             VarianceThreshold,
         )
 

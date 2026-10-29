@@ -14,6 +14,7 @@ from sklearn.feature_extraction.text import (
     ENGLISH_STOP_WORDS,
     CountVectorizer,
     TfidfTransformer,
+    TfidfVectorizer,
 )
 from sklearn.feature_selection import (
     RFE,
@@ -242,6 +243,19 @@ TRANSFORMERS = {
         lambda t: dict(
             vocabulary=t.get_feature_names_out().tolist(),
             stop_words=sorted(w for w in ENGLISH_STOP_WORDS if len(w) > 1),
+        ),
+    ),
+    'tfidf_vectorizer': (
+        lambda: TfidfVectorizer().fit(CORPUS),
+        lambda t: dict(
+            vocabulary=t.get_feature_names_out().tolist(),
+            idf=t.idf_.tolist(),
+        ),
+    ),
+    'tfidf_vectorizer_without_idf': (
+        lambda: TfidfVectorizer(use_idf=False).fit(CORPUS),
+        lambda t: dict(
+            vocabulary=t.get_feature_names_out().tolist(), idf=[1.0] * 9
         ),
     ),
     # scikit-learn uses `idf_` of the fit, also if `use_idf` changes later:
@@ -627,6 +641,7 @@ def test_show_of_all_transformers():
         assert name in table
     for name in ('PowerTransformer', 'TfidfTransformer', 'CountVectorizer'):
         assert name in table
+    assert 'TfidfVectorizer' in table
     assert 'QuantileTransformer' in table
     for name in ('GenericUnivariateSelect', 'RFE', 'RFECV', 'SelectFdr'):
         assert name in table
@@ -1052,6 +1067,41 @@ def test_unsupported_count_vectorizer(params: dict):
     with pytest.raises(
         exception.NotSupportedYetError, match=next(iter(params))
     ):
+        Transformer(orig_est)
+
+
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_parameters_of_fit_of_tfidf_vectorizer(language: str):
+    """
+    The ported vectorizer uses the parameters of the fit (of `_tfidf`) like
+    scikit-learn, not the current parameters.
+    """
+    orig_est = TfidfVectorizer().fit(CORPUS)
+    orig_est.set_params(norm=None, sublinear_tf=True, use_idf=False)
+    out, data = Transformer(
+        orig_est, language=language, template='exported'
+    ).port()
+    assert '{%' not in out
+    sqrt = dict(cs='Sqrt(norm)', go='Sqrt(norm)', php='sqrt($norm)')
+    assert sqrt.get(language, 'sqrt(norm)') in out
+    log = dict(cs='Math.Log(', go='math.Log(', java='Math.log(')
+    log = log.get(language, 'Math.log(' if language == 'js' else 'log(')
+    assert log not in out
+    assert json.loads(data)['idf'] == orig_est.idf_.tolist()
+
+
+def test_unfitted_tfidf_vectorizer():
+    """Unlike a `CountVectorizer` a `TfidfVectorizer` needs a fit."""
+    with pytest.raises(exception.NotFittedEstimatorError):
+        Transformer(TfidfVectorizer(vocabulary=['first']))
+
+
+def test_unsupported_tfidf_vectorizer():
+    """Without smoothing the idf of a term without counts is infinite."""
+    orig_est = TfidfVectorizer(smooth_idf=False, vocabulary=['first', 'xyz'])
+    with np.errstate(divide='ignore'):
+        orig_est.fit(CORPUS)
+    with pytest.raises(exception.NotSupportedYetError, match='`idf`'):
         Transformer(orig_est)
 
 
