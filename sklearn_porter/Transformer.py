@@ -27,6 +27,7 @@ from sklearn.preprocessing import (
     PolynomialFeatures,
     RobustScaler,
     StandardScaler,
+    TargetEncoder,
 )
 
 # sklearn-porter
@@ -298,4 +299,5 @@ class Transformer(Base):
             RobustScaler,
             SimpleImputer,
             StandardScaler,
+            TargetEncoder,
         )

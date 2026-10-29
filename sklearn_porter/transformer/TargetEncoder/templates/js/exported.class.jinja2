@@ -1,0 +1,60 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+{% block class %}
+{% if _blocks %}
+var {{ class_name }} = function(data) {
+    this.data = data;
+{% else %}
+var {{ class_name }} = function(jsonFile) {
+    this.data = JSON.parse(fs.readFileSync(jsonFile));
+{% endif %}
+
+    this.transform = function(features) {
+        var values = new Array({{ n_features_out }});
+        for (var i = 0, l = values.length; i < l; i++) {
+            var x = features[this.data.inputs[i]];
+            if (isNaN(x)) {
+                values[i] = this.data.missing[i] === 1 ? this.data.nans[i] : this.data.unknowns[i];
+                continue;
+            }
+            values[i] = this.data.unknowns[i];
+            for (var j = this.data.offsets[i]; j < this.data.offsets[i + 1]; j++) {
+                if (x === this.data.categories[j]) {
+                    values[i] = this.data.encodings[j];
+                    break;
+                }
+            }
+        }
+        return values;
+    };
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    if (process.argv.length < 3) {
+        throw new Error("You have to pass the path to the model data.");
+    }
+
+    {% block create %}
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('process.argv[2]') }});
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(3)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

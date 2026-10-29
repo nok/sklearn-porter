@@ -1,0 +1,73 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+public class {{ class_name }} {
+
+    private int[] inputs;
+    private double[] categories;
+    private double[] encodings;
+    private int[] offsets;
+    private int[] missing;
+    private double[] nans;
+    private double[] unknowns;
+
+    public {{ class_name }}(int[] inputs, double[] categories, double[] encodings, int[] offsets, int[] missing, double[] nans, double[] unknowns) {
+        this.inputs = inputs;
+        this.categories = categories;
+        this.encodings = encodings;
+        this.offsets = offsets;
+        this.missing = missing;
+        this.nans = nans;
+        this.unknowns = unknowns;
+    }
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        for (int i = 0; i < values.Length; i++) {
+            double x = features[this.inputs[i]];
+            if (double.IsNaN(x)) {
+                values[i] = this.missing[i] == 1 ? this.nans[i] : this.unknowns[i];
+                continue;
+            }
+            values[i] = this.unknowns[i];
+            for (int j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
+                if (x == this.categories[j]) {
+                    values[i] = this.encodings[j];
+                    break;
+                }
+            }
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        {% block create %}
+        // Model data:
+        {{ inputs }}
+        {{ categories }}
+        {{ encodings }}
+        {{ offsets }}
+        {{ missing }}
+        {{ nans }}
+        {{ unknowns }}
+
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}inputs, {{ prefix }}categories, {{ prefix }}encodings, {{ prefix }}offsets, {{ prefix }}missing, {{ prefix }}nans, {{ prefix }}unknowns);
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

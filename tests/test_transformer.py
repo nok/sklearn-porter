@@ -24,6 +24,7 @@ from sklearn.preprocessing import (
     RobustScaler,
     SplineTransformer,
     StandardScaler,
+    TargetEncoder,
 )
 from sklearn.svm import SVC
 
@@ -131,6 +132,29 @@ TRANSFORMERS = {
             # of the previous degree multiplied by a feature):
             factors=[0, 1, 2, 0, 0, 1, 0, 2, 0, 1, 1, 2, 1, 2, 2],
             offsets=[0, 0, 1, 2, 3, 5, 7, 9, 11, 13, 15],
+        ),
+    ),
+    'target_encoder': (
+        lambda: TargetEncoder(random_state=0).fit(
+            np.round(_iris_with_missing_values()), load_iris().target % 2
+        ),
+        lambda t: dict(
+            inputs=[0, 1, 2, 3],
+            categories=np.concatenate(
+                [c[~np.isnan(c)] for c in t.categories_]
+            ).tolist(),
+            encodings=np.concatenate(
+                [
+                    e[~np.isnan(c)]
+                    for c, e in zip(t.categories_, t.encodings_, strict=True)
+                ]
+            ).tolist(),
+            offsets=np.cumsum(
+                [0] + [np.sum(~np.isnan(c)) for c in t.categories_]
+            ).tolist(),
+            missing=[1, 0, 0, 0],
+            nans=[float(t.encodings_[0][-1]), 0.0, 0.0, 0.0],
+            unknowns=[float(t.target_mean_)] * 4,
         ),
     ),
     'k_bins_discretizer_onehot': (
@@ -486,7 +510,7 @@ def test_show_of_all_transformers():
         assert name in table
     for name in ('Normalizer', 'OrdinalEncoder'):
         assert name in table
-    for name in ('OneHotEncoder', 'PolynomialFeatures'):
+    for name in ('OneHotEncoder', 'PolynomialFeatures', 'TargetEncoder'):
         assert name in table
 
 
@@ -743,6 +767,29 @@ def test_combined_template_of_polynomial_features(language: str, template: str):
         x = '$features' if language == 'php' else 'features'
         # x0² x1 is (x1 x0) x0:
         assert f'{x}[1] * {x}[0] * {x}[0]' in out
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_multiclass_target_encoder(language: str, template: str):
+    """One transformed feature per feature and class."""
+    x = np.round(load_iris().data)
+    orig_est = TargetEncoder(random_state=0).fit(x, load_iris().target)
+    est = Transformer(orig_est, language=language, template=template)
+    model_data = est._estimator.model_data
+    assert model_data['inputs'] == [0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3]
+    assert model_data['unknowns'] == orig_est.target_mean_.tolist() * 4
+    assert est._estimator.meta_info['n_features_out'] == 12
+    out = est.port()
+    out = out[0] if isinstance(out, tuple) else out
+    assert '{%' not in out
+
+
+def test_unsupported_target_encoder():
+    x = np.array([['a'], ['b'], ['a'], ['b']], dtype=object)
+    orig_est = TargetEncoder().fit(x, [0, 1, 0, 1])
+    with pytest.raises(exception.NotSupportedYetError, match='numbers'):
+        Transformer(orig_est)
 
 
 def test_polynomial_features_with_bias_only():

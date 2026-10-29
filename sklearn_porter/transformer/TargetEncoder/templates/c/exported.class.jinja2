@@ -1,0 +1,79 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+#include <math.h>
+
+{% block class %}
+#define {{ prefix }}N_FEATURES {{ n_features }}
+#define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
+
+
+int *{{ prefix }}inputs;
+double *{{ prefix }}categories;
+double *{{ prefix }}encodings;
+int *{{ prefix }}offsets;
+int *{{ prefix }}missing;
+double *{{ prefix }}nans;
+double *{{ prefix }}unknowns;
+
+void {{ prefix }}load({{ 'JsonValue *data' if _blocks else 'const char *path' }}) {
+{% if not _blocks %}
+    JsonValue *data = json_read(path);
+{% endif %}
+    {{ prefix }}inputs = json_ints(json_get(data, "inputs"));
+    {{ prefix }}categories = json_doubles(json_get(data, "categories"));
+    {{ prefix }}encodings = json_doubles(json_get(data, "encodings"));
+    {{ prefix }}offsets = json_ints(json_get(data, "offsets"));
+    {{ prefix }}missing = json_ints(json_get(data, "missing"));
+    {{ prefix }}nans = json_doubles(json_get(data, "nans"));
+    {{ prefix }}unknowns = json_doubles(json_get(data, "unknowns"));
+{% if not _blocks %}
+    json_free(data);
+{% endif %}
+}
+
+/* Write the transformed features to `values`: */
+void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
+    for (int i = 0; i < {{ prefix }}N_FEATURES_OUT; i++) {
+        double x = features[{{ prefix }}inputs[i]];
+        if (isnan(x)) {
+            values[i] = {{ prefix }}missing[i] ? {{ prefix }}nans[i] : {{ prefix }}unknowns[i];
+            continue;
+        }
+        values[i] = {{ prefix }}unknowns[i];
+        for (int j = {{ prefix }}offsets[i]; j < {{ prefix }}offsets[i + 1]; j++) {
+            if (x == {{ prefix }}categories[j]) {
+                values[i] = {{ prefix }}encodings[j];
+                break;
+            }
+        }
+    }
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+int main(int argc, const char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "You have to pass the path to the model data.\n");
+        return 1;
+    }
+
+    {% block create %}
+    /* Model data: */
+    {{ prefix }}load({{ data|default('argv[1]') }});
+    {% endblock %}
+
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 2)) {
+        double values[N_FEATURES_OUT];
+        transform(values, features);
+        print_values(values, N_FEATURES_OUT);
+    }
+
+    return 0;
+}
+{% endblock %}

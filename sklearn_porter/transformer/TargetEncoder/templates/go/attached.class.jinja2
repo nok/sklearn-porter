@@ -1,0 +1,76 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+type {{ class_name }} struct {
+	Inputs     []int
+	Categories []float64
+	Encodings  []float64
+	Offsets    []int
+	Missing    []int
+	Nans       []float64
+	Unknowns   []float64
+}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, {{ n_features_out }})
+	for i := range values {
+		x := features[transformer.Inputs[i]]
+		if math.IsNaN(x) {
+			if transformer.Missing[i] == 1 {
+				values[i] = transformer.Nans[i]
+			} else {
+				values[i] = transformer.Unknowns[i]
+			}
+			continue
+		}
+		values[i] = transformer.Unknowns[i]
+		for j := transformer.Offsets[i]; j < transformer.Offsets[i+1]; j++ {
+			if x == transformer.Categories[j] {
+				values[i] = transformer.Encodings[j]
+				break
+			}
+		}
+	}
+	return values
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+{% block data %}
+// Model data:
+{{ inputs }}
+{{ categories }}
+{{ encodings }}
+{{ offsets }}
+{{ missing }}
+{{ nans }}
+{{ unknowns }}
+{% endblock %}
+
+func main() {
+	{% block create %}
+	// Transformer:
+	{{ instance|default('transformer') }} := {{ class_name ~ '{' }}{{ prefix }}inputs, {{ prefix }}categories, {{ prefix }}encodings, {{ prefix }}offsets, {{ prefix }}missing, {{ prefix }}nans, {{ prefix }}unknowns}
+	{% endblock %}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

@@ -122,3 +122,9 @@
 - The ported [PolynomialFeatures](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PolynomialFeatures.html) multiplies the features of each transformed feature in the order of scikit-learn (each term of degree `d` is a term of degree `d - 1` multiplied by a feature), so the transformed features are identical. `degree` can be the maximal degree or a tuple of the minimal and the maximal degree, `interaction_only` and `include_bias` are supported.
 - The number of transformed features grows with the power of the degree, with many features the generated code (especially of the template `combined`) can get very large.
 - scikit-learn multiplies the features of sparse matrices in another order, so the transformed features of sparse samples (e.g. of a `StandardScaler(with_mean=False)` fitted on sparse data) can differ by a few ULP from degree 3 on. Transformed features of zeros and ones (e.g. of a `OneHotEncoder`) are identical.
+
+## TargetEncoder
+
+- The ported [TargetEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.TargetEncoder.html) returns the encodings of the categories (`encodings_`) like `transform` of scikit-learn, so the transformed features are identical. With several classes (`target_type_` is `multiclass`) there is one transformed feature per feature and class.
+- `fit_transform` of scikit-learn encodes the samples of the fit with a cross fitting scheme (different from `transform`); the ported transformer corresponds to `transform`, which a pipeline uses for predictions.
+- Missing values (`NaN`) seen in the fit get their encoding, unknown categories (also unseen missing values) get the mean of the target (`target_mean_`) like in scikit-learn. Only numbers are supported as categories; strings raise a `NotSupportedYetError`.
