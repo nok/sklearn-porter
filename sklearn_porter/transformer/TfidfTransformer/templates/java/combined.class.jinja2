@@ -1,0 +1,50 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    public double[] transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        // Zeros remain zeros (also negative zeros) like in a sparse matrix:
+        {% for i in range(n_features) %}
+        values[{{ i }}] = features[{{ i }}] == 0.0 ? 0.0 : {% if sublinear_tf %}(Math.log(features[{{ i }}]) + 1.0){% else %}features[{{ i }}]{% endif %} * {{ idf[i] }};
+        {% endfor %}
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        double norm = 0.0;
+        for (int i = 0; i < values.length; i++) {
+            norm += {% if norm == 'l1' %}Math.abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = Math.sqrt(norm);
+            {% endif %}
+            for (int i = 0; i < values.length; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

@@ -11,6 +11,7 @@ from sklearn.compose import ColumnTransformer
 # scikit-learn
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_selection import (
     RFE,
     SelectFromModel,
@@ -150,6 +151,9 @@ PREPROCESSING = {
             'function',
             FunctionTransformer(np.clip, kw_args=dict(a_min=None, a_max=0.5)),
         ),
+    ],
+    'tfidf_transformer': lambda: [
+        ('tfidf', TfidfTransformer(sublinear_tf=True)),
     ],
 }
 

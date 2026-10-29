@@ -1,0 +1,58 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function(idf) {
+
+    this.idf = idf;
+
+    this.transform = function(features) {
+        var values = new Array(this.idf.length);
+        for (var i = 0, l = this.idf.length; i < l; i++) {
+            // Zeros remain zeros (also negative zeros) like in a sparse matrix:
+            values[i] = features[i] === 0 ? 0 : {% if sublinear_tf %}(Math.log(features[i]) + 1.0){% else %}features[i]{% endif %} * this.idf[i];
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        var norm = 0.0;
+        for (var i = 0, l = values.length; i < l; i++) {
+            norm += {% if norm == 'l1' %}Math.abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = Math.sqrt(norm);
+            {% endif %}
+            for (var i = 0, l = values.length; i < l; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        return values;
+    };
+
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Model data:
+    {{ idf }}
+
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}idf);
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

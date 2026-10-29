@@ -1,0 +1,70 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private $idf;
+
+{% if _blocks %}
+    public function __construct($data) {
+{% else %}
+    public function __construct($path) {
+        $data = json_decode(file_get_contents($path, true), true);
+{% endif %}
+        $this->idf = $data['idf'];
+    }
+
+    public function transform($features) {
+        $values = array();
+        for ($i = 0, $l = count($this->idf); $i < $l; $i++) {
+            // Zeros remain zeros (also negative zeros) like in a sparse matrix:
+            $values[$i] = $features[$i] == 0 ? 0.0 : {% if sublinear_tf %}(log($features[$i]) + 1.0){% else %}$features[$i]{% endif %} * $this->idf[$i];
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        $norm = 0.0;
+        foreach ($values as $value) {
+            $norm += {% if norm == 'l1' %}abs($value){% else %}$value * $value{% endif %};
+        }
+        if ($norm != 0.0) {
+            {% if norm == 'l2' %}
+            $norm = sqrt($norm);
+            {% endif %}
+            foreach ($values as $i => $value) {
+                $values[$i] = $value / $norm;
+            }
+        }
+        {% endif %}
+        return $values;
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    if (count($argv) < 2) {
+        fwrite(STDERR, "You have to pass the path to the model data.\n");
+        exit(1);
+    }
+
+    array_shift($argv);
+
+    {% block create %}
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('array_shift($argv)') }});
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues($transformer->transform($features));
+    }
+
+}
+{% endblock %}
