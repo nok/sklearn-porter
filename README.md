@@ -29,7 +29,7 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 
 ### Estimators
 
-<details>
+<details open>
 <summary><strong>Classifiers</strong></summary>
 
 - [ensemble.AdaBoostClassifier](https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.AdaBoostClassifier.html)
