@@ -1,0 +1,70 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private $lambdas;
+    private $mean;
+    private $scale;
+
+    public function __construct($lambdas, $mean, $scale) {
+        $this->lambdas = $lambdas;
+        $this->mean = $mean;
+        $this->scale = $scale;
+    }
+
+    public function transform($features) {
+        $values = array();
+        for ($i = 0, $n = count($features); $i < $n; $i++) {
+            $x = $features[$i];
+            $l = $this->lambdas[$i];
+        {% if method == 'box-cox' %}
+            if (abs($l) < 1e-19) {
+                $y = log($x);
+            } else if ($l * log($x) < 709.78) {
+                $y = expm1($l * log($x)) / $l;
+            } else {
+                $y = ($l > 0 ? 1.0 : -1.0) * exp($l * log($x) - log(abs($l))) - 1.0 / $l;
+            }
+        {% else %}
+            if ($x >= 0) {
+                $y = abs($l) < {{ eps }} ? log1p($x) : expm1($l * log1p($x)) / $l;
+            } else {
+                $y = abs($l - 2.0) > {{ eps }} ? -expm1((2.0 - $l) * log1p(-$x)) / (2.0 - $l) : -log1p(-$x);
+            }
+        {% endif %}
+            $values[$i] = ($y - $this->mean[$i]) / $this->scale[$i];
+        }
+        return $values;
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    {% block create %}
+    // Model data:
+    {{ lambdas }}
+    {{ mean }}
+    {{ scale }}
+
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}lambdas, ${{ prefix }}mean, ${{ prefix }}scale);
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues($transformer->transform($features));
+    }
+
+}
+{% endblock %}

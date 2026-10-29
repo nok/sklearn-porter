@@ -1,0 +1,37 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function() {
+
+    this.transform = function(features) {
+        return [
+            {% for i in range(n_features) %}
+            ({% if method == 'box-cox' %}{% if bc_log[i] %}Math.log(features[{{ i }}]){% else %}({{ lambdas[i] }} * Math.log(features[{{ i }}]) < 709.78 ? Math.expm1({{ lambdas[i] }} * Math.log(features[{{ i }}])) / {{ lambdas[i] }} : {{ signs[i] }} * Math.exp({{ lambdas[i] }} * Math.log(features[{{ i }}]) - {{ log_abs[i] }}) - {{ reciprocals[i] }}){% endif %}{% else %}(features[{{ i }}] >= 0 ? {% if pos_log[i] %}Math.log1p(features[{{ i }}]){% else %}Math.expm1({{ lambdas[i] }} * Math.log1p(features[{{ i }}])) / {{ lambdas[i] }}{% endif %} : {% if neg_log[i] %}-Math.log1p(-features[{{ i }}]){% else %}-Math.expm1({{ two_minus[i] }} * Math.log1p(-features[{{ i }}])) / {{ two_minus[i] }}{% endif %}){% endif %} - {{ mean[i] }}) / {{ scale[i] }}{{ ',' if not loop.last }}
+            {% endfor %}
+        ];
+    };
+
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}();
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

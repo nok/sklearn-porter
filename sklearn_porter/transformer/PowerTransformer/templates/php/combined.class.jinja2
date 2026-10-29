@@ -1,0 +1,38 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    public function transform($features) {
+        return array(
+            {% for i in range(n_features) %}
+            ({% if method == 'box-cox' %}{% if bc_log[i] %}log($features[{{ i }}]){% else %}({{ lambdas[i] }} * log($features[{{ i }}]) < 709.78 ? expm1({{ lambdas[i] }} * log($features[{{ i }}])) / {{ lambdas[i] }} : {{ signs[i] }} * exp({{ lambdas[i] }} * log($features[{{ i }}]) - {{ log_abs[i] }}) - {{ reciprocals[i] }}){% endif %}{% else %}($features[{{ i }}] >= 0 ? {% if pos_log[i] %}log1p($features[{{ i }}]){% else %}expm1({{ lambdas[i] }} * log1p($features[{{ i }}])) / {{ lambdas[i] }}{% endif %} : {% if neg_log[i] %}-log1p(-$features[{{ i }}]){% else %}-expm1({{ two_minus[i] }} * log1p(-$features[{{ i }}])) / {{ two_minus[i] }}{% endif %}){% endif %} - {{ mean[i] }}) / {{ scale[i] }},
+            {% endfor %}
+        );
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    {% block create %}
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}();
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues($transformer->transform($features));
+    }
+
+}
+{% endblock %}

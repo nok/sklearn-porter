@@ -1,0 +1,67 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+type {{ class_name }} struct{}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, {{ n_features_out }})
+	{% for i in range(n_features) %}
+	{% if method == 'box-cox' %}
+	{% if bc_log[i] %}
+	values[{{ i }}] = math.Log(features[{{ i }}])
+	{% else %}
+	if t := float64({{ lambdas[i] }} * math.Log(features[{{ i }}])); t < 709.78 {
+		values[{{ i }}] = math.Expm1(t) / {{ lambdas[i] }}
+	} else {
+		values[{{ i }}] = float64({{ signs[i] }}*math.Exp(t - {{ log_abs[i] }})) - {{ reciprocals[i] }}
+	}
+	{% endif %}
+	{% else %}
+	if features[{{ i }}] >= 0 {
+	{% if pos_log[i] %}
+		values[{{ i }}] = math.Log1p(features[{{ i }}])
+	{% else %}
+		values[{{ i }}] = math.Expm1({{ lambdas[i] }}*math.Log1p(features[{{ i }}])) / {{ lambdas[i] }}
+	{% endif %}
+	} else {
+	{% if neg_log[i] %}
+		values[{{ i }}] = -math.Log1p(-features[{{ i }}])
+	{% else %}
+		values[{{ i }}] = -math.Expm1({{ two_minus[i] }}*math.Log1p(-features[{{ i }}])) / {{ two_minus[i] }}
+	{% endif %}
+	}
+	{% endif %}
+	values[{{ i }}] = (values[{{ i }}] - {{ mean[i] }}) / {{ scale[i] }}
+	{% endfor %}
+	return values
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+func main() {
+	{% block create %}
+	// Transformer:
+	{{ instance|default('transformer') }} := {{ class_name }}{}
+	{% endblock %}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[1:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

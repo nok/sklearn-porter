@@ -128,3 +128,8 @@
 - The ported [TargetEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.TargetEncoder.html) returns the encodings of the categories (`encodings_`) like `transform` of scikit-learn, so the transformed features are identical. With several classes (`target_type_` is `multiclass`) there is one transformed feature per feature and class.
 - `fit_transform` of scikit-learn encodes the samples of the fit with a cross fitting scheme (different from `transform`); the ported transformer corresponds to `transform`, which a pipeline uses for predictions.
 - Missing values (`NaN`) seen in the fit get their encoding, unknown categories (also unseen missing values) get the mean of the target (`target_mean_`) like in scikit-learn. Only numbers are supported as categories; strings raise a `NotSupportedYetError`.
+
+## PowerTransformer
+
+- The ported [PowerTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html) supports both methods with the formulas of SciPy (`scipy.stats.yeojohnson` and `scipy.special.boxcox`, also their special cases for the parameters close to `0` and `2` and the large values of Box-Cox) and standardizes the transformed features like scikit-learn (`standardize=True`).
+- C and PHP use the same `log`, `exp`, `log1p` and `expm1` as NumPy and SciPy (of the C library), the functions of the other languages can differ by a few ULP. NumPy computes some of them with SIMD instructions depending on the CPU as well. C# and Ruby have no `log1p` and `expm1`, so the ported transformer computes them with an accurate formula.

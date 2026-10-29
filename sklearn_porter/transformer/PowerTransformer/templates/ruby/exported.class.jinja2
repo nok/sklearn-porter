@@ -1,0 +1,86 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+require 'json'
+
+
+{% block class %}
+class {{ class_name }}
+
+{% if _blocks %}
+	def initialize(data)
+{% else %}
+	def initialize(path)
+		data = JSON.parse(File.read(path))
+{% endif %}
+		@lambdas = data['lambdas']
+		@mean = data['mean']
+		@scale = data['scale']
+	end
+
+	def transform(features)
+		Array.new(features.length) do |i|
+			x, l = features[i], @lambdas[i]
+		{% if method == 'box-cox' %}
+			y = if l.abs < 1e-19
+				Math.log(x)
+			elsif l * Math.log(x) < 709.78
+				expm1(l * Math.log(x)) / l
+			else
+				(l > 0 ? 1.0 : -1.0) * Math.exp(l * Math.log(x) - Math.log(l.abs)) - 1.0 / l
+			end
+		{% else %}
+			y = if x >= 0
+				l.abs < {{ eps }} ? log1p(x) : expm1(l * log1p(x)) / l
+			else
+				(l - 2.0).abs > {{ eps }} ? -expm1((2.0 - l) * log1p(-x)) / (2.0 - l) : -log1p(-x)
+			end
+		{% endif %}
+			(y - @mean[i]) / @scale[i]
+		end
+	end
+
+
+	# log(1 + x), also accurate for small values of x:
+	def log1p(x)
+		return Float::NAN if x < -1
+		u = 1.0 + x
+		return x if u == 1.0
+		return Math.log(u) if x > 1
+		Math.log(u) * x / (u - 1.0)
+	end
+
+	# exp(x) - 1, also accurate for small values of x:
+	def expm1(x)
+		u = Math.exp(x)
+		return x if u == 1.0
+		return u - 1.0 if x.abs > 1
+		(u - 1.0) * x / Math.log(u)
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	raise "You have to pass the path to the model data." if ARGV.empty?
+
+	# Model data:
+	path = ARGV.shift
+
+	{% block create %}
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ data|default('path') }}
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}
