@@ -62,6 +62,8 @@ def _samples(x: np.ndarray) -> np.ndarray:
             np.full((1, x.shape[1]), 0.0),
             np.full((1, x.shape[1]), -1.0),
             np.full((1, x.shape[1]), 1000.0),
+            np.full((1, x.shape[1]), np.inf),
+            np.full((1, x.shape[1]), -np.inf),
         )
     )
     samples[::7, 0] = np.nan

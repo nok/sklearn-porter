@@ -2536,3 +2536,72 @@ def test_hist_gradient_boosting_log_link_in_go(template: str):
     output = output[0] if isinstance(output, tuple) else output
     assert 'math.Exp(value)' in output
     assert '"math"' in output
+
+
+# The spellings of infinite and missing values in the samples, e.g. of
+# Python (`str`) and of the ported transformers:
+SPELLINGS = [
+    'inf',
+    '+inf',
+    '-inf',
+    'INF',
+    'infinity',
+    'Infinity',
+    '-Infinity',
+    'nan',
+    'NaN',
+]
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_infinite_values_in_samples(
+    tmp_root_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    language: str,
+    template: str,
+):
+    """The ported estimators read all spellings of infinite values."""
+    cmds = []
+
+    def run_and_record(cmd: list[str], **kwargs) -> CompletedProcess:
+        cmds.append(cmd)
+        return run(cmd, **kwargs)
+
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run_and_record)
+
+    x, y = load_iris(return_X_y=True)
+    orig_est = HistGradientBoostingClassifier(max_iter=10, random_state=0)
+    orig_est.fit(x, y)
+    est = Estimator(orig_est, language=language, template=template)
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'infinite_values_in_samples'),
+            ('language', language),
+            ('template', template),
+        ],
+    )
+    est.make(x[:1], directory=tmp_dir, delete_created_files=False)
+    samples = [
+        [spelling, *map(str, x[50, 1:3]), spelling] for spelling in SPELLINGS
+    ]
+    y_true = orig_est.predict([[float(v) for v in s] for s in samples])
+    # Several samples from the standard input:
+    proc = run(
+        cmds[0],
+        input='\n'.join(' '.join(s) for s in samples) + '\n',
+        capture_output=True,
+        encoding='utf-8',
+        check=True,
+    )
+    lines = proc.stdout.strip().split('\n')
+    y_pred = [json.loads(line)['predict'] for line in lines]
+    np.testing.assert_array_equal(y_pred, y_true)
+    # One sample from the arguments:
+    for sample, label in zip(samples, y_true, strict=True):
+        proc = run(
+            cmds[0] + sample, capture_output=True, encoding='utf-8', check=True
+        )
+        assert json.loads(proc.stdout)['predict'] == label

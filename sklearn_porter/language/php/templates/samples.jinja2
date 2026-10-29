@@ -1,3 +1,13 @@
+// Parse a feature, also `nan`, `inf` and `-inf` (e.g. of Python) and `NaN`,
+// `Infinity` and `-Infinity` (e.g. of a ported transformer):
+function parseFeature($value) {
+    $name = ltrim(strtolower($value), '+-');
+    if ($name === 'inf' || $name === 'infinity') {
+        return $value[0] === '-' ? -INF : INF;
+    }
+    return $name === 'nan' ? NAN : floatval($value);
+}
+
 // Read the features of one sample from the arguments or of several samples
 // (one per line) from the standard input:
 function readSamples($args) {
@@ -12,9 +22,7 @@ function readSamples($args) {
             fwrite(STDERR, "You have to pass {{ pipeline_n_features or n_features }} features per sample.\n");
             exit(1);
         }
-        $samples[] = array_map(function ($value) {
-            return strtolower($value) === 'nan' ? NAN : floatval($value);
-        }, $values);
+        $samples[] = array_map('parseFeature', $values);
     }
     return $samples;
 }

@@ -1,3 +1,11 @@
+# Parse a feature, also `nan`, `inf` and `-inf` (e.g. of Python) and `NaN`,
+# `Infinity` and `-Infinity` (e.g. of a ported transformer):
+def parse_feature(value)
+	name = value.downcase.sub(/\A[+-]/, '')
+	return (value.start_with?('-') ? -Float::INFINITY : Float::INFINITY) if %w[inf infinity].include?(name)
+	name == 'nan' ? Float::NAN : value.to_f
+end
+
 # Read the features of one sample from the arguments or of several samples
 # (one per line) from the standard input:
 def read_samples(args)
@@ -6,6 +14,6 @@ def read_samples(args)
 		values = line.split
 		next if values.empty?
 		raise "You have to pass {{ pipeline_n_features or n_features }} features per sample." if values.length != {{ pipeline_n_features or n_features }}
-		yield values.collect { |value| value.downcase == 'nan' ? Float::NAN : value.to_f }
+		yield values.collect { |value| parse_feature(value) }
 	end
 end
