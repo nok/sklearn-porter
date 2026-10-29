@@ -1,0 +1,105 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	def initialize(quantiles, references)
+		@quantiles = quantiles
+		@references = references
+	end
+
+	def transform(features)
+		Array.new(features.length) { |i| interp(features[i], @quantiles, i * {{ n_quantiles }}, @references) }
+	end
+
+
+	# The quantile of x (np.interp of the quantiles q[o, n] and the
+	# references r in both directions like scikit-learn):
+	def interp(x, q, o, r)
+		n = r.length
+		return x if x.nan?
+		# np.interp(x, q, r):
+		if x > q[o + n - 1]
+			a = r[n - 1]
+		elsif x < q[o]
+			a = r[0]
+		else
+			lo, hi = 0, n
+			while lo < hi
+				mid = (lo + hi) / 2
+				if x >= q[o + mid]
+					lo = mid + 1
+				else
+					hi = mid
+				end
+			end
+			j = lo - 1
+			if j == n - 1 || q[o + j] == x
+				a = r[j]
+			else
+				s = (r[j + 1] - r[j]) / (q[o + j + 1] - q[o + j])
+				a = s * (x - q[o + j]) + r[j]
+				if a.nan?
+					a = s * (x - q[o + j + 1]) + r[j + 1]
+					a = r[j] if a.nan? && r[j] == r[j + 1]
+				end
+			end
+		end
+		# np.interp(-x, -q[::-1], -r[::-1]) with the same operations:
+		if x < q[o]
+			b = -r[0]
+		elsif x > q[o + n - 1]
+			b = -r[n - 1]
+		else
+			lo, hi = 0, n
+			while lo < hi
+				mid = (lo + hi) / 2
+				if q[o + mid] < x
+					lo = mid + 1
+				else
+					hi = mid
+				end
+			end
+			j = lo
+			if j == 0 || q[o + j] == x
+				b = -r[j]
+			else
+				s = (r[j] - r[j - 1]) / (q[o + j] - q[o + j - 1])
+				b = s * (q[o + j] - x) - r[j]
+				if b.nan?
+					b = s * (q[o + j - 1] - x) - r[j - 1]
+					b = -r[j] if b.nan? && r[j - 1] == r[j]
+				end
+			end
+		end
+		return 0.0 if x == q[o]
+		return 1.0 if x == q[o + n - 1]
+		0.5 * (a - b)
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	# Model data:
+	{{ quantiles }}
+	{{ references }}
+
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}quantiles, {{ prefix }}references
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

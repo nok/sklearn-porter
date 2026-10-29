@@ -1,0 +1,137 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+type {{ class_name }} struct {
+	Quantiles  []float64 `json:"quantiles"`
+	References []float64 `json:"references"`
+}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, len(features))
+	for i := range features {
+		values[i] = transformer.interp(features[i], transformer.Quantiles[i*{{ n_quantiles }}:(i+1)*{{ n_quantiles }}], transformer.References)
+	}
+	return values
+}
+
+// The quantile of x (np.interp of the quantiles q and the references r in
+// both directions like scikit-learn):
+func (transformer {{ class_name }}) interp(x float64, q []float64, r []float64) float64 {
+	n := len(r)
+	if math.IsNaN(x) {
+		return x
+	}
+	var a, b float64
+	// np.interp(x, q, r):
+	if x > q[n-1] {
+		a = r[n-1]
+	} else if x < q[0] {
+		a = r[0]
+	} else {
+		lo, hi := 0, n
+		for lo < hi {
+			mid := (lo + hi) / 2
+			if x >= q[mid] {
+				lo = mid + 1
+			} else {
+				hi = mid
+			}
+		}
+		j := lo - 1
+		if j == n-1 || q[j] == x {
+			a = r[j]
+		} else {
+			s := (r[j+1] - r[j]) / (q[j+1] - q[j])
+			a = float64(s*(x-q[j])) + r[j]
+			if math.IsNaN(a) {
+				a = float64(s*(x-q[j+1])) + r[j+1]
+				if math.IsNaN(a) && r[j] == r[j+1] {
+					a = r[j]
+				}
+			}
+		}
+	}
+	// np.interp(-x, -q[::-1], -r[::-1]) with the same operations:
+	if x < q[0] {
+		b = -r[0]
+	} else if x > q[n-1] {
+		b = -r[n-1]
+	} else {
+		lo, hi := 0, n
+		for lo < hi {
+			mid := (lo + hi) / 2
+			if q[mid] < x {
+				lo = mid + 1
+			} else {
+				hi = mid
+			}
+		}
+		j := lo
+		if j == 0 || q[j] == x {
+			b = -r[j]
+		} else {
+			s := (r[j] - r[j-1]) / (q[j] - q[j-1])
+			b = float64(s*(q[j]-x)) - r[j]
+			if math.IsNaN(b) {
+				b = float64(s*(q[j-1]-x)) - r[j-1]
+				if math.IsNaN(b) && r[j-1] == r[j] {
+					b = -r[j]
+				}
+			}
+		}
+	}
+	if x == q[0] {
+		return 0
+	}
+	if x == q[n-1] {
+		return 1
+	}
+	return 0.5 * (a - b)
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
+		os.Exit(1)
+	}
+
+	// Model data:
+	byteValue, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	{% block create %}
+	// Transformer:
+	var {{ instance|default('transformer') }} {{ class_name }}
+	if err := json.Unmarshal({{ data|default('byteValue') }}, &{{ instance|default('transformer') }}); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	{% endblock %}
+
+	// Features of one sample (arguments) or several samples (standard input):
+	readSamples(os.Args[2:], func(features []float64) {
+		printValues(transformer.Transform(features))
+	})
+}
+{% endblock %}

@@ -22,6 +22,7 @@ from sklearn.preprocessing import (
     OrdinalEncoder,
     PolynomialFeatures,
     PowerTransformer,
+    QuantileTransformer,
     RobustScaler,
     SplineTransformer,
     StandardScaler,
@@ -172,6 +173,13 @@ TRANSFORMERS = {
         ),
         lambda t: dict(
             lambdas=t.lambdas_.tolist(), mean=[0.0] * 4, scale=[1.0] * 4
+        ),
+    ),
+    'quantile_transformer': (
+        lambda: QuantileTransformer(n_quantiles=20).fit(load_iris().data),
+        lambda t: dict(
+            quantiles=t.quantiles_.T.ravel().tolist(),
+            references=t.references_.tolist(),
         ),
     ),
     'k_bins_discretizer_onehot': (
@@ -531,6 +539,7 @@ def test_show_of_all_transformers():
         assert name in table
     for name in ('PowerTransformer',):
         assert name in table
+    assert 'QuantileTransformer' in table
 
 
 @pytest.mark.parametrize('language', LANGUAGES)
@@ -823,6 +832,22 @@ def test_formulas_of_power_transformer(language: str):
     orig_est = PowerTransformer(method='box-cox', standardize=False).fit(x)
     out = port(orig_est, language=language, template='combined')
     assert '709.78' in out
+
+
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_combined_template_of_quantile_transformer(language: str):
+    """The quantiles of each feature are numbers in the code."""
+    orig_est = QuantileTransformer(n_quantiles=5).fit(load_iris().data)
+    out = port(orig_est, language=language, template='combined')
+    assert '{%' not in out
+    assert str(float(orig_est.quantiles_[1, 0])) in out
+
+
+def test_unsupported_quantile_transformer():
+    orig_est = QuantileTransformer(n_quantiles=5, output_distribution='normal')
+    orig_est.fit(load_iris().data)
+    with pytest.raises(exception.NotSupportedYetError, match="'uniform'"):
+        Transformer(orig_est)
 
 
 def test_polynomial_features_with_bias_only():
