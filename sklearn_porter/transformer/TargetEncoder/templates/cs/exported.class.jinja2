@@ -1,0 +1,79 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.IO;
+using System.Text.Json;
+
+
+{% block class %}
+public class {{ class_name }} {
+
+    private class ModelData {
+        public int[] Inputs { get; set; }
+        public double[] Categories { get; set; }
+        public double[] Encodings { get; set; }
+        public int[] Offsets { get; set; }
+        public int[] Missing { get; set; }
+        public double[] Nans { get; set; }
+        public double[] Unknowns { get; set; }
+    }
+
+    private ModelData data;
+
+{% if _blocks %}
+    public {{ class_name }}(System.Text.Json.JsonElement data) {
+        System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower };
+        this.data = System.Text.Json.JsonSerializer.Deserialize<ModelData>(data, options);
+    }
+{% else %}
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.data = JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options);
+    }
+{% endif %}
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        for (int i = 0; i < values.Length; i++) {
+            double x = features[this.data.Inputs[i]];
+            if (double.IsNaN(x)) {
+                values[i] = this.data.Missing[i] == 1 ? this.data.Nans[i] : this.data.Unknowns[i];
+                continue;
+            }
+            values[i] = this.data.Unknowns[i];
+            for (int j = this.data.Offsets[i]; j < this.data.Offsets[i + 1]; j++) {
+                if (x == this.data.Categories[j]) {
+                    values[i] = this.data.Encodings[j];
+                    break;
+                }
+            }
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('args[0]') }});
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 1)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

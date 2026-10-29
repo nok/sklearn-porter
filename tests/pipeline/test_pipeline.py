@@ -26,6 +26,7 @@ from sklearn.preprocessing import (
     PolynomialFeatures,
     RobustScaler,
     StandardScaler,
+    TargetEncoder,
 )
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
@@ -83,6 +84,10 @@ PREPROCESSING = {
     ],
     'k_bins_onehot': lambda: [
         ('k_bins', KBinsDiscretizer(n_bins=3, encode='onehot')),
+    ],
+    'target_encoder': lambda: [
+        ('k_bins', KBinsDiscretizer(n_bins=4, encode='ordinal')),
+        ('target', TargetEncoder(random_state=0)),
     ],
     # The indicators of the missing values (of the samples of the fit):
     'imputer_with_indicator': lambda: [

@@ -1,0 +1,58 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	def initialize(inputs, categories, encodings, offsets, missing, nans, unknowns)
+		@inputs = inputs
+		@categories = categories
+		@encodings = encodings
+		@offsets = offsets
+		@missing = missing
+		@nans = nans
+		@unknowns = unknowns
+	end
+
+	def transform(features)
+		Array.new({{ n_features_out }}) do |i|
+			x = features[@inputs[i]]
+			if x.nan?
+				@missing[i] == 1 ? @nans[i] : @unknowns[i]
+			else
+				j = (@offsets[i]...@offsets[i + 1]).find { |k| x == @categories[k] }
+				j.nil? ? @unknowns[i] : @encodings[j]
+			end
+		end
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	# Model data:
+	{{ inputs }}
+	{{ categories }}
+	{{ encodings }}
+	{{ offsets }}
+	{{ missing }}
+	{{ nans }}
+	{{ unknowns }}
+
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}inputs, {{ prefix }}categories, {{ prefix }}encodings, {{ prefix }}offsets, {{ prefix }}missing, {{ prefix }}nans, {{ prefix }}unknowns
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

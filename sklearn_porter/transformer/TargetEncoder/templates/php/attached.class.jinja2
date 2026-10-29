@@ -1,0 +1,76 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private $inputs;
+    private $categories;
+    private $encodings;
+    private $offsets;
+    private $missing;
+    private $nans;
+    private $unknowns;
+
+    public function __construct($inputs, $categories, $encodings, $offsets, $missing, $nans, $unknowns) {
+        $this->inputs = $inputs;
+        $this->categories = $categories;
+        $this->encodings = $encodings;
+        $this->offsets = $offsets;
+        $this->missing = $missing;
+        $this->nans = $nans;
+        $this->unknowns = $unknowns;
+    }
+
+    public function transform($features) {
+        $values = array();
+        for ($i = 0; $i < {{ n_features_out }}; $i++) {
+            $x = $features[$this->inputs[$i]];
+            if (is_nan($x)) {
+                $values[$i] = $this->missing[$i] == 1 ? $this->nans[$i] : $this->unknowns[$i];
+                continue;
+            }
+            $values[$i] = $this->unknowns[$i];
+            for ($j = $this->offsets[$i]; $j < $this->offsets[$i + 1]; $j++) {
+                if ($x == $this->categories[$j]) {
+                    $values[$i] = $this->encodings[$j];
+                    break;
+                }
+            }
+        }
+        return $values;
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    {% block create %}
+    // Model data:
+    {{ inputs }}
+    {{ categories }}
+    {{ encodings }}
+    {{ offsets }}
+    {{ missing }}
+    {{ nans }}
+    {{ unknowns }}
+
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}inputs, ${{ prefix }}categories, ${{ prefix }}encodings, ${{ prefix }}offsets, ${{ prefix }}missing, ${{ prefix }}nans, ${{ prefix }}unknowns);
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues($transformer->transform($features));
+    }
+
+}
+{% endblock %}

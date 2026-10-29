@@ -1,0 +1,65 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function(inputs, categories, encodings, offsets, missing, nans, unknowns) {
+
+    this.inputs = inputs;
+    this.categories = categories;
+    this.encodings = encodings;
+    this.offsets = offsets;
+    this.missing = missing;
+    this.nans = nans;
+    this.unknowns = unknowns;
+
+    this.transform = function(features) {
+        var values = new Array({{ n_features_out }});
+        for (var i = 0, l = values.length; i < l; i++) {
+            var x = features[this.inputs[i]];
+            if (isNaN(x)) {
+                values[i] = this.missing[i] === 1 ? this.nans[i] : this.unknowns[i];
+                continue;
+            }
+            values[i] = this.unknowns[i];
+            for (var j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
+                if (x === this.categories[j]) {
+                    values[i] = this.encodings[j];
+                    break;
+                }
+            }
+        }
+        return values;
+    };
+
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Model data:
+    {{ inputs }}
+    {{ categories }}
+    {{ encodings }}
+    {{ offsets }}
+    {{ missing }}
+    {{ nans }}
+    {{ unknowns }}
+
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}inputs, {{ prefix }}categories, {{ prefix }}encodings, {{ prefix }}offsets, {{ prefix }}missing, {{ prefix }}nans, {{ prefix }}unknowns);
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}
