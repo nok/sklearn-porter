@@ -1,0 +1,50 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private int[] inputs;
+
+    public {{ class_name }}(int[] inputs) {
+        this.inputs = inputs;
+    }
+
+    public double[] transform(double[] features) {
+        {% if not allow_nan %}
+        for (double feature : features) {
+            if (Double.isNaN(feature) || Double.isInfinite(feature)) {
+                throw new IllegalArgumentException("The features contain NaN or infinity.");
+            }
+        }
+        {% endif %}
+        double[] values = new double[this.inputs.length];
+        for (int i = 0; i < this.inputs.length; i++) {
+            values[i] = features[this.inputs[i]];
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Model data:
+        {{ inputs }}
+
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}inputs);
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

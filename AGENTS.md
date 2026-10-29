@@ -130,6 +130,11 @@ original estimator and transform the features like the original transformer.
   composite transformer, `load_data`, `root_data`, `child_data`). Its class
   holds the instances of the transformers (in C a function with arrays per
   part). `Transformer.supports()` checks the transformers of all parts.
+- Feature selectors: `sklearn_porter/transformer/SelectorMixin/` (not
+  registered) extracts the indices of the selected features
+  (`get_support()`) and holds the templates; each selector (e.g.
+  `SelectKBest`, `RFE`) is a subclass in its own module, because the
+  registry loads the module by the name of the class of scikit-learn.
 - `sklearn_porter/language/<language>/__init__.py`: subclass of `LanguageABC`
   with the compile and execute commands and small code snippets.
 - `sklearn_porter/enums`, `exceptions`, `utils`, `meta`: shared helpers.

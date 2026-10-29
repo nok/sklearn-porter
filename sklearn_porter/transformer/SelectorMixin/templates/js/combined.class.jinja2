@@ -1,0 +1,44 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function() {
+
+    this.transform = function(features) {
+        {% if not allow_nan %}
+        for (var i = 0; i < features.length; i++) {
+            if (!isFinite(features[i])) {
+                throw new Error("The features contain NaN or infinity.");
+            }
+        }
+        {% endif %}
+        return [
+            {% for i in range(n_features_out) %}
+            features[{{ inputs[i] }}]{{ ',' if not loop.last }}
+            {% endfor %}
+        ];
+    };
+
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}();
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

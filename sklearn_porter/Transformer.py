@@ -14,6 +14,19 @@ from sklearn.base import (
     TransformerMixin,
 )
 from sklearn.compose import ColumnTransformer
+from sklearn.feature_selection import (
+    RFE,
+    RFECV,
+    GenericUnivariateSelect,
+    SelectFdr,
+    SelectFpr,
+    SelectFromModel,
+    SelectFwe,
+    SelectKBest,
+    SelectPercentile,
+    SequentialFeatureSelector,
+    VarianceThreshold,
+)
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.preprocessing import (
@@ -337,6 +350,7 @@ class Transformer(Base):
             ColumnTransformer,
             FeatureUnion,
             FunctionTransformer,
+            GenericUnivariateSelect,
             KBinsDiscretizer,
             MaxAbsScaler,
             MinMaxScaler,
@@ -346,8 +360,18 @@ class Transformer(Base):
             PolynomialFeatures,
             PowerTransformer,
             QuantileTransformer,
+            RFE,
+            RFECV,
             RobustScaler,
+            SelectFdr,
+            SelectFpr,
+            SelectFromModel,
+            SelectFwe,
+            SelectKBest,
+            SelectPercentile,
+            SequentialFeatureSelector,
             SimpleImputer,
             StandardScaler,
             TargetEncoder,
+            VarianceThreshold,
         )

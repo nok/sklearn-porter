@@ -11,6 +11,12 @@ from sklearn.compose import ColumnTransformer
 # scikit-learn
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.exceptions import ConvergenceWarning
+from sklearn.feature_selection import (
+    RFE,
+    SelectFromModel,
+    SelectKBest,
+    VarianceThreshold,
+)
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
@@ -119,6 +125,19 @@ PREPROCESSING = {
             FeatureUnion(
                 [('standard', StandardScaler()), ('min_max', MinMaxScaler())]
             ),
+        ),
+    ],
+    # Feature selectors (iris: the variance of the second feature is 0.19):
+    'feature_selectors': lambda: [
+        ('variance', VarianceThreshold(threshold=0.2)),
+        ('k_best', SelectKBest(k=2)),
+    ],
+    'model_based_selectors': lambda: [
+        ('scaler', StandardScaler()),
+        ('from_model', SelectFromModel(LogisticRegression(max_iter=1000))),
+        (
+            'rfe',
+            RFE(DecisionTreeClassifier(random_state=0), n_features_to_select=1),
         ),
     ],
     # The indicators of the missing values (of the samples of the fit):
