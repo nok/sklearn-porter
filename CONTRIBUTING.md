@@ -21,7 +21,7 @@ make test             # Run the fast tests
 make test-regression  # Run the regression tests in Docker
 make test-all         # Run all tests with coverage in Docker
 make notebook         # Start Jupyter with the examples
-make examples         # Generate the example notebooks with jupytext
+make examples         # Generate and execute the example notebooks (node, JDK)
 ```
 
 The code is formatted and linted with [ruff](https://docs.astral.sh/ruff/) and type checked with [ty](https://docs.astral.sh/ty/).

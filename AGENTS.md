@@ -148,8 +148,9 @@ original estimator and transform the features like the original transformer.
   links there), `CONTRIBUTING.md` the developer documentation.
 - `docs/`: further user documentation linked from the README
   (`estimator-notes.md`, `limitations.md`).
-- `examples/basics/index.pct.py`: example notebook in jupytext format; the
-  `.ipynb` file is generated.
+- `examples/*.pct.py`: example notebooks in jupytext format (getting
+  started, transformers, pipelines), linked from the README; `make examples`
+  generates and executes the `.ipynb` files (e.g. `getting_started.ipynb`).
 
 ## Commands
 

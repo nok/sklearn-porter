@@ -85,8 +85,6 @@ ignore = [
 exclude = [
     # The notebooks are generated from `*.pct.py` files with jupytext:
     "**/*.ipynb",
-    # The variable `c` is injected by IPython:
-    "examples/.ipython_config.py",
 ]
 
 [tool.pytest.ini_options]

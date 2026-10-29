@@ -33,11 +33,14 @@ test-all: docker-image
 		uv run pytest --numprocesses=auto -m '' --cov
 
 notebook:
-	uv run --group examples jupyter notebook --notebook-dir=examples/basics
+	uv run --group examples jupyter notebook --notebook-dir=examples
 
+# Generate and execute the notebooks (e.g. `getting_started.pct.py` to
+# `getting_started.ipynb`):
 examples:
-	cd examples && for f in $$(find . -type f -name '*.pct.py'); do \
-		uv run --group examples jupytext --to notebook --execute "$$f"; \
+	cd examples && for f in *.pct.py; do \
+		uv run --group examples jupytext --to notebook --execute \
+			--set-kernel python3 --output "$${f%.pct.py}.ipynb" "$$f"; \
 	done
 
 clean:
