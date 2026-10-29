@@ -76,7 +76,6 @@ LANGUAGES = ['c', 'cs', 'go', 'java', 'js', 'php', 'ruby']
 
 ROOT_DIR = (Path(__file__).parent / '..' / '..').resolve()
 TESTS_DIR = ROOT_DIR / 'tests'
-RESOURCES_DIR = ROOT_DIR / 'resources'
 
 
 class Candidate(NamedTuple):
