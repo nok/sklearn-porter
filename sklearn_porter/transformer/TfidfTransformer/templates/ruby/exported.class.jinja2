@@ -1,0 +1,68 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+require 'json'
+
+
+{% block class %}
+class {{ class_name }}
+
+{% if _blocks %}
+	def initialize(data)
+{% else %}
+	def initialize(path)
+		data = JSON.parse(File.read(path))
+{% endif %}
+		@idf = data['idf']
+	end
+
+	def transform(features)
+		# Zeros remain zeros (also negative zeros) like in a sparse matrix:
+		values = Array.new(@idf.length) { |i| features[i] == 0 ? 0.0 : {% if sublinear_tf %}(log(features[i]) + 1.0){% else %}features[i]{% endif %} * @idf[i] }
+		{% if norm %}
+		# Normalize the features, if their norm isn't zero:
+		norm = 0.0
+		values.each { |value| norm += {% if norm == 'l1' %}value.abs{% else %}value * value{% endif %} }
+		unless norm == 0
+			{% if norm == 'l2' %}
+			norm = Math.sqrt(norm)
+			{% endif %}
+			values.map! { |value| value / norm }
+		end
+		{% endif %}
+		values
+	end
+{% if sublinear_tf %}
+
+	# Math.log raises an error for negative numbers:
+	def log(x)
+		x < 0 ? Float::NAN : Math.log(x)
+	end
+{% endif %}
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	raise "You have to pass the path to the model data." if ARGV.empty?
+
+	# Model data:
+	path = ARGV.shift
+
+	{% block create %}
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new {{ data|default('path') }}
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

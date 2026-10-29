@@ -14,6 +14,7 @@ from sklearn.base import (
     TransformerMixin,
 )
 from sklearn.compose import ColumnTransformer
+from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_selection import (
     RFE,
     RFECV,
@@ -373,5 +374,6 @@ class Transformer(Base):
             SimpleImputer,
             StandardScaler,
             TargetEncoder,
+            TfidfTransformer,
             VarianceThreshold,
         )

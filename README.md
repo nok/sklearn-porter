@@ -98,6 +98,12 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 </details>
 
 <details>
+<summary><strong>Feature extraction</strong></summary>
+
+- [feature_extraction.text.TfidfTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfTransformer.html)
+</details>
+
+<details>
 <summary><strong>Feature selection</strong></summary>
 
 - [feature_selection.GenericUnivariateSelect](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.GenericUnivariateSelect.html)

@@ -10,6 +10,7 @@ from sklearn.compose import ColumnTransformer
 
 # scikit-learn
 from sklearn.datasets import load_iris
+from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_selection import (
     RFE,
     RFECV,
@@ -206,6 +207,21 @@ TRANSFORMERS = {
             edges=np.concatenate([e[1:-1] for e in t.bin_edges_]).tolist(),
             offsets=[0, 3, 6, 9, 12],
         ),
+    ),
+    'tfidf_transformer': (
+        lambda: TfidfTransformer().fit(load_iris().data),
+        lambda t: dict(idf=t.idf_.tolist()),
+    ),
+    'tfidf_transformer_without_idf': (
+        lambda: TfidfTransformer(use_idf=False).fit(load_iris().data),
+        lambda t: dict(idf=[1.0] * 4),
+    ),
+    # scikit-learn uses `idf_` of the fit, also if `use_idf` changes later:
+    'tfidf_transformer_with_idf_of_fit': (
+        lambda: (
+            TfidfTransformer().fit(load_iris().data).set_params(use_idf=False)
+        ),
+        lambda t: dict(idf=t.idf_.tolist()),
     ),
 }
 
@@ -581,7 +597,7 @@ def test_show_of_all_transformers():
         assert name in table
     for name in ('OneHotEncoder', 'PolynomialFeatures', 'TargetEncoder'):
         assert name in table
-    for name in ('PowerTransformer',):
+    for name in ('PowerTransformer', 'TfidfTransformer'):
         assert name in table
     assert 'QuantileTransformer' in table
     for name in ('GenericUnivariateSelect', 'RFE', 'RFECV', 'SelectFdr'):
@@ -895,6 +911,52 @@ def test_combined_template_of_quantile_transformer(language: str):
     out = port(orig_est, language=language, template='combined')
     assert '{%' not in out
     assert str(float(orig_est.quantiles_[1, 0])) in out
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+@pytest.mark.parametrize(
+    'params',
+    [
+        dict(),
+        dict(norm='l1'),
+        dict(norm=None),
+        dict(sublinear_tf=True),
+        dict(sublinear_tf=True, norm=None),
+    ],
+    ids=['l2', 'l1', 'without_norm', 'sublinear_tf', 'sublinear_tf_only'],
+)
+def test_parameters_of_tfidf_transformer(
+    params: dict, language: str, template: str
+):
+    """The code contains only the steps of the parameters."""
+    orig_est = TfidfTransformer(**params).fit(load_iris().data)
+    out = port(orig_est, language=language, template=template)
+    out = out[0] if isinstance(out, tuple) else out
+    assert '{%' not in out
+    norm = dict(
+        go='norm := 0.0',
+        js='var norm = 0.0',
+        php='$norm = 0.0',
+        ruby='norm = 0.0',
+    ).get(language, 'double norm = 0.0')
+    assert (norm in out) == (orig_est.norm is not None)
+    sqrt = dict(cs='Sqrt(norm)', go='Sqrt(norm)', php='sqrt($norm)')
+    sqrt = sqrt.get(language, 'sqrt(norm)')
+    assert (sqrt in out) == (orig_est.norm == 'l2')
+    log = dict(cs='Math.Log(', go='math.Log(', java='Math.log(')
+    log = log.get(language, 'Math.log(' if language == 'js' else 'log(')
+    assert (log in out) == orig_est.sublinear_tf
+
+
+def test_unsupported_tfidf_transformer():
+    """Without smoothing the idf of a feature without counts is infinite."""
+    x = load_iris().data.copy()
+    x[:, 1] = 0.0
+    with np.errstate(divide='ignore'):
+        orig_est = TfidfTransformer(smooth_idf=False).fit(x)
+    with pytest.raises(exception.NotSupportedYetError, match='`idf`'):
+        Transformer(orig_est)
 
 
 def test_unsupported_quantile_transformer():
