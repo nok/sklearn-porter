@@ -166,80 +166,13 @@ print(score)
 ```
 <!-- fmt:on -->
 
-Steps 4 and 5 require a compiler or interpreter for the target language (e.g. `node` for JavaScript or the .NET SDK for C#).
+Steps 4 and 5 require a compiler or interpreter for the target language (e.g. `node` for JavaScript or the .NET SDK for C#). The functions accept transformers and pipelines too, the class `Porter` provides the same object-oriented API.
 
-The [example notebook](https://github.com/nok/sklearn-porter/blob/main/examples/basics/index.pct.ipynb) shows the functional and the object-oriented API step by step.
+The example notebooks show the usage step by step:
 
-### Transformers
-
-A ported transformer has the method `transform`, which returns the transformed features of a sample, analogous to `predict` of a ported estimator. The functions `port`, `save`, `make` and `test` accept transformers too:
-
-<!-- fmt:off -->
-```python
-from sklearn.preprocessing import StandardScaler
-from sklearn_porter import Transformer
-
-# 1. Train a transformer:
-scaler = StandardScaler()
-scaler.fit(X)
-
-# 2. Port the transformer and save it:
-transformer = Transformer(scaler, language='js')
-print(transformer.port())
-transformer.save(directory='/tmp')  # /tmp/StandardScaler.js
-
-# 3. Transform the features with the ported transformer and check them:
-X_tr = transformer.transform(X[:10])
-score = transformer.test(X[:10])
-```
-<!-- fmt:on -->
-
-The ported transformer prints the transformed features of each sample in one line (separated by spaces), which is also the input format of the ported estimators.
-
-### Pipelines
-
-A [`Pipeline`](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.Pipeline.html) of supported transformers and a supported final estimator (also as the best estimator of a `GridSearchCV` or `RandomizedSearchCV`) is ported to one source file: the ported final estimator, which transforms the features of each sample with the ported transformers before its prediction. The transformers can change the number of features (e.g. a `OneHotEncoder`), the ported pipeline reads the features of the pipeline. The functions `port`, `save`, `make` and `test` accept pipelines too:
-
-<!-- fmt:off -->
-```python
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
-from sklearn.svm import SVC
-from sklearn_porter import make, save, test
-
-pipe = make_pipeline(StandardScaler(), SVC())
-pipe.fit(X, y)
-
-path = save(pipe, language='js', directory='/tmp')  # /tmp/Pipeline.js
-y_classes, _ = make(pipe, X[:10], language='js')  # like pipe.predict(X[:10])
-score = test(pipe, X[:10], language='js')
-```
-<!-- fmt:on -->
-
-The generated file is used like a ported estimator:
-
-```bash
-node /tmp/Pipeline.js < samples.txt
-```
-
-### Object-oriented API
-
-The central class `Porter` accepts an estimator, a transformer or a pipeline and creates an `Estimator`, a `Transformer` or a `Pipeline`:
-
-<!-- fmt:off -->
-```python
-from sklearn_porter import Porter
-
-porter = Porter(clf, language='java')  # creates an `Estimator`
-y_classes, y_probas = porter.predict(X[:10])
-
-porter = Porter(scaler, language='java')  # creates a `Transformer`
-X_tr = porter.transform(X[:10])
-
-porter = Porter(pipe, language='java')  # creates a `Pipeline`
-y_classes, y_probas = porter.predict(X[:10])
-```
-<!-- fmt:on -->
+- [Getting Started ✨](https://github.com/nok/sklearn-porter/blob/main/examples/getting_started.ipynb): port a classifier, make predictions and check them with the functional and the object-oriented API.
+- [Transformers](https://github.com/nok/sklearn-porter/blob/main/examples/transformers.ipynb): port transformers (e.g. a `StandardScaler` or a `ColumnTransformer`) and use the ported transformers.
+- [Pipelines](https://github.com/nok/sklearn-porter/blob/main/examples/pipelines.ipynb): port a `Pipeline` of transformers and a final estimator (also of a `GridSearchCV`) to one source file.
 
 
 ## CLI
