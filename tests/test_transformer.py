@@ -1,7 +1,7 @@
 import json
 from importlib import import_module
 from pathlib import Path
-from subprocess import CompletedProcess
+from subprocess import CompletedProcess, run
 
 import numpy as np
 import pytest
@@ -789,3 +789,64 @@ def test_unsupported_ordinal_encoder(x: np.ndarray, params: dict, match: str):
     orig_est = OrdinalEncoder(**params).fit(x)
     with pytest.raises(exception.NotSupportedYetError, match=match):
         Transformer(orig_est)
+
+
+# The spellings of infinite and missing values in the samples, e.g. of
+# Python (`str`) and of the ported transformers:
+SPELLINGS = [
+    'inf',
+    '+inf',
+    '-inf',
+    'INF',
+    'infinity',
+    'Infinity',
+    '-Infinity',
+    'nan',
+    'NaN',
+]
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_infinite_values_in_samples(
+    tmp_root_dir: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    language: str,
+    template: str,
+):
+    """The ported transformers read all spellings of infinite values."""
+    cmds = []
+
+    def run_and_record(cmd: list[str], **kwargs) -> CompletedProcess:
+        cmds.append(cmd)
+        return run(cmd, **kwargs)
+
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run_and_record)
+
+    x = load_iris().data
+    orig_est = FunctionTransformer(np.negative).fit(x)
+    est = Transformer(orig_est, language=language, template=template)
+    tmp_dir = tmp_root_dir / f'infinite_values_in_samples-{language}-{template}'
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    est.make(x[:1], directory=tmp_dir, delete_created_files=False)
+    samples = [[spelling, '1.5', '-0.0', spelling] for spelling in SPELLINGS]
+    x_true = orig_est.transform([[float(v) for v in s] for s in samples])
+    # Several samples from the standard input:
+    proc = run(
+        cmds[0],
+        input='\n'.join(' '.join(s) for s in samples) + '\n',
+        capture_output=True,
+        encoding='utf-8',
+        check=True,
+    )
+    lines = proc.stdout.strip().split('\n')
+    x_tr = np.array([[float(v) for v in line.split()] for line in lines])
+    np.testing.assert_array_equal(x_tr, x_true)
+    # One sample from the arguments:
+    for sample, values in zip(samples, x_true, strict=True):
+        proc = run(
+            cmds[0] + sample, capture_output=True, encoding='utf-8', check=True
+        )
+        values_tr = [float(v) for v in proc.stdout.split()]
+        np.testing.assert_array_equal(values_tr, values)

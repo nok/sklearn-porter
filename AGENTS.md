@@ -86,7 +86,10 @@ original estimator and transform the features like the original transformer.
   otherwise. The transformers always print the transformed features of each
   sample in one line, separated by spaces (shared template `values` of each
   language, round-trip precision, `NaN`, `Infinity`, `-0`), which is also
-  the input format of the ported estimators.
+  the input format of the ported estimators. The shared template `samples`
+  reads `nan`, `inf` and `infinity` (with a sign, in any case) in all
+  languages, i.e. the output of Python's `str` (`make()`) and of the ported
+  transformers (PHP and Ruby read unknown words as `0.0`).
 
 ## Layout
 

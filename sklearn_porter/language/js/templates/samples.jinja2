@@ -1,3 +1,13 @@
+// Parse a feature, also `nan`, `inf` and `-inf` (e.g. of Python) and `NaN`,
+// `Infinity` and `-Infinity` (e.g. of a ported transformer):
+var parseFeature = function (value) {
+    var name = value.toLowerCase().replace(/^[+-]/, '');
+    if (name === 'inf' || name === 'infinity') {
+        return value.charAt(0) === '-' ? -Infinity : Infinity;
+    }
+    return name === 'nan' ? NaN : parseFloat(value);
+};
+
 // Read the features of one sample from the arguments or of several samples
 // (one per line) from the standard input:
 var readSamples = function (args) {
@@ -12,7 +22,7 @@ var readSamples = function (args) {
         if (values.length !== {{ pipeline_n_features or n_features }}) {
             throw new Error("You have to pass {{ pipeline_n_features or n_features }} features per sample.");
         }
-        samples.push(values.map(parseFloat));
+        samples.push(values.map(parseFeature));
     }
     return samples;
 };

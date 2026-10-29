@@ -74,7 +74,14 @@ def samples(x: np.ndarray, kind: str, categorical: list | None):
         generated[rng.random(generated.shape) < 0.1] = np.nan
     if categorical:
         generated[:, categorical] = np.round(generated[:, categorical] * 4) / 4
-    return np.vstack((dataset_uniform_x(x), generated))
+    # Infinite values of the numerical features (scikit-learn accepts them):
+    numerical = [i for i in range(x.shape[1]) if i not in (categorical or [])]
+    infinite = np.tile(np.nan_to_num(x[:1]), (3, 1))
+    infinite[0, numerical] = np.inf
+    infinite[1, numerical] = -np.inf
+    infinite[2, numerical[::2]] = np.inf
+    infinite[2, numerical[1::2]] = -np.inf
+    return np.vstack((dataset_uniform_x(x), generated, infinite))
 
 
 def make(est, x: np.ndarray, tmp_dir: Path, language: str, template: str):
