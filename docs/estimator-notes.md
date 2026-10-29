@@ -133,3 +133,9 @@
 
 - The ported [PowerTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.PowerTransformer.html) supports both methods with the formulas of SciPy (`scipy.stats.yeojohnson` and `scipy.special.boxcox`, also their special cases for the parameters close to `0` and `2` and the large values of Box-Cox) and standardizes the transformed features like scikit-learn (`standardize=True`).
 - C and PHP use the same `log`, `exp`, `log1p` and `expm1` as NumPy and SciPy (of the C library), the functions of the other languages can differ by a few ULP. NumPy computes some of them with SIMD instructions depending on the CPU as well. C# and Ruby have no `log1p` and `expm1`, so the ported transformer computes them with an accurate formula.
+
+## QuantileTransformer
+
+- The ported [QuantileTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html) supports only `output_distribution='uniform'`: it interpolates each feature between its quantiles in both directions with the operations of `np.interp` like scikit-learn, so the transformed features are identical. The normal distribution needs the quantile function of SciPy (`scipy.stats.norm.ppf`), so it raises a `NotSupportedYetError`.
+- Each feature has up to `n_quantiles` (default: 1000) quantiles, so the model data and especially the template `combined` can get very large (e.g. the size of a method in Java is limited); use the template `exported` or fewer quantiles.
+- scikit-learn transforms only the non-zero values of sparse matrices (`ignore_implicit_zeros`), the ported transformer transforms all values like those of dense samples.

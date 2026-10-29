@@ -1,0 +1,113 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    public double[] transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        {% for i in range(n_features) %}
+        values[{{ i }}] = interp(features[{{ i }}], new double[] { {{ feature_quantiles[i]|join(', ') }} }, 0, new double[] { {{ references|join(', ') }} });
+        {% endfor %}
+        return values;
+    }
+
+    // The quantile of x (np.interp of the quantiles q[o:o + n] and the
+    // references r in both directions like scikit-learn):
+    private static double interp(double x, double[] q, int o, double[] r) {
+        int n = r.length;
+        if (Double.isNaN(x)) {
+            return x;
+        }
+        double a = 0.0;
+        double b = 0.0;
+        int lo = 0;
+        int hi = n;
+        int j = 0;
+        // np.interp(x, q, r):
+        if (x > q[o + n - 1]) {
+            a = r[n - 1];
+        } else if (x < q[o]) {
+            a = r[0];
+        } else {
+            while (lo < hi) {
+                int mid = (lo + hi) / 2;
+                if (x >= q[o + mid]) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            j = lo - 1;
+            if (j == n - 1 || q[o + j] == x) {
+                a = r[j];
+            } else {
+                double s = (r[j + 1] - r[j]) / (q[o + j + 1] - q[o + j]);
+                a = s * (x - q[o + j]) + r[j];
+                if (Double.isNaN(a)) {
+                    a = s * (x - q[o + j + 1]) + r[j + 1];
+                    if (Double.isNaN(a) && r[j] == r[j + 1]) {
+                        a = r[j];
+                    }
+                }
+            }
+        }
+        // np.interp(-x, -q[::-1], -r[::-1]) with the same operations:
+        if (x < q[o]) {
+            b = -r[0];
+        } else if (x > q[o + n - 1]) {
+            b = -r[n - 1];
+        } else {
+            lo = 0;
+            hi = n;
+            while (lo < hi) {
+                int mid = (lo + hi) / 2;
+                if (q[o + mid] < x) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            j = lo;
+            if (j == 0 || q[o + j] == x) {
+                b = -r[j];
+            } else {
+                double s = (r[j] - r[j - 1]) / (q[o + j] - q[o + j - 1]);
+                b = s * (q[o + j] - x) - r[j];
+                if (Double.isNaN(b)) {
+                    b = s * (q[o + j - 1] - x) - r[j - 1];
+                    if (Double.isNaN(b) && r[j - 1] == r[j]) {
+                        b = -r[j];
+                    }
+                }
+            }
+        }
+        if (x == q[o]) {
+            return 0.0;
+        }
+        if (x == q[o + n - 1]) {
+            return 1.0;
+        }
+        return 0.5 * (a - b);
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,144 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import com.google.gson.Gson;
+
+
+{% block class %}
+class {{ class_name }} {
+
+    private class ModelData {
+        private double[] quantiles;
+        private double[] references;
+    }
+
+    private ModelData data;
+
+{% if _blocks %}
+    public {{ class_name }}(com.google.gson.JsonElement data) {
+        this.data = new com.google.gson.Gson().fromJson(data, ModelData.class);
+    }
+{% else %}
+    public {{ class_name }}(String file) throws IOException {
+        try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
+            this.data = new Gson().fromJson(reader, ModelData.class);
+        }
+    }
+{% endif %}
+
+    public double[] transform(double[] features) {
+        double[] values = new double[features.length];
+        for (int i = 0; i < features.length; i++) {
+            values[i] = interp(features[i], this.data.quantiles, i * {{ n_quantiles }}, this.data.references);
+        }
+        return values;
+    }
+
+    // The quantile of x (np.interp of the quantiles q[o:o + n] and the
+    // references r in both directions like scikit-learn):
+    private static double interp(double x, double[] q, int o, double[] r) {
+        int n = r.length;
+        if (Double.isNaN(x)) {
+            return x;
+        }
+        double a = 0.0;
+        double b = 0.0;
+        int lo = 0;
+        int hi = n;
+        int j = 0;
+        // np.interp(x, q, r):
+        if (x > q[o + n - 1]) {
+            a = r[n - 1];
+        } else if (x < q[o]) {
+            a = r[0];
+        } else {
+            while (lo < hi) {
+                int mid = (lo + hi) / 2;
+                if (x >= q[o + mid]) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            j = lo - 1;
+            if (j == n - 1 || q[o + j] == x) {
+                a = r[j];
+            } else {
+                double s = (r[j + 1] - r[j]) / (q[o + j + 1] - q[o + j]);
+                a = s * (x - q[o + j]) + r[j];
+                if (Double.isNaN(a)) {
+                    a = s * (x - q[o + j + 1]) + r[j + 1];
+                    if (Double.isNaN(a) && r[j] == r[j + 1]) {
+                        a = r[j];
+                    }
+                }
+            }
+        }
+        // np.interp(-x, -q[::-1], -r[::-1]) with the same operations:
+        if (x < q[o]) {
+            b = -r[0];
+        } else if (x > q[o + n - 1]) {
+            b = -r[n - 1];
+        } else {
+            lo = 0;
+            hi = n;
+            while (lo < hi) {
+                int mid = (lo + hi) / 2;
+                if (q[o + mid] < x) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
+                }
+            }
+            j = lo;
+            if (j == 0 || q[o + j] == x) {
+                b = -r[j];
+            } else {
+                double s = (r[j] - r[j - 1]) / (q[o + j] - q[o + j - 1]);
+                b = s * (q[o + j] - x) - r[j];
+                if (Double.isNaN(b)) {
+                    b = s * (q[o + j - 1] - x) - r[j - 1];
+                    if (Double.isNaN(b) && r[j - 1] == r[j]) {
+                        b = -r[j];
+                    }
+                }
+            }
+        }
+        if (x == q[o]) {
+            return 0.0;
+        }
+        if (x == q[o + n - 1]) {
+            return 1.0;
+        }
+        return 0.5 * (a - b);
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('args[0]') }});
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 1)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

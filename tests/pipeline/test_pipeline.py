@@ -25,6 +25,7 @@ from sklearn.preprocessing import (
     OrdinalEncoder,
     PolynomialFeatures,
     PowerTransformer,
+    QuantileTransformer,
     RobustScaler,
     StandardScaler,
     TargetEncoder,
@@ -91,6 +92,9 @@ PREPROCESSING = {
         ('target', TargetEncoder(random_state=0)),
     ],
     'power_transformer': lambda: [('power', PowerTransformer())],
+    'quantile_transformer': lambda: [
+        ('quantile', QuantileTransformer(n_quantiles=50)),
+    ],
     # The indicators of the missing values (of the samples of the fit):
     'imputer_with_indicator': lambda: [
         ('imputer', SimpleImputer(add_indicator=True)),
