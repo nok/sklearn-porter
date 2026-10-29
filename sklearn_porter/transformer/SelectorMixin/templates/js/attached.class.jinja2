@@ -1,0 +1,49 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function(inputs) {
+
+    this.inputs = inputs;
+
+    this.transform = function(features) {
+        {% if not allow_nan %}
+        for (var i = 0; i < features.length; i++) {
+            if (!isFinite(features[i])) {
+                throw new Error("The features contain NaN or infinity.");
+            }
+        }
+        {% endif %}
+        var values = new Array(this.inputs.length);
+        for (var i = 0, l = this.inputs.length; i < l; i++) {
+            values[i] = features[this.inputs[i]];
+        }
+        return values;
+    };
+
+};
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Model data:
+    {{ inputs }}
+
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}inputs);
+    {% endblock %}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    readSamples(process.argv.slice(2)).forEach(function (features) {
+        printValues(transformer.transform(features));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

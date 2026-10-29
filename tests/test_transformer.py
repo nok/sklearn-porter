@@ -10,7 +10,21 @@ from sklearn.compose import ColumnTransformer
 
 # scikit-learn
 from sklearn.datasets import load_iris
+from sklearn.feature_selection import (
+    RFE,
+    RFECV,
+    GenericUnivariateSelect,
+    SelectFdr,
+    SelectFpr,
+    SelectFromModel,
+    SelectFwe,
+    SelectKBest,
+    SelectPercentile,
+    SequentialFeatureSelector,
+    VarianceThreshold,
+)
 from sklearn.impute import SimpleImputer
+from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import FeatureUnion, Pipeline, make_pipeline
 from sklearn.preprocessing import (
     Binarizer,
@@ -30,6 +44,7 @@ from sklearn.preprocessing import (
     TargetEncoder,
 )
 from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
 from sklearn_porter import Estimator, Transformer, can, port, save, show
@@ -193,6 +208,34 @@ TRANSFORMERS = {
         ),
     ),
 }
+
+
+# The feature selectors (of the iris dataset), their model data are the
+# indices of the selected features:
+_SELECTORS = dict(
+    variance_threshold=lambda: VarianceThreshold(threshold=0.2),
+    select_k_best=lambda: SelectKBest(k=2),
+    select_percentile=lambda: SelectPercentile(percentile=50),
+    generic_univariate_select=lambda: GenericUnivariateSelect(
+        mode='k_best', param=3
+    ),
+    select_fpr=lambda: SelectFpr(alpha=1e-50),
+    select_fdr=lambda: SelectFdr(alpha=1e-50),
+    select_fwe=lambda: SelectFwe(alpha=1e-50),
+    select_from_model=lambda: SelectFromModel(
+        LogisticRegression(max_iter=1000)
+    ),
+    rfe=lambda: RFE(LogisticRegression(max_iter=1000), n_features_to_select=2),
+    rfecv=lambda: RFECV(LogisticRegression(max_iter=1000), cv=3),
+    sequential_feature_selector=lambda: SequentialFeatureSelector(
+        LogisticRegression(max_iter=1000), n_features_to_select=3, cv=3
+    ),
+)
+for _name, _create in _SELECTORS.items():
+    TRANSFORMERS[_name] = (
+        lambda create=_create: create().fit(*load_iris(return_X_y=True)),
+        lambda t: dict(inputs=t.get_support(indices=True).tolist()),
+    )
 
 
 @pytest.fixture(scope='module')
@@ -541,6 +584,16 @@ def test_show_of_all_transformers():
     for name in ('PowerTransformer',):
         assert name in table
     assert 'QuantileTransformer' in table
+    for name in ('GenericUnivariateSelect', 'RFE', 'RFECV', 'SelectFdr'):
+        assert name in table
+    for name in ('SelectFpr', 'SelectFromModel', 'SelectFwe', 'SelectKBest'):
+        assert name in table
+    for name in (
+        'SelectPercentile',
+        'SequentialFeatureSelector',
+        'VarianceThreshold',
+    ):
+        assert name in table
 
 
 @pytest.mark.parametrize('language', LANGUAGES)
@@ -849,6 +902,83 @@ def test_unsupported_quantile_transformer():
     orig_est.fit(load_iris().data)
     with pytest.raises(exception.NotSupportedYetError, match="'uniform'"):
         Transformer(orig_est)
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_selected_features_of_feature_selector(language: str, template: str):
+    """Each transformed feature is a selected feature."""
+    x, y = load_iris(return_X_y=True)
+    orig_est = SelectKBest(k=2).fit(x, y)
+    est = Transformer(orig_est, language=language, template=template)
+    assert est._estimator.model_data == dict(inputs=[2, 3])
+    assert est._estimator.meta_info == dict(n_features=4, n_features_out=2)
+    out = est.port()
+    out = out[0] if isinstance(out, tuple) else out
+    assert '{%' not in out
+    if template == 'combined':
+        x = '$features' if language == 'php' else 'features'
+        assert f'{x}[3]' in out
+        assert f'{x}[0]' not in out
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+@pytest.mark.parametrize(
+    'create, allow_nan',
+    [
+        (lambda: SelectKBest(k=2), False),
+        (lambda: VarianceThreshold(), True),
+        (lambda: RFE(LogisticRegression(max_iter=1000)), False),
+        (lambda: RFE(DecisionTreeClassifier()), True),
+    ],
+    ids=['k_best', 'variance', 'rfe_linear', 'rfe_tree'],
+)
+def test_invalid_values_of_feature_selector(
+    create, allow_nan: bool, language: str, template: str
+):
+    """The check of the values like scikit-learn (tag `allow_nan`)."""
+    x, y = load_iris(return_X_y=True)
+    est = Transformer(create().fit(x, y), language=language, template=template)
+    assert est._estimator.allow_nan == allow_nan
+    out = est.port()
+    out = out[0] if isinstance(out, tuple) else out
+    assert ('NaN or infinity' in out) != allow_nan
+
+
+def test_feature_selector_without_selected_features():
+    x, y = load_iris(return_X_y=True)
+    orig_est = SelectFwe(alpha=1e-300).fit(x, y)
+    assert not orig_est.get_support().any()
+    with pytest.raises(exception.NotSupportedYetError, match='no feature'):
+        Transformer(orig_est)
+
+
+@pytest.mark.parametrize(
+    'orig_est',
+    [
+        SelectKBest(k=2),
+        VarianceThreshold(),
+        RFE(LogisticRegression()),
+        SelectFromModel(LogisticRegression()),
+        SelectFromModel(LogisticRegression(), prefit=True),
+    ],
+    ids=['k_best', 'variance', 'rfe', 'from_model', 'from_model_prefit'],
+)
+def test_unfitted_feature_selector(orig_est):
+    with pytest.raises(exception.NotFittedEstimatorError):
+        Transformer(orig_est)
+
+
+def test_select_from_model_with_prefit_estimator():
+    """scikit-learn selects the features without a fit of the selector."""
+    x, y = load_iris(return_X_y=True)
+    clf = LogisticRegression(max_iter=1000).fit(x, y)
+    orig_est = SelectFromModel(clf, prefit=True)
+    expected = orig_est.get_support(indices=True).tolist()
+    est = Transformer(orig_est)
+    assert est._estimator.model_data == dict(inputs=expected)
+    assert est._estimator.meta_info['n_features'] == 4
 
 
 def test_polynomial_features_with_bias_only():

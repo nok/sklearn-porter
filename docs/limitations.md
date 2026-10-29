@@ -6,6 +6,14 @@
   est = Estimator(pipeline, language='c', ignore_preprocessing=True)
   est.test(pipeline[:-1].transform(x))
   ```
+- [`RFE`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFE.html) and [`RFECV`](https://scikit-learn.org/stable/modules/generated/sklearn.feature_selection.RFECV.html) are ported as transformers only (`transform`, the selection of the features). Their methods `predict`, `predict_proba`, `decision_function` and `score`, which call the estimator fitted on the selected features (`estimator_`), aren't ported, so an `RFE` or `RFECV` as final step of a pipeline raises a `NotSupportedYetError`. Port the estimator `estimator_` separately and pass the transformed features of the ported selector to it, or use the selector as a preprocessing step of a pipeline with a separate final estimator:
+
+  ```python
+  pipeline = make_pipeline(
+      RFE(LogisticRegression(), n_features_to_select=2), DecisionTreeClassifier()
+  )
+  Porter(pipeline.fit(x, y), language='java').port()
+  ```
 - The labels of the classes of a classifier must have the same type: integers (also booleans, which are ported as `0` and `1`), floating point numbers or strings. The integers must fit into 32 bits. Other labels (e.g. mixed types in an `object` array) raise a `NotSupportedYetError`, so encode them with a [`LabelEncoder`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.LabelEncoder.html) before training.
 - Java limits the bytecode of a method to 64 KB. Large estimators ported to Java with the `attached` or `combined` template can therefore fail to compile with a `code too large` error. Use the `exported` template instead.
 - The C# code of the templates `attached` and `combined` only uses language features of C# 7.3 and no dependencies, so it also works with older runtimes (e.g. .NET Framework or Unity). The template `exported` reads the JSON file with `System.Text.Json` (incl. `JsonNamingPolicy.SnakeCaseLower`), which requires .NET 8 or newer. `make()` and `test()` require the .NET SDK (the command `dotnet`): they compile the ported estimator directly with the C# compiler of the SDK and run it with `dotnet`.
