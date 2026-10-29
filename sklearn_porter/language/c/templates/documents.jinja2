@@ -1,0 +1,50 @@
+/* Read the next document, either one document from the arguments (separated
+   by spaces) or several documents (one per line) from the standard input.
+   The caller frees the document: */
+char *read_document(int argc, const char *argv[], int offset) {
+    static int n_read = 0;
+    if (argc > offset) {
+        if (n_read++ > 0) {
+            return NULL;
+        }
+        size_t length = 1;
+        for (int i = offset; i < argc; i++) {
+            length += strlen(argv[i]) + 1;
+        }
+        char *document = malloc(length);
+        if (document == NULL) {
+            fprintf(stderr, "Out of memory.\n");
+            exit(1);
+        }
+        document[0] = '\0';
+        for (int i = offset; i < argc; i++) {
+            if (i > offset) {
+                strcat(document, " ");
+            }
+            strcat(document, argv[i]);
+        }
+        return document;
+    }
+    size_t length = 0, capacity = 256;
+    char *document = malloc(capacity);
+    int c;
+    while (document != NULL && (c = getchar()) != EOF && c != '\n') {
+        if (length + 1 == capacity) {
+            capacity *= 2;
+            document = realloc(document, capacity);
+        }
+        if (document != NULL) {
+            document[length++] = (char) c;
+        }
+    }
+    if (document == NULL) {
+        fprintf(stderr, "Out of memory.\n");
+        exit(1);
+    }
+    if (c == EOF && length == 0) {
+        free(document);
+        return NULL;
+    }
+    document[length] = '\0';
+    return document;
+}

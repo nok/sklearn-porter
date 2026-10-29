@@ -1,0 +1,72 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+public class {{ class_name }} {
+
+    // The pattern of the tokens:
+    private static readonly System.Text.RegularExpressions.Regex TokenPattern = new System.Text.RegularExpressions.Regex("[\\p{L}\\p{N}_]{2,}");
+
+    private static readonly System.Collections.Generic.Dictionary<string, int> vocabulary = new System.Collections.Generic.Dictionary<string, int> {
+        {% for term in vocabulary %}
+        { {{ term }}, {{ loop.index0 }} },
+        {% endfor %}
+    };
+    {% if n_stop_words %}
+
+    private static readonly System.Collections.Generic.HashSet<string> stopWords = new System.Collections.Generic.HashSet<string> {
+        {% for word in stop_words %}
+        {{ word }},
+        {% endfor %}
+    };
+    {% endif %}
+
+    public double[] Transform(string document) {
+        {% if lowercase %}
+        document = document.ToLowerInvariant();
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        System.Collections.Generic.List<string> tokens = new System.Collections.Generic.List<string>();
+        foreach (System.Text.RegularExpressions.Match match in TokenPattern.Matches(document)) {
+            {% if n_stop_words %}
+            if (!stopWords.Contains(match.Value)) {
+                tokens.Add(match.Value);
+            }
+            {% else %}
+            tokens.Add(match.Value);
+            {% endif %}
+        }
+        // Count the n-grams of the tokens (joined by spaces):
+        double[] values = new double[{{ n_features_out }}];
+        for (int n = {{ min_n }}; n <= {{ max_n }} && n <= tokens.Count; n++) {
+            for (int i = 0; i + n <= tokens.Count; i++) {
+                int index;
+                if (vocabulary.TryGetValue(string.Join(" ", tokens.GetRange(i, n)), out index)) {
+                    values[index] {{ '= 1.0' if binary else '+= 1.0' }};
+                }
+            }
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // One document (arguments) or several documents (standard input):
+        foreach (string document in ReadDocuments(args, 0)) {
+            PrintValues(transformer.Transform(document));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

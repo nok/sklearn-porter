@@ -10,7 +10,7 @@
 #
 # Usage:
 #     1. Execute {{ action|default('a prediction') }}:
-#         $ ruby {{ class_name }}.rb feature_1 ... feature_{{ n_features }}
-#     2. Execute {{ actions|default('the predictions') }} of several samples (one per line):
-#         $ ruby {{ class_name }}.rb < samples.txt
+#         $ ruby {{ class_name }}.rb {{ '"document"' if text_input else 'feature_1 ... feature_' ~ n_features }}
+#     2. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
+#         $ ruby {{ class_name }}.rb < {{ 'documents' if text_input else 'samples' }}.txt
 {% block content %}{% endblock %}

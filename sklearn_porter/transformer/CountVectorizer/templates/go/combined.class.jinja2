@@ -1,0 +1,79 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+// The pattern of the tokens:
+var {{ prefix }}tokenPattern = regexp.MustCompile(`[\p{L}\p{N}_]{2,}`)
+
+var {{ prefix }}vocabulary = map[string]int{
+	{% for term in vocabulary %}
+	{{ term }}: {{ loop.index0 }},
+	{% endfor %}
+}
+{% if n_stop_words %}
+
+var {{ prefix }}stopWords = map[string]bool{
+	{% for word in stop_words %}
+	{{ word }}: true,
+	{% endfor %}
+}
+{% endif %}
+
+type {{ class_name }} struct{}
+
+func (transformer {{ class_name }}) Transform(document string) []float64 {
+	{% if lowercase %}
+	document = strings.ToLower(document)
+	{% endif %}
+	// The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+	var tokens []string
+	for _, token := range {{ prefix }}tokenPattern.FindAllString(document, -1) {
+		{% if n_stop_words %}
+		if !{{ prefix }}stopWords[token] {
+			tokens = append(tokens, token)
+		}
+		{% else %}
+		tokens = append(tokens, token)
+		{% endif %}
+	}
+	// Count the n-grams of the tokens (joined by spaces):
+	values := make([]float64, {{ n_features_out }})
+	for n := {{ min_n }}; n <= {{ max_n }} && n <= len(tokens); n++ {
+		for i := 0; i+n <= len(tokens); i++ {
+			if index, ok := {{ prefix }}vocabulary[strings.Join(tokens[i:i+n], " ")]; ok {
+				values[index] {{ '= 1.0' if binary else '+= 1.0' }}
+			}
+		}
+	}
+	return values
+}
+{% endblock %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+func main() {
+	{% block create %}
+	// Transformer:
+	{{ instance|default('transformer') }} := {{ class_name }}{}
+	{% endblock %}
+
+	// One document (arguments) or several documents (standard input):
+	readDocuments(os.Args[1:], func(document string) {
+		printValues(transformer.Transform(document))
+	})
+}
+{% endblock %}

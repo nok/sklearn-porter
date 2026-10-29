@@ -1,0 +1,12 @@
+// Read one document from the arguments (separated by spaces) or several
+// documents (one per line) from the standard input:
+var readDocuments = function (args) {
+    if (args.length > 0) {
+        return [args.join(' ')];
+    }
+    var lines = require('fs').readFileSync(0, 'utf8').split('\n');
+    if (lines[lines.length - 1] === '') {
+        lines.pop();  // after the last line break
+    }
+    return lines;
+};

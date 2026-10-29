@@ -1,0 +1,10 @@
+    // Read one document from the arguments (separated by spaces) or several
+    // documents (one per line) from the standard input:
+    private static Iterable<String> readDocuments(String[] args, int offset) {
+        if (args.length > offset) {
+            String document = String.join(" ", java.util.Arrays.copyOfRange(args, offset, args.length));
+            return java.util.Collections.singletonList(document);
+        }
+        java.io.BufferedReader reader = new java.io.BufferedReader(new java.io.InputStreamReader(System.in, java.nio.charset.StandardCharsets.UTF_8));
+        return () -> reader.lines().iterator();
+    }

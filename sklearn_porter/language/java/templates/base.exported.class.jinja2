@@ -15,8 +15,8 @@
  *     2. Compile the generated source code:
  *         $ javac -cp gson.jar {{ class_name }}.java
  *     3. Execute {{ action|default('a prediction') }}:
- *         $ java -cp .:gson.jar {{ class_name }} {{ class_name }}.json feature_1 ... feature_{{ n_features }}
- *     4. Execute {{ actions|default('the predictions') }} of several samples (one per line):
- *         $ java -cp .:gson.jar {{ class_name }} {{ class_name }}.json < samples.txt
+ *         $ java -cp .:gson.jar {{ class_name }} {{ class_name }}.json {{ '"document"' if text_input else 'feature_1 ... feature_' ~ n_features }}
+ *     4. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
+ *         $ java -cp .:gson.jar {{ class_name }} {{ class_name }}.json < {{ 'documents' if text_input else 'samples' }}.txt
  */
 {% block content %}{% endblock %}

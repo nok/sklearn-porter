@@ -255,7 +255,9 @@ class Estimator(Base):
                         'preprocessing to its input data yourself.'
                     )
                     # All steps can be ported as transformers:
-                    if all(Transformer.supports(s) for _, s in preprocessing):
+                    if all(
+                        Transformer.supports_step(s) for _, s in preprocessing
+                    ):
                         msg += ' Or port the whole pipeline with `Porter`.'
                     L.error(msg)
                     raise exception.NotSupportedYetError(msg)

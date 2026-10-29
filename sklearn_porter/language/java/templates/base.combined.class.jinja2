@@ -13,8 +13,8 @@
  *     1. Compile the generated source code:
  *         $ javac {{ class_name }}.java
  *     2. Execute {{ action|default('a prediction') }}:
- *         $ java {{ class_name }} feature_1 ... feature_{{ n_features }}
- *     3. Execute {{ actions|default('the predictions') }} of several samples (one per line):
- *         $ java {{ class_name }} < samples.txt
+ *         $ java {{ class_name }} {{ '"document"' if text_input else 'feature_1 ... feature_' ~ n_features }}
+ *     3. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
+ *         $ java {{ class_name }} < {{ 'documents' if text_input else 'samples' }}.txt
  */
 {% block content %}{% endblock %}

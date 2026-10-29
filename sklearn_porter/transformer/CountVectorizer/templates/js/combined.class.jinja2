@@ -1,0 +1,63 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function() {
+
+    this.vocabulary = new Map([
+        {% for term in vocabulary %}
+        [{{ term }}, {{ loop.index0 }}]{{ ',' if not loop.last }}
+        {% endfor %}
+    ]);
+    {% if n_stop_words %}
+    this.stopWords = new Set([
+        {% for word in stop_words %}
+        {{ word }}{{ ',' if not loop.last }}
+        {% endfor %}
+    ]);
+    {% endif %}
+
+    this.transform = function(document) {
+        {% if lowercase %}
+        document = document.toLowerCase();
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        var tokens = (document.match(/[\p{L}\p{N}_]{2,}/gu) || []){% if n_stop_words %}.filter(function (token) {
+            return !this.stopWords.has(token);
+        }, this){% endif %};
+        // Count the n-grams of the tokens (joined by spaces):
+        var values = new Array({{ n_features_out }}).fill(0);
+        for (var n = {{ min_n }}; n <= {{ max_n }} && n <= tokens.length; n++) {
+            for (var i = 0; i + n <= tokens.length; i++) {
+                var index = this.vocabulary.get(tokens.slice(i, i + n).join(' '));
+                if (index !== undefined) {
+                    values[index] {{ '= 1' if binary else '+= 1' }};
+                }
+            }
+        }
+        return values;
+    };
+
+};
+{% endblock %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}();
+    {% endblock %}
+
+    // One document (arguments) or several documents (standard input):
+    readDocuments(process.argv.slice(2)).forEach(function (document) {
+        printValues(transformer.transform(document));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

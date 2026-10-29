@@ -1,0 +1,10 @@
+# Read one document from the arguments (separated by spaces) or several
+# documents (one per line) from the standard input:
+def read_documents(args)
+	if args.empty?
+		STDIN.set_encoding(Encoding::UTF_8)
+		STDIN.each_line(chomp: true) { |line| yield line }
+	else
+		yield args.join(' ').dup.force_encoding(Encoding::UTF_8)
+	end
+end

@@ -1,0 +1,8 @@
+// Read one document from the arguments (separated by spaces) or several
+// documents (one per line) from the standard input:
+function readDocuments($args) {
+    if (count($args) > 0) {
+        return array(implode(' ', $args));
+    }
+    return file('php://stdin', FILE_IGNORE_NEW_LINES);
+}

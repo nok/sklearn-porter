@@ -1,0 +1,89 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private $vocabulary;
+    {% if n_stop_words %}
+    private $stopWords;
+    {% endif %}
+
+{% if _blocks %}
+    public function __construct($data) {
+{% else %}
+    public function __construct($path) {
+        $data = json_decode(file_get_contents($path, true), true);
+{% endif %}
+        $vocabulary = $data['vocabulary'];
+        {% if n_stop_words %}
+        $stopWords = $data['stop_words'];
+        {% endif %}
+        $this->vocabulary = array_flip($vocabulary);
+        {% if n_stop_words %}
+        $this->stopWords = array_flip($stopWords);
+        {% endif %}
+    }
+
+    public function transform($document) {
+        {% if lowercase %}
+        // Only mb_strtolower (of the extension mbstring) converts all
+        // characters, strtolower only the characters of ASCII:
+        $document = function_exists('mb_strtolower') ? mb_strtolower($document, 'UTF-8') : strtolower($document);
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        $tokens = array();
+        if (preg_match_all('/[\p{L}\p{N}_]{2,}/u', $document, $matches)) {
+            foreach ($matches[0] as $token) {
+                {% if n_stop_words %}
+                if (!isset($this->stopWords[$token])) {
+                    $tokens[] = $token;
+                }
+                {% else %}
+                $tokens[] = $token;
+                {% endif %}
+            }
+        }
+        // Count the n-grams of the tokens (joined by spaces):
+        $values = array_fill(0, {{ n_features_out }}, 0.0);
+        $n_tokens = count($tokens);
+        for ($n = {{ min_n }}; $n <= {{ max_n }} && $n <= $n_tokens; $n++) {
+            for ($i = 0; $i + $n <= $n_tokens; $i++) {
+                $term = implode(' ', array_slice($tokens, $i, $n));
+                if (isset($this->vocabulary[$term])) {
+                    $values[$this->vocabulary[$term]] {{ '= 1.0' if binary else '+= 1.0' }};
+                }
+            }
+        }
+        return $values;
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'documents' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    if (count($argv) < 2) {
+        fwrite(STDERR, "You have to pass the path to the model data.\n");
+        exit(1);
+    }
+
+    array_shift($argv);
+
+    {% block create %}
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('array_shift($argv)') }});
+    {% endblock %}
+
+    // One document (arguments) or several documents (standard input):
+    foreach (readDocuments($argv) as $document) {
+        printValues($transformer->transform($document));
+    }
+
+}
+{% endblock %}

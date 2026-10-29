@@ -1,0 +1,107 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
+import com.google.gson.Gson;
+
+
+{% block class %}
+class {{ class_name }} {
+
+    // The pattern of the tokens:
+    private static final java.util.regex.Pattern TOKEN_PATTERN = java.util.regex.Pattern.compile("[\\p{L}\\p{N}_]{2,}");
+
+    private class ModelData {
+        private String[] vocabulary;
+        {% if n_stop_words %}
+        private String[] stop_words;
+        {% endif %}
+    }
+
+    private java.util.Map<String, Integer> vocabulary = new java.util.HashMap<>();
+    {% if n_stop_words %}
+    private java.util.Set<String> stopWords = new java.util.HashSet<>();
+    {% endif %}
+
+{% if _blocks %}
+    public {{ class_name }}(com.google.gson.JsonElement data) {
+        this.init(new com.google.gson.Gson().fromJson(data, ModelData.class));
+    }
+{% else %}
+    public {{ class_name }}(String file) throws IOException {
+        try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
+            this.init(new Gson().fromJson(reader, ModelData.class));
+        }
+    }
+{% endif %}
+
+    private void init(ModelData data) {
+        String[] vocabulary = data.vocabulary;
+        {% if n_stop_words %}
+        String[] stopWords = data.stop_words;
+        {% endif %}
+        for (int i = 0; i < vocabulary.length; i++) {
+            this.vocabulary.put(vocabulary[i], i);
+        }
+        {% if n_stop_words %}
+        this.stopWords.addAll(java.util.Arrays.asList(stopWords));
+        {% endif %}
+    }
+
+    public double[] transform(String document) {
+        {% if lowercase %}
+        document = document.toLowerCase(java.util.Locale.ROOT);
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        java.util.List<String> tokens = new java.util.ArrayList<>();
+        java.util.regex.Matcher matcher = TOKEN_PATTERN.matcher(document);
+        while (matcher.find()) {
+            {% if n_stop_words %}
+            if (!stopWords.contains(matcher.group())) {
+                tokens.add(matcher.group());
+            }
+            {% else %}
+            tokens.add(matcher.group());
+            {% endif %}
+        }
+        // Count the n-grams of the tokens (joined by spaces):
+        double[] values = new double[{{ n_features_out }}];
+        for (int n = {{ min_n }}; n <= {{ max_n }} && n <= tokens.size(); n++) {
+            for (int i = 0; i + n <= tokens.size(); i++) {
+                Integer index = vocabulary.get(String.join(" ", tokens.subList(i, i + n)));
+                if (index != null) {
+                    values[index] {{ '= 1.0' if binary else '+= 1.0' }};
+                }
+            }
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) throws IOException {
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('args[0]') }});
+        {% endblock %}
+
+        // One document (arguments) or several documents (standard input):
+        for (String document : readDocuments(args, 1)) {
+            printValues(transformer.transform(document));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

@@ -90,6 +90,16 @@ original estimator and transform the features like the original transformer.
   reads `nan`, `inf` and `infinity` (with a sign, in any case) in all
   languages, i.e. the output of Python's `str` (`make()`) and of the ported
   transformers (PHP and Ruby read unknown words as `0.0`).
+- Text transformers (`TEXT_INPUT = True` of `TransformerBase`, e.g. the
+  `CountVectorizer`) read documents instead of numbers: the shared template
+  `documents` of each language reads one document from the arguments
+  (joined by spaces) or one document per line from the standard input (also
+  empty lines). `make()` decodes the documents like scikit-learn (`decode`)
+  and replaces line breaks and null characters by spaces, which separate the
+  tokens like spaces (`_get_document_lines()` in `sklearn_porter/Base.py`).
+  The base templates show `"document"` in the usage (template global
+  `text_input`). Text transformers aren't supported as steps of a pipeline
+  or parts of a composite transformer yet (`Transformer.supports_step()`).
 
 ## Layout
 
@@ -114,9 +124,11 @@ original estimator and transform the features like the original transformer.
   (`_set_model_data()`, e.g. `mean` and `scale`, with `n_features_out` for
   transformers which change the number of features like the
   `OneHotEncoder`; arrays of integers like the offsets of the
-  concatenated categories of the `OrdinalEncoder` are passed as `ints`), as
-  arrays (`attached`), numbers in the code (`combined`) or JSON
-  (`exported`); parameters which are numbers in the code of all templates
+  concatenated categories of the `OrdinalEncoder` are passed as `ints`,
+  arrays of strings like the vocabulary of the `CountVectorizer` as `strs`,
+  rendered with `str_literal()` of the language), as arrays (`attached`),
+  numbers in the code (`combined`) or JSON (`exported`, read in C with
+  `json_strings()`); parameters which are numbers in the code of all templates
   (e.g. the bounds of `clip=True` of the `MinMaxScaler`) come from
   `literals()`, whose converter writes `NaN` and infinite values as
   literals of the language (templates `nan` and `inf`). Go may fuse `a * b + c` to an FMA instruction, so the

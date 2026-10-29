@@ -1,0 +1,72 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    // The pattern of the tokens:
+    private static final java.util.regex.Pattern TOKEN_PATTERN = java.util.regex.Pattern.compile("[\\p{L}\\p{N}_]{2,}");
+
+    private static final java.util.Map<String, Integer> vocabulary = new java.util.HashMap<>();
+    {% if n_stop_words %}
+    private static final java.util.Set<String> stopWords = new java.util.HashSet<>();
+    {% endif %}
+
+    static {
+        {% for term in vocabulary %}
+        vocabulary.put({{ term }}, {{ loop.index0 }});
+        {% endfor %}
+        {% for word in stop_words %}
+        stopWords.add({{ word }});
+        {% endfor %}
+    }
+
+    public double[] transform(String document) {
+        {% if lowercase %}
+        document = document.toLowerCase(java.util.Locale.ROOT);
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        java.util.List<String> tokens = new java.util.ArrayList<>();
+        java.util.regex.Matcher matcher = TOKEN_PATTERN.matcher(document);
+        while (matcher.find()) {
+            {% if n_stop_words %}
+            if (!stopWords.contains(matcher.group())) {
+                tokens.add(matcher.group());
+            }
+            {% else %}
+            tokens.add(matcher.group());
+            {% endif %}
+        }
+        // Count the n-grams of the tokens (joined by spaces):
+        double[] values = new double[{{ n_features_out }}];
+        for (int n = {{ min_n }}; n <= {{ max_n }} && n <= tokens.size(); n++) {
+            for (int i = 0; i + n <= tokens.size(); i++) {
+                Integer index = vocabulary.get(String.join(" ", tokens.subList(i, i + n)));
+                if (index != null) {
+                    values[index] {{ '= 1.0' if binary else '+= 1.0' }};
+                }
+            }
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // One document (arguments) or several documents (standard input):
+        for (String document : readDocuments(args, 0)) {
+            printValues(transformer.transform(document));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

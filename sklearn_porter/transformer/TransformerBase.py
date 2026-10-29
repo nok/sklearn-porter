@@ -30,10 +30,20 @@ class TransformerBase(EstimatorBase):
     `StandardScaler`), which `port()` renders as arrays (`attached`), as
     numbers in the code (`combined`) or as JSON (`exported`). Arrays of
     integers (e.g. the offsets of the categories of each feature in a
-    concatenated array) are rendered as such.
+    concatenated array) are rendered as such, arrays of strings (e.g. the
+    terms of a vocabulary) as string literals of the language.
+
+    A transformer with `TEXT_INPUT = True` (e.g. a `CountVectorizer`) reads
+    documents instead of numbers: one document from the arguments (separated
+    by spaces) or several documents (one per line) from the standard input
+    (shared template `documents` of each language).
     """
 
     DEFAULT_METHOD = enum.Method.TRANSFORM
+
+    # Whether the ported transformer reads documents (text) instead of
+    # numbers:
+    TEXT_INPUT = False
 
     def __init__(self, transformer: BaseEstimator):
         super().__init__(transformer)
@@ -43,6 +53,7 @@ class TransformerBase(EstimatorBase):
                 kind='Transformer',
                 action='a transformation',
                 actions='the transformations',
+                text_input=self.TEXT_INPUT,
             )
         )
 
@@ -78,6 +89,7 @@ class TransformerBase(EstimatorBase):
         n_features: int,
         n_features_out: int | None = None,
         ints: Collection[str] = (),
+        strs: Collection[str] = (),
         **arrays: object,
     ):
         """
@@ -92,6 +104,8 @@ class TransformerBase(EstimatorBase):
             features.
         ints : Collection[str] (default: ())
             The names of the arrays of integers.
+        strs : Collection[str] (default: ())
+            The names of the arrays of strings.
         arrays : object
             The arrays of the model data, e.g. with one number per feature.
         """
@@ -106,7 +120,12 @@ class TransformerBase(EstimatorBase):
 
         self.model_data = {}
         self.int_arrays = set(ints)
+        self.str_arrays = set(strs)
         for name, values in arrays.items():
+            if name in self.str_arrays:
+                values = np.asarray(values, dtype=object).ravel()
+                self.model_data[name] = [str(value) for value in values]
+                continue
             if name in self.int_arrays:
                 values = np.asarray(values, dtype=np.int64).ravel()
                 self.model_data[name] = values.tolist()
@@ -202,8 +221,15 @@ class TransformerBase(EstimatorBase):
             model_data = dumps(self.model_data, separators=(',', ':'))
             return out_class, model_data
 
+        def to_literals(name: str, data: list) -> list[str]:
+            if name in self.int_arrays:
+                return list(map(str, data))
+            if name in self.str_arrays:
+                return list(map(language.value.str_literal, data))
+            return list(map(converter, data))
+
         values = {
-            name: list(map(str if name in self.int_arrays else converter, data))
+            name: to_literals(name, data)
             for name, data in self.model_data.items()
         }
 
@@ -218,10 +244,17 @@ class TransformerBase(EstimatorBase):
         prefix = self.template_globals.get('prefix', '')
         tpl_double = tpls.get_template('double').render()
         tpl_int = tpls.get_template('int').render()
+        tpl_str = tpls.get_template('str').render()
         tpl_arr_1 = tpls.get_template('arr[]')
         for name, data in values.items():
+            if name in self.int_arrays:
+                tpl_type = tpl_int
+            elif name in self.str_arrays:
+                tpl_type = tpl_str
+            else:
+                tpl_type = tpl_double
             plas[name] = tpl_arr_1.render(
-                type=tpl_int if name in self.int_arrays else tpl_double,
+                type=tpl_type,
                 name=prefix + name,
                 values=', '.join(data),
                 n=len(data),
