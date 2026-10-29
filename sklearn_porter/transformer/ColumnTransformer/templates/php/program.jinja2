@@ -1,0 +1,27 @@
+{% extends 'base.' ~ template ~ '.class' %}
+
+{% block content %}
+{{ classes }}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'samples' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+{% if is_exported %}
+    if (count($argv) < 2) {
+        fwrite(STDERR, "You have to pass the path to the model data.\n");
+        exit(1);
+    }
+{% endif %}
+    array_shift($argv);
+    {{ create|indent('    ') }}
+
+    // Features of one sample (arguments) or several samples (standard input):
+    foreach (readSamples($argv) as $features) {
+        printValues(${{ instance }}->transform($features));
+    }
+}
+{% endblock %}

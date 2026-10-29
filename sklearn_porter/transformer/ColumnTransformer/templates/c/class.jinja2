@@ -1,0 +1,18 @@
+#define {{ prefix }}N_FEATURES {{ n_features }}
+#define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
+
+/* Write the transformed features of all parts to `values`: */
+void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
+{% for part in parts %}
+    {
+        double x0[{{ part.columns|length }}] = { {% for c in part.columns %}features[{{ c }}]{{ ', ' if not loop.last }}{% endfor %} };
+{% for step in part.steps %}
+        double x{{ loop.index }}[{{ step.prefix }}N_FEATURES_OUT];
+        {{ step.prefix }}transform(x{{ loop.index }}, x{{ loop.index0 }});
+{% endfor %}
+        for (int i = 0; i < {{ part.n_out }}; i++) {
+            values[{{ part.offset }} + i] = x{{ part.steps|length }}[i]{% if part.weight is not none %} * {{ part.weight }}{% endif %};
+        }
+    }
+{% endfor %}
+}

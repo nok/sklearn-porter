@@ -1,0 +1,34 @@
+type {{ class_name }} struct {
+{% for step in steps %}
+	{{ step.field }} {{ step.class_name }}
+{% endfor %}
+}
+
+func (transformer {{ class_name }}) Transform(features []float64) []float64 {
+	values := make([]float64, {{ n_features_out }})
+	var x []float64
+{% for part in parts %}
+	x = []float64{ {% for c in part.columns %}features[{{ c }}]{{ ', ' if not loop.last }}{% endfor %} }
+{% for step in part.steps %}
+	x = transformer.{{ step.field }}.Transform(x)
+{% endfor %}
+	for i := 0; i < {{ part.n_out }}; i++ {
+		values[{{ part.offset }}+i] = x[i]{% if part.weight is not none %} * {{ part.weight }}{% endif +%}
+	}
+{% endfor %}
+	return values
+}
+{% if is_exported %}
+
+// The model data of the transformers of the parts:
+func {{ prefix }}subData(data []byte) []json.RawMessage {
+	var parsed struct {
+		Transformers []json.RawMessage `json:"transformers"`
+	}
+	if err := json.Unmarshal(data, &parsed); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	return parsed.Transformers
+}
+{% endif %}

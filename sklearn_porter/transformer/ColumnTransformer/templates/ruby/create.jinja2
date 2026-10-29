@@ -1,0 +1,2 @@
+# Column transformer:
+{{ instance }} = {{ class_name }}.new({% for step in steps %}{{ step.instance }}{{ ', ' if not loop.last }}{% endfor %})

@@ -13,8 +13,9 @@ from sklearn.base import (
     RegressorMixin,
     TransformerMixin,
 )
+from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.preprocessing import (
     Binarizer,
     FunctionTransformer,
@@ -168,6 +169,49 @@ class Transformer(Base):
     def _registry() -> tuple:
         return Transformer.transformers()
 
+    @classmethod
+    def supports(
+        cls,
+        estimator: BaseEstimator | type,
+        language: str | enum.Language | None = None,
+        template: str | enum.Template | None = None,
+        method: str | enum.Method | None = None,
+    ) -> bool:
+        """
+        Check the support of the given arguments for transformers.
+
+        A composite transformer (e.g. a `ColumnTransformer`) is supported if
+        the transformers of all its parts are supported.
+
+        Parameters
+        ----------
+        estimator : BaseEstimator or estimator class.
+            Set a fitted transformer of scikit-learn.
+        language : str
+            Set the target programming language.
+        template : str
+            Set the kind of desired template.
+        method : str
+            Set the kind of template.
+
+        Returns
+        -------
+        True by a supported combination.
+        """
+        if not super().supports(estimator, language, template, method):
+            return False
+        if isinstance(estimator, (ColumnTransformer, FeatureUnion)):
+            from sklearn_porter.transformer.ColumnTransformer import (
+                get_parts,
+                split_steps,
+            )
+
+            for _, part in get_parts(estimator):
+                for step in split_steps(part):
+                    if not cls.supports(step, language, template, method):
+                        return False
+        return True
+
     def make(
         self,
         x: list | np.ndarray,
@@ -290,6 +334,8 @@ class Transformer(Base):
         """
         return (
             Binarizer,
+            ColumnTransformer,
+            FeatureUnion,
             FunctionTransformer,
             KBinsDiscretizer,
             MaxAbsScaler,

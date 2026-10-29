@@ -1,0 +1,48 @@
+class {{ class_name }} {
+
+{% for step in steps %}
+    private {{ step.class_name }} {{ step.field }};
+{% endfor %}
+
+    public {{ class_name }}({% for step in steps %}{{ step.class_name }} {{ step.field }}{{ ', ' if not loop.last }}{% endfor %}) {
+{% for step in steps %}
+        this.{{ step.field }} = {{ step.field }};
+{% endfor %}
+    }
+
+    public double[] transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        double[] x;
+{% for part in parts %}
+        x = new double[] { {% for c in part.columns %}features[{{ c }}]{{ ', ' if not loop.last }}{% endfor %} };
+{% for step in part.steps %}
+        x = this.{{ step.field }}.transform(x);
+{% endfor %}
+        for (int i = 0; i < {{ part.n_out }}; i++) {
+            values[{{ part.offset }} + i] = x[i]{% if part.weight is not none %} * {{ part.weight }}{% endif %};
+        }
+{% endfor %}
+        return values;
+    }
+{% if not is_step %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) throws java.io.IOException {
+{% if is_exported %}
+        if (args.length < 1 || !args[0].endsWith(".json")) {
+            throw new IllegalArgumentException("You have to pass the path to the exported model data.");
+        }
+
+{% endif %}
+        {{ create|indent('        ') }}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, {{ 1 if is_exported else 0 }})) {
+            printValues({{ instance }}.transform(features));
+        }
+    }
+{% endif %}
+}

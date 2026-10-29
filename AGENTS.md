@@ -121,6 +121,15 @@ original estimator and transform the features like the original transformer.
   `literals()`, whose converter writes `NaN` and infinite values as
   literals of the language (templates `nan` and `inf`). Go may fuse `a * b + c` to an FMA instruction, so the
   templates write `float64(a*b) + c` to keep the results identical.
+- Composite transformers: `sklearn_porter/transformer/ColumnTransformer/`
+  (and its subclass `FeatureUnion`) ports the transformers of each part (a
+  transformer, the steps of a pipeline or none for `'passthrough'`) in the
+  block mode of a pipeline (prefix `t<part>_<step>_`, instance
+  `<instance>_t<part>_<step>`, exported model data under `transformers`)
+  and renders its own templates (`class`, `create`, `program` for a single
+  composite transformer, `load_data`, `root_data`, `child_data`). Its class
+  holds the instances of the transformers (in C a function with arrays per
+  part). `Transformer.supports()` checks the transformers of all parts.
 - `sklearn_porter/language/<language>/__init__.py`: subclass of `LanguageABC`
   with the compile and execute commands and small code snippets.
 - `sklearn_porter/enums`, `exceptions`, `utils`, `meta`: shared helpers.

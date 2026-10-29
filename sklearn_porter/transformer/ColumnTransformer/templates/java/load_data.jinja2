@@ -1,0 +1,5 @@
+// Model data:
+com.google.gson.JsonObject transformerData;
+try (java.io.Reader transformerReader = java.nio.file.Files.newBufferedReader(java.nio.file.Paths.get(args[0]))) {
+    transformerData = com.google.gson.JsonParser.parseReader(transformerReader).getAsJsonObject();
+}

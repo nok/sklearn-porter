@@ -5,6 +5,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 from joblib import dump
+from sklearn.compose import ColumnTransformer
 
 # scikit-learn
 from sklearn.datasets import load_iris
@@ -30,7 +31,15 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
 # sklearn-porter
-from sklearn_porter import Estimator, Pipeline, Transformer, can, port, save
+from sklearn_porter import (
+    Estimator,
+    Pipeline,
+    Porter,
+    Transformer,
+    can,
+    port,
+    save,
+)
 from sklearn_porter import exceptions as exception
 from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
@@ -333,3 +342,40 @@ def test_cli(fitted_pipeline: SklearnPipeline, tmp_path: Path):
     )
     assert str(tmp_path / 'Pipeline.java') in out
     assert str(tmp_path / 'Pipeline.json') in out
+
+
+def test_pipeline_with_column_transformer():
+    """A column transformer is a supported step of a pipeline."""
+    pipeline = _fit(
+        [
+            (
+                'columns',
+                ColumnTransformer(
+                    [
+                        ('scaler', StandardScaler(), [0, 1]),
+                        ('ordinal', OrdinalEncoder(), [2, 3]),
+                    ]
+                ),
+            ),
+            ('clf', LogisticRegression(max_iter=1000)),
+        ]
+    )
+    assert Pipeline.supports(pipeline)
+    out = Pipeline(pipeline, language='java').port()
+    assert 'class ColumnTransformer {' in out
+    assert 'ColumnTransformerStandardScaler' in out
+
+
+def test_pipeline_with_unsupported_column_transformer():
+    pipeline = _fit(
+        [
+            (
+                'columns',
+                ColumnTransformer([('spline', SplineTransformer(), [0, 1])]),
+            ),
+            ('clf', LogisticRegression(max_iter=1000)),
+        ]
+    )
+    assert not Pipeline.supports(pipeline)
+    with pytest.raises(exception.NotSupportedYetError):
+        Porter(pipeline)

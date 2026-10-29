@@ -1,0 +1,21 @@
+class {{ class_name }}
+
+	def initialize({% for step in steps %}{{ step.field }}{{ ', ' if not loop.last }}{% endfor %})
+{% for step in steps %}
+		@{{ step.field }} = {{ step.field }}
+{% endfor %}
+	end
+
+	def transform(features)
+		values = Array.new({{ n_features_out }})
+{% for part in parts %}
+		x = [{% for c in part.columns %}features[{{ c }}]{{ ', ' if not loop.last }}{% endfor %}]
+{% for step in part.steps %}
+		x = @{{ step.field }}.transform(x)
+{% endfor %}
+		{{ part.n_out }}.times { |i| values[{{ part.offset }} + i] = x[i]{% if part.weight is not none %} * {{ part.weight }}{% endif %} }
+{% endfor %}
+		values
+	end
+
+end

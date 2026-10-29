@@ -1,0 +1,36 @@
+{% extends 'base.' ~ template ~ '.class' %}
+
+{% block content %}
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+{{ classes }}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+int main(int argc, const char *argv[]) {
+{% if is_exported %}
+    if (argc < 2) {
+        fprintf(stderr, "You have to pass the path to the model data.\n");
+        return 1;
+    }
+
+{% endif %}
+{% if create %}
+    {{ create|indent('    ') }}
+
+{% endif %}
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, {{ 2 if is_exported else 1 }})) {
+        double values[N_FEATURES_OUT];
+        transform(values, features);
+        print_values(values, N_FEATURES_OUT);
+    }
+
+    return 0;
+}
+{% endblock %}

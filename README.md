@@ -84,6 +84,11 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 
 ### Transformers
 
+#### Composition
+
+- [compose.ColumnTransformer](https://scikit-learn.org/stable/modules/generated/sklearn.compose.ColumnTransformer.html)
+- [pipeline.FeatureUnion](https://scikit-learn.org/stable/modules/generated/sklearn.pipeline.FeatureUnion.html)
+
 #### Preprocessing
 
 - [impute.SimpleImputer](https://scikit-learn.org/stable/modules/generated/sklearn.impute.SimpleImputer.html)

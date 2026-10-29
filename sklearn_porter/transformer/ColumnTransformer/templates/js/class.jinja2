@@ -1,0 +1,22 @@
+var {{ class_name }} = function({% for step in steps %}{{ step.field }}{{ ', ' if not loop.last }}{% endfor %}) {
+
+{% for step in steps %}
+    this.{{ step.field }} = {{ step.field }};
+{% endfor %}
+
+    this.transform = function(features) {
+        var values = new Array({{ n_features_out }});
+        var x;
+{% for part in parts %}
+        x = [{% for c in part.columns %}features[{{ c }}]{{ ', ' if not loop.last }}{% endfor %}];
+{% for step in part.steps %}
+        x = this.{{ step.field }}.transform(x);
+{% endfor %}
+        for (var i = 0; i < {{ part.n_out }}; i++) {
+            values[{{ part.offset }} + i] = x[i]{% if part.weight is not none %} * {{ part.weight }}{% endif %};
+        }
+{% endfor %}
+        return values;
+    };
+
+};
