@@ -1,0 +1,60 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+public class {{ class_name }} {
+
+    public double[] Transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        {% for i in range(n_features) %}
+        values[{{ i }}] = ({% if method == 'box-cox' %}{% if bc_log[i] %}System.Math.Log(features[{{ i }}]){% else %}({{ lambdas[i] }} * System.Math.Log(features[{{ i }}]) < 709.78 ? Expm1({{ lambdas[i] }} * System.Math.Log(features[{{ i }}])) / {{ lambdas[i] }} : {{ signs[i] }} * System.Math.Exp({{ lambdas[i] }} * System.Math.Log(features[{{ i }}]) - {{ log_abs[i] }}) - {{ reciprocals[i] }}){% endif %}{% else %}(features[{{ i }}] >= 0 ? {% if pos_log[i] %}Log1p(features[{{ i }}]){% else %}Expm1({{ lambdas[i] }} * Log1p(features[{{ i }}])) / {{ lambdas[i] }}{% endif %} : {% if neg_log[i] %}-Log1p(-features[{{ i }}]){% else %}-Expm1({{ two_minus[i] }} * Log1p(-features[{{ i }}])) / {{ two_minus[i] }}{% endif %}){% endif %} - {{ mean[i] }}) / {{ scale[i] }};
+        {% endfor %}
+        return values;
+    }
+
+
+    // log(1 + x), also accurate for small values of x:
+    private static double Log1p(double x) {
+        double u = 1.0 + x;
+        if (u == 1.0) {
+            return x;
+        }
+        if (x > 1.0) {
+            return System.Math.Log(u);
+        }
+        return System.Math.Log(u) * x / (u - 1.0);
+    }
+
+    // exp(x) - 1, also accurate for small values of x:
+    private static double Expm1(double x) {
+        double u = System.Math.Exp(x);
+        if (u == 1.0) {
+            return x;
+        }
+        if (System.Math.Abs(x) > 1.0) {
+            return u - 1.0;
+        }
+        return (u - 1.0) * x / System.Math.Log(u);
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        foreach (double[] features in ReadSamples(args, 0)) {
+            PrintValues(transformer.Transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

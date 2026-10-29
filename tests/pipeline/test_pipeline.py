@@ -24,6 +24,7 @@ from sklearn.preprocessing import (
     OneHotEncoder,
     OrdinalEncoder,
     PolynomialFeatures,
+    PowerTransformer,
     RobustScaler,
     StandardScaler,
     TargetEncoder,
@@ -89,6 +90,7 @@ PREPROCESSING = {
         ('k_bins', KBinsDiscretizer(n_bins=4, encode='ordinal')),
         ('target', TargetEncoder(random_state=0)),
     ],
+    'power_transformer': lambda: [('power', PowerTransformer())],
     # The indicators of the missing values (of the samples of the fit):
     'imputer_with_indicator': lambda: [
         ('imputer', SimpleImputer(add_indicator=True)),

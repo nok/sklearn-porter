@@ -21,6 +21,7 @@ from sklearn.preprocessing import (
     OneHotEncoder,
     OrdinalEncoder,
     PolynomialFeatures,
+    PowerTransformer,
     RobustScaler,
     SplineTransformer,
     StandardScaler,
@@ -155,6 +156,22 @@ TRANSFORMERS = {
             missing=[1, 0, 0, 0],
             nans=[float(t.encodings_[0][-1]), 0.0, 0.0, 0.0],
             unknowns=[float(t.target_mean_)] * 4,
+        ),
+    ),
+    'power_transformer': (
+        lambda: PowerTransformer().fit(load_iris().data),
+        lambda t: dict(
+            lambdas=t.lambdas_.tolist(),
+            mean=t._scaler.mean_.tolist(),
+            scale=t._scaler.scale_.tolist(),
+        ),
+    ),
+    'power_transformer_box_cox': (
+        lambda: PowerTransformer(method='box-cox', standardize=False).fit(
+            load_iris().data
+        ),
+        lambda t: dict(
+            lambdas=t.lambdas_.tolist(), mean=[0.0] * 4, scale=[1.0] * 4
         ),
     ),
     'k_bins_discretizer_onehot': (
@@ -512,6 +529,8 @@ def test_show_of_all_transformers():
         assert name in table
     for name in ('OneHotEncoder', 'PolynomialFeatures', 'TargetEncoder'):
         assert name in table
+    for name in ('PowerTransformer',):
+        assert name in table
 
 
 @pytest.mark.parametrize('language', LANGUAGES)
@@ -790,6 +809,20 @@ def test_unsupported_target_encoder():
     orig_est = TargetEncoder().fit(x, [0, 1, 0, 1])
     with pytest.raises(exception.NotSupportedYetError, match='numbers'):
         Transformer(orig_est)
+
+
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_formulas_of_power_transformer(language: str):
+    """The template `combined` contains only the formulas of the lambdas."""
+    x = load_iris().data
+    orig_est = PowerTransformer(standardize=False).fit(x)
+    orig_est.lambdas_ = np.array([0.0, 2.0, 0.5, -1.5])
+    out = port(orig_est, language=language, template='combined')
+    assert '{%' not in out
+    assert '3.5' in out  # 2 - lambda of the last feature
+    orig_est = PowerTransformer(method='box-cox', standardize=False).fit(x)
+    out = port(orig_est, language=language, template='combined')
+    assert '709.78' in out
 
 
 def test_polynomial_features_with_bias_only():

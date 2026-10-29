@@ -1,0 +1,36 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+{% block class %}
+#define {{ prefix }}N_FEATURES {{ n_features }}
+#define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
+
+
+/* Write the transformed features to `values`: */
+void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
+    {% for i in range(n_features) %}
+    values[{{ i }}] = ({% if method == 'box-cox' %}{% if bc_log[i] %}log(features[{{ i }}]){% else %}({{ lambdas[i] }} * log(features[{{ i }}]) < 709.78 ? expm1({{ lambdas[i] }} * log(features[{{ i }}])) / {{ lambdas[i] }} : {{ signs[i] }} * exp({{ lambdas[i] }} * log(features[{{ i }}]) - {{ log_abs[i] }}) - {{ reciprocals[i] }}){% endif %}{% else %}(features[{{ i }}] >= 0 ? {% if pos_log[i] %}log1p(features[{{ i }}]){% else %}expm1({{ lambdas[i] }} * log1p(features[{{ i }}])) / {{ lambdas[i] }}{% endif %} : {% if neg_log[i] %}-log1p(-features[{{ i }}]){% else %}-expm1({{ two_minus[i] }} * log1p(-features[{{ i }}])) / {{ two_minus[i] }}{% endif %}){% endif %} - {{ mean[i] }}) / {{ scale[i] }};
+    {% endfor %}
+}
+{% endblock %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+int main(int argc, const char *argv[]) {
+    /* Features of one sample (arguments) or several samples (standard input): */
+    double features[N_FEATURES];
+    while (read_features(features, argc, argv, 1)) {
+        double values[N_FEATURES_OUT];
+        transform(values, features);
+        print_values(values, N_FEATURES_OUT);
+    }
+
+    return 0;
+}
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    private double[] lambdas;
+    private double[] mean;
+    private double[] scale;
+
+    public {{ class_name }}(double[] lambdas, double[] mean, double[] scale) {
+        this.lambdas = lambdas;
+        this.mean = mean;
+        this.scale = scale;
+    }
+
+    public double[] transform(double[] features) {
+        double[] values = new double[features.length];
+        for (int i = 0; i < features.length; i++) {
+            double x = features[i];
+            double l = this.lambdas[i];
+            double y;
+        {% if method == 'box-cox' %}
+            if (Math.abs(l) < 1e-19) {
+                y = Math.log(x);
+            } else if (l * Math.log(x) < 709.78) {
+                y = Math.expm1(l * Math.log(x)) / l;
+            } else {
+                y = (l > 0 ? 1.0 : -1.0) * Math.exp(l * Math.log(x) - Math.log(Math.abs(l))) - 1.0 / l;
+            }
+        {% else %}
+            if (x >= 0) {
+                y = Math.abs(l) < {{ eps }} ? Math.log1p(x) : Math.expm1(l * Math.log1p(x)) / l;
+            } else {
+                y = Math.abs(l - 2.0) > {{ eps }} ? -Math.expm1((2.0 - l) * Math.log1p(-x)) / (2.0 - l) : -Math.log1p(-x);
+            }
+        {% endif %}
+            values[i] = (y - this.mean[i]) / this.scale[i];
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Model data:
+        {{ lambdas }}
+        {{ mean }}
+        {{ scale }}
+
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}lambdas, {{ prefix }}mean, {{ prefix }}scale);
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	def transform(features)
+		[
+			{% for i in range(n_features) %}
+			({% if method == 'box-cox' %}{% if bc_log[i] %}Math.log(features[{{ i }}]){% else %}({{ lambdas[i] }} * Math.log(features[{{ i }}]) < 709.78 ? expm1({{ lambdas[i] }} * Math.log(features[{{ i }}])) / {{ lambdas[i] }} : {{ signs[i] }} * Math.exp({{ lambdas[i] }} * Math.log(features[{{ i }}]) - {{ log_abs[i] }}) - {{ reciprocals[i] }}){% endif %}{% else %}(features[{{ i }}] >= 0 ? {% if pos_log[i] %}log1p(features[{{ i }}]){% else %}expm1({{ lambdas[i] }} * log1p(features[{{ i }}])) / {{ lambdas[i] }}{% endif %} : {% if neg_log[i] %}-log1p(-features[{{ i }}]){% else %}-expm1({{ two_minus[i] }} * log1p(-features[{{ i }}])) / {{ two_minus[i] }}{% endif %}){% endif %} - {{ mean[i] }}) / {{ scale[i] }},
+			{% endfor %}
+		]
+	end
+
+
+	# log(1 + x), also accurate for small values of x:
+	def log1p(x)
+		return Float::NAN if x < -1
+		u = 1.0 + x
+		return x if u == 1.0
+		return Math.log(u) if x > 1
+		Math.log(u) * x / (u - 1.0)
+	end
+
+	# exp(x) - 1, also accurate for small values of x:
+	def expm1(x)
+		u = Math.exp(x)
+		return x if u == 1.0
+		return u - 1.0 if x.abs > 1
+		(u - 1.0) * x / Math.log(u)
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new
+	{% endblock %}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values transformer.transform(features)
+	end
+end
+{% endblock %}

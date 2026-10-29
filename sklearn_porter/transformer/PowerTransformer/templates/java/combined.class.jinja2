@@ -1,0 +1,34 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    public double[] transform(double[] features) {
+        double[] values = new double[{{ n_features_out }}];
+        {% for i in range(n_features) %}
+        values[{{ i }}] = ({% if method == 'box-cox' %}{% if bc_log[i] %}Math.log(features[{{ i }}]){% else %}({{ lambdas[i] }} * Math.log(features[{{ i }}]) < 709.78 ? Math.expm1({{ lambdas[i] }} * Math.log(features[{{ i }}])) / {{ lambdas[i] }} : {{ signs[i] }} * Math.exp({{ lambdas[i] }} * Math.log(features[{{ i }}]) - {{ log_abs[i] }}) - {{ reciprocals[i] }}){% endif %}{% else %}(features[{{ i }}] >= 0 ? {% if pos_log[i] %}Math.log1p(features[{{ i }}]){% else %}Math.expm1({{ lambdas[i] }} * Math.log1p(features[{{ i }}])) / {{ lambdas[i] }}{% endif %} : {% if neg_log[i] %}-Math.log1p(-features[{{ i }}]){% else %}-Math.expm1({{ two_minus[i] }} * Math.log1p(-features[{{ i }}])) / {{ two_minus[i] }}{% endif %}){% endif %} - {{ mean[i] }}) / {{ scale[i] }};
+        {% endfor %}
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'samples' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // Features of one sample (arguments) or several samples (standard input):
+        for (double[] features : readSamples(args, 0)) {
+            printValues(transformer.transform(features));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}
