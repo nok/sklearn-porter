@@ -1,0 +1,13 @@
+    // Read one document from the arguments (separated by spaces) or several
+    // documents (one per line) from the standard input:
+    private static System.Collections.Generic.IEnumerable<string> ReadDocuments(string[] args, int offset) {
+        if (args.Length > offset) {
+            yield return string.Join(" ", args, offset, args.Length - offset);
+            yield break;
+        }
+        System.Console.InputEncoding = System.Text.Encoding.UTF8;
+        string line;
+        while ((line = System.Console.ReadLine()) != null) {
+            yield return line;
+        }
+    }

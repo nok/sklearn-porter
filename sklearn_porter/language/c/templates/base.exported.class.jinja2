@@ -13,9 +13,9 @@ Usage:
     1. Compile the generated source code:
         $ gcc {{ class_name }}.c -std=c99 -O1 -lm -o {{ class_name }}
     2. Execute {{ action|default('a prediction') }}:
-        $ ./{{ class_name }} {{ class_name }}.json feature_1 ... feature_{{ n_features }}
-    3. Execute {{ actions|default('the predictions') }} of several samples (one per line):
-        $ ./{{ class_name }} {{ class_name }}.json < samples.txt
+        $ ./{{ class_name }} {{ class_name }}.json {{ '"document"' if text_input else 'feature_1 ... feature_' ~ n_features }}
+    3. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
+        $ ./{{ class_name }} {{ class_name }}.json < {{ 'documents' if text_input else 'samples' }}.txt
 */
 #include <ctype.h>
 #include <stdio.h>
@@ -108,6 +108,39 @@ static int json_parse_number(const char **s, double *number) {
     return 1;
 }
 
+/* Parse the four hexadecimal digits of an escaped UTF-16 code unit: */
+static unsigned long json_parse_hex(const char *s) {
+    unsigned long unit = 0;
+    for (int i = 0; i < 4; i++) {
+        char c = s[i];
+        if (!isxdigit((unsigned char) c)) {
+            json_fail("invalid unicode escape");
+        }
+        unit = 16 * unit + (isdigit((unsigned char) c) ? c - '0' : tolower((unsigned char) c) - 'a' + 10);
+    }
+    return unit;
+}
+
+/* Write a code point as UTF-8: */
+static char *json_write_utf8(char *out, unsigned long c) {
+    if (c < 0x80) {
+        *out++ = (char) c;
+    } else if (c < 0x800) {
+        *out++ = (char) (0xC0 | (c >> 6));
+        *out++ = (char) (0x80 | (c & 0x3F));
+    } else if (c < 0x10000) {
+        *out++ = (char) (0xE0 | (c >> 12));
+        *out++ = (char) (0x80 | ((c >> 6) & 0x3F));
+        *out++ = (char) (0x80 | (c & 0x3F));
+    } else {
+        *out++ = (char) (0xF0 | (c >> 18));
+        *out++ = (char) (0x80 | ((c >> 12) & 0x3F));
+        *out++ = (char) (0x80 | ((c >> 6) & 0x3F));
+        *out++ = (char) (0x80 | (c & 0x3F));
+    }
+    return out;
+}
+
 static char *json_parse_string(const char **s) {
     const char *start = ++(*s);
     while (**s != '"') {
@@ -119,13 +152,41 @@ static char *json_parse_string(const char **s) {
         }
         (*s)++;
     }
-    size_t length = *s - start;
-    char *string = malloc(length + 1);
+    /* The unescaped string (in UTF-8) isn't longer than the escaped one: */
+    char *string = malloc(*s - start + 1);
     if (string == NULL) {
         json_fail("out of memory");
     }
-    memcpy(string, start, length);
-    string[length] = '\0';
+    char *out = string;
+    for (const char *c = start; c < *s; c++) {
+        if (*c != '\\') {
+            *out++ = *c;
+            continue;
+        }
+        switch (*++c) {
+            case 'b': *out++ = '\b'; break;
+            case 'f': *out++ = '\f'; break;
+            case 'n': *out++ = '\n'; break;
+            case 'r': *out++ = '\r'; break;
+            case 't': *out++ = '\t'; break;
+            case 'u': {
+                unsigned long unit = json_parse_hex(c + 1);
+                c += 4;
+                /* A surrogate pair of a code point outside of the BMP: */
+                if (unit >= 0xD800 && unit < 0xDC00 && c[1] == '\\' && c[2] == 'u') {
+                    unsigned long low = json_parse_hex(c + 3);
+                    if (low >= 0xDC00 && low < 0xE000) {
+                        unit = 0x10000 + ((unit - 0xD800) << 10) + (low - 0xDC00);
+                        c += 6;
+                    }
+                }
+                out = json_write_utf8(out, unit);
+                break;
+            }
+            default: *out++ = *c; /* e.g. `\"`, `\\` and `\/` */
+        }
+    }
+    *out = '\0';
     (*s)++;
     return string;
 }
@@ -241,6 +302,22 @@ int *json_ints(JsonValue *array) {
     int *values = malloc((array->length > 0 ? array->length : 1) * sizeof(int));
     for (int i = 0; i < array->length; i++) {
         values[i] = (int) numbers[i];
+    }
+    return values;
+}
+
+/* The strings of an array (the array of strings is taken from the JSON value): */
+char **json_strings(JsonValue *array) {
+    if (array->type != JSON_ARRAY || array->numbers != NULL) {
+        json_fail("expected an array of strings");
+    }
+    char **values = malloc((array->length > 0 ? array->length : 1) * sizeof(char *));
+    for (int i = 0; i < array->length; i++) {
+        if (array->items[i]->type != JSON_STRING) {
+            json_fail("expected an array of strings");
+        }
+        values[i] = array->items[i]->string;
+        array->items[i]->string = NULL;
     }
     return values;
 }

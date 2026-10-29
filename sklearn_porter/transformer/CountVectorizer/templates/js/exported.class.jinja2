@@ -1,0 +1,72 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+var fs = require('fs');
+
+
+{% block class %}
+{% if _blocks %}
+var {{ class_name }} = function(data) {
+{% else %}
+var {{ class_name }} = function(jsonFile) {
+    var data = JSON.parse(fs.readFileSync(jsonFile));
+{% endif %}
+    var vocabulary = data.vocabulary;
+    {% if n_stop_words %}
+    var stopWords = data.stop_words;
+    {% endif %}
+
+    this.vocabulary = new Map(vocabulary.map(function (term, i) {
+        return [term, i];
+    }));
+    {% if n_stop_words %}
+    this.stopWords = new Set(stopWords);
+    {% endif %}
+
+    this.transform = function(document) {
+        {% if lowercase %}
+        document = document.toLowerCase();
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        var tokens = (document.match(/[\p{L}\p{N}_]{2,}/gu) || []){% if n_stop_words %}.filter(function (token) {
+            return !this.stopWords.has(token);
+        }, this){% endif %};
+        // Count the n-grams of the tokens (joined by spaces):
+        var values = new Array({{ n_features_out }}).fill(0);
+        for (var n = {{ min_n }}; n <= {{ max_n }} && n <= tokens.length; n++) {
+            for (var i = 0; i + n <= tokens.length; i++) {
+                var index = this.vocabulary.get(tokens.slice(i, i + n).join(' '));
+                if (index !== undefined) {
+                    values[index] {{ '= 1' if binary else '+= 1' }};
+                }
+            }
+        }
+        return values;
+    };
+};
+{% endblock %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+var main = function () {
+    if (process.argv.length < 3) {
+        throw new Error("You have to pass the path to the model data.");
+    }
+
+    {% block create %}
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('process.argv[2]') }});
+    {% endblock %}
+
+    // One document (arguments) or several documents (standard input):
+    readDocuments(process.argv.slice(3)).forEach(function (document) {
+        printValues(transformer.transform(document));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

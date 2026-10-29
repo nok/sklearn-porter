@@ -10,7 +10,11 @@ from sklearn.compose import ColumnTransformer
 
 # scikit-learn
 from sklearn.datasets import load_iris
-from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import (
+    ENGLISH_STOP_WORDS,
+    CountVectorizer,
+    TfidfTransformer,
+)
 from sklearn.feature_selection import (
     RFE,
     RFECV,
@@ -26,6 +30,7 @@ from sklearn.feature_selection import (
 )
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LogisticRegression
+from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import FeatureUnion, Pipeline, make_pipeline
 from sklearn.preprocessing import (
     Binarizer,
@@ -50,6 +55,7 @@ from sklearn.tree import DecisionTreeClassifier
 # sklearn-porter
 from sklearn_porter import Estimator, Transformer, can, port, save, show
 from sklearn_porter import exceptions as exception
+from sklearn_porter.Base import _get_document_lines
 from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.transformer.Normalizer import _get_sum_tree
@@ -64,6 +70,14 @@ def _iris_with_missing_values() -> np.ndarray:
     x[::7, 0] = np.nan
     return x
 
+
+# The documents of the text transformers:
+CORPUS = [
+    'This is the first document.',
+    'This document is the second document.',
+    'And this is the third one.',
+    'Is this the first document?',
+]
 
 # The transformers and their expected model data:
 TRANSFORMERS = {
@@ -215,6 +229,20 @@ TRANSFORMERS = {
     'tfidf_transformer_without_idf': (
         lambda: TfidfTransformer(use_idf=False).fit(load_iris().data),
         lambda t: dict(idf=[1.0] * 4),
+    ),
+    'count_vectorizer': (
+        lambda: CountVectorizer().fit(CORPUS),
+        lambda t: dict(vocabulary=t.get_feature_names_out().tolist()),
+    ),
+    # All stop words of two or more characters can change the n-grams:
+    'count_vectorizer_with_stop_words': (
+        lambda: CountVectorizer(stop_words='english', ngram_range=(1, 2)).fit(
+            CORPUS
+        ),
+        lambda t: dict(
+            vocabulary=t.get_feature_names_out().tolist(),
+            stop_words=sorted(w for w in ENGLISH_STOP_WORDS if len(w) > 1),
+        ),
     ),
     # scikit-learn uses `idf_` of the fit, also if `use_idf` changes later:
     'tfidf_transformer_with_idf_of_fit': (
@@ -597,7 +625,7 @@ def test_show_of_all_transformers():
         assert name in table
     for name in ('OneHotEncoder', 'PolynomialFeatures', 'TargetEncoder'):
         assert name in table
-    for name in ('PowerTransformer', 'TfidfTransformer'):
+    for name in ('PowerTransformer', 'TfidfTransformer', 'CountVectorizer'):
         assert name in table
     assert 'QuantileTransformer' in table
     for name in ('GenericUnivariateSelect', 'RFE', 'RFECV', 'SelectFdr'):
@@ -957,6 +985,98 @@ def test_unsupported_tfidf_transformer():
         orig_est = TfidfTransformer(smooth_idf=False).fit(x)
     with pytest.raises(exception.NotSupportedYetError, match='`idf`'):
         Transformer(orig_est)
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_documents_of_count_vectorizer(language: str, template: str):
+    """The ported vectorizer reads documents instead of features."""
+    orig_est = CountVectorizer(ngram_range=(1, 2), stop_words=['the'])
+    orig_est.fit(CORPUS)
+    out = port(orig_est, language=language, template=template)
+    out = out[0] if isinstance(out, tuple) else out
+    assert '{%' not in out
+    assert '"document"' in out
+    assert 'documents.txt' in out
+    assert 'feature_1' not in out
+
+
+def test_stop_words_of_count_vectorizer():
+    """Only the stop words which can change the counts are ported."""
+    # Without n-grams only the stop words of the vocabulary:
+    orig_est = CountVectorizer(stop_words='english').fit(CORPUS)
+    _, data = Transformer(orig_est, template='exported').port()
+    assert 'stop_words' not in json.loads(data)
+    orig_est = CountVectorizer(
+        stop_words=['the', 'is', 'x', 'The'], vocabulary=['the', 'first']
+    )
+    _, data = Transformer(orig_est, template='exported').port()
+    assert json.loads(data)['stop_words'] == ['the']
+    # With n-grams all stop words which are tokens (in lowercase):
+    orig_est = CountVectorizer(
+        stop_words=['the', 'is', 'x', 'The', 'a-b'], ngram_range=(1, 2)
+    ).fit(CORPUS)
+    _, data = Transformer(orig_est, template='exported').port()
+    assert json.loads(data)['stop_words'] == ['is', 'the']
+
+
+def test_fixed_vocabulary_of_count_vectorizer():
+    """A vectorizer with a fixed vocabulary can be ported without a fit."""
+    orig_est = CountVectorizer(vocabulary={'first': 1, 'document': 0})
+    _, data = Transformer(orig_est, template='exported').port()
+    assert json.loads(data) == dict(vocabulary=['document', 'first'])
+    assert not hasattr(orig_est, 'vocabulary_')  # unchanged
+
+
+def test_unfitted_count_vectorizer():
+    with pytest.raises(exception.NotFittedEstimatorError):
+        Transformer(CountVectorizer())
+
+
+@pytest.mark.parametrize(
+    'params',
+    [
+        dict(analyzer='char'),
+        dict(analyzer=str.split),
+        dict(tokenizer=str.split),
+        dict(preprocessor=str.lower),
+        dict(token_pattern=r'\b\w+\b'),
+        dict(strip_accents='ascii'),
+        dict(input='filename'),
+        dict(ngram_range=(0, 1)),
+    ],
+    ids=lambda params: next(iter(params)),
+)
+def test_unsupported_count_vectorizer(params: dict):
+    orig_est = CountVectorizer(vocabulary=['first'], **params)
+    with pytest.raises(
+        exception.NotSupportedYetError, match=next(iter(params))
+    ):
+        Transformer(orig_est)
+
+
+def test_count_vectorizer_as_step_or_part():
+    """Text transformers aren't supported in pipelines and parts yet."""
+    pipeline = make_pipeline(CountVectorizer(), MultinomialNB())
+    pipeline.fit(CORPUS, [0, 1, 0, 1])
+    assert Transformer.supports(pipeline[0])
+    assert not Transformer.supports_step(pipeline[0])
+    with pytest.raises(exception.NotSupportedYetError, match='ignore_'):
+        Estimator(pipeline)
+    orig_est = ColumnTransformer([('text', CountVectorizer(), 0)])
+    orig_est.fit(np.array(CORPUS, dtype=object).reshape(-1, 1))
+    assert not Transformer.supports(orig_est)
+    with pytest.raises(exception.NotSupportedYetError, match='CountVectorizer'):
+        Transformer(orig_est)
+
+
+def test_lines_of_documents():
+    """Each document is one line of the standard input."""
+    orig_est = CountVectorizer(vocabulary=['first'])
+    assert _get_document_lines(orig_est, 'one\ntwo') == ['one two']
+    documents = ['a\r\nb', b'caf\xc3\xa9', 'c\0d', '']
+    lines = ['a  b', 'café', 'c d', '']
+    assert _get_document_lines(orig_est, documents) == lines
 
 
 def test_unsupported_quantile_transformer():

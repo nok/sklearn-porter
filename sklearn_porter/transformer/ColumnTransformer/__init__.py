@@ -151,7 +151,7 @@ class ColumnTransformer(TransformerBase, EstimatorApiABC):
 
         steps = []
         for step in split_steps(transformer):
-            if not Transformer.supports(step):
+            if not Transformer.supports_step(step):
                 msg = (
                     f'The part `{name}` of the transformer '
                     f'`{self.estimator_name}` contains the transformer '

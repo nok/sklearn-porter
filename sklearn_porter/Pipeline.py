@@ -240,7 +240,7 @@ class Pipeline(Base):
         unsupported = [
             f'`{name}` ({step.__class__.__name__})'
             for name, step in preprocessing
-            if not Transformer.supports(step)
+            if not Transformer.supports_step(step)
         ]
         if unsupported:
             kind = 'steps' if len(unsupported) > 1 else 'step'
@@ -297,7 +297,7 @@ class Pipeline(Base):
                 return False
         tr_method = enum.Method.TRANSFORM if method else None
         return all(
-            Transformer.supports(step, language, template, tr_method)
+            Transformer.supports_step(step, language, template, tr_method)
             for _, step in preprocessing
         ) and Estimator.supports(final_est, language, template, method)
 

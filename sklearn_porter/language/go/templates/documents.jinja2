@@ -1,0 +1,18 @@
+// Read one document from the arguments (separated by spaces) or several
+// documents (one per line) from the standard input and pass them to the
+// callback:
+func readDocuments(args []string, callback func(document string)) {
+	if len(args) > 0 {
+		callback(strings.Join(args, " "))
+		return
+	}
+	scanner := bufio.NewScanner(os.Stdin)
+	scanner.Buffer(make([]byte, 64*1024), 1024*1024*1024)
+	for scanner.Scan() {
+		callback(scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+}

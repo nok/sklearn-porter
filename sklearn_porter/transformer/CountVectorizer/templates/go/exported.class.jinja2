@@ -1,0 +1,106 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"encoding/json"
+	"fmt"
+	"math"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+// The pattern of the tokens:
+var {{ prefix }}tokenPattern = regexp.MustCompile(`[\p{L}\p{N}_]{2,}`)
+
+type {{ class_name }} struct {
+	Vocabulary map[string]int
+	{% if n_stop_words %}
+	StopWords  map[string]bool
+	{% endif %}
+}
+
+func new{{ class_name }}(vocabulary []string{% if n_stop_words %}, stopWords []string{% endif %}) {{ class_name }} {
+	transformer := {{ class_name }}{Vocabulary: map[string]int{}{% if n_stop_words %}, StopWords: map[string]bool{}{% endif %}}
+	for i, term := range vocabulary {
+		transformer.Vocabulary[term] = i
+	}
+	{% if n_stop_words %}
+	for _, word := range stopWords {
+		transformer.StopWords[word] = true
+	}
+	{% endif %}
+	return transformer
+}
+
+func (transformer {{ class_name }}) Transform(document string) []float64 {
+	{% if lowercase %}
+	document = strings.ToLower(document)
+	{% endif %}
+	// The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+	var tokens []string
+	for _, token := range {{ prefix }}tokenPattern.FindAllString(document, -1) {
+		{% if n_stop_words %}
+		if !transformer.StopWords[token] {
+			tokens = append(tokens, token)
+		}
+		{% else %}
+		tokens = append(tokens, token)
+		{% endif %}
+	}
+	// Count the n-grams of the tokens (joined by spaces):
+	values := make([]float64, {{ n_features_out }})
+	for n := {{ min_n }}; n <= {{ max_n }} && n <= len(tokens); n++ {
+		for i := 0; i+n <= len(tokens); i++ {
+			if index, ok := transformer.Vocabulary[strings.Join(tokens[i:i+n], " ")]; ok {
+				values[index] {{ '= 1.0' if binary else '+= 1.0' }}
+			}
+		}
+	}
+	return values
+}
+{% endblock %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
+		os.Exit(1)
+	}
+
+	// Model data:
+	byteValue, err := os.ReadFile(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	{% block create %}
+	// Transformer:
+	var {{ prefix }}data struct {
+		Vocabulary []string `json:"vocabulary"`
+		{% if n_stop_words %}
+		StopWords  []string `json:"stop_words"`
+		{% endif %}
+	}
+	if err := json.Unmarshal({{ data|default('byteValue') }}, &{{ prefix }}data); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	{{ instance|default('transformer') }} := new{{ class_name }}({{ prefix }}data.Vocabulary{% if n_stop_words %}, {{ prefix }}data.StopWords{% endif %})
+	{% endblock %}
+
+	// One document (arguments) or several documents (standard input):
+	readDocuments(os.Args[2:], func(document string) {
+		printValues(transformer.Transform(document))
+	})
+}
+{% endblock %}

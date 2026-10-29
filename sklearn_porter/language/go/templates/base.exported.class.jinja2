@@ -13,8 +13,8 @@ Usage:
     1. Compile the generated source code:
         $ go build {{ class_name }}.go
     2. Execute {{ action|default('a prediction') }}:
-        $ ./{{ class_name }} {{ class_name }}.json feature_1 ... feature_{{ n_features }}
-    3. Execute {{ actions|default('the predictions') }} of several samples (one per line):
-        $ ./{{ class_name }} {{ class_name }}.json < samples.txt
+        $ ./{{ class_name }} {{ class_name }}.json {{ '"document"' if text_input else 'feature_1 ... feature_' ~ n_features }}
+    3. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
+        $ ./{{ class_name }} {{ class_name }}.json < {{ 'documents' if text_input else 'samples' }}.txt
 */
 {% block content %}{% endblock %}

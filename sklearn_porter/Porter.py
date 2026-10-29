@@ -211,7 +211,9 @@ class Porter:
             raise AttributeError(msg)
         return self._ported.make(x, **kwargs)
 
-    def transform(self, x: list | np.ndarray, **kwargs) -> np.ndarray:
+    def transform(
+        self, x: list | np.ndarray | str | bytes, **kwargs
+    ) -> np.ndarray:
         """
         Transform the samples with the transpiled transformer locally (see
         `Transformer.make`).

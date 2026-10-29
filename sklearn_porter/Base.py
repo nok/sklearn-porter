@@ -479,14 +479,17 @@ class Base:
         if data_path:
             cmd.append(str(data_path))
 
-        # Features:
-        if issparse(x):
-            x = x.toarray()
-        elif not isinstance(x, np.ndarray):
-            x = np.array(x)
-        if x.ndim == 1:
-            x = x[np.newaxis, :]
-        x = x.tolist()
+        # Features (or documents) of the samples, one sample per line:
+        if getattr(self._estimator, 'TEXT_INPUT', False):
+            lines = _get_document_lines(self._estimator.estimator, x)
+        else:
+            if issparse(x):
+                x = x.toarray()
+            elif not isinstance(x, np.ndarray):
+                x = np.array(x)
+            if x.ndim == 1:
+                x = x[np.newaxis, :]
+            lines = [' '.join(map(str, e)) for e in x.tolist()]
 
         if isinstance(n_jobs, int) and n_jobs <= 1:
             n_jobs = False
@@ -498,12 +501,11 @@ class Base:
         # The ported estimator reads the samples (one per line) from the
         # standard input. Starting a process (e.g. the JVM) takes much longer
         # than a prediction, so each process gets a batch of samples:
-        n_batches = max(1, min(n_jobs, len(x) // MIN_BATCH_SIZE))
-        batch_size = -(-len(x) // n_batches)  # rounded up
+        n_batches = max(1, min(n_jobs, len(lines) // MIN_BATCH_SIZE))
+        batch_size = -(-len(lines) // n_batches)  # rounded up
         batches = [
-            '\n'.join(' '.join(map(str, e)) for e in x[i : i + batch_size])
-            + '\n'
-            for i in range(0, len(x), batch_size)
+            '\n'.join(lines[i : i + batch_size]) + '\n'
+            for i in range(0, len(lines), batch_size)
         ]
 
         def call(batch: str) -> list:
@@ -694,6 +696,41 @@ def _load_ported(estimator: BaseEstimator, clazzes: tuple, package: str):
 
     msg = f'The passed {package} `{name}` is not supported.'
     raise exception.NotSupportedYetError(msg)
+
+
+def _get_document_lines(estimator: BaseEstimator, x) -> list[str]:
+    """
+    Get the documents of the samples for the standard input.
+
+    Each document is decoded like scikit-learn (e.g. bytes with the
+    `encoding` of a `CountVectorizer`). The line breaks and null characters
+    are replaced by spaces, because each line is one document; they separate
+    the words like spaces.
+
+    Parameters
+    ----------
+    estimator : BaseEstimator
+        The text transformer of scikit-learn, e.g. a `CountVectorizer`.
+    x : str or iterable of str or bytes
+        One document or several documents.
+
+    Returns
+    -------
+    The documents, one per line.
+    """
+    documents = [x] if isinstance(x, (str, bytes)) else list(x)
+    decode = getattr(estimator, 'decode', None)
+    lines = []
+    for document in documents:
+        if decode is not None:
+            document = decode(document)
+        lines.append(document.translate(_LINE_BREAKS))
+    return lines
+
+
+# Line breaks of the languages (and null characters of C), which are
+# replaced by spaces:
+_LINE_BREAKS = str.maketrans('\r\n\0', '   ')
 
 
 def _parse_predictions(stdout: str) -> list:

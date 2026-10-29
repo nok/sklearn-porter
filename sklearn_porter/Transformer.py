@@ -1,4 +1,5 @@
 from collections.abc import Callable
+from importlib import import_module
 from pathlib import Path
 
 import numpy as np
@@ -14,7 +15,7 @@ from sklearn.base import (
     TransformerMixin,
 )
 from sklearn.compose import ColumnTransformer
-from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.feature_selection import (
     RFE,
     RFECV,
@@ -68,7 +69,12 @@ def is_transformer(estimator: object) -> bool:
     True if the object is a transformer (e.g. a `StandardScaler`), but not a
     classifier, a regressor or an outlier detector.
     """
-    return isinstance(estimator, TransformerMixin) and not isinstance(
+    # The text vectorizers (e.g. a `CountVectorizer`) aren't a
+    # `TransformerMixin`:
+    is_vectorizer = isinstance(estimator, CountVectorizer)
+    return (
+        isinstance(estimator, TransformerMixin) or is_vectorizer
+    ) and not isinstance(
         estimator, (ClassifierMixin, RegressorMixin, OutlierMixin)
     )
 
@@ -222,13 +228,53 @@ class Transformer(Base):
 
             for _, part in get_parts(estimator):
                 for step in split_steps(part):
-                    if not cls.supports(step, language, template, method):
+                    if not cls.supports_step(step, language, template, method):
                         return False
         return True
 
+    @classmethod
+    def supports_step(
+        cls,
+        estimator: BaseEstimator | type,
+        language: str | enum.Language | None = None,
+        template: str | enum.Template | None = None,
+        method: str | enum.Method | None = None,
+    ) -> bool:
+        """
+        Check the support of a transformer as a step of a pipeline or as a
+        part of a composite transformer (e.g. a `ColumnTransformer`).
+
+        Text transformers (e.g. a `CountVectorizer`) read documents, which
+        aren't passed to the steps and parts yet.
+
+        Parameters
+        ----------
+        estimator : BaseEstimator or estimator class.
+            Set a fitted transformer of scikit-learn.
+        language : str
+            Set the target programming language.
+        template : str
+            Set the kind of desired template.
+        method : str
+            Set the kind of template.
+
+        Returns
+        -------
+        True by a supported combination.
+        """
+        if not cls.supports(estimator, language, template, method):
+            return False
+        name = (
+            estimator.__name__
+            if isinstance(estimator, type)
+            else estimator.__class__.__name__
+        )
+        module = import_module(f'sklearn_porter.{cls.KIND}.{name}')
+        return not getattr(module, name).TEXT_INPUT
+
     def make(
         self,
-        x: list | np.ndarray,
+        x: list | np.ndarray | str | bytes,
         n_jobs: bool | int = True,
         directory: str | Path | None = None,
         delete_created_files: bool = True,
@@ -241,7 +287,8 @@ class Transformer(Base):
         Parameters
         ----------
         x : list or np.ndarray of shape (n_samples, n_features) or (n_features)
-            Input data.
+            Input data. A text transformer (e.g. a `CountVectorizer`) takes
+            an iterable of documents or a single document (`str`).
         n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
             The maximal number of processes to transform the samples. Each
             process transforms a batch of at least 100 samples (or all
@@ -257,7 +304,8 @@ class Transformer(Base):
         Returns
         -------
         The transformed features of shape (n_samples, n_features_out), or of
-        shape (n_features_out) for a single sample of shape (n_features).
+        shape (n_features_out) for a single sample of shape (n_features) or a
+        single document.
 
         Warns
         -----
@@ -265,7 +313,7 @@ class Transformer(Base):
             On Windows, because the compilation and execution of the ported
             transformers isn't tested on Windows.
         """
-        is_single = not issparse(x) and np.ndim(x) == 1
+        is_single = _is_single(self._estimator, x)
         values = self._run(
             x,
             n_jobs=n_jobs,
@@ -301,7 +349,8 @@ class Transformer(Base):
         Parameters
         ----------
         x : numpy.ndarray, shape (n_samples, n_features)
-            Input data.
+            Input data. A text transformer (e.g. a `CountVectorizer`) takes
+            an iterable of documents or a single document (`str`).
         n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
             The maximal number of processes to transform the samples. Each
             process transforms a batch of at least 100 samples (or all
@@ -320,8 +369,8 @@ class Transformer(Base):
             number of samples with equal transformed features.
         """
         self._check_kwargs(kwargs)
-        if not issparse(x) and np.ndim(x) == 1:
-            x = np.reshape(x, (1, -1))
+        if _is_single(self._estimator, x):
+            x = [x] if isinstance(x, (str, bytes)) else np.reshape(x, (1, -1))
         x_true = self._estimator.estimator.transform(x)
         if issparse(x_true):
             x_true = x_true.toarray()
@@ -349,6 +398,7 @@ class Transformer(Base):
         return (
             Binarizer,
             ColumnTransformer,
+            CountVectorizer,
             FeatureUnion,
             FunctionTransformer,
             GenericUnivariateSelect,
@@ -377,3 +427,24 @@ class Transformer(Base):
             TfidfTransformer,
             VarianceThreshold,
         )
+
+
+def _is_single(transformer: BaseEstimator, x) -> bool:
+    """
+    Check whether the passed samples are a single sample.
+
+    Parameters
+    ----------
+    transformer : BaseEstimator
+        The ported transformer.
+    x
+        The samples: a single sample or several samples (of numbers), a
+        single document (`str` or `bytes`) or several documents.
+
+    Returns
+    -------
+    True, if the samples are a single sample or document.
+    """
+    if getattr(transformer, 'TEXT_INPUT', False):
+        return isinstance(x, (str, bytes))
+    return not issparse(x) and np.ndim(x) == 1

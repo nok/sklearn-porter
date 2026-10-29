@@ -1,0 +1,104 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.IO;
+using System.Text.Json;
+
+
+{% block class %}
+public class {{ class_name }} {
+
+    // The pattern of the tokens:
+    private static readonly System.Text.RegularExpressions.Regex TokenPattern = new System.Text.RegularExpressions.Regex("[\\p{L}\\p{N}_]{2,}");
+
+    private class ModelData {
+        public string[] Vocabulary { get; set; }
+        {% if n_stop_words %}
+        public string[] StopWords { get; set; }
+        {% endif %}
+    }
+
+    private System.Collections.Generic.Dictionary<string, int> vocabulary = new System.Collections.Generic.Dictionary<string, int>();
+    {% if n_stop_words %}
+    private System.Collections.Generic.HashSet<string> stopWords;
+    {% endif %}
+
+{% if _blocks %}
+    public {{ class_name }}(System.Text.Json.JsonElement data) {
+        System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower };
+        this.Init(System.Text.Json.JsonSerializer.Deserialize<ModelData>(data, options));
+    }
+{% else %}
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.Init(JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options));
+    }
+{% endif %}
+
+    private void Init(ModelData data) {
+        string[] vocabulary = data.Vocabulary;
+        {% if n_stop_words %}
+        string[] stopWords = data.StopWords;
+        {% endif %}
+        for (int i = 0; i < vocabulary.Length; i++) {
+            this.vocabulary[vocabulary[i]] = i;
+        }
+        {% if n_stop_words %}
+        this.stopWords = new System.Collections.Generic.HashSet<string>(stopWords);
+        {% endif %}
+    }
+
+    public double[] Transform(string document) {
+        {% if lowercase %}
+        document = document.ToLowerInvariant();
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        System.Collections.Generic.List<string> tokens = new System.Collections.Generic.List<string>();
+        foreach (System.Text.RegularExpressions.Match match in TokenPattern.Matches(document)) {
+            {% if n_stop_words %}
+            if (!stopWords.Contains(match.Value)) {
+                tokens.Add(match.Value);
+            }
+            {% else %}
+            tokens.Add(match.Value);
+            {% endif %}
+        }
+        // Count the n-grams of the tokens (joined by spaces):
+        double[] values = new double[{{ n_features_out }}];
+        for (int n = {{ min_n }}; n <= {{ max_n }} && n <= tokens.Count; n++) {
+            for (int i = 0; i + n <= tokens.Count; i++) {
+                int index;
+                if (vocabulary.TryGetValue(string.Join(" ", tokens.GetRange(i, n)), out index)) {
+                    values[index] {{ '= 1.0' if binary else '+= 1.0' }};
+                }
+            }
+        }
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('args[0]') }});
+        {% endblock %}
+
+        // One document (arguments) or several documents (standard input):
+        foreach (string document in ReadDocuments(args, 1)) {
+            PrintValues(transformer.Transform(document));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

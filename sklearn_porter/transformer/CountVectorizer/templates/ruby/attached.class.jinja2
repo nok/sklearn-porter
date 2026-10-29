@@ -1,0 +1,57 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	def initialize(vocabulary{% if n_stop_words %}, stop_words{% endif %})
+		@vocabulary = vocabulary.each_with_index.to_h
+		{% if n_stop_words %}
+		@stop_words = stop_words.to_h { |word| [word, true] }
+		{% endif %}
+	end
+
+	def transform(document)
+		{% if lowercase %}
+		document = document.downcase
+		{% endif %}
+		# The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+		tokens = document.scan(/[\p{L}\p{N}_]{2,}/){% if n_stop_words %}.reject { |token| @stop_words.key?(token) }{% endif +%}
+		# Count the n-grams of the tokens (joined by spaces):
+		values = Array.new({{ n_features_out }}, 0.0)
+		({{ min_n }}..[{{ max_n }}, tokens.length].min).each do |n|
+			(0..tokens.length - n).each do |i|
+				index = @vocabulary[tokens[i, n].join(' ')]
+				values[index] {{ '= 1.0' if binary else '+= 1.0' }} unless index.nil?
+			end
+		end
+		values
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'documents' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	# Model data:
+	{{ vocabulary }}
+	{% if n_stop_words %}
+	{{ stop_words }}
+	{% endif %}
+
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new({{ prefix }}vocabulary{% if n_stop_words %}, {{ prefix }}stop_words{% endif %})
+	{% endblock %}
+
+	# One document (arguments) or several documents (standard input):
+	read_documents(ARGV) do |document|
+		print_values transformer.transform(document)
+	end
+end
+{% endblock %}

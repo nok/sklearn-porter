@@ -46,8 +46,8 @@ class C(LanguageABC):
 
         # Arrays:
         'in_brackets':  '{{ "{" }}{{ value }}{{ "}" }}',
-        # const int ages[2] = {1, 2};
-        'arr[]':        'const {{ type }} {{ name }}[{{ n }}] = {{ "{" }}{{ values }}{{ "}" }};',
+        # const int ages[2] = {1, 2}; (strings: const char *names[2] = ...)
+        'arr[]':        '{{ "" if type.startswith("const ") else "const " }}{{ type }} {{ name }}[{{ n }}] = {{ "{" }}{{ values }}{{ "}" }};',
         'arr[][]':      'const {{ type }} {{ name }}[{{ n }}][{{ m }}] = {{ "{" }}{{ values }}{{ "}" }};',
         'arr[][][]':    'const {{ type }} {{ name }}[{{ n }}][{{ m }}][{{ k }}] = {{ "{" }}{{ values }}{{ "}" }};',
 

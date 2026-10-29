@@ -1,0 +1,170 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+{% block class %}
+#define {{ prefix }}N_FEATURES {{ n_features }}
+#define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
+{% if n_stop_words %}
+#define {{ prefix }}N_STOP_WORDS {{ n_stop_words }}
+{% endif %}
+
+
+{{ vocabulary }}
+{% if n_stop_words %}
+{{ stop_words }}
+{% endif %}
+
+/* The positions of the terms of the vocabulary in the order of `strcmp`: */
+int {{ prefix }}order[{{ prefix }}N_FEATURES];
+
+static int {{ prefix }}compare_terms(const void *a, const void *b) {
+    return strcmp({{ prefix }}vocabulary[*(const int *) a], {{ prefix }}vocabulary[*(const int *) b]);
+}
+
+/* Sort the terms of the vocabulary for the binary search: */
+void {{ prefix }}sort_vocabulary(void) {
+    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+        {{ prefix }}order[i] = i;
+    }
+    qsort({{ prefix }}order, {{ prefix }}N_FEATURES, sizeof(int), {{ prefix }}compare_terms);
+}
+
+/* Get the index of a term in the vocabulary (or -1): */
+int {{ prefix }}find_term(const char *term) {
+    int low = 0, high = {{ prefix }}N_FEATURES - 1;
+    while (low <= high) {
+        int middle = low + (high - low) / 2;
+        int comparison = strcmp(term, {{ prefix }}vocabulary[{{ prefix }}order[middle]]);
+        if (comparison == 0) {
+            return {{ prefix }}order[middle];
+        }
+        if (comparison < 0) {
+            high = middle - 1;
+        } else {
+            low = middle + 1;
+        }
+    }
+    return -1;
+}
+
+{% if n_stop_words %}
+/* Whether a token is a stop word: */
+int {{ prefix }}is_stop_word(const char *token) {
+    int low = 0, high = {{ prefix }}N_STOP_WORDS - 1;
+    while (low <= high) {
+        int middle = low + (high - low) / 2;
+        int comparison = strcmp(token, {{ prefix }}stop_words[middle]);
+        if (comparison == 0) {
+            return 1;
+        }
+        if (comparison < 0) {
+            high = middle - 1;
+        } else {
+            low = middle + 1;
+        }
+    }
+    return 0;
+}
+
+{% endif %}
+/* Whether a character is a word character: an ASCII letter, digit or
+   underscore or a byte of a character outside of ASCII (UTF-8): */
+int {{ prefix }}is_word_char(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_' || (unsigned char) c >= 0x80;
+}
+
+/* Write the counts of the terms of the document to `values`: */
+void {{ prefix }}transform(double *values, const char *document) {
+    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+        values[i] = 0.0;
+    }
+    size_t length = strlen(document);
+    char *text = malloc(length + 1);
+    char **tokens = malloc((length / 2 + 1) * sizeof(char *));
+    char *term = malloc(length + 1);
+    if (text == NULL || tokens == NULL || term == NULL) {
+        fprintf(stderr, "Out of memory.\n");
+        exit(1);
+    }
+    memcpy(text, document, length + 1);
+
+    /* The tokens are the runs of two or more word characters (code points),
+       which end with a null character in the text: */
+    int n_tokens = 0;
+    size_t i = 0;
+    while (i < length) {
+        if (!{{ prefix }}is_word_char(text[i])) {
+            i++;
+            continue;
+        }
+        size_t start = i;
+        int n_chars = 0;
+        while (i < length && {{ prefix }}is_word_char(text[i])) {
+            if (((unsigned char) text[i] & 0xC0) != 0x80) {
+                n_chars++;
+            }
+            {% if lowercase %}
+            if (text[i] >= 'A' && text[i] <= 'Z') {
+                text[i] += 'a' - 'A';
+            }
+            {% endif %}
+            i++;
+        }
+        text[i++] = '\0';
+        if (n_chars >= 2{% if n_stop_words %} && !{{ prefix }}is_stop_word(text + start){% endif %}) {
+            tokens[n_tokens++] = text + start;
+        }
+    }
+
+    /* Count the n-grams of the tokens (joined by spaces): */
+    for (int n = {{ min_n }}; n <= {{ max_n }} && n <= n_tokens; n++) {
+        for (int j = 0; j + n <= n_tokens; j++) {
+            char *end = term;
+            for (int k = j; k < j + n; k++) {
+                if (k > j) {
+                    *end++ = ' ';
+                }
+                size_t token_length = strlen(tokens[k]);
+                memcpy(end, tokens[k], token_length);
+                end += token_length;
+            }
+            *end = '\0';
+            int index = {{ prefix }}find_term(term);
+            if (index >= 0) {
+                values[index] {{ '= 1.0' if binary else '+= 1.0' }};
+            }
+        }
+    }
+    free(text);
+    free(tokens);
+    free(term);
+}
+{% endblock %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+int main(int argc, const char *argv[]) {
+    {% block create %}
+    /* Model data: */
+    {{ prefix }}sort_vocabulary();
+    {% endblock %}
+
+    /* One document (arguments) or several documents (standard input): */
+    double *values = malloc({{ prefix }}N_FEATURES_OUT * sizeof(double));
+    char *document;
+    while ((document = read_document(argc, argv, 1)) != NULL) {
+        transform(values, document);
+        print_values(values, N_FEATURES_OUT);
+        free(document);
+    }
+    free(values);
+    return 0;
+}
+{% endblock %}
