@@ -35,6 +35,27 @@ var {{ class_name }} = function() {
                 }
             }
         }
+        {% if tfidf %}
+        // Weight the counts with the idf and normalize them (tf-idf):
+        {% for i in range(n_features) %}
+        values[{{ i }}] = values[{{ i }}] === 0 ? 0 : {% if sublinear_tf %}(Math.log(values[{{ i }}]) + 1.0){% else %}values[{{ i }}]{% endif %} * {{ idf[i] }};
+        {% endfor %}
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        var norm = 0.0;
+        for (var i = 0, l = values.length; i < l; i++) {
+            norm += {% if norm == 'l1' %}Math.abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = Math.sqrt(norm);
+            {% endif %}
+            for (var i = 0, l = values.length; i < l; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        {% endif %}
         return values;
     };
 

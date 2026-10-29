@@ -22,10 +22,13 @@ type {{ class_name }} struct {
 	{% if n_stop_words %}
 	StopWords  map[string]bool
 	{% endif %}
+	{% if tfidf %}
+	Idf        []float64
+	{% endif %}
 }
 
-func new{{ class_name }}(vocabulary []string{% if n_stop_words %}, stopWords []string{% endif %}) {{ class_name }} {
-	transformer := {{ class_name }}{Vocabulary: map[string]int{}{% if n_stop_words %}, StopWords: map[string]bool{}{% endif %}}
+func new{{ class_name }}(vocabulary []string{% if n_stop_words %}, stopWords []string{% endif %}{% if tfidf %}, idf []float64{% endif %}) {{ class_name }} {
+	transformer := {{ class_name }}{Vocabulary: map[string]int{}{% if n_stop_words %}, StopWords: map[string]bool{}{% endif %}{% if tfidf %}, Idf: idf{% endif %}}
 	for i, term := range vocabulary {
 		transformer.Vocabulary[term] = i
 	}
@@ -61,6 +64,29 @@ func (transformer {{ class_name }}) Transform(document string) []float64 {
 			}
 		}
 	}
+	{% if tfidf %}
+	// Weight the counts with the idf and normalize them (tf-idf):
+	for i := range values {
+		if values[i] != 0 {
+			values[i] = {% if sublinear_tf %}(math.Log(values[i]) + 1.0){% else %}values[i]{% endif %} * transformer.Idf[i]
+		}
+	}
+	{% if norm %}
+	// Normalize the features, if their norm isn't zero:
+	norm := 0.0
+	for _, value := range values {
+		norm += {% if norm == 'l1' %}math.Abs(value){% else %}float64(value*value){% endif +%}
+	}
+	if norm != 0 {
+		{% if norm == 'l2' %}
+		norm = math.Sqrt(norm)
+		{% endif %}
+		for i := range values {
+			values[i] /= norm
+		}
+	}
+	{% endif %}
+	{% endif %}
 	return values
 }
 {% endblock %}
@@ -75,12 +101,15 @@ func (transformer {{ class_name }}) Transform(document string) []float64 {
 {% if n_stop_words %}
 {{ stop_words }}
 {% endif %}
+{% if tfidf %}
+{{ idf }}
+{% endif %}
 {% endblock %}
 
 func main() {
 	{% block create %}
 	// Transformer:
-	{{ instance|default('transformer') }} := new{{ class_name }}({{ prefix }}vocabulary{% if n_stop_words %}, {{ prefix }}stop_words{% endif %})
+	{{ instance|default('transformer') }} := new{{ class_name }}({{ prefix }}vocabulary{% if n_stop_words %}, {{ prefix }}stop_words{% endif %}{% if tfidf %}, {{ prefix }}idf{% endif %})
 	{% endblock %}
 
 	// One document (arguments) or several documents (standard input):

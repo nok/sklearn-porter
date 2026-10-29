@@ -17,11 +17,17 @@ public class {{ class_name }} {
         {% if n_stop_words %}
         public string[] StopWords { get; set; }
         {% endif %}
+        {% if tfidf %}
+        public double[] Idf { get; set; }
+        {% endif %}
     }
 
     private System.Collections.Generic.Dictionary<string, int> vocabulary = new System.Collections.Generic.Dictionary<string, int>();
     {% if n_stop_words %}
     private System.Collections.Generic.HashSet<string> stopWords;
+    {% endif %}
+    {% if tfidf %}
+    private double[] idf;
     {% endif %}
 
 {% if _blocks %}
@@ -41,11 +47,17 @@ public class {{ class_name }} {
         {% if n_stop_words %}
         string[] stopWords = data.StopWords;
         {% endif %}
+        {% if tfidf %}
+        double[] idf = data.Idf;
+        {% endif %}
         for (int i = 0; i < vocabulary.Length; i++) {
             this.vocabulary[vocabulary[i]] = i;
         }
         {% if n_stop_words %}
         this.stopWords = new System.Collections.Generic.HashSet<string>(stopWords);
+        {% endif %}
+        {% if tfidf %}
+        this.idf = idf;
         {% endif %}
     }
 
@@ -74,6 +86,29 @@ public class {{ class_name }} {
                 }
             }
         }
+        {% if tfidf %}
+        // Weight the counts with the idf and normalize them (tf-idf):
+        for (int i = 0; i < values.Length; i++) {
+            if (values[i] != 0.0) {
+                values[i] = {% if sublinear_tf %}(System.Math.Log(values[i]) + 1.0){% else %}values[i]{% endif %} * idf[i];
+            }
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        double norm = 0.0;
+        for (int i = 0; i < values.Length; i++) {
+            norm += {% if norm == 'l1' %}System.Math.Abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = System.Math.Sqrt(norm);
+            {% endif %}
+            for (int i = 0; i < values.Length; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        {% endif %}
         return values;
     }
 {% if not _blocks %}

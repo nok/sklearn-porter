@@ -15,12 +15,18 @@ var {{ class_name }} = function(jsonFile) {
     {% if n_stop_words %}
     var stopWords = data.stop_words;
     {% endif %}
+    {% if tfidf %}
+    var idf = data.idf;
+    {% endif %}
 
     this.vocabulary = new Map(vocabulary.map(function (term, i) {
         return [term, i];
     }));
     {% if n_stop_words %}
     this.stopWords = new Set(stopWords);
+    {% endif %}
+    {% if tfidf %}
+    this.idf = idf;
     {% endif %}
 
     this.transform = function(document) {
@@ -41,6 +47,29 @@ var {{ class_name }} = function(jsonFile) {
                 }
             }
         }
+        {% if tfidf %}
+        // Weight the counts with the idf and normalize them (tf-idf):
+        for (var i = 0, l = values.length; i < l; i++) {
+            if (values[i] !== 0) {
+                values[i] = {% if sublinear_tf %}(Math.log(values[i]) + 1.0){% else %}values[i]{% endif %} * this.idf[i];
+            }
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        var norm = 0.0;
+        for (var i = 0, l = values.length; i < l; i++) {
+            norm += {% if norm == 'l1' %}Math.abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = Math.sqrt(norm);
+            {% endif %}
+            for (var i = 0, l = values.length; i < l; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        {% endif %}
         return values;
     };
 };

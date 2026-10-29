@@ -100,6 +100,9 @@ original estimator and transform the features like the original transformer.
   The base templates show `"document"` in the usage (template global
   `text_input`). Text transformers aren't supported as steps of a pipeline
   or parts of a composite transformer yet (`Transformer.supports_step()`).
+  The `TfidfVectorizer` is a subclass of the ported `CountVectorizer` and
+  uses its templates with the variant `tfidf` (the weights of the counts
+  like a `TfidfTransformer`, `_get_weights()`).
 
 ## Layout
 

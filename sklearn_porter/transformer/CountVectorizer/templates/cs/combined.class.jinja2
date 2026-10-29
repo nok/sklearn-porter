@@ -46,6 +46,27 @@ public class {{ class_name }} {
                 }
             }
         }
+        {% if tfidf %}
+        // Weight the counts with the idf and normalize them (tf-idf):
+        {% for i in range(n_features) %}
+        values[{{ i }}] = values[{{ i }}] == 0.0 ? 0.0 : {% if sublinear_tf %}(System.Math.Log(values[{{ i }}]) + 1.0){% else %}values[{{ i }}]{% endif %} * {{ idf[i] }};
+        {% endfor %}
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        double norm = 0.0;
+        for (int i = 0; i < values.Length; i++) {
+            norm += {% if norm == 'l1' %}System.Math.Abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = System.Math.Sqrt(norm);
+            {% endif %}
+            for (int i = 0; i < values.Length; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        {% endif %}
         return values;
     }
 {% if not _blocks %}

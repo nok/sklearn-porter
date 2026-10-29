@@ -18,6 +18,9 @@
 {% if n_stop_words %}
 {{ stop_words }}
 {% endif %}
+{% if tfidf %}
+{{ idf }}
+{% endif %}
 
 /* The positions of the terms of the vocabulary in the order of `strcmp`: */
 int {{ prefix }}order[{{ prefix }}N_FEATURES];
@@ -140,6 +143,29 @@ void {{ prefix }}transform(double *values, const char *document) {
             }
         }
     }
+    {% if tfidf %}
+    /* Weight the counts with the idf and normalize them (tf-idf): */
+    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+        if (values[i] != 0.0) {
+            values[i] = {% if sublinear_tf %}(log(values[i]) + 1.0){% else %}values[i]{% endif %} * {{ prefix }}idf[i];
+        }
+    }
+    {% if norm %}
+    /* Normalize the features, if their norm isn't zero: */
+    double norm = 0.0;
+    for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+        norm += {% if norm == 'l1' %}fabs(values[i]){% else %}values[i] * values[i]{% endif %};
+    }
+    if (norm != 0.0) {
+        {% if norm == 'l2' %}
+        norm = sqrt(norm);
+        {% endif %}
+        for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
+            values[i] /= norm;
+        }
+    }
+    {% endif %}
+    {% endif %}
     free(text);
     free(tokens);
     free(term);
