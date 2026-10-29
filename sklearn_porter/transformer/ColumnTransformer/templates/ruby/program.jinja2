@@ -1,0 +1,27 @@
+{% extends 'base.' ~ template ~ '.class' %}
+
+{% block content %}
+{% if is_exported %}
+require 'json'
+
+{% endif %}
+{{ classes }}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'samples' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+{% if is_exported %}
+	raise "You have to pass the path to the model data." if ARGV.empty?
+{% endif %}
+	{{ create|indent('\t') }}
+
+	# Features of one sample (arguments) or several samples (standard input):
+	read_samples(ARGV) do |features|
+		print_values {{ instance }}.transform(features)
+	end
+end
+{% endblock %}

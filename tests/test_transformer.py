@@ -6,11 +6,12 @@ from subprocess import CompletedProcess, run
 import numpy as np
 import pytest
 from joblib import dump
+from sklearn.compose import ColumnTransformer
 
 # scikit-learn
 from sklearn.datasets import load_iris
 from sklearn.impute import SimpleImputer
-from sklearn.pipeline import Pipeline
+from sklearn.pipeline import FeatureUnion, Pipeline, make_pipeline
 from sklearn.preprocessing import (
     Binarizer,
     FunctionTransformer,
@@ -955,3 +956,68 @@ def test_infinite_values_in_samples(
         )
         values_tr = [float(v) for v in proc.stdout.split()]
         np.testing.assert_array_equal(values_tr, values)
+
+
+def _composite_transformers() -> dict:
+    """Fitted composite transformers (with pipelines, weights and drops)."""
+    x = load_iris().data
+    return dict(
+        column_transformer=ColumnTransformer(
+            [
+                ('scaler', StandardScaler(), [0, 1]),
+                ('drop', 'drop', [2]),
+                ('pipe', make_pipeline(MinMaxScaler(), Binarizer()), [3]),
+            ],
+            remainder='passthrough',
+            transformer_weights={'scaler': 2.0},
+        ).fit(x),
+        feature_union=FeatureUnion(
+            [
+                ('scaler', StandardScaler()),
+                ('passthrough', 'passthrough'),
+                ('drop', 'drop'),
+                ('poly', PolynomialFeatures(2)),
+            ]
+        ).fit(x),
+    )
+
+
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('language', LANGUAGES)
+@pytest.mark.parametrize('name', ['column_transformer', 'feature_union'])
+def test_port_of_composite_transformers(
+    name: str, language: str, template: str
+):
+    """The transformers of the parts are inserted into one source file."""
+    orig_est = _composite_transformers()[name]
+    assert can(orig_est, language, template, 'transform')
+    est = Transformer(orig_est, language=language, template=template)
+    n_features_out = orig_est.transform(load_iris().data[:1]).shape[1]
+    assert est._estimator.meta_info['n_features_out'] == n_features_out
+    out = est.port()
+    if template == 'exported':
+        out, data = out
+        # The transformers of all parts (without the dropped part and the
+        # empty remainder of the column transformer):
+        assert len(json.loads(data)['transformers']) == 3
+    assert '{%' not in out
+    assert '{{ ' not in out
+    if language == 'c':
+        assert 'void t1_1_transform(' in out
+    else:
+        assert type(orig_est).__name__ + 'StandardScaler' in out
+
+
+def test_unsupported_part_of_column_transformer():
+    x = load_iris().data
+    orig_est = ColumnTransformer(
+        [
+            ('scaler', StandardScaler(), [0]),
+            ('spline', SplineTransformer(), [1]),
+        ]
+    ).fit(x)
+    assert not Transformer.supports(orig_est)
+    with pytest.raises(exception.NotSupportedYetError, match='spline'):
+        Transformer(orig_est)
+    orig_est = FeatureUnion([('spline', SplineTransformer())]).fit(x)
+    assert not Transformer.supports(orig_est)

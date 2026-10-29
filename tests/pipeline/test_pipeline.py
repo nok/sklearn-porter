@@ -6,6 +6,7 @@ from subprocess import CompletedProcess, run
 
 import numpy as np
 import pytest
+from sklearn.compose import ColumnTransformer
 
 # scikit-learn
 from sklearn.datasets import load_diabetes, load_iris
@@ -13,6 +14,7 @@ from sklearn.exceptions import ConvergenceWarning
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import LinearRegression, LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.pipeline import FeatureUnion
 from sklearn.pipeline import Pipeline as SklearnPipeline
 from sklearn.preprocessing import (
     Binarizer,
@@ -94,6 +96,30 @@ PREPROCESSING = {
     'power_transformer': lambda: [('power', PowerTransformer())],
     'quantile_transformer': lambda: [
         ('quantile', QuantileTransformer(n_quantiles=50)),
+    ],
+    # Composite transformers:
+    'column_transformer': lambda: [
+        (
+            'columns',
+            ColumnTransformer(
+                [
+                    ('standard', StandardScaler(), [0, 1]),
+                    (
+                        'k_bins',
+                        KBinsDiscretizer(n_bins=3, encode='onehot'),
+                        [2, 3],
+                    ),
+                ]
+            ),
+        ),
+    ],
+    'feature_union': lambda: [
+        (
+            'union',
+            FeatureUnion(
+                [('standard', StandardScaler()), ('min_max', MinMaxScaler())]
+            ),
+        ),
     ],
     # The indicators of the missing values (of the samples of the fit):
     'imputer_with_indicator': lambda: [

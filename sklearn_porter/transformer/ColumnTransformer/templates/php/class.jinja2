@@ -1,0 +1,27 @@
+class {{ class_name }} {
+
+{% for step in steps %}
+    private ${{ step.field }};
+{% endfor %}
+
+    public function __construct({% for step in steps %}${{ step.field }}{{ ', ' if not loop.last }}{% endfor %}) {
+{% for step in steps %}
+        $this->{{ step.field }} = ${{ step.field }};
+{% endfor %}
+    }
+
+    public function transform($features) {
+        $values = array();
+{% for part in parts %}
+        $x = array({% for c in part.columns %}$features[{{ c }}]{{ ', ' if not loop.last }}{% endfor %});
+{% for step in part.steps %}
+        $x = $this->{{ step.field }}->transform($x);
+{% endfor %}
+        for ($i = 0; $i < {{ part.n_out }}; $i++) {
+            $values[{{ part.offset }} + $i] = $x[$i]{% if part.weight is not none %} * {{ part.weight }}{% endif %};
+        }
+{% endfor %}
+        return $values;
+    }
+
+}

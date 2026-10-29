@@ -11,7 +11,6 @@ from tabulate import tabulate
 # sklearn-porter
 from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
-from sklearn_porter.Base import _get_qualname
 from sklearn_porter.Estimator import Estimator
 from sklearn_porter.Pipeline import Pipeline
 from sklearn_porter.Transformer import Transformer, is_transformer
@@ -262,7 +261,8 @@ def show(language: str | enum.Language | None = None):
         languages = {language.value.KEY: language.value}
     headers = ['Estimator'] + [lang.LABEL for lang in languages.values()]
     clazzes = Estimator.estimators() + Transformer.transformers()
-    clazzes = {_get_qualname(c()): c() for c in clazzes}
+    # The classes (not instances, e.g. a `ColumnTransformer` needs arguments):
+    clazzes = {f'{c.__module__}.{c.__qualname__}': c for c in clazzes}
     clazzes = dict(sorted(clazzes.items()))
     table = []
     templates = dict(attached='ᴀ', combined='ᴄ', exported='ᴇ')
