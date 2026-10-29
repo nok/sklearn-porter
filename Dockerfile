@@ -26,6 +26,13 @@ ENV DOTNET_ROOT=/usr/share/dotnet \
     DOTNET_NOLOGO=1 \
     PATH=/usr/share/dotnet:$PATH
 
+# GSON for the Java templates `exported`, the same version as
+# `Java.GSON_DOWNLOAD_URI` (sklearn_porter/language/java/__init__.py):
+ADD --chmod=644 --checksum=sha256:378534e339e6e6d50b1736fb3abb76f1c15d1be3f4c13cec6d536412e23da603 \
+    https://repo1.maven.org/maven2/com/google/code/gson/gson/2.9.1/gson-2.9.1.jar \
+    /opt/java/gson.jar
+ENV SKLEARN_PORTER_PYTEST_GSON_PATH=/opt/java/gson.jar
+
 # Use the Python of the base image instead of `.python-version`, so that
 # PYTHON_VERSION selects the Python version of the tests:
 ARG PYTHON_VERSION
