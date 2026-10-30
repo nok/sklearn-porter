@@ -1,0 +1,136 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+package main
+
+import (
+	"bufio"
+	"fmt"
+	"math"
+	"math/bits"
+	"os"
+	"regexp"
+	"strconv"
+	"strings"
+)
+
+{% block class %}
+// The pattern of the tokens:
+var {{ prefix }}tokenPattern = regexp.MustCompile(`[\p{L}\p{N}_]{2,}`)
+{% if n_stop_words %}
+
+var {{ prefix }}stopWords = map[string]bool{
+	{% for word in stop_words %}
+	{{ word }}: true,
+	{% endfor %}
+}
+{% endif %}
+
+type {{ class_name }} struct{}
+
+// The signed 32-bit MurmurHash3 (x86_32, seed 0) of the bytes of a term (UTF-8):
+func {{ prefix }}murmurhash3(data []byte) int32 {
+	var h uint32
+	nBlocks := len(data) / 4
+	for i := 0; i < nBlocks; i++ {
+		k := uint32(data[4*i]) | uint32(data[4*i+1])<<8 | uint32(data[4*i+2])<<16 | uint32(data[4*i+3])<<24
+		k *= 0xcc9e2d51
+		k = bits.RotateLeft32(k, 15)
+		k *= 0x1b873593
+		h ^= k
+		h = bits.RotateLeft32(h, 13)
+		h = h*5 + 0xe6546b64
+	}
+	tail, rest := 4*nBlocks, len(data)&3
+	var k uint32
+	if rest == 3 {
+		k ^= uint32(data[tail+2]) << 16
+	}
+	if rest >= 2 {
+		k ^= uint32(data[tail+1]) << 8
+	}
+	if rest >= 1 {
+		k ^= uint32(data[tail])
+		k *= 0xcc9e2d51
+		k = bits.RotateLeft32(k, 15)
+		k *= 0x1b873593
+		h ^= k
+	}
+	h ^= uint32(len(data))
+	h ^= h >> 16
+	h *= 0x85ebca6b
+	h ^= h >> 13
+	h *= 0xc2b2ae35
+	h ^= h >> 16
+	return int32(h)
+}
+
+func (transformer {{ class_name }}) Transform(document string) []float64 {
+	{% if lowercase %}
+	document = strings.ToLower(document)
+	{% endif %}
+	// The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+	var tokens []string
+	for _, token := range {{ prefix }}tokenPattern.FindAllString(document, -1) {
+		{% if n_stop_words %}
+		if !{{ prefix }}stopWords[token] {
+			tokens = append(tokens, token)
+		}
+		{% else %}
+		tokens = append(tokens, token)
+		{% endif %}
+	}
+	// Hash the n-grams of the tokens (joined by spaces):
+	values := make([]float64, {{ n_features_out }})
+	for n := {{ min_n }}; n <= {{ max_n }} && n <= len(tokens); n++ {
+		for i := 0; i+n <= len(tokens); i++ {
+			term := strings.Join(tokens[i:i+n], " ")
+			// The index of a term is the absolute value of its hash modulo the number of features, the sign of the value the sign of the hash:
+			h := int64({{ prefix }}murmurhash3([]byte(term)))
+			{% if alternate_sign and not binary %}
+			sign := 1
+			if h < 0 {
+				sign = -1
+			}
+			{% endif %}
+			if h < 0 {
+				h = -h
+			}
+			values[h%{{ n_features_out }}] {% if binary %}= 1{% elif alternate_sign %}+= float64(sign){% else %}+= 1{% endif %}
+		}
+	}
+	{% if norm %}
+	// Normalize the features, if their norm isn't zero:
+	norm := 0.0
+	for _, value := range values {
+		norm += {% if norm == 'l1' %}math.Abs(value){% else %}float64(value*value){% endif +%}
+	}
+	if norm != 0 {
+		{% if norm == 'l2' %}
+		norm = math.Sqrt(norm)
+		{% endif %}
+		for i := range values {
+			values[i] /= norm
+		}
+	}
+	{% endif %}
+	return values
+}
+{% endblock %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+func main() {
+	{% block create %}
+	// Transformer:
+	{{ instance|default('transformer') }} := {{ class_name }}{}
+	{% endblock %}
+
+	// One document (arguments) or several documents (standard input):
+	readDocuments(os.Args[1:], func(document string) {
+		printValues(transformer.Transform(document))
+	})
+}
+{% endblock %}

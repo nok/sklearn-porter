@@ -1,0 +1,118 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    // The pattern of the tokens:
+    private static final java.util.regex.Pattern TOKEN_PATTERN = java.util.regex.Pattern.compile("[\\p{L}\\p{N}_]{2,}");
+    {% if n_stop_words %}
+
+    private static final java.util.Set<String> stopWords = new java.util.HashSet<>(java.util.Arrays.asList(
+        {% for word in stop_words %}
+        {{ word }}{{ ',' if not loop.last }}
+        {% endfor %}
+    ));
+    {% endif %}
+
+    // The signed 32-bit MurmurHash3 (x86_32, seed 0) of the bytes of a term (UTF-8):
+    private static int murmurhash3(byte[] data) {
+        int h = 0;
+        int nBlocks = data.length / 4;
+        for (int i = 0; i < nBlocks; i++) {
+            int k = (data[4 * i] & 0xff) | (data[4 * i + 1] & 0xff) << 8 | (data[4 * i + 2] & 0xff) << 16 | (data[4 * i + 3] & 0xff) << 24;
+            k *= 0xcc9e2d51;
+            k = Integer.rotateLeft(k, 15);
+            k *= 0x1b873593;
+            h ^= k;
+            h = Integer.rotateLeft(h, 13);
+            h = h * 5 + 0xe6546b64;
+        }
+        int tail = 4 * nBlocks, rest = data.length & 3, k = 0;
+        if (rest == 3) {
+            k ^= (data[tail + 2] & 0xff) << 16;
+        }
+        if (rest >= 2) {
+            k ^= (data[tail + 1] & 0xff) << 8;
+        }
+        if (rest >= 1) {
+            k ^= data[tail] & 0xff;
+            k *= 0xcc9e2d51;
+            k = Integer.rotateLeft(k, 15);
+            k *= 0x1b873593;
+            h ^= k;
+        }
+        h ^= data.length;
+        h ^= h >>> 16;
+        h *= 0x85ebca6b;
+        h ^= h >>> 13;
+        h *= 0xc2b2ae35;
+        h ^= h >>> 16;
+        return h;
+    }
+
+    public double[] transform(String document) {
+        {% if lowercase %}
+        document = document.toLowerCase(java.util.Locale.ROOT);
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        java.util.List<String> tokens = new java.util.ArrayList<>();
+        java.util.regex.Matcher matcher = TOKEN_PATTERN.matcher(document);
+        while (matcher.find()) {
+            {% if n_stop_words %}
+            if (!stopWords.contains(matcher.group())) {
+                tokens.add(matcher.group());
+            }
+            {% else %}
+            tokens.add(matcher.group());
+            {% endif %}
+        }
+        // Hash the n-grams of the tokens (joined by spaces):
+        double[] values = new double[{{ n_features_out }}];
+        for (int n = {{ min_n }}; n <= {{ max_n }} && n <= tokens.size(); n++) {
+            for (int i = 0; i + n <= tokens.size(); i++) {
+                String term = String.join(" ", tokens.subList(i, i + n));
+                // The index of a term is the absolute value of its hash modulo the number of features, the sign of the value the sign of the hash:
+                int h = murmurhash3(term.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+                int index = (int) (Math.abs((long) h) % {{ n_features_out }});
+                values[index] {% if binary %}= 1.0{% elif alternate_sign %}+= (h >= 0 ? 1.0 : -1.0){% else %}+= 1.0{% endif %};
+            }
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        double norm = 0.0;
+        for (int i = 0; i < values.length; i++) {
+            norm += {% if norm == 'l1' %}Math.abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = Math.sqrt(norm);
+            {% endif %}
+            for (int i = 0; i < values.length; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+    public static void main(String[] args) {
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}();
+        {% endblock %}
+
+        // One document (arguments) or several documents (standard input):
+        for (String document : readDocuments(args, 0)) {
+            printValues(transformer.transform(document));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

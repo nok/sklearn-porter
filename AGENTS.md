@@ -102,7 +102,10 @@ original estimator and transform the features like the original transformer.
   or parts of a composite transformer yet (`Transformer.supports_step()`).
   The `TfidfVectorizer` is a subclass of the ported `CountVectorizer` and
   uses its templates with the variant `tfidf` (the weights of the counts
-  like a `TfidfTransformer`, `_get_weights()`).
+  like a `TfidfTransformer`, `_get_weights()`). The `HashingVectorizer` has
+  its own templates (MurmurHash3 of the terms instead of a vocabulary) and
+  shares the checks of the parameters and the stop words with the
+  `CountVectorizer` (`check_params()`, `get_stop_words()`).
 
 ## Layout
 

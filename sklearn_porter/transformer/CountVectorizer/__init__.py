@@ -8,6 +8,7 @@ from loguru import logger as L
 from sklearn.feature_extraction.text import (
     CountVectorizer as CountVectorizerClass,
 )
+from sklearn.feature_extraction.text import HashingVectorizer
 
 # sklearn-porter
 from sklearn_porter import enums as enum
@@ -52,7 +53,7 @@ class CountVectorizer(TransformerBase, EstimatorApiABC):
         super().__init__(transformer)
         L.info(f'Create specific transformer `{self.estimator_name}`.')
         est = transformer  # alias
-        self._check_params(est)
+        check_params(est, self.estimator_name)
 
         # `transform` of scikit-learn also accepts a vectorizer with a fixed
         # vocabulary (`vocabulary`) without a fit, which validates it:
@@ -70,16 +71,10 @@ class CountVectorizer(TransformerBase, EstimatorApiABC):
         self.min_n, self.max_n = map(int, est.ngram_range)
         self.binary = bool(est.binary)
 
-        # Only stop words which are tokens can be removed. Without n-grams
-        # only stop words of the vocabulary change the counts:
-        stop_words = est.get_stop_words() or ()
-        stop_words = sorted(
-            word
-            for word in stop_words
-            if re.fullmatch(r'\w\w+', word)
-            and (not self.lowercase or word == word.lower())
-            and (self.max_n > 1 or word in est.vocabulary_)
-        )
+        # Without n-grams only stop words of the vocabulary change the counts:
+        stop_words = get_stop_words(est)
+        if self.max_n == 1:
+            stop_words = [w for w in stop_words if w in est.vocabulary_]
         arrays = dict(vocabulary=vocabulary)
         if stop_words:
             arrays.update(stop_words=stop_words)
@@ -110,31 +105,6 @@ class CountVectorizer(TransformerBase, EstimatorApiABC):
         """
         return {}
 
-    def _check_params(self, est: CountVectorizerClass):
-        """Check that the parameters of the vectorizer are supported."""
-        unsupported = dict(
-            input=est.input != 'content',
-            analyzer=est.analyzer != 'word',
-            preprocessor=est.preprocessor is not None,
-            tokenizer=est.tokenizer is not None,
-            token_pattern=est.token_pattern not in TOKEN_PATTERNS,
-            strip_accents=bool(est.strip_accents),
-        )
-        for name, is_unsupported in unsupported.items():
-            if is_unsupported:
-                msg = (
-                    f'The parameter `{name}={getattr(est, name)!r}` of the '
-                    f'transformer `{self.estimator_name}` is not supported '
-                    'yet.'
-                )
-                raise exception.NotSupportedYetError(msg)
-        if est.ngram_range[0] < 1:
-            msg = (
-                f'The parameter `ngram_range={est.ngram_range!r}` of the '
-                f'transformer `{self.estimator_name}` is not supported yet.'
-            )
-            raise exception.NotSupportedYetError(msg)
-
     def literals(self, converter: Callable[[object], str]) -> dict:
         return dict(
             lowercase=self.lowercase,
@@ -144,3 +114,61 @@ class CountVectorizer(TransformerBase, EstimatorApiABC):
             n_stop_words=len(self.model_data.get('stop_words', ())),
             order=self.order,
         )
+
+
+def check_params(est: CountVectorizerClass | HashingVectorizer, name: str):
+    """
+    Check that the parameters of a text vectorizer are supported.
+
+    Parameters
+    ----------
+    est : CountVectorizerClass or HashingVectorizer
+        The text vectorizer of scikit-learn.
+    name : str
+        The name of the vectorizer for the error messages.
+
+    Raises
+    ------
+    NotSupportedYetError
+        If a parameter is not supported.
+    """
+    unsupported = dict(
+        input=est.input != 'content',
+        analyzer=est.analyzer != 'word',
+        preprocessor=est.preprocessor is not None,
+        tokenizer=est.tokenizer is not None,
+        token_pattern=est.token_pattern not in TOKEN_PATTERNS,
+        strip_accents=bool(est.strip_accents),
+        ngram_range=est.ngram_range[0] < 1,
+    )
+    for param, is_unsupported in unsupported.items():
+        if is_unsupported:
+            msg = (
+                f'The parameter `{param}={getattr(est, param)!r}` of the '
+                f'transformer `{name}` is not supported yet.'
+            )
+            raise exception.NotSupportedYetError(msg)
+
+
+def get_stop_words(est: CountVectorizerClass | HashingVectorizer) -> list[str]:
+    """
+    Get the stop words of a text vectorizer which can be tokens.
+
+    Only stop words of two or more word characters (in lowercase with
+    `lowercase=True`) can be removed from the tokens.
+
+    Parameters
+    ----------
+    est : CountVectorizerClass or HashingVectorizer
+        The text vectorizer of scikit-learn.
+
+    Returns
+    -------
+    The sorted stop words.
+    """
+    return sorted(
+        word
+        for word in est.get_stop_words() or ()
+        if re.fullmatch(r'\w\w+', word)
+        and (not est.lowercase or word == word.lower())
+    )

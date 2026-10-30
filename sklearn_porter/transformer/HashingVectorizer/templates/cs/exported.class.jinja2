@@ -1,0 +1,148 @@
+{% extends 'base.exported.class' %}
+
+{% block content %}
+using System;
+using System.IO;
+using System.Text.Json;
+
+
+{% block class %}
+public class {{ class_name }} {
+
+    // The pattern of the tokens:
+    private static readonly System.Text.RegularExpressions.Regex TokenPattern = new System.Text.RegularExpressions.Regex("[\\p{L}\\p{N}_]{2,}");
+
+    private class ModelData {
+        {% if n_stop_words %}
+        public string[] StopWords { get; set; }
+        {% endif %}
+    }
+
+    {% if n_stop_words %}
+    private System.Collections.Generic.HashSet<string> stopWords;
+
+    {% endif %}
+{% if _blocks %}
+    public {{ class_name }}(System.Text.Json.JsonElement data) {
+        System.Text.Json.JsonSerializerOptions options = new System.Text.Json.JsonSerializerOptions { PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.SnakeCaseLower };
+        this.Init(System.Text.Json.JsonSerializer.Deserialize<ModelData>(data, options));
+    }
+{% else %}
+    public {{ class_name }}(string file) {
+        JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
+        this.Init(JsonSerializer.Deserialize<ModelData>(File.ReadAllText(file), options));
+    }
+{% endif %}
+
+    private void Init(ModelData data) {
+        {% if n_stop_words %}
+        this.stopWords = new System.Collections.Generic.HashSet<string>(data.StopWords);
+        {% endif %}
+    }
+
+    // The signed 32-bit MurmurHash3 (x86_32, seed 0) of the bytes of a term (UTF-8):
+    private static int Murmurhash3(byte[] data) {
+        uint h = 0;
+        int nBlocks = data.Length / 4;
+        for (int i = 0; i < nBlocks; i++) {
+            uint k = (uint) data[4 * i] | (uint) data[4 * i + 1] << 8 | (uint) data[4 * i + 2] << 16 | (uint) data[4 * i + 3] << 24;
+            k *= 0xcc9e2d51;
+            k = (k << 15) | (k >> 17);
+            k *= 0x1b873593;
+            h ^= k;
+            h = (h << 13) | (h >> 19);
+            h = h * 5 + 0xe6546b64;
+        }
+        int tail = 4 * nBlocks, rest = data.Length & 3;
+        uint t = 0;
+        if (rest == 3) {
+            t ^= (uint) data[tail + 2] << 16;
+        }
+        if (rest >= 2) {
+            t ^= (uint) data[tail + 1] << 8;
+        }
+        if (rest >= 1) {
+            t ^= data[tail];
+            t *= 0xcc9e2d51;
+            t = (t << 15) | (t >> 17);
+            t *= 0x1b873593;
+            h ^= t;
+        }
+        h ^= (uint) data.Length;
+        h ^= h >> 16;
+        h *= 0x85ebca6b;
+        h ^= h >> 13;
+        h *= 0xc2b2ae35;
+        h ^= h >> 16;
+        return unchecked((int) h);
+    }
+
+    public double[] Transform(string document) {
+        {% if lowercase %}
+        document = document.ToLowerInvariant();
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        System.Collections.Generic.List<string> tokens = new System.Collections.Generic.List<string>();
+        foreach (System.Text.RegularExpressions.Match match in TokenPattern.Matches(document)) {
+            {% if n_stop_words %}
+            if (!stopWords.Contains(match.Value)) {
+                tokens.Add(match.Value);
+            }
+            {% else %}
+            tokens.Add(match.Value);
+            {% endif %}
+        }
+        // Hash the n-grams of the tokens (joined by spaces):
+        double[] values = new double[{{ n_features_out }}];
+        for (int n = {{ min_n }}; n <= {{ max_n }} && n <= tokens.Count; n++) {
+            for (int i = 0; i + n <= tokens.Count; i++) {
+                string term = string.Join(" ", tokens.GetRange(i, n));
+                // The index of a term is the absolute value of its hash modulo the number of features, the sign of the value the sign of the hash:
+                int h = Murmurhash3(System.Text.Encoding.UTF8.GetBytes(term));
+                int index = (int) (System.Math.Abs((long) h) % {{ n_features_out }});
+                values[index] {% if binary %}= 1.0{% elif alternate_sign %}+= (h >= 0 ? 1.0 : -1.0){% else %}+= 1.0{% endif %};
+            }
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        double norm = 0.0;
+        for (int i = 0; i < values.Length; i++) {
+            norm += {% if norm == 'l1' %}System.Math.Abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = System.Math.Sqrt(norm);
+            {% endif %}
+            for (int i = 0; i < values.Length; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        return values;
+    }
+{% if not _blocks %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+
+    public static void Main(string[] args) {
+        if (args.Length < 1 || !args[0].EndsWith(".json")) {
+            throw new ArgumentException("You have to pass the path to the exported model data.");
+        }
+
+        {% block create %}
+        // Transformer:
+        {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ data|default('args[0]') }});
+        {% endblock %}
+
+        // One document (arguments) or several documents (standard input):
+        foreach (string document in ReadDocuments(args, 1)) {
+            PrintValues(transformer.Transform(document));
+        }
+    }
+{% endif %}
+}
+{% endblock %}
+{% endblock %}

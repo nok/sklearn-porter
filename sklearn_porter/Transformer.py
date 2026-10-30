@@ -17,6 +17,7 @@ from sklearn.base import (
 from sklearn.compose import ColumnTransformer
 from sklearn.feature_extraction.text import (
     CountVectorizer,
+    HashingVectorizer,
     TfidfTransformer,
     TfidfVectorizer,
 )
@@ -406,6 +407,7 @@ class Transformer(Base):
             FeatureUnion,
             FunctionTransformer,
             GenericUnivariateSelect,
+            HashingVectorizer,
             KBinsDiscretizer,
             MaxAbsScaler,
             MinMaxScaler,
