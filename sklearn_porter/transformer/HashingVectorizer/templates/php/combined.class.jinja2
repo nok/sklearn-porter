@@ -1,0 +1,134 @@
+{% extends 'base.combined.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }} {
+
+    {% if n_stop_words %}
+    private $stopWords = array(
+        {% for word in stop_words %}
+        {{ word }} => true,
+        {% endfor %}
+    );
+
+    {% endif %}
+    // The product of two unsigned 32-bit integers modulo 2^32, without an
+    // overflow of the 64-bit integers of PHP:
+    private static function mul32($a, $b) {
+        return (($a * ($b & 0xffff)) + ((($a * ($b >> 16)) & 0xffff) << 16)) & 0xffffffff;
+    }
+
+    private static function rotl32($x, $r) {
+        return (($x << $r) | ($x >> (32 - $r))) & 0xffffffff;
+    }
+
+    // The signed 32-bit MurmurHash3 (x86_32, seed 0) of the bytes of a term (UTF-8):
+    private static function murmurhash3($data) {
+        $length = strlen($data);
+        $h = 0;
+        $nBlocks = intdiv($length, 4);
+        for ($i = 0; $i < $nBlocks; $i++) {
+            $k = ord($data[4 * $i]) | ord($data[4 * $i + 1]) << 8 | ord($data[4 * $i + 2]) << 16 | ord($data[4 * $i + 3]) << 24;
+            $k = self::mul32($k, 0xcc9e2d51);
+            $k = self::rotl32($k, 15);
+            $k = self::mul32($k, 0x1b873593);
+            $h ^= $k;
+            $h = self::rotl32($h, 13);
+            $h = ($h * 5 + 0xe6546b64) & 0xffffffff;
+        }
+        $tail = 4 * $nBlocks;
+        $rest = $length & 3;
+        $k = 0;
+        if ($rest == 3) {
+            $k ^= ord($data[$tail + 2]) << 16;
+        }
+        if ($rest >= 2) {
+            $k ^= ord($data[$tail + 1]) << 8;
+        }
+        if ($rest >= 1) {
+            $k ^= ord($data[$tail]);
+            $k = self::mul32($k, 0xcc9e2d51);
+            $k = self::rotl32($k, 15);
+            $k = self::mul32($k, 0x1b873593);
+            $h ^= $k;
+        }
+        $h ^= $length;
+        $h ^= $h >> 16;
+        $h = self::mul32($h, 0x85ebca6b);
+        $h ^= $h >> 13;
+        $h = self::mul32($h, 0xc2b2ae35);
+        $h ^= $h >> 16;
+        return $h >= 0x80000000 ? $h - 0x100000000 : $h;
+    }
+
+    public function transform($document) {
+        {% if lowercase %}
+        // Only mb_strtolower (of the extension mbstring) converts all
+        // characters, strtolower only the characters of ASCII:
+        $document = function_exists('mb_strtolower') ? mb_strtolower($document, 'UTF-8') : strtolower($document);
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        $tokens = array();
+        if (preg_match_all('/[\p{L}\p{N}_]{2,}/u', $document, $matches)) {
+            foreach ($matches[0] as $token) {
+                {% if n_stop_words %}
+                if (!isset($this->stopWords[$token])) {
+                    $tokens[] = $token;
+                }
+                {% else %}
+                $tokens[] = $token;
+                {% endif %}
+            }
+        }
+        // Hash the n-grams of the tokens (joined by spaces):
+        $values = array_fill(0, {{ n_features_out }}, 0.0);
+        $n_tokens = count($tokens);
+        for ($n = {{ min_n }}; $n <= {{ max_n }} && $n <= $n_tokens; $n++) {
+            for ($i = 0; $i + $n <= $n_tokens; $i++) {
+                // The index of a term is the absolute value of its hash modulo the number of features, the sign of the value the sign of the hash:
+                $h = self::murmurhash3(implode(' ', array_slice($tokens, $i, $n)));
+                $values[abs($h) % {{ n_features_out }}] {% if binary %}= 1.0{% elif alternate_sign %}+= ($h >= 0 ? 1.0 : -1.0){% else %}+= 1.0{% endif %};
+            }
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        $norm = 0.0;
+        foreach ($values as $value) {
+            $norm += {% if norm == 'l1' %}abs($value){% else %}$value * $value{% endif %};
+        }
+        if ($norm != 0.0) {
+            {% if norm == 'l2' %}
+            $norm = sqrt($norm);
+            {% endif %}
+            foreach ($values as $i => $value) {
+                $values[$i] = $value / $norm;
+            }
+        }
+        {% endif %}
+        return $values;
+    }
+
+}
+{% endblock %}
+
+if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
+    {% filter indent(4, True) %}
+    {% include 'documents' %}
+
+    {% include 'values' %}
+    {% endfilter %}
+
+    array_shift($argv);
+
+    {% block create %}
+    // Transformer:
+    ${{ instance|default('transformer') }} = new {{ class_name }}();
+    {% endblock %}
+
+    // One document (arguments) or several documents (standard input):
+    foreach (readDocuments($argv) as $document) {
+        printValues($transformer->transform($document));
+    }
+
+}
+{% endblock %}

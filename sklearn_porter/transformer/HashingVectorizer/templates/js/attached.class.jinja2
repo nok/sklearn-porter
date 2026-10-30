@@ -1,0 +1,111 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+var {{ class_name }} = function({% if n_stop_words %}stopWords{% endif %}) {
+
+    {% if n_stop_words %}
+    this.stopWords = new Set(stopWords);
+
+    {% endif %}
+    // The signed 32-bit MurmurHash3 (x86_32, seed 0) of the bytes of a term (UTF-8):
+    var murmurhash3 = function (term) {
+        var data = Buffer.from(term, 'utf8');
+        var h = 0, k, i;
+        var nBlocks = Math.floor(data.length / 4);
+        for (i = 0; i < nBlocks; i++) {
+            k = data[4 * i] | data[4 * i + 1] << 8 | data[4 * i + 2] << 16 | data[4 * i + 3] << 24;
+            k = Math.imul(k, 0xcc9e2d51);
+            k = (k << 15) | (k >>> 17);
+            k = Math.imul(k, 0x1b873593);
+            h ^= k;
+            h = (h << 13) | (h >>> 19);
+            h = (Math.imul(h, 5) + 0xe6546b64) | 0;
+        }
+        var tail = 4 * nBlocks, rest = data.length & 3;
+        k = 0;
+        if (rest === 3) {
+            k ^= data[tail + 2] << 16;
+        }
+        if (rest >= 2) {
+            k ^= data[tail + 1] << 8;
+        }
+        if (rest >= 1) {
+            k ^= data[tail];
+            k = Math.imul(k, 0xcc9e2d51);
+            k = (k << 15) | (k >>> 17);
+            k = Math.imul(k, 0x1b873593);
+            h ^= k;
+        }
+        h ^= data.length;
+        h ^= h >>> 16;
+        h = Math.imul(h, 0x85ebca6b);
+        h ^= h >>> 13;
+        h = Math.imul(h, 0xc2b2ae35);
+        h ^= h >>> 16;
+        return h;
+    };
+
+    this.transform = function(document) {
+        {% if lowercase %}
+        document = document.toLowerCase();
+        {% endif %}
+        // The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+        var tokens = (document.match(/[\p{L}\p{N}_]{2,}/gu) || []){% if n_stop_words %}.filter(function (token) {
+            return !this.stopWords.has(token);
+        }, this){% endif %};
+        // Hash the n-grams of the tokens (joined by spaces):
+        var values = new Array({{ n_features_out }}).fill(0);
+        for (var n = {{ min_n }}; n <= {{ max_n }} && n <= tokens.length; n++) {
+            for (var i = 0; i + n <= tokens.length; i++) {
+                // The index of a term is the absolute value of its hash modulo the number of features, the sign of the value the sign of the hash:
+                var h = murmurhash3(tokens.slice(i, i + n).join(' '));
+                values[Math.abs(h) % {{ n_features_out }}] {% if binary %}= 1{% elif alternate_sign %}+= (h >= 0 ? 1 : -1){% else %}+= 1{% endif %};
+            }
+        }
+        {% if norm %}
+        // Normalize the features, if their norm isn't zero:
+        var norm = 0.0;
+        for (var i = 0, l = values.length; i < l; i++) {
+            norm += {% if norm == 'l1' %}Math.abs(values[i]){% else %}values[i] * values[i]{% endif %};
+        }
+        if (norm != 0.0) {
+            {% if norm == 'l2' %}
+            norm = Math.sqrt(norm);
+            {% endif %}
+            for (var i = 0, l = values.length; i < l; i++) {
+                values[i] /= norm;
+            }
+        }
+        {% endif %}
+        return values;
+    };
+
+};
+{% endblock %}
+
+{% include 'documents' %}
+
+{% include 'values' %}
+
+var main = function () {
+    {% block create %}
+    {% if n_stop_words %}
+    // Model data:
+    {{ stop_words }}
+
+    {% endif %}
+    // Transformer:
+    var {{ instance|default('transformer') }} = new {{ class_name }}({% if n_stop_words %}{{ prefix }}stop_words{% endif %});
+    {% endblock %}
+
+    // One document (arguments) or several documents (standard input):
+    readDocuments(process.argv.slice(2)).forEach(function (document) {
+        printValues(transformer.transform(document));
+    });
+}
+
+if (require.main === module) {
+    main();
+}
+{% endblock %}

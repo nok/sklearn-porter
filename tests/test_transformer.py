@@ -13,6 +13,7 @@ from sklearn.datasets import load_iris
 from sklearn.feature_extraction.text import (
     ENGLISH_STOP_WORDS,
     CountVectorizer,
+    HashingVectorizer,
     TfidfTransformer,
     TfidfVectorizer,
 )
@@ -256,6 +257,18 @@ TRANSFORMERS = {
         lambda: TfidfVectorizer(use_idf=False).fit(CORPUS),
         lambda t: dict(
             vocabulary=t.get_feature_names_out().tolist(), idf=[1.0] * 9
+        ),
+    ),
+    # A stateless vectorizer without a fit and model data:
+    'hashing_vectorizer': (
+        lambda: HashingVectorizer(n_features=2**8),
+        lambda t: dict(),
+    ),
+    # All stop words of two or more characters can change the features:
+    'hashing_vectorizer_with_stop_words': (
+        lambda: HashingVectorizer(stop_words='english'),
+        lambda t: dict(
+            stop_words=sorted(w for w in ENGLISH_STOP_WORDS if len(w) > 1)
         ),
     ),
     # scikit-learn uses `idf_` of the fit, also if `use_idf` changes later:
@@ -642,6 +655,7 @@ def test_show_of_all_transformers():
     for name in ('PowerTransformer', 'TfidfTransformer', 'CountVectorizer'):
         assert name in table
     assert 'TfidfVectorizer' in table
+    assert 'HashingVectorizer' in table
     assert 'QuantileTransformer' in table
     for name in ('GenericUnivariateSelect', 'RFE', 'RFECV', 'SelectFdr'):
         assert name in table
@@ -1103,6 +1117,15 @@ def test_unsupported_tfidf_vectorizer():
         orig_est.fit(CORPUS)
     with pytest.raises(exception.NotSupportedYetError, match='`idf`'):
         Transformer(orig_est)
+
+
+def test_invalid_hashing_vectorizer():
+    """The parameters are validated like in `fit` of scikit-learn."""
+    with pytest.raises(ValueError, match='n_features'):
+        Transformer(HashingVectorizer(n_features=0))
+    with pytest.raises(exception.NotSupportedYetError, match='analyzer'):
+        Transformer(HashingVectorizer(analyzer='char'))
+    assert not Transformer.supports_step(HashingVectorizer())
 
 
 def test_count_vectorizer_as_step_or_part():

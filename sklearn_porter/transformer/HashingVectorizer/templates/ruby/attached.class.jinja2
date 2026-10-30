@@ -1,0 +1,105 @@
+{% extends 'base.attached.class' %}
+
+{% block content %}
+{% block class %}
+class {{ class_name }}
+
+	{% if n_stop_words %}
+	def initialize(stop_words)
+		@stop_words = stop_words.to_h { |word| [word, true] }
+	end
+
+	{% endif %}
+	def rotl32(x, r)
+		((x << r) | (x >> (32 - r))) & 0xffffffff
+	end
+
+	# The signed 32-bit MurmurHash3 (x86_32, seed 0) of the bytes of a term (UTF-8):
+	def murmurhash3(data)
+		h = 0
+		n_blocks = data.length / 4
+		n_blocks.times do |i|
+			k = data[4 * i] | data[4 * i + 1] << 8 | data[4 * i + 2] << 16 | data[4 * i + 3] << 24
+			k = (k * 0xcc9e2d51) & 0xffffffff
+			k = rotl32(k, 15)
+			k = (k * 0x1b873593) & 0xffffffff
+			h ^= k
+			h = rotl32(h, 13)
+			h = (h * 5 + 0xe6546b64) & 0xffffffff
+		end
+		tail = 4 * n_blocks
+		rest = data.length & 3
+		k = 0
+		k ^= data[tail + 2] << 16 if rest == 3
+		k ^= data[tail + 1] << 8 if rest >= 2
+		if rest >= 1
+			k ^= data[tail]
+			k = (k * 0xcc9e2d51) & 0xffffffff
+			k = rotl32(k, 15)
+			k = (k * 0x1b873593) & 0xffffffff
+			h ^= k
+		end
+		h ^= data.length
+		h ^= h >> 16
+		h = (h * 0x85ebca6b) & 0xffffffff
+		h ^= h >> 13
+		h = (h * 0xc2b2ae35) & 0xffffffff
+		h ^= h >> 16
+		h >= 0x80000000 ? h - 0x100000000 : h
+	end
+
+	def transform(document)
+		{% if lowercase %}
+		document = document.downcase
+		{% endif %}
+		# The tokens are the runs of two or more word characters{% if n_stop_words %} (without the stop words){% endif %}:
+		tokens = document.scan(/[\p{L}\p{N}_]{2,}/){% if n_stop_words %}.reject { |token| @stop_words.key?(token) }{% endif +%}
+		# Hash the n-grams of the tokens (joined by spaces):
+		values = Array.new({{ n_features_out }}, 0.0)
+		({{ min_n }}..[{{ max_n }}, tokens.length].min).each do |n|
+			(0..tokens.length - n).each do |i|
+				# The index of a term is the absolute value of its hash modulo the number of features, the sign of the value the sign of the hash:
+				h = murmurhash3(tokens[i, n].join(' ').bytes)
+				values[h.abs % {{ n_features_out }}] {% if binary %}= 1.0{% elif alternate_sign %}+= (h >= 0 ? 1.0 : -1.0){% else %}+= 1.0{% endif %}
+			end
+		end
+		{% if norm %}
+		# Normalize the features, if their norm isn't zero:
+		norm = 0.0
+		values.each { |value| norm += {% if norm == 'l1' %}value.abs{% else %}value * value{% endif %} }
+		unless norm == 0
+			{% if norm == 'l2' %}
+			norm = Math.sqrt(norm)
+			{% endif %}
+			values.map! { |value| value / norm }
+		end
+		{% endif %}
+		values
+	end
+
+end
+{% endblock %}
+
+if __FILE__ == $0
+	{% filter indent('\t', True) %}
+	{% include 'documents' %}
+
+	{% include 'values' %}
+	{% endfilter %}
+
+	{% block create %}
+	{% if n_stop_words %}
+	# Model data:
+	{{ stop_words }}
+
+	{% endif %}
+	# Transformer:
+	{{ instance|default('transformer') }} = {{ class_name }}.new{% if n_stop_words %}({{ prefix }}stop_words){% endif +%}
+	{% endblock %}
+
+	# One document (arguments) or several documents (standard input):
+	read_documents(ARGV) do |document|
+		print_values transformer.transform(document)
+	end
+end
+{% endblock %}
