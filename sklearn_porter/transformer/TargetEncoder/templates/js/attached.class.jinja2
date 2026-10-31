@@ -21,11 +21,19 @@ var {{ class_name }} = function(inputs, categories, encodings, offsets, missing,
                 continue;
             }
             values[i] = this.unknowns[i];
-            for (var j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
-                if (x === this.categories[j]) {
-                    values[i] = this.encodings[j];
-                    break;
+            // The position of x (binary search of the sorted categories):
+            var lo = this.offsets[i];
+            var hi = this.offsets[i + 1];
+            while (lo < hi) {
+                var mid = (lo + hi) >> 1;
+                if (this.categories[mid] < x) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
+            }
+            if (lo < this.offsets[i + 1] && this.categories[lo] === x) {
+                values[i] = this.encodings[lo];
             }
         }
         return values;

@@ -1,16 +1,26 @@
+// The buffer of the printed line (see `printValues`):
+var valuesLine []byte
+
 // Print the values of a sample (e.g. the transformed features) in one line,
 // separated by spaces, so the output can be passed to a ported estimator:
 func printValues(values []float64) {
-	items := make([]string, len(values))
+	line := valuesLine[:0]
 	for i, value := range values {
+		if i > 0 {
+			line = append(line, ' ')
+		}
 		switch {
+		case value == 0 && !math.Signbit(value):
+			line = append(line, '0')
 		case math.IsInf(value, 1):
-			items[i] = "Infinity"
+			line = append(line, "Infinity"...)
 		case math.IsInf(value, -1):
-			items[i] = "-Infinity"
+			line = append(line, "-Infinity"...)
 		default:
-			items[i] = strconv.FormatFloat(value, 'g', -1, 64)
+			line = strconv.AppendFloat(line, value, 'g', -1, 64)
 		}
 	}
-	fmt.Println(strings.Join(items, " "))
+	line = append(line, '\n')
+	os.Stdout.Write(line)
+	valuesLine = line
 }

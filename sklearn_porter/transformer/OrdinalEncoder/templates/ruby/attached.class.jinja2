@@ -15,8 +15,9 @@ class {{ class_name }}
 			if features[i].nan?
 				@missing[i] == 1 ? {{ encoded_missing_value }} : {{ unknown_value }}
 			else
-				j = (@offsets[i]...@offsets[i + 1]).find { |k| features[i] == @categories[k] }
-				j.nil? ? {{ unknown_value }} : (j - @offsets[i]).to_f
+				# The position of x (binary search of the sorted categories):
+				j = (@offsets[i]...@offsets[i + 1]).bsearch { |k| @categories[k] >= features[i] }
+				j.nil? || @categories[j] != features[i] ? {{ unknown_value }} : (j - @offsets[i]).to_f
 			end
 		end
 	end

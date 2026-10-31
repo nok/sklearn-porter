@@ -12,22 +12,34 @@ var {{ class_name }} = function(edges, offsets) {
         {% if onehot %}
         values.fill(0.0);
         for (var i = 0, l = features.length; i < l; i++) {
-            var bin = 0;
-            for (var j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
-                if (features[i] >= this.edges[j]) {
-                    bin++;
+            // The number of edges <= x (binary search of the sorted edges):
+            var lo = this.offsets[i];
+            var hi = this.offsets[i + 1];
+            while (lo < hi) {
+                var mid = (lo + hi) >> 1;
+                if (features[i] >= this.edges[mid]) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
             }
+            var bin = lo - this.offsets[i];
             values[this.offsets[i] + i + bin] = 1.0;
         }
         {% else %}
         for (var i = 0, l = features.length; i < l; i++) {
-            values[i] = 0.0;
-            for (var j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
-                if (features[i] >= this.edges[j]) {
-                    values[i] += 1.0;
+            // The number of edges <= x (binary search of the sorted edges):
+            var lo = this.offsets[i];
+            var hi = this.offsets[i + 1];
+            while (lo < hi) {
+                var mid = (lo + hi) >> 1;
+                if (features[i] >= this.edges[mid]) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
             }
+            values[i] = lo - this.offsets[i];
         }
         {% endif %}
         return values;

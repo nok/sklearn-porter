@@ -27,6 +27,10 @@
     // Parse a feature, also `nan`, `inf` and `-inf` (e.g. of Python) and
     // `NaN`, `Infinity` and `-Infinity` (e.g. of a ported transformer):
     private static double parseFeature(String value) {
+        char last = value.charAt(value.length() - 1);
+        if ((last >= '0' && last <= '9') || last == '.') {
+            return Double.parseDouble(value);  // faster for numbers
+        }
         String name = value.toLowerCase(java.util.Locale.ROOT).replaceFirst("^[+-]", "");
         if (name.equals("inf") || name.equals("infinity")) {
             return value.startsWith("-") ? Double.NEGATIVE_INFINITY : Double.POSITIVE_INFINITY;

@@ -5,7 +5,11 @@ void print_values(const double *values, int n_values) {
         if (i > 0) {
             putchar(' ');
         }
-        if (isnan(values[i])) {
+        if (values[i] == 0.0 && !signbit(values[i])) {
+            putchar('0');  /* faster than printf, e.g. for sparse features */
+        } else if (values[i] == 1.0) {
+            putchar('1');
+        } else if (isnan(values[i])) {
             printf("NaN");
         } else if (isinf(values[i])) {
             printf(values[i] > 0 ? "Infinity" : "-Infinity");

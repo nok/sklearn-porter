@@ -20,22 +20,34 @@ void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURE
         values[i] = 0.0;
     }
     for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
-        int bin = 0;
-        for (int j = {{ prefix }}offsets[i]; j < {{ prefix }}offsets[i + 1]; j++) {
-            if (features[i] >= {{ prefix }}edges[j]) {
-                bin++;
+        /* The number of edges <= x (binary search of the sorted edges): */
+        int lo = {{ prefix }}offsets[i];
+        int hi = {{ prefix }}offsets[i + 1];
+        while (lo < hi) {
+            int mid = (lo + hi) / 2;
+            if (features[i] >= {{ prefix }}edges[mid]) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
             }
         }
+        int bin = lo - {{ prefix }}offsets[i];
         values[{{ prefix }}offsets[i] + i + bin] = 1.0;
     }
     {% else %}
     for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
-        values[i] = 0.0;
-        for (int j = {{ prefix }}offsets[i]; j < {{ prefix }}offsets[i + 1]; j++) {
-            if (features[i] >= {{ prefix }}edges[j]) {
-                values[i] += 1.0;
+        /* The number of edges <= x (binary search of the sorted edges): */
+        int lo = {{ prefix }}offsets[i];
+        int hi = {{ prefix }}offsets[i + 1];
+        while (lo < hi) {
+            int mid = (lo + hi) / 2;
+            if (features[i] >= {{ prefix }}edges[mid]) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
             }
         }
+        values[i] = lo - {{ prefix }}offsets[i];
     }
     {% endif %}
 }

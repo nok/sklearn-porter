@@ -2,9 +2,16 @@
     // line, separated by spaces, so the output can be passed to a ported
     // estimator:
     private static void PrintValues(double[] values) {
-        string[] items = new string[values.Length];
+        System.Text.StringBuilder line = new System.Text.StringBuilder();
         for (int i = 0; i < values.Length; i++) {
-            items[i] = values[i].ToString("R", System.Globalization.CultureInfo.InvariantCulture);
+            if (i > 0) {
+                line.Append(' ');
+            }
+            if (System.BitConverter.DoubleToInt64Bits(values[i]) == 0L) {
+                line.Append('0');  // faster, e.g. for sparse features
+            } else {
+                line.Append(values[i].ToString("R", System.Globalization.CultureInfo.InvariantCulture));
+            }
         }
-        System.Console.WriteLine(string.Join(" ", items));
+        System.Console.WriteLine(line.ToString());
     }

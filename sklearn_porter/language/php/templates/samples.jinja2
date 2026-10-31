@@ -1,6 +1,9 @@
 // Parse a feature, also `nan`, `inf` and `-inf` (e.g. of Python) and `NaN`,
 // `Infinity` and `-Infinity` (e.g. of a ported transformer):
 function parseFeature($value) {
+    if (strspn(substr($value, -1), '0123456789.') === 1) {
+        return floatval($value);  // faster for numbers
+    }
     $name = ltrim(strtolower($value), '+-');
     if ($name === 'inf' || $name === 'infinity') {
         return $value[0] === '-' ? -INF : INF;
@@ -9,10 +12,9 @@ function parseFeature($value) {
 }
 
 // Read the features of one sample from the arguments or of several samples
-// (one per line) from the standard input:
+// (one per line) from the standard input (line by line, a generator):
 function readSamples($args) {
-    $lines = count($args) > 0 ? array(implode(' ', $args)) : file('php://stdin');
-    $samples = array();
+    $lines = count($args) > 0 ? array(implode(' ', $args)) : readLines();
     foreach ($lines as $line) {
         $values = preg_split('/\s+/', trim($line), -1, PREG_SPLIT_NO_EMPTY);
         if (count($values) == 0) {
@@ -22,7 +24,13 @@ function readSamples($args) {
             fwrite(STDERR, "You have to pass {{ pipeline_n_features or n_features }} features per sample.\n");
             exit(1);
         }
-        $samples[] = array_map('parseFeature', $values);
+        yield array_map('parseFeature', $values);
     }
-    return $samples;
+}
+
+// Read the lines of the standard input (a generator):
+function readLines() {
+    while (($line = fgets(STDIN)) !== false) {
+        yield $line;
+    }
 }

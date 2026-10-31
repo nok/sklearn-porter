@@ -90,8 +90,14 @@ static double {{ prefix }}interp(double x, const double *q, int o, const double 
 
 /* Write the transformed features to `values`: */
 void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
+    /* The quantiles of each feature and the references (static, so the
+       arrays aren't created at each call): */
     {% for i in range(n_features) %}
-    values[{{ i }}] = {{ prefix }}interp(features[{{ i }}], (const double[]) { {{ feature_quantiles[i]|join(', ') }} }, 0, (const double[]) { {{ references|join(', ') }} }, {{ n_quantiles }});
+    static const double q{{ i }}[] = { {{ feature_quantiles[i]|join(', ') }} };
+    {% endfor %}
+    static const double r[] = { {{ references|join(', ') }} };
+    {% for i in range(n_features) %}
+    values[{{ i }}] = {{ prefix }}interp(features[{{ i }}], q{{ i }}, 0, r, {{ n_quantiles }});
     {% endfor %}
 }
 {% endblock %}

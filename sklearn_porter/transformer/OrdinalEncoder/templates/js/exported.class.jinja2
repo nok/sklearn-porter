@@ -21,11 +21,19 @@ var {{ class_name }} = function(jsonFile) {
                 continue;
             }
             values[i] = {{ unknown_value }};
-            for (var j = this.data.offsets[i]; j < this.data.offsets[i + 1]; j++) {
-                if (features[i] === this.data.categories[j]) {
-                    values[i] = j - this.data.offsets[i];
-                    break;
+            // The position of x (binary search of the sorted categories):
+            var lo = this.data.offsets[i];
+            var hi = this.data.offsets[i + 1];
+            while (lo < hi) {
+                var mid = (lo + hi) >> 1;
+                if (this.data.categories[mid] < features[i]) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
+            }
+            if (lo < this.data.offsets[i + 1] && this.data.categories[lo] === features[i]) {
+                values[i] = lo - this.data.offsets[i];
             }
         }
         return values;

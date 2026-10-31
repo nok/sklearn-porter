@@ -6,6 +6,8 @@
 #include <stdlib.h>
 
 {% block class %}
+{# A balanced tree of comparisons of x with the sorted categories (the items, with their codes as pairs or with their positions as codes): #}
+{% macro search(x, items, pairs, unknown, lo, hi) %}{% if hi <= lo %}{{ unknown }}{% elif hi - lo == 1 %}({{ x }} == {{ items[lo][0] if pairs else items[lo] }} ? {{ items[lo][1] if pairs else lo ~ '.0' }} : {{ unknown }}){% else %}{% set mid = (lo + hi) // 2 %}({{ x }} < {{ items[mid][0] if pairs else items[mid] }} ? {{ search(x, items, pairs, unknown, lo, mid) }} : {{ search(x, items, pairs, unknown, mid, hi) }}){% endif %}{% endmacro %}
 #define {{ prefix }}N_FEATURES {{ n_features }}
 #define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
 
@@ -13,7 +15,7 @@
 /* Write the transformed features to `values`: */
 void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
     {% for i in range(n_features) %}
-    values[{{ i }}] = isnan(features[{{ i }}]) ? {{ encoded_missing_value if feature_missing[i] else unknown_value }} : {% for c in feature_categories[i] %}(features[{{ i }}] == {{ c }} ? {{ loop.index0 }}.0 : {% endfor %}{{ unknown_value }}{{ ')' * feature_categories[i]|length }};
+    values[{{ i }}] = isnan(features[{{ i }}]) ? {{ encoded_missing_value if feature_missing[i] else unknown_value }} : {{ search('features[' ~ i ~ ']', feature_categories[i], false, unknown_value, 0, feature_categories[i]|length) }};
     {% endfor %}
 }
 {% endblock %}

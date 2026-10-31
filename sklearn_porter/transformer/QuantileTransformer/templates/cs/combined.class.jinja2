@@ -4,10 +4,18 @@
 {% block class %}
 public class {{ class_name }} {
 
+    // The quantiles of each feature and the references (created once):
+    private static readonly double[][] Quantiles = {
+        {% for i in range(n_features) %}
+        new double[] { {{ feature_quantiles[i]|join(', ') }} }{{ ',' if not loop.last }}
+        {% endfor %}
+    };
+    private static readonly double[] References = { {{ references|join(', ') }} };
+
     public double[] Transform(double[] features) {
         double[] values = new double[{{ n_features_out }}];
         {% for i in range(n_features) %}
-        values[{{ i }}] = Interp(features[{{ i }}], new double[] { {{ feature_quantiles[i]|join(', ') }} }, 0, new double[] { {{ references|join(', ') }} });
+        values[{{ i }}] = Interp(features[{{ i }}], Quantiles[{{ i }}], 0, References);
         {% endfor %}
         return values;
     }

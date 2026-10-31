@@ -20,8 +20,9 @@ class {{ class_name }}
 			if x.nan?
 				@missing[i] == 1 ? @nans[i] : @unknowns[i]
 			else
-				j = (@offsets[i]...@offsets[i + 1]).find { |k| x == @categories[k] }
-				j.nil? ? @unknowns[i] : @encodings[j]
+				# The position of x (binary search of the sorted categories):
+				j = (@offsets[i]...@offsets[i + 1]).bsearch { |k| @categories[k] >= x }
+				j.nil? || @categories[j] != x ? @unknowns[i] : @encodings[j]
 			end
 		end
 	end

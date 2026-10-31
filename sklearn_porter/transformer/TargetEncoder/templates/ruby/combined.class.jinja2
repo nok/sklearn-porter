@@ -2,12 +2,14 @@
 
 {% block content %}
 {% block class %}
+{# A balanced tree of comparisons of x with the sorted categories (the items, with their codes as pairs or with their positions as codes): #}
+{% macro search(x, items, pairs, unknown, lo, hi) %}{% if hi <= lo %}{{ unknown }}{% elif hi - lo == 1 %}({{ x }} == {{ items[lo][0] if pairs else items[lo] }} ? {{ items[lo][1] if pairs else lo ~ '.0' }} : {{ unknown }}){% else %}{% set mid = (lo + hi) // 2 %}({{ x }} < {{ items[mid][0] if pairs else items[mid] }} ? {{ search(x, items, pairs, unknown, lo, mid) }} : {{ search(x, items, pairs, unknown, mid, hi) }}){% endif %}{% endmacro %}
 class {{ class_name }}
 
 	def transform(features)
 		[
 			{% for i in range(n_features_out) %}
-			features[{{ inputs[i] }}].nan? ? {{ column_nan[i] }} : {% for c, e in column_pairs[i] %}(features[{{ inputs[i] }}] == {{ c }} ? {{ e }} : {% endfor %}{{ column_unknown[i] }}{{ ')' * column_pairs[i]|length }},
+			features[{{ inputs[i] }}].nan? ? {{ column_nan[i] }} : {{ search('features[' ~ inputs[i] ~ ']', column_pairs[i], true, column_unknown[i], 0, column_pairs[i]|length) }},
 			{% endfor %}
 		]
 	end

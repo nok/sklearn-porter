@@ -22,11 +22,19 @@ var {{ class_name }} = function(jsonFile) {
                 continue;
             }
             values[i] = this.data.unknowns[i];
-            for (var j = this.data.offsets[i]; j < this.data.offsets[i + 1]; j++) {
-                if (x === this.data.categories[j]) {
-                    values[i] = this.data.encodings[j];
-                    break;
+            // The position of x (binary search of the sorted categories):
+            var lo = this.data.offsets[i];
+            var hi = this.data.offsets[i + 1];
+            while (lo < hi) {
+                var mid = (lo + hi) >> 1;
+                if (this.data.categories[mid] < x) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
+            }
+            if (lo < this.data.offsets[i + 1] && this.data.categories[lo] === x) {
+                values[i] = this.data.encodings[lo];
             }
         }
         return values;

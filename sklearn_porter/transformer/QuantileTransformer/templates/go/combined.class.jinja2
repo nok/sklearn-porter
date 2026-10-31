@@ -13,12 +13,20 @@ import (
 )
 
 {% block class %}
+// The quantiles of each feature and the references (created once):
+var {{ prefix }}quantiles = [][]float64{
+	{% for i in range(n_features) %}
+	{ {{ feature_quantiles[i]|join(', ') }} },
+	{% endfor %}
+}
+var {{ prefix }}references = []float64{ {{ references|join(', ') }} }
+
 type {{ class_name }} struct{}
 
 func (transformer {{ class_name }}) Transform(features []float64) []float64 {
 	values := make([]float64, {{ n_features_out }})
 	{% for i in range(n_features) %}
-	values[{{ i }}] = transformer.interp(features[{{ i }}], []float64{ {{ feature_quantiles[i]|join(', ') }} }, []float64{ {{ references|join(', ') }} })
+	values[{{ i }}] = transformer.interp(features[{{ i }}], {{ prefix }}quantiles[{{ i }}], {{ prefix }}references)
 	{% endfor %}
 	return values
 }

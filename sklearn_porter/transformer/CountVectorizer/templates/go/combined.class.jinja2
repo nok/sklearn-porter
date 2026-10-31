@@ -31,6 +31,11 @@ var {{ prefix }}stopWords = map[string]bool{
 }
 {% endif %}
 
+{% if tfidf %}
+// The idf of the terms:
+var {{ prefix }}idf = []float64{ {{ idf|join(', ') }} }
+
+{% endif %}
 type {{ class_name }} struct{}
 
 func (transformer {{ class_name }}) Transform(document string) []float64 {
@@ -59,11 +64,11 @@ func (transformer {{ class_name }}) Transform(document string) []float64 {
 	}
 	{% if tfidf %}
 	// Weight the counts with the idf and normalize them (tf-idf):
-	{% for i in range(n_features) %}
-	if values[{{ i }}] != 0 {
-		values[{{ i }}] = {% if sublinear_tf %}(math.Log(values[{{ i }}]) + 1.0){% else %}values[{{ i }}]{% endif %} * {{ idf[i] }}
+	for i := range values {
+		if values[i] != 0 {
+			values[i] = {% if sublinear_tf %}(math.Log(values[i]) + 1.0){% else %}values[i]{% endif %} * {{ prefix }}idf[i]
+		}
 	}
-	{% endfor %}
 	{% if norm %}
 	// Normalize the features, if their norm isn't zero:
 	norm := 0.0

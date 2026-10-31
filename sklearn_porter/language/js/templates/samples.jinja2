@@ -1,6 +1,10 @@
 // Parse a feature, also `nan`, `inf` and `-inf` (e.g. of Python) and `NaN`,
 // `Infinity` and `-Infinity` (e.g. of a ported transformer):
 var parseFeature = function (value) {
+    var last = value.charCodeAt(value.length - 1);
+    if ((last >= 48 && last <= 57) || last === 46) {
+        return parseFloat(value);  // faster for numbers
+    }
     var name = value.toLowerCase().replace(/^[+-]/, '');
     if (name === 'inf' || name === 'infinity') {
         return value.charAt(0) === '-' ? -Infinity : Infinity;

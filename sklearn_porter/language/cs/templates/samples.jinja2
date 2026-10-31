@@ -35,6 +35,10 @@
     // Parse a feature, also `nan`, `inf` and `-inf` (e.g. of Python) and
     // `NaN`, `Infinity` and `-Infinity` (e.g. of a ported transformer):
     private static double ParseFeature(string value) {
+        char last = value[value.Length - 1];
+        if ((last >= '0' && last <= '9') || last == '.') {
+            return double.Parse(value, System.Globalization.CultureInfo.InvariantCulture);  // faster for numbers
+        }
         string name = value.ToLowerInvariant().TrimStart('+', '-');
         if (name == "inf" || name == "infinity") {
             return value.StartsWith("-") ? double.NegativeInfinity : double.PositiveInfinity;

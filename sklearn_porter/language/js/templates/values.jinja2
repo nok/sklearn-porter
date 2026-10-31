@@ -1,7 +1,32 @@
+// The printed lines, which are written in chunks, because writing each line
+// separately takes much longer (see `printValues`):
+var valuesLines = [];
+var valuesLength = 0;
+var writeValuesLines = function () {
+    var data = Buffer.from(valuesLines.join(''));
+    for (var offset = 0; offset < data.length;) {
+        try {
+            offset += require('fs').writeSync(1, data, offset);
+        } catch (e) {
+            if (e.code !== 'EAGAIN') {  // e.g. of a non-blocking pipe
+                throw e;
+            }
+        }
+    }
+    valuesLines = [];
+    valuesLength = 0;
+};
+process.on('exit', writeValuesLines);
+
 // Print the values of a sample (e.g. the transformed features) in one line,
 // separated by spaces, so the output can be passed to a ported estimator:
 var printValues = function (values) {
-    console.log(values.map(function (value) {
+    var line = values.map(function (value) {
         return Object.is(value, -0) ? '-0' : String(value);
-    }).join(' '));
+    }).join(' ') + '\n';
+    valuesLines.push(line);
+    valuesLength += line.length;
+    if (valuesLength >= 65536) {
+        writeValuesLines();
+    }
 };

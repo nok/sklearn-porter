@@ -6,6 +6,8 @@
 #include <stdlib.h>
 
 {% block class %}
+{# A balanced tree of comparisons of x with the sorted categories (the items, with their codes as pairs or with their positions as codes): #}
+{% macro search(x, items, pairs, unknown, lo, hi) %}{% if hi <= lo %}{{ unknown }}{% elif hi - lo == 1 %}({{ x }} == {{ items[lo][0] if pairs else items[lo] }} ? {{ items[lo][1] if pairs else lo ~ '.0' }} : {{ unknown }}){% else %}{% set mid = (lo + hi) // 2 %}({{ x }} < {{ items[mid][0] if pairs else items[mid] }} ? {{ search(x, items, pairs, unknown, lo, mid) }} : {{ search(x, items, pairs, unknown, mid, hi) }}){% endif %}{% endmacro %}
 #define {{ prefix }}N_FEATURES {{ n_features }}
 #define {{ prefix }}N_FEATURES_OUT {{ n_features_out }}
 
@@ -13,7 +15,7 @@
 /* Write the transformed features to `values`: */
 void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURES]) {
     {% for i in range(n_features_out) %}
-    values[{{ i }}] = isnan(features[{{ inputs[i] }}]) ? {{ column_nan[i] }} : {% for c, e in column_pairs[i] %}(features[{{ inputs[i] }}] == {{ c }} ? {{ e }} : {% endfor %}{{ column_unknown[i] }}{{ ')' * column_pairs[i]|length }};
+    values[{{ i }}] = isnan(features[{{ inputs[i] }}]) ? {{ column_nan[i] }} : {{ search('features[' ~ inputs[i] ~ ']', column_pairs[i], true, column_unknown[i], 0, column_pairs[i]|length) }};
     {% endfor %}
 }
 {% endblock %}

@@ -23,21 +23,32 @@ func (transformer {{ class_name }}) Transform(features []float64) []float64 {
 	values := make([]float64, {{ n_features_out }})
 	{% if onehot %}
 	for i := range features {
-		bin := 0
-		for j := transformer.Offsets[i]; j < transformer.Offsets[i+1]; j++ {
-			if features[i] >= transformer.Edges[j] {
-				bin++
+		// The number of edges <= x (binary search of the sorted edges):
+		lo, hi := transformer.Offsets[i], transformer.Offsets[i+1]
+		for lo < hi {
+			mid := (lo + hi) / 2
+			if features[i] >= transformer.Edges[mid] {
+				lo = mid + 1
+			} else {
+				hi = mid
 			}
 		}
+		bin := lo - transformer.Offsets[i]
 		values[transformer.Offsets[i]+i+bin] = 1
 	}
 	{% else %}
 	for i := range features {
-		for j := transformer.Offsets[i]; j < transformer.Offsets[i+1]; j++ {
-			if features[i] >= transformer.Edges[j] {
-				values[i]++
+		// The number of edges <= x (binary search of the sorted edges):
+		lo, hi := transformer.Offsets[i], transformer.Offsets[i+1]
+		for lo < hi {
+			mid := (lo + hi) / 2
+			if features[i] >= transformer.Edges[mid] {
+				lo = mid + 1
+			} else {
+				hi = mid
 			}
 		}
+		values[i] = float64(lo - transformer.Offsets[i])
 	}
 	{% endif %}
 	return values

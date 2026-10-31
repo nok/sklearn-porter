@@ -31,11 +31,18 @@ func (transformer {{ class_name }}) Transform(features []float64) []float64 {
 			continue
 		}
 		values[i] = {{ unknown_value }}
-		for j := transformer.Offsets[i]; j < transformer.Offsets[i+1]; j++ {
-			if features[i] == transformer.Categories[j] {
-				values[i] = float64(j - transformer.Offsets[i])
-				break
+		// The position of x (binary search of the sorted categories):
+		lo, hi := transformer.Offsets[i], transformer.Offsets[i+1]
+		for lo < hi {
+			mid := (lo + hi) / 2
+			if transformer.Categories[mid] < features[i] {
+				lo = mid + 1
+			} else {
+				hi = mid
 			}
+		}
+		if lo < transformer.Offsets[i+1] && transformer.Categories[lo] == features[i] {
+			values[i] = float64(lo - transformer.Offsets[i])
 		}
 	}
 	return values

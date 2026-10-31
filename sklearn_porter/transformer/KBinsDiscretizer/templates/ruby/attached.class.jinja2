@@ -13,12 +13,16 @@ class {{ class_name }}
 		{% if onehot %}
 		values = Array.new({{ n_features_out }}, 0.0)
 		features.each_with_index do |x, i|
-			values[@offsets[i] + i + (@offsets[i]...@offsets[i + 1]).count { |j| x >= @edges[j] }] = 1.0
+			# The number of edges <= x (binary search of the sorted edges):
+			j = (@offsets[i]...@offsets[i + 1]).bsearch { |k| !(x >= @edges[k]) } || @offsets[i + 1]
+			values[i + j] = 1.0
 		end
 		values
 		{% else %}
 		Array.new(features.length) do |i|
-			(@offsets[i]...@offsets[i + 1]).count { |j| features[i] >= @edges[j] }.to_f
+			# The number of edges <= x (binary search of the sorted edges):
+			j = (@offsets[i]...@offsets[i + 1]).bsearch { |k| !(features[i] >= @edges[k]) } || @offsets[i + 1]
+			(j - @offsets[i]).to_f
 		end
 		{% endif %}
 	end
