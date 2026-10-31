@@ -45,11 +45,19 @@ class {{ class_name }} {
                 continue;
             }
             values[i] = this.data.unknowns[i];
-            for (int j = this.data.offsets[i]; j < this.data.offsets[i + 1]; j++) {
-                if (x == this.data.categories[j]) {
-                    values[i] = this.data.encodings[j];
-                    break;
+            // The position of x (binary search of the sorted categories):
+            int lo = this.data.offsets[i];
+            int hi = this.data.offsets[i + 1];
+            while (lo < hi) {
+                int mid = (lo + hi) / 2;
+                if (this.data.categories[mid] < x) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
+            }
+            if (lo < this.data.offsets[i + 1] && this.data.categories[lo] == x) {
+                values[i] = this.data.encodings[lo];
             }
         }
         return values;

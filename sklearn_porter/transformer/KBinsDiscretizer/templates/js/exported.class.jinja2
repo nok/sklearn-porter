@@ -18,22 +18,34 @@ var {{ class_name }} = function(jsonFile) {
         {% if onehot %}
         values.fill(0.0);
         for (var i = 0, l = features.length; i < l; i++) {
-            var bin = 0;
-            for (var j = this.data.offsets[i]; j < this.data.offsets[i + 1]; j++) {
-                if (features[i] >= this.data.edges[j]) {
-                    bin++;
+            // The number of edges <= x (binary search of the sorted edges):
+            var lo = this.data.offsets[i];
+            var hi = this.data.offsets[i + 1];
+            while (lo < hi) {
+                var mid = (lo + hi) >> 1;
+                if (features[i] >= this.data.edges[mid]) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
             }
+            var bin = lo - this.data.offsets[i];
             values[this.data.offsets[i] + i + bin] = 1.0;
         }
         {% else %}
         for (var i = 0, l = features.length; i < l; i++) {
-            values[i] = 0.0;
-            for (var j = this.data.offsets[i]; j < this.data.offsets[i + 1]; j++) {
-                if (features[i] >= this.data.edges[j]) {
-                    values[i] += 1.0;
+            // The number of edges <= x (binary search of the sorted edges):
+            var lo = this.data.offsets[i];
+            var hi = this.data.offsets[i + 1];
+            while (lo < hi) {
+                var mid = (lo + hi) >> 1;
+                if (features[i] >= this.data.edges[mid]) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
             }
+            values[i] = lo - this.data.offsets[i];
         }
         {% endif %}
         return values;

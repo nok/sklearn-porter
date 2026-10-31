@@ -1,13 +1,21 @@
+    // The buffer of the printed line (see `printValues`):
+    private static final StringBuilder VALUES_LINE = new StringBuilder();
+
     // Print the values of a sample (e.g. the transformed features) in one
     // line, separated by spaces, so the output can be passed to a ported
     // estimator:
     private static void printValues(double[] values) {
-        StringBuilder line = new StringBuilder();
+        StringBuilder line = VALUES_LINE;
+        line.setLength(0);
         for (int i = 0; i < values.length; i++) {
             if (i > 0) {
                 line.append(' ');
             }
-            line.append(values[i]);
+            if (Double.doubleToRawLongBits(values[i]) == 0L) {
+                line.append("0.0");  // faster, e.g. for sparse features
+            } else {
+                line.append(values[i]);
+            }
         }
         System.out.println(line);
     }

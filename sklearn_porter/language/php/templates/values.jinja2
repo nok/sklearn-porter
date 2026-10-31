@@ -3,7 +3,9 @@
 function printValues($values) {
     $items = array();
     foreach ($values as $value) {
-        if (is_nan($value)) {
+        if ($value === 0.0 && fdiv(1.0, $value) > 0) {
+            $items[] = '0.0';  // faster, e.g. for sparse features
+        } elseif (is_nan($value)) {
             $items[] = 'NaN';
         } elseif (is_infinite($value)) {
             $items[] = $value > 0 ? 'Infinity' : '-Infinity';

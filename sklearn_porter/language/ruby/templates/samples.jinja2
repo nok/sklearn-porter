@@ -1,6 +1,7 @@
 # Parse a feature, also `nan`, `inf` and `-inf` (e.g. of Python) and `NaN`,
 # `Infinity` and `-Infinity` (e.g. of a ported transformer):
 def parse_feature(value)
+	return value.to_f if value.end_with?('0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.')  # faster for numbers
 	name = value.downcase.sub(/\A[+-]/, '')
 	return (value.start_with?('-') ? -Float::INFINITY : Float::INFINITY) if %w[inf infinity].include?(name)
 	name == 'nan' ? Float::NAN : value.to_f

@@ -27,11 +27,19 @@ class {{ class_name }} {
                 continue;
             }
             $values[$i] = {{ unknown_value }};
-            for ($j = $this->offsets[$i]; $j < $this->offsets[$i + 1]; $j++) {
-                if ($features[$i] == $this->categories[$j]) {
-                    $values[$i] = (float) ($j - $this->offsets[$i]);
-                    break;
+            // The position of x (binary search of the sorted categories):
+            $lo = $this->offsets[$i];
+            $hi = $this->offsets[$i + 1];
+            while ($lo < $hi) {
+                $mid = ($lo + $hi) >> 1;
+                if ($this->categories[$mid] < $features[$i]) {
+                    $lo = $mid + 1;
+                } else {
+                    $hi = $mid;
                 }
+            }
+            if ($lo < $this->offsets[$i + 1] && $this->categories[$lo] == $features[$i]) {
+                $values[$i] = (float) ($lo - $this->offsets[$i]);
             }
         }
         return $values;

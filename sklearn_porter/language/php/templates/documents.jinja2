@@ -1,8 +1,16 @@
 // Read one document from the arguments (separated by spaces) or several
-// documents (one per line) from the standard input:
+// documents (one per line) from the standard input (line by line, a
+// generator):
 function readDocuments($args) {
     if (count($args) > 0) {
-        return array(implode(' ', $args));
+        yield implode(' ', $args);
+        return;
     }
-    return file('php://stdin', FILE_IGNORE_NEW_LINES);
+    while (($line = fgets(STDIN)) !== false) {
+        // Without the line break (also of Windows) like `file`:
+        if (substr($line, -1) === "\n") {
+            $line = substr($line, 0, substr($line, -2) === "\r\n" ? -2 : -1);
+        }
+        yield $line;
+    }
 }

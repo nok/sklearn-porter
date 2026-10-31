@@ -7,6 +7,11 @@ class {{ class_name }} {
     // The pattern of the tokens:
     private static final java.util.regex.Pattern TOKEN_PATTERN = java.util.regex.Pattern.compile("[\\p{L}\\p{N}_]{2,}");
 
+    {% if tfidf %}
+    // The idf of the terms:
+    private static final double[] idf = { {{ idf|join(', ') }} };
+
+    {% endif %}
     private static final java.util.Map<String, Integer> vocabulary = new java.util.HashMap<>();
     {% if n_stop_words %}
     private static final java.util.Set<String> stopWords = new java.util.HashSet<>();
@@ -49,9 +54,11 @@ class {{ class_name }} {
         }
         {% if tfidf %}
         // Weight the counts with the idf and normalize them (tf-idf):
-        {% for i in range(n_features) %}
-        values[{{ i }}] = values[{{ i }}] == 0.0 ? 0.0 : {% if sublinear_tf %}(Math.log(values[{{ i }}]) + 1.0){% else %}values[{{ i }}]{% endif %} * {{ idf[i] }};
-        {% endfor %}
+        for (int i = 0; i < values.length; i++) {
+            if (values[i] != 0.0) {
+                values[i] = {% if sublinear_tf %}(Math.log(values[i]) + 1.0){% else %}values[i]{% endif %} * idf[i];
+            }
+        }
         {% if norm %}
         // Normalize the features, if their norm isn't zero:
         double norm = 0.0;

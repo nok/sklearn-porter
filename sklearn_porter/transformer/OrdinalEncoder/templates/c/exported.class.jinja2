@@ -32,11 +32,19 @@ void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURE
             continue;
         }
         values[i] = {{ unknown_value }};
-        for (int j = {{ prefix }}offsets[i]; j < {{ prefix }}offsets[i + 1]; j++) {
-            if (features[i] == {{ prefix }}categories[j]) {
-                values[i] = j - {{ prefix }}offsets[i];
-                break;
+        /* The position of x (binary search of the sorted categories): */
+        int lo = {{ prefix }}offsets[i];
+        int hi = {{ prefix }}offsets[i + 1];
+        while (lo < hi) {
+            int mid = (lo + hi) / 2;
+            if ({{ prefix }}categories[mid] < features[i]) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
             }
+        }
+        if (lo < {{ prefix }}offsets[i + 1] && {{ prefix }}categories[lo] == features[i]) {
+            values[i] = lo - {{ prefix }}offsets[i];
         }
     }
 }

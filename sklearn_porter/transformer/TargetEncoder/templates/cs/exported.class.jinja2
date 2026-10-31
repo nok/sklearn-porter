@@ -42,11 +42,19 @@ public class {{ class_name }} {
                 continue;
             }
             values[i] = this.data.Unknowns[i];
-            for (int j = this.data.Offsets[i]; j < this.data.Offsets[i + 1]; j++) {
-                if (x == this.data.Categories[j]) {
-                    values[i] = this.data.Encodings[j];
-                    break;
+            // The position of x (binary search of the sorted categories):
+            int lo = this.data.Offsets[i];
+            int hi = this.data.Offsets[i + 1];
+            while (lo < hi) {
+                int mid = (lo + hi) / 2;
+                if (this.data.Categories[mid] < x) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
+            }
+            if (lo < this.data.Offsets[i + 1] && this.data.Categories[lo] == x) {
+                values[i] = this.data.Encodings[lo];
             }
         }
         return values;

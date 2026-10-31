@@ -31,11 +31,19 @@ public class {{ class_name }} {
                 continue;
             }
             values[i] = this.unknowns[i];
-            for (int j = this.offsets[i]; j < this.offsets[i + 1]; j++) {
-                if (x == this.categories[j]) {
-                    values[i] = this.encodings[j];
-                    break;
+            // The position of x (binary search of the sorted categories):
+            int lo = this.offsets[i];
+            int hi = this.offsets[i + 1];
+            while (lo < hi) {
+                int mid = (lo + hi) / 2;
+                if (this.categories[mid] < x) {
+                    lo = mid + 1;
+                } else {
+                    hi = mid;
                 }
+            }
+            if (lo < this.offsets[i + 1] && this.categories[lo] == x) {
+                values[i] = this.encodings[lo];
             }
         }
         return values;

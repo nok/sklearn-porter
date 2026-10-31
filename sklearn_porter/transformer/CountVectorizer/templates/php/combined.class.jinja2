@@ -4,6 +4,11 @@
 {% block class %}
 class {{ class_name }} {
 
+    {% if tfidf %}
+    // The idf of the terms:
+    private $idf = array({{ idf|join(', ') }});
+
+    {% endif %}
     private $vocabulary = array(
         {% for term in vocabulary %}
         {{ term }} => {{ loop.index0 }},
@@ -50,9 +55,11 @@ class {{ class_name }} {
         }
         {% if tfidf %}
         // Weight the counts with the idf and normalize them (tf-idf):
-        {% for i in range(n_features) %}
-        $values[{{ i }}] = $values[{{ i }}] == 0 ? 0.0 : {% if sublinear_tf %}(log($values[{{ i }}]) + 1.0){% else %}$values[{{ i }}]{% endif %} * {{ idf[i] }};
-        {% endfor %}
+        foreach ($values as $i => $value) {
+            if ($value != 0) {
+                $values[$i] = {% if sublinear_tf %}(log($value) + 1.0){% else %}$value{% endif %} * $this->idf[$i];
+            }
+        }
         {% if norm %}
         // Normalize the features, if their norm isn't zero:
         $norm = 0.0;

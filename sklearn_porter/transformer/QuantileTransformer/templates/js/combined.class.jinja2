@@ -4,10 +4,18 @@
 {% block class %}
 var {{ class_name }} = function() {
 
+    // The quantiles of each feature and the references (created once):
+    var quantiles = [
+        {% for i in range(n_features) %}
+        [{{ feature_quantiles[i]|join(', ') }}]{{ ',' if not loop.last }}
+        {% endfor %}
+    ];
+    var references = [{{ references|join(', ') }}];
+
     this.transform = function(features) {
         return [
             {% for i in range(n_features) %}
-            this.interp(features[{{ i }}], [{{ feature_quantiles[i]|join(', ') }}], 0, [{{ references|join(', ') }}]){{ ',' if not loop.last }}
+            this.interp(features[{{ i }}], quantiles[{{ i }}], 0, references){{ ',' if not loop.last }}
             {% endfor %}
         ];
     };
