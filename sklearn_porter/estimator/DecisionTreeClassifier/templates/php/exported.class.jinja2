@@ -141,7 +141,7 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
         {% if pipeline_transform %}
         {{ pipeline_transform | indent('        ') }}
         {% endif %}
-        {% if is_test or to_json %}
+        {% if to_json %}
         // Get JSON:
         $prediction = $clf->predict($features);
         $probabilities = $clf->predictProba($features);

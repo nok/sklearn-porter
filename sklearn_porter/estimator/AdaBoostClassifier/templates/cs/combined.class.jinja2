@@ -19,7 +19,7 @@ public static class {{ class_name }} {
 
 
     {{ method }}
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 
@@ -40,7 +40,7 @@ public static class {{ class_name }} {
             {% endif %}
             {{ label_type }} prediction = {{ class_name }}.Predict(features);
             double[] probabilities = {{ class_name }}.PredictProba(features);
-            {% if is_test or to_json %}
+            {% if to_json %}
             Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
             {% else %}
             Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));

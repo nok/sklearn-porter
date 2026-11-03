@@ -23,7 +23,7 @@ type {{ class_name }} struct {
 	Degree int `json:"degree"`
 }
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict {{ 'int' if is_outlier_detector else 'float64' }} `json:"predict"`
 }

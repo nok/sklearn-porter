@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-{% if (is_test or to_json) and is_multi_output %}
+{% if to_json and is_multi_output %}
 import java.util.Arrays;
 {% endif %}
 
@@ -60,7 +60,7 @@ class {{ class_name }} {
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}
             {% endif %}
-            {% if is_test or to_json %}
+            {% if to_json %}
             // Get JSON:
             double[] prediction = reg.predict(features);
             {% if is_multi_output %}

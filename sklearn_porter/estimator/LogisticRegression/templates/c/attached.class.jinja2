@@ -101,7 +101,7 @@ int main(int argc, const char *argv[]) {
         {% if pipeline_transform %}
         {{ pipeline_transform | indent('        ') }}
         {% endif %}
-        {% if is_test or to_json %}
+        {% if to_json %}
         /* Get JSON: */
         {% if is_multilabel %}
         int labels[N_DECISIONS];

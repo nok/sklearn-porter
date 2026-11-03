@@ -1,7 +1,7 @@
 {% extends 'base.combined.class' %}
 
 {% block content %}
-{% if ((is_test or to_json) and with_proba) or is_multilabel %}
+{% if (to_json and with_proba) or is_multilabel %}
 import java.util.Arrays;
 
 
@@ -85,7 +85,7 @@ int[] labels = new int[decisions.length];
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}
             {% endif %}
-            {% if is_test or to_json %}
+            {% if to_json %}
             // Get JSON:
             {{ 'int[]' if is_multilabel else label_type }} prediction = {{ class_name }}.predict(features);
             {% if with_proba %}

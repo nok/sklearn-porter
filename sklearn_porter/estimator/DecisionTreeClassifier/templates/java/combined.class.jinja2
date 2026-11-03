@@ -1,7 +1,7 @@
 {% extends 'base.combined.class' %}
 
 {% block content %}
-{% if is_test or to_json or is_multi_output %}
+{% if to_json or is_multi_output %}
 import java.util.Arrays;
 
 {% endif %}
@@ -103,7 +103,7 @@ class {{ class_name }} {
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}
             {% endif %}
-            {% if is_test or to_json %}
+            {% if to_json %}
             // Get JSON:
             {{ label_type }}{{ '[]' if is_multi_output }} prediction = {{ class_name }}.predict(features);
             {{ 'double[][]' if is_multi_output else 'double[]' }} probabilities = {{ class_name }}.predictProba(features);

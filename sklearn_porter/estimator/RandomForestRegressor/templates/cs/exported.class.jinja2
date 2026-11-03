@@ -18,7 +18,7 @@ public class {{ class_name }} {
         JsonSerializerOptions options = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
         this.forest = JsonSerializer.Deserialize<Tree[]>({{ 'System.Text.Json.JsonDocument.Parse(File.ReadAllText(file)).RootElement.GetProperty("estimators")' if pipeline else 'File.ReadAllText(file)' }}, options);
     }
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 

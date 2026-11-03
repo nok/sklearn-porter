@@ -15,7 +15,7 @@ import (
 
 {% include 'labels' %}
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict {{ label_type }} `json:"predict"`
 	PredictProba []float64 `json:"predict_proba"`

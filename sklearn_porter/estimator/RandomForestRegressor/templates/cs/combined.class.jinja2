@@ -24,7 +24,7 @@ public static class {{ class_name }} {
         }
         return values;
     }
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 

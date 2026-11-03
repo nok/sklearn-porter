@@ -206,7 +206,7 @@ int main(int argc, const char *argv[]) {
         }
         predict_proba(probabilities, features);
 
-        {% if is_test or to_json %}
+        {% if to_json %}
         /* Get JSON: */
         printf("{\"predict\": [");
         for (int j = 0; j < N_OUTPUTS; j++) {
@@ -243,7 +243,7 @@ int main(int argc, const char *argv[]) {
             free(probabilities[j]);
         }
         {% else %}
-        {% if is_test or to_json %}
+        {% if to_json %}
         /* Get JSON: */
         double probabilities[N_CLASSES];
         predict_proba(probabilities, features);

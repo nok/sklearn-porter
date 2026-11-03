@@ -146,7 +146,7 @@ if __FILE__ == $0
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		# Get JSON:
 		prediction = reg.predict features
 		puts JSON.generate({:predict => prediction})

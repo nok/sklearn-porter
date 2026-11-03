@@ -62,8 +62,6 @@ from sklearn.svm import (
 )
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
-environ['SKLEARN_PORTER_PYTEST'] = 'True'
-
 PORTER_N_UNI_REGRESSION_TESTS = int(
     environ.get('SKLEARN_PORTER_PYTEST_N_UNI_REGRESSION_TESTS', 15)
 )

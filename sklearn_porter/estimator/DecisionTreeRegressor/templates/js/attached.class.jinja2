@@ -55,7 +55,7 @@ var main = function () {
         {% if pipeline_transform %}
         {{ pipeline_transform | indent('        ') }}
         {% endif %}
-        {% if is_test or to_json %}
+        {% if to_json %}
         // Get JSON:
         console.log(JSON.stringify({
             "predict": reg.predict(features)
