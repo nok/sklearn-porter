@@ -1,36 +1,44 @@
 ARG PYTHON_VERSION=3.11
 ARG DOTNET_VERSION=10.0
+ARG GO_VERSION=1.27
+ARG NODE_VERSION=24
 
 # The .NET SDK isn't available as Debian package (for all architectures), so
-# it is copied from the official image (it needs the ICU library libicu72):
+# it is copied from the official image (it needs the ICU library libicu76):
 FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS dotnet
 
-FROM ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim
+# The Go and Node.js packages of Debian 13 reached their end of life, so they
+# are copied from the official images:
+FROM golang:${GO_VERSION}-trixie AS go
+FROM node:${NODE_VERSION}-trixie-slim AS node
+
+FROM ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-trixie-slim
 
 # Compilers and interpreters to run the transpiled estimators:
 RUN apt-get update && \
     mkdir -p /usr/share/man/man1 && \
     apt-get install -y --no-install-recommends \
         gcc libc6-dev \
-        golang \
-        libicu72 \
+        libicu76 libstdc++6 \
         default-jdk-headless \
-        nodejs \
         php-cli \
         ruby && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=dotnet /usr/share/dotnet /usr/share/dotnet
+COPY --from=go /usr/local/go /usr/local/go
+COPY --from=node /usr/local/bin/node /usr/local/bin/node
 ENV DOTNET_ROOT=/usr/share/dotnet \
     DOTNET_CLI_TELEMETRY_OPTOUT=1 \
     DOTNET_NOLOGO=1 \
-    PATH=/usr/share/dotnet:$PATH
+    GOTOOLCHAIN=local \
+    PATH=/usr/local/go/bin:/usr/share/dotnet:$PATH
 
 # GSON for the Java templates `exported`, the same version and checksum as
 # `Java.GSON_DOWNLOAD_URI` and `Java.GSON_SHA256`
 # (sklearn_porter/language/java/__init__.py):
-ADD --chmod=644 --checksum=sha256:378534e339e6e6d50b1736fb3abb76f1c15d1be3f4c13cec6d536412e23da603 \
-    https://repo1.maven.org/maven2/com/google/code/gson/gson/2.9.1/gson-2.9.1.jar \
+ADD --chmod=644 --checksum=sha256:96d3dd843dc2911de01cdabcd50064cb9e860353102a0a78c96fd833d396fc7d \
+    https://repo1.maven.org/maven2/com/google/code/gson/gson/2.15.0/gson-2.15.0.jar \
     /opt/java/gson.jar
 ENV SKLEARN_PORTER_GSON_PATH=/opt/java/gson.jar
 

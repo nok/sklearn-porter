@@ -8,8 +8,18 @@ class Go(LanguageABC):
     DEPENDENCIES = ['go']
     SUFFIX = 'go'
 
-    # go build -o tmp/estimator tmp/estimator.go
-    CMD_COMPILE = ['go', 'build', '-o', '{dest_path}', '{src_path}']
+    # go build -ldflags='-s -w' -o tmp/estimator tmp/estimator.go
+    # -s -w omit the symbol table and the debug information, which only
+    # debuggers need, so the binaries are about a third smaller (the machine
+    # code and the predictions are the same).
+    CMD_COMPILE = [
+        'go',
+        'build',
+        '-ldflags=-s -w',
+        '-o',
+        '{dest_path}',
+        '{src_path}',
+    ]
 
     # tmp/estimator <args>
     CMD_EXECUTE = ['{dest_path}']

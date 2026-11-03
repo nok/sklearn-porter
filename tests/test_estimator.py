@@ -333,6 +333,8 @@ def test_system_calls_on_windows(
         binary = str(tmp_path / 'DecisionTreeClassifier.exe')
         assert compile_cmd[compile_cmd.index('-o') + 1] == binary
         assert execute_cmd[0] == binary
+        if language == 'go':  # without symbols and debug information
+            assert '-ldflags=-s -w' in compile_cmd
     elif language == 'cs':
         program = str(tmp_path / 'DecisionTreeClassifier.dll')
         assert compile_cmd[:2] == ['dotnet', 'csc.dll']

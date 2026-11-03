@@ -43,25 +43,27 @@ make test-regression
 
 Run them after changing templates, the extraction of the model data or the execution of the ported estimators. New tests which call `make` or `test` must be marked with `@pytest.mark.regression`.
 
+The regression tests keep the generated source code and the compiled programs until the end of the run, so a full run needs about 16 GB of free disk space in Docker (e.g. in the virtual machine of Colima or Docker Desktop).
+
 The tests use the Python version from [`.python-version`](.python-version). Set `PYTHON_VERSION` to use another one:
 
 ```bash
 make test-regression PYTHON_VERSION=3.14
 ```
 
-The Docker image (Debian 12 "bookworm") contains these compilers and interpreters:
+The Docker image (Debian 13 "trixie") contains these compilers and interpreters:
 
 | Language   | Compiler / Interpreter |
 |------------|------------------------|
-| C          | GCC 12                 |
+| C          | GCC 14                 |
 | C#         | .NET SDK 10            |
-| Go         | Go 1.19                |
-| Java       | OpenJDK 17             |
-| JavaScript | Node.js 18             |
-| PHP        | PHP 8.2                |
-| Ruby       | Ruby 3.1               |
+| Go         | Go 1.27                |
+| Java       | OpenJDK 21, Gson 2.15  |
+| JavaScript | Node.js 24             |
+| PHP        | PHP 8.4                |
+| Ruby       | Ruby 3.3               |
 
-In general, the generated source code works with older compilers and interpreters too. For instance, you can use Java 8 to compile and run the models. The .NET SDK isn't available as Debian package for all architectures, so the [`Dockerfile`](Dockerfile) copies it from the official image `mcr.microsoft.com/dotnet/sdk`.
+In general, the generated source code works with older compilers and interpreters too. For instance, you can use Java 8 to compile and run the models. The .NET SDK isn't available as Debian package for all architectures and the Debian packages of Go and Node.js reached their end of life, so the [`Dockerfile`](Dockerfile) copies them from the official images (`mcr.microsoft.com/dotnet/sdk`, `golang` and `node`). Update the versions (e.g. `GO_VERSION` and `NODE_VERSION` in the `Dockerfile`) before they reach their end of life.
 
 
 ## Adding or changing an estimator
