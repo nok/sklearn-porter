@@ -27,19 +27,57 @@ jobs:
       - run: uvx ty check
 
   test:
-    name: Test (Python ${{ matrix.python-version }})
+    name: Test (Python ${{ matrix.python-version }}${{ matrix.resolution == 'lowest-direct' && ', lowest versions' || '' }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ['3.11', '3.12', '3.13', '3.14']
+        resolution: [highest]
+        include:
+          # The lowest supported versions of the dependencies (e.g.
+          # scikit-learn 1.8.0), because the ported estimators read private
+          # attributes of the fitted estimators:
+          - python-version: '3.11'
+            resolution: lowest-direct
+    env:
+      UV_RESOLUTION: ${{ matrix.resolution }}
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
+      - if: matrix.resolution != 'highest'
+        run: uv lock
       # The long running regression tests are skipped by default
       # (see `addopts` in pyproject.toml), run them locally with
       # `make test-regression` in Docker.
       - run: uv run --locked pytest --numprocesses=auto
+
+  package:
+    name: Package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+      - run: uv build --no-sources
+      # The README is the description on PyPI:
+      - run: uvx twine check --strict dist/*
+      - name: Check the installed package
+        run: |
+          uv venv --python 3.11 "$RUNNER_TEMP/venv"
+          uv pip install --python "$RUNNER_TEMP/venv" dist/*.whl
+          # Outside of the repository, which contains the sources:
+          cd "$RUNNER_TEMP"
+          venv/bin/porter show > /dev/null
+          venv/bin/python - <<'EOF'
+          from sklearn.datasets import load_iris
+          from sklearn.tree import DecisionTreeClassifier
+          from sklearn_porter import port
+
+          x, y = load_iris(return_X_y=True)
+          clf = DecisionTreeClassifier(random_state=0).fit(x, y)
+          for language in ('c', 'cs', 'go', 'java', 'js', 'php', 'ruby'):
+              assert 'DecisionTreeClassifier' in port(clf, language=language)
+          EOF

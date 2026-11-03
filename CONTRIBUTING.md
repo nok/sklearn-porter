@@ -29,7 +29,7 @@ The code is formatted and linted with [ruff](https://docs.astral.sh/ruff/) and t
 
 ## Testing
 
-The fast tests check the Python code without running the ported estimators. GitHub Actions runs them on every push and pull request with Python 3.11 to 3.14 ([workflow](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml)):
+The fast tests check the Python code without running the ported estimators. GitHub Actions runs them on every push and pull request with Python 3.11 to 3.14 and with the lowest supported versions of the dependencies (e.g. scikit-learn 1.8.0), builds the package and checks it ([workflow](https://github.com/nok/sklearn-porter/actions/workflows/ci.yml)). Every week they also run with the latest versions of all dependencies, including pre-releases ([workflow](https://github.com/nok/sklearn-porter/actions/workflows/compatibility.yml)):
 
 ```bash
 uv run pytest

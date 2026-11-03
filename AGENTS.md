@@ -204,6 +204,12 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
   verifies its checksum (`Java.GSON_SHA256`). The Docker image contains the
   jar and sets the variable, otherwise the fixture `gson_path`
   (`tests/conftest.py`) downloads it once to `.pytest_cache`.
+- GitHub Actions runs the fast tests with the locked versions (Python 3.11
+  to 3.14) and the lowest direct versions (`UV_RESOLUTION=lowest-direct`,
+  e.g. scikit-learn 1.8.0 and NumPy 1.24) and checks the built package
+  (`ci.yml`); `compatibility.yml` runs them weekly with the latest versions
+  including pre-releases. Code which needs a newer version of a dependency
+  must raise its lower bound in `pyproject.toml`.
 - The tests are parametrized with the keys of all languages from
   `tests.commons.LANGUAGES`.
 - Run the regression tests in Docker after changing templates, the model data

@@ -6,10 +6,26 @@ readme = "README.md"
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
 authors = [{ name = "Darius Morawiec", email = "nok@users.noreply.github.com" }]
-keywords = ["scikit-learn", "sklearn", "transpiler", "machine-learning"]
+keywords = [
+    "scikit-learn",
+    "sklearn",
+    "machine-learning",
+    "transpiler",
+    "code-generation",
+    "embedded",
+    "c",
+    "csharp",
+    "go",
+    "java",
+    "javascript",
+    "php",
+    "ruby",
+]
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
+    "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.11",
@@ -17,19 +33,26 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
     "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Software Development",
+    "Topic :: Software Development :: Code Generators",
+    "Typing :: Typed",
 ]
 requires-python = ">=3.11"
 dependencies = [
     "jinja2>=3.1",
     "joblib>=1.4",
+    "numpy>=1.24.1",
     "scikit-learn>=1.8.0",
+    "scipy>=1.10.0",
     "tabulate>=0.9",
 ]
 
 [project.urls]
 Homepage = "https://github.com/nok/sklearn-porter"
+Documentation = "https://github.com/nok/sklearn-porter#readme"
 Repository = "https://github.com/nok/sklearn-porter"
+Issues = "https://github.com/nok/sklearn-porter/issues"
 Changelog = "https://github.com/nok/sklearn-porter/blob/main/CHANGELOG.md"
 
 [project.scripts]
