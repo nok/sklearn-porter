@@ -60,10 +60,10 @@ porter = "sklearn_porter.cli.__main__:main"
 
 [dependency-groups]
 dev = [
-    "pytest>=8",
+    "pytest>=9.2.0",
     "pytest-cov>=6",
     "pytest-xdist>=3",
-    "ruff>=0.14",
+    "ruff>=0.17.3",
 ]
 examples = [
     "jupytext>=1.17",
@@ -74,7 +74,7 @@ examples = [
 default-groups = ["dev"]
 
 [build-system]
-requires = ["uv_build>=0.12.24,<0.14"]
+requires = ["uv_build>=0.13.6,<0.14"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
