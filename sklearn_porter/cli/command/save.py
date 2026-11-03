@@ -6,6 +6,7 @@ from textwrap import dedent
 # sklearn-porter
 from sklearn_porter import Porter, options
 from sklearn_porter.cli.common import (
+    arg_class_name,
     arg_debug,
     arg_help,
     arg_ignore_preprocessing,
@@ -24,9 +25,9 @@ def config(sub_parser):
     footer = dedent(
         """
         Examples:
-          `porter save model.pkl --language js --template attached`
-          `porter save model.pkl --directory /tmp --skip-warnings`
-          `porter save model.pkl -l js -t exported --directory /tmp --skip-warnings`
+          `porter save model.joblib --language js --template attached`
+          `porter save model.joblib --directory /tmp --skip-warnings`
+          `porter save model.joblib -l js -t exported --directory /tmp --skip-warnings`
     """
     )
 
@@ -68,6 +69,7 @@ def config(sub_parser):
     )
 
     for fn in (
+        arg_class_name,
         arg_ignore_preprocessing,
         arg_skip_warnings,
         arg_debug,
@@ -85,7 +87,9 @@ def main(args: dict, silent: bool = False):
     path = Path(args['model'])
     mdl = load_model(path, args.get('skip_warnings', False))
     est = Porter(
-        mdl, ignore_preprocessing=args.get('ignore_preprocessing', False)
+        mdl,
+        class_name=args.get('class_name'),
+        ignore_preprocessing=args.get('ignore_preprocessing', False),
     )
 
     if language := args.get('language'):

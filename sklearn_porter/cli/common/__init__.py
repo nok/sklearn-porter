@@ -4,7 +4,9 @@ from sklearn_porter import __version__ as porter_version
 
 
 def arg_help(p: ArgumentParser):
-    p.add_argument('-h', '--help', help='Show this help message and exit.')
+    p.add_argument(
+        '-h', '--help', action='help', help='Show this help message and exit.'
+    )
 
 
 def arg_version(p: ArgumentParser):
@@ -38,15 +40,17 @@ def arg_ignore_preprocessing(p: ArgumentParser):
     )
 
 
+def arg_class_name(p: ArgumentParser):
+    p.add_argument(
+        '--class-name',
+        type=str,
+        required=False,
+        help=(
+            'The class name of the ported estimator, which is\n'
+            'also the name of the generated files.'
+        ),
+    )
+
+
 def arg_debug(p: ArgumentParser):
     p.add_argument('--debug', action='store_true', help=SUPPRESS)
-
-
-def arg_json(p: ArgumentParser):
-    p.add_argument(
-        '--json',
-        required=False,
-        default=False,
-        action='store_true',
-        help='Return result in JSON format.',
-    )
