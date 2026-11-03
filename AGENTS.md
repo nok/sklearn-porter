@@ -23,6 +23,12 @@ original estimator and transform the features like the original transformer.
   `can`) and the functions `port`, `save`, `make`, `test`, `can` and
   `show`. The CLI `porter` (`show`, `port`, `save`) lives in
   `sklearn_porter/cli/`.
+- The methods `port`, `save`, `make` (`predict`, `transform`) and `test`
+  accept the properties `language`, `template`, `class_name` and
+  `converter` for a single call (`Base._overrides()`, the properties are
+  restored afterwards); unknown arguments raise a `TypeError`. `make`
+  returns a single result only for a single sample of shape (n_features).
+  All errors of the package derive from `exceptions.PorterError`.
 - Logging: each module logs with `getLogger(__name__)` of the standard
   `logging` module (only debug messages, lazily formatted with `%s`);
   the package adds only a `NullHandler`, so the application decides about

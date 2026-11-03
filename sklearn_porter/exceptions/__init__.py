@@ -1,7 +1,14 @@
+# scikit-learn
+from sklearn.exceptions import NotFittedError
+
 from sklearn_porter import enums as enum
 
 
-class NotFittedEstimatorError(Exception):
+class PorterError(Exception):
+    """The base class of all errors of sklearn-porter."""
+
+
+class NotFittedEstimatorError(PorterError, NotFittedError):
     def __init__(self, message: str):
         self.message = (
             f'The passed estimator of kind `{message}` is not fitted.'
@@ -9,7 +16,7 @@ class NotFittedEstimatorError(Exception):
         super().__init__(self.message)
 
 
-class NotSupportedYetError(Exception):
+class NotSupportedYetError(PorterError):
     def __init__(self, message: str):
         hint = (
             'You can check the documentation '
@@ -20,16 +27,20 @@ class NotSupportedYetError(Exception):
         super().__init__(self.message)
 
 
-class CompilationFailed(RuntimeError):
+class CompilationFailed(PorterError, RuntimeError):
     def __init__(self, message: str):
         self.message = f'Compilation failed:\n\n{message}'
         super().__init__(self.message)
 
 
-class ExecutionFailed(RuntimeError):
+class ExecutionFailed(PorterError, RuntimeError):
     def __init__(self, message: str):
         self.message = f'Execution failed:\n\n{message}'
         super().__init__(self.message)
+
+
+class MissingDependencyError(PorterError, RuntimeError):
+    """A compiler or an interpreter (e.g. the .NET SDK) is missing."""
 
 
 class CodeTooLarge(CompilationFailed):
@@ -54,7 +65,7 @@ class TooManyConstants(CompilationFailed):
         super().__init__(f'{message}\n\n{hint}')
 
 
-class InvalidMethodError(Exception):
+class InvalidMethodError(PorterError, ValueError):
     def __init__(self, message: str):
         opts = ', '.join([f'`{m.value}`' for m in list(enum.Method)])
         self.message = (
@@ -64,7 +75,7 @@ class InvalidMethodError(Exception):
         super().__init__(self.message)
 
 
-class InvalidLanguageError(Exception):
+class InvalidLanguageError(PorterError, ValueError):
     def __init__(self, message: str):
         opts = ', '.join(
             [f'`{lang.value.KEY}`' for lang in list(enum.Language)]
@@ -76,7 +87,7 @@ class InvalidLanguageError(Exception):
         super().__init__(self.message)
 
 
-class InvalidTemplateError(Exception):
+class InvalidTemplateError(PorterError, ValueError):
     def __init__(self, message: str):
         opts = ', '.join([f'`{t.value}`' for t in list(enum.Template)])
         self.message = (

@@ -98,6 +98,7 @@ def run_driver(
     if template == 'exported':
         src_path, data_path = map(Path, out)
     else:
+        assert isinstance(out, str)
         src_path, data_path = Path(out), tmp_dir / 'model_data.json'
         data_path.write_text(json.dumps(model_data))
     x_path = tmp_dir / 'x.json'

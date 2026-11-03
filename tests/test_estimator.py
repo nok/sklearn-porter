@@ -36,7 +36,7 @@ from sklearn.ensemble import (
     RandomForestClassifier,
     RandomForestRegressor,
 )
-from sklearn.exceptions import ConvergenceWarning
+from sklearn.exceptions import ConvergenceWarning, NotFittedError
 from sklearn.linear_model import (
     ARDRegression,
     BayesianRidge,
@@ -83,7 +83,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils import get_tags
 
 # sklearn-porter
-from sklearn_porter import Estimator, can, port, show
+from sklearn_porter import Estimator, Porter, can, port, show
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.cli import utils as cli_utils
@@ -92,6 +92,7 @@ from sklearn_porter.cli.__main__ import parse_args
 from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.cli.command.show import main as show_main
+from sklearn_porter.Estimator import _is_single, _predictions
 from sklearn_porter.estimator.AdaBoostClassifier import (
     AdaBoostClassifier as AdaBoostClassifierPorter,
 )
@@ -268,7 +269,7 @@ def test_warning_on_windows(
     est = Estimator(fitted_tree, language='c')
     with warnings.catch_warnings(record=True) as records:
         warnings.simplefilter('always')
-        with pytest.raises(RuntimeError, match='Required dependency'):
+        with pytest.raises(exception.MissingDependencyError, match='gcc'):
             getattr(est, method)(load_iris().data[:3])
     messages = [str(r.message) for r in records if r.category is UserWarning]
     is_windows = platform == 'win32'
@@ -610,6 +611,7 @@ def test_save_to_new_directory(fitted_tree, tmp_path: Path):
     """A missing directory is created (instead of using its parent)."""
     directory = tmp_path / 'a' / 'b'
     path = Estimator(fitted_tree, language='js').save(directory=directory)
+    assert isinstance(path, str)
     assert Path(path) == directory / 'DecisionTreeClassifier.js'
     assert Path(path).is_file()
 
@@ -726,6 +728,100 @@ def test_unfitted_estimator(candidate: Candidate):
     """Test unfitted estimators."""
     with pytest.raises(exception.NotFittedEstimatorError):
         Estimator(candidate.create())
+
+
+def test_unfitted_estimator_is_not_fitted_error():
+    """The error is also the error of scikit-learn (e.g. for `except`)."""
+    with pytest.raises(NotFittedError):
+        Estimator(DecisionTreeClassifier())
+
+
+def test_exceptions():
+    """All errors of sklearn-porter have a common base class."""
+    errors = [
+        getattr(exception, name)
+        for name in dir(exception)
+        if isinstance(getattr(exception, name), type)
+        and issubclass(getattr(exception, name), Exception)
+        and getattr(exception, name).__module__ == exception.__name__
+    ]
+    assert len(errors) == 11
+    assert all(issubclass(error, exception.PorterError) for error in errors)
+    assert issubclass(exception.InvalidLanguageError, ValueError)
+    assert issubclass(exception.MissingDependencyError, RuntimeError)
+
+
+@pytest.mark.parametrize(
+    'alias', ['export', 'dump', 'integrity_score', 'predict']
+)
+def test_removed_aliases(fitted_tree, alias: str):
+    """The aliases of version 0.7 are removed, `predict` remains."""
+    est = Estimator(fitted_tree)
+    assert hasattr(est, alias) is (alias == 'predict')
+    assert hasattr(Porter(fitted_tree), alias) is (alias == 'predict')
+    assert Estimator.predict is Estimator.make
+
+
+@pytest.mark.parametrize('method', ['port', 'save', 'make', 'test'])
+def test_unknown_arguments(fitted_tree, method: str):
+    """Unknown arguments (e.g. typos) raise an error."""
+    est = Estimator(fitted_tree)
+    args = [] if method in ('port', 'save') else [load_iris().data[:3]]
+    with pytest.raises(TypeError, match='`templat`'):
+        getattr(est, method)(*args, templat='exported')
+    # The arguments of version 0.7:
+    with pytest.raises(TypeError, match="template='exported'"):
+        getattr(est, method)(*args, export_data=True)
+
+
+def test_arguments_change_a_single_call(fitted_tree):
+    """The arguments of a call don't change the properties."""
+    est = Estimator(fitted_tree, language='java', template='attached')
+    out = est.port(language='js', template='exported', class_name='Model')
+    assert isinstance(out, tuple)
+    assert 'var Model = function' in out[0]
+    assert (est.language, est.template) == ('java', 'attached')
+    assert est.class_name == 'DecisionTreeClassifier'
+    assert 'class DecisionTreeClassifier {' in est.port()
+
+    # The properties are restored also after an error:
+    with pytest.raises(exception.InvalidTemplateError):
+        est.port(language='js', template='i_n_v_a_l_i_d')
+    assert (est.language, est.template) == ('java', 'attached')
+
+
+@pytest.mark.parametrize(
+    'class_name', ['my-model', 'my model', '1model', '_Model', 'Modèl']
+)
+def test_invalid_class_name(fitted_tree, class_name: str):
+    with pytest.raises(ValueError, match='class name'):
+        Estimator(fitted_tree, class_name=class_name)
+
+
+def test_class_name_in_ruby(fitted_tree):
+    """Ruby requires class names with an uppercase letter at the start."""
+    est = Estimator(fitted_tree, language='ruby', class_name='model')
+    with pytest.raises(ValueError, match='Ruby'):
+        est.port()
+    assert 'class Model' in str(est.port(class_name='Model'))
+    assert 'model = function' in str(est.port(language='js'))
+
+
+def test_predictions_of_a_single_sample(fitted_tree):
+    """Only a single sample of shape (n_features) returns a single
+    prediction (like the transformers)."""
+    ported_est = Estimator(fitted_tree)._estimator
+    y = [[1, [0.0, 1.0, 0.0]]]
+    y_pred, y_proba = _predictions(y, ported_est)
+    assert y_pred.shape == (1,) and y_proba.shape == (1, 3)
+    # The probabilities are floating point numbers (also `1` of JSON):
+    y_pred, y_proba = _predictions([[1, [0, 1, 0]]], ported_est)
+    assert y_proba.dtype == np.float64
+    y_pred, y_proba = _predictions(y, ported_est, is_single=True)
+    assert y_pred == 1 and y_proba.shape == (3,)
+    assert _is_single([1.0, 2.0, 3.0, 4.0])
+    assert not _is_single([[1.0, 2.0, 3.0, 4.0]])
+    assert not _is_single(csr_matrix([[1.0, 2.0, 3.0, 4.0]]))
 
 
 @pytest.mark.parametrize('obj', [None, object, 0, 'string'])
@@ -932,6 +1028,7 @@ def test_computed_gamma_of_svm(orig_est: type, gamma: str, language: str):
     assert est._estimator.model_data['gamma'] == expected
 
     output = est.port()
+    assert isinstance(output, str)
     assert est.converter(expected) in output
     # The header of C# marks the file as `<auto-generated />`:
     assert gamma not in output.replace('<auto-generated />', '')
@@ -1071,7 +1168,9 @@ def test_indentation_of_combined_templates(language: str, tmp_path: Path):
     orig_est = DecisionTreeClassifier(random_state=0).fit(X=x, y=y)
     est = Estimator(orig_est, language=language, template='combined')
     ported = est.port()
-    saved = Path(est.save(directory=tmp_path)).read_text()
+    path = est.save(directory=tmp_path)
+    assert isinstance(path, str)
+    saved = Path(path).read_text()
     assert ported == saved
     assert '\n\t\t\t' in ported
     assert not [line for line in ported.split('\n') if line.startswith('    ')]

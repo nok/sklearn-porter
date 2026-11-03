@@ -359,6 +359,7 @@ def test_indentation_of_combined_template(
     """Test that the code of the `combined` template is indented with tabs."""
     est = Transformer(fitted_scaler, language=language, template='combined')
     ported = est.port()
+    assert isinstance(ported, str)
     assert '\n\t' in ported
     assert not [line for line in ported.split('\n') if line.startswith('    ')]
 

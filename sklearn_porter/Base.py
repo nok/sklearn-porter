@@ -1,8 +1,10 @@
 import hashlib
+import re
 import urllib.request
 import warnings
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from importlib import import_module
 from json import loads
 from logging import getLogger
@@ -25,7 +27,6 @@ from sklearn import __version__ as sklearn_version
 from sklearn.base import BaseEstimator
 
 # sklearn-porter
-from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter import meta
@@ -33,13 +34,21 @@ from sklearn_porter.utils import densify, tabify
 
 L = getLogger(__name__)
 
+# The valid class names of the ported estimators in all languages (ASCII,
+# Ruby requires an uppercase letter at the beginning, see `_check_language`):
+CLASS_NAME = re.compile(r'[A-Za-z][A-Za-z0-9_]*')
+
+# The properties which `port()`, `save()`, `make()` and `test()` can change
+# for a single call (in this order, because the supported templates depend
+# on the language):
+PROPERTIES = ('language', 'template', 'class_name', 'converter')
+
 # The minimal number of samples which `make()` passes to one process of the
 # ported estimator, because starting a process takes much longer than a
 # prediction (or a transformation):
 MIN_BATCH_SIZE = 100
 
 
-@decorator.aliased
 class Base:
     """
     Base class of `Estimator`, `Transformer` and `Pipeline`, which validates
@@ -151,6 +160,15 @@ class Base:
 
     @class_name.setter
     def class_name(self, class_name: str):
+        # The class name is also the name of the generated files:
+        if not isinstance(class_name, str) or not CLASS_NAME.fullmatch(
+            class_name
+        ):
+            msg = (
+                f'The class name `{class_name}` is invalid. It has to start '
+                'with a letter followed by letters, digits or underscores.'
+            )
+            raise ValueError(msg)
         self._class_name = class_name
 
     @property
@@ -161,29 +179,58 @@ class Base:
     def converter(self, converter: Callable[[object], str]):
         self._converter = converter
 
-    def _check_kwargs(self, kwargs: dict) -> dict:
+    @contextmanager
+    def _overrides(self, kwargs: dict):
         """
-        Check and save optional kwargs arguments internally.
+        Change the properties (e.g. the language) for a single call.
 
         Parameters
         ----------
         kwargs : dict
-            The additional passed arguments.
+            The additional passed arguments (see `PROPERTIES`), the
+            properties are restored after the call.
 
-        Returns
-        -------
-        The original passed arguments.
+        Raises
+        ------
+        TypeError
+            If an argument is unknown.
         """
-        if 'language' in kwargs:
-            self.language = kwargs['language']
-        if 'template' in kwargs:
-            self.template = kwargs['template']
-        class_name = kwargs.get('class_name')
-        if isinstance(class_name, str) and len(class_name) > 0:
-            self.class_name = class_name
-        if 'converter' in kwargs:
-            self.converter = kwargs['converter']
-        return kwargs
+        unknown = sorted(set(kwargs) - set(PROPERTIES))
+        if unknown:
+            names = ', '.join(f'`{name}`' for name in unknown)
+            msg = f'Unknown arguments: {names}.'
+            if {'embed_data', 'export_data'} & set(unknown):
+                msg += (
+                    ' The template selects how the model data is stored, '
+                    "e.g. `template='exported'`."
+                )
+            raise TypeError(msg)
+        changes = [k for k in PROPERTIES if kwargs.get(k) is not None]
+        state = {k: getattr(self, k) for k in changes}
+        try:
+            for key in changes:
+                setattr(self, key, kwargs[key])
+            yield
+        finally:
+            for key in changes:
+                setattr(self, key, state[key])
+
+    def _check_language(self):
+        """
+        Check the requirements of the language (e.g. of the class name).
+
+        Raises
+        ------
+        ValueError
+            If the class name isn't valid in the language.
+        """
+        if self._language is enum.Language.RUBY:
+            if not self.class_name[0].isupper():
+                msg = (
+                    f'The class name `{self.class_name}` is invalid in Ruby, '
+                    'it has to start with an uppercase letter.'
+                )
+                raise ValueError(msg)
 
     def _extract(self, estimator: BaseEstimator) -> BaseEstimator | None:
         """
@@ -297,7 +344,6 @@ class Base:
             self.estimator, language=language, template=template, method=method
         )
 
-    @decorator.alias('export')
     def port(self, to_json: bool = False, **kwargs) -> str | tuple[str, str]:
         """
         Port or transpile a passed estimator to a target programming language.
@@ -311,19 +357,21 @@ class Base:
         -------
         The transpiled estimator in the target programming language.
         """
-        self._check_kwargs(kwargs)
-        out = self._estimator.port(
-            language=self._language,
-            template=self._template,
-            class_name=self.class_name,
-            converter=self.converter,
-            to_json=to_json,
-        )
-        if self._template == enum.Template.COMBINED and isinstance(out, str):
-            out = tabify(out)
+        with self._overrides(kwargs):
+            self._check_language()
+            out = self._estimator.port(
+                language=self._language,
+                template=self._template,
+                class_name=self.class_name,
+                converter=self.converter,
+                to_json=to_json,
+            )
+            if self._template == enum.Template.COMBINED and isinstance(
+                out, str
+            ):
+                out = tabify(out)
         return out
 
-    @decorator.alias('dump')
     def save(
         self,
         directory: str | Path | None = None,
@@ -344,15 +392,16 @@ class Base:
         -------
         The path(s) to the generated file(s).
         """
-        self._check_kwargs(kwargs)
-        return self._estimator.save(
-            language=self._language,
-            template=self._template,
-            class_name=self.class_name,
-            converter=self.converter,
-            directory=directory,
-            to_json=to_json,
-        )
+        with self._overrides(kwargs):
+            self._check_language()
+            return self._estimator.save(
+                language=self._language,
+                template=self._template,
+                class_name=self.class_name,
+                converter=self.converter,
+                directory=directory,
+                to_json=to_json,
+            )
 
     def _run(
         self,
@@ -362,7 +411,6 @@ class Base:
         delete_created_files: bool,
         check_dependencies: bool,
         parse: Callable[[str], list],
-        **kwargs,
     ) -> list:
         """
         Compile and execute the ported estimator with the passed samples.
@@ -382,7 +430,6 @@ class Base:
         parse : Callable
             Parse the standard output of the ported estimator to one result
             per sample.
-        kwargs
 
         Returns
         -------
@@ -394,7 +441,6 @@ class Base:
             On Windows, because the compilation and execution of the ported
             estimators isn't tested on Windows.
         """
-        self._check_kwargs(kwargs)
         if _is_windows():
             warnings.warn(
                 'The compilation and execution of the ported estimators '
@@ -411,7 +457,7 @@ class Base:
         created_files = []  # for final deletion
         try:
             # Transpile model:
-            out = self.save(directory=directory, to_json=True, **kwargs)
+            out = self.save(directory=directory, to_json=True)
 
             if isinstance(out, tuple):  # indicator for Template.EXPORTED
                 src_path, data_path = out[0], out[1]
@@ -516,8 +562,8 @@ class Base:
     def _check_dependencies(language: enum.Language):
         for app in language.value.DEPENDENCIES:
             if not which(app):
-                msg = f'Required dependency `{app}` is missing.'
-                raise RuntimeError(msg)
+                msg = f'The required application `{app}` is missing.'
+                raise exception.MissingDependencyError(msg)
 
     @staticmethod
     def _compile(

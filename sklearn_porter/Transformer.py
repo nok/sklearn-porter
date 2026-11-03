@@ -3,7 +3,8 @@ from importlib import import_module
 from pathlib import Path
 
 import numpy as np
-from scipy.sparse import issparse
+from numpy.typing import ArrayLike
+from scipy.sparse import issparse, spmatrix
 
 # scikit-learn
 from sklearn.base import (
@@ -53,7 +54,6 @@ from sklearn.preprocessing import (
 )
 
 # sklearn-porter
-from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Base import Base, _get_qualname, _parse_values
@@ -83,7 +83,6 @@ def is_transformer(estimator: object) -> bool:
     )
 
 
-@decorator.aliased
 class Transformer(Base):
     """
     Main class which validates the passed transformer (e.g. a
@@ -273,7 +272,7 @@ class Transformer(Base):
 
     def make(
         self,
-        x: list | np.ndarray | str | bytes,
+        x: ArrayLike | spmatrix,
         n_jobs: bool | int = True,
         directory: str | Path | None = None,
         delete_created_files: bool = True,
@@ -313,22 +312,21 @@ class Transformer(Base):
             transformers isn't tested on Windows.
         """
         is_single = _is_single(self._estimator, x)
-        values = self._run(
-            x,
-            n_jobs=n_jobs,
-            directory=directory,
-            delete_created_files=delete_created_files,
-            check_dependencies=check_dependencies,
-            parse=_parse_values,
-            **kwargs,
-        )
+        with self._overrides(kwargs):
+            values = self._run(
+                x,
+                n_jobs=n_jobs,
+                directory=directory,
+                delete_created_files=delete_created_files,
+                check_dependencies=check_dependencies,
+                parse=_parse_values,
+            )
         x_tr = np.array(values, dtype=np.float64)
         return x_tr[0] if is_single else x_tr
 
     # Transform the samples like a transformer of scikit-learn:
     transform = make
 
-    @decorator.alias('integrity_score')
     def test(
         self,
         x,
@@ -367,20 +365,18 @@ class Transformer(Base):
             Return the relative (or with `normalize=False` the absolute)
             number of samples with equal transformed features.
         """
-        self._check_kwargs(kwargs)
         if _is_single(self._estimator, x):
             x = [x] if isinstance(x, (str, bytes)) else np.reshape(x, (1, -1))
         x_true = self._estimator.estimator.transform(x)
         if issparse(x_true):
             x_true = x_true.toarray()
-        x_tr = self.make(
-            x,
-            language=self._language,
-            template=self._template,
-            n_jobs=n_jobs,
-            directory=directory,
-            delete_created_files=delete_created_files,
-        )
+        with self._overrides(kwargs):
+            x_tr = self.make(
+                x,
+                n_jobs=n_jobs,
+                directory=directory,
+                delete_created_files=delete_created_files,
+            )
         is_close = np.isclose(x_true, x_tr, equal_nan=True).all(axis=1)
         return float(is_close.mean() if normalize else is_close.sum())
 

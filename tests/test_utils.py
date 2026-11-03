@@ -375,7 +375,7 @@ def test_csharp_sdk_without_compiler(dotnet_root: Path):
     """Test an SDK without the compiler (e.g. another directory layout)."""
     for path in (dotnet_root / 'sdk').glob('*/Roslyn/bincore/csc.dll'):
         path.unlink()
-    with pytest.raises(RuntimeError, match='No .NET SDK'):
+    with pytest.raises(exception.MissingDependencyError, match='No .NET SDK'):
         CSharp.get_sdk()
 
 
@@ -395,7 +395,9 @@ def test_csharp_sdk_without_dotnet(
     monkeypatch.setattr(cs_module, 'check_output', check_output)
     CSharp.get_sdk.cache_clear()
     try:
-        with pytest.raises(RuntimeError, match='not available'):
+        with pytest.raises(
+            exception.MissingDependencyError, match='not available'
+        ):
             CSharp.get_sdk()
     finally:
         CSharp.get_sdk.cache_clear()

@@ -1,22 +1,23 @@
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 # Additional installed modules:
 import numpy as np
+from numpy.typing import ArrayLike
+from scipy.sparse import spmatrix
 
 # scikit-learn
 from sklearn.base import BaseEstimator
 from tabulate import tabulate
 
 # sklearn-porter
-from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter.Estimator import Estimator
 from sklearn_porter.Pipeline import Pipeline
 from sklearn_porter.Transformer import Transformer, is_transformer
 
 
-@decorator.aliased
 class Porter:
     """
     Central class which ports a fitted estimator (a classifier, a regressor
@@ -148,7 +149,6 @@ class Porter:
             language=language, template=template, method=method
         )
 
-    @decorator.alias('export')
     def port(self, to_json: bool = False, **kwargs) -> str | tuple[str, str]:
         """
         Port or transpile the passed estimator to a target programming
@@ -157,7 +157,6 @@ class Porter:
         """
         return self._ported.port(to_json=to_json, **kwargs)
 
-    @decorator.alias('dump')
     def save(
         self,
         directory: str | Path | None = None,
@@ -172,13 +171,9 @@ class Porter:
 
     def make(
         self,
-        x: list | np.ndarray,
+        x: ArrayLike | spmatrix,
         **kwargs,
-    ) -> (
-        tuple[np.int64, np.ndarray | None]
-        | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
-        | np.ndarray
-    ):
+    ) -> tuple[Any, Any] | np.ndarray:
         """
         Make predictions (`Estimator.make` and `Pipeline.make`) or transform
         the samples (`Transformer.make`) with the transpiled estimator
@@ -188,12 +183,9 @@ class Porter:
 
     def predict(
         self,
-        x: list | np.ndarray,
+        x: ArrayLike | spmatrix,
         **kwargs,
-    ) -> (
-        tuple[np.int64, np.ndarray | None]
-        | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
-    ):
+    ) -> tuple[Any, Any]:
         """
         Make predictions with the transpiled estimator or pipeline locally
         (see `Estimator.make` and `Pipeline.make`).
@@ -211,9 +203,7 @@ class Porter:
             raise AttributeError(msg)
         return self._ported.make(x, **kwargs)
 
-    def transform(
-        self, x: list | np.ndarray | str | bytes, **kwargs
-    ) -> np.ndarray:
+    def transform(self, x: ArrayLike | spmatrix, **kwargs) -> np.ndarray:
         """
         Transform the samples with the transpiled transformer locally (see
         `Transformer.make`).
@@ -231,7 +221,6 @@ class Porter:
             raise AttributeError(msg)
         return self._ported.make(x, **kwargs)
 
-    @decorator.alias('integrity_score')
     def test(self, x, **kwargs) -> float:
         """
         Compute the integrity score of the ported estimator (see
@@ -370,7 +359,7 @@ def save(
 
 def make(
     estimator: BaseEstimator,
-    x: list | np.ndarray,
+    x: ArrayLike | spmatrix,
     language: str | enum.Language | None = None,
     template: str | enum.Template | None = None,
     class_name: str | None = None,
@@ -380,11 +369,7 @@ def make(
     delete_created_files: bool = True,
     check_dependencies: bool = True,
     ignore_preprocessing: bool = False,
-) -> (
-    tuple[np.int64, np.ndarray | None]
-    | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
-    | np.ndarray
-):
+) -> tuple[Any, Any] | np.ndarray:
     return Porter(
         estimator,
         language=language,

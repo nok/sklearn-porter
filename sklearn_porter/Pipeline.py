@@ -1,7 +1,9 @@
 from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
-import numpy as np
+from numpy.typing import ArrayLike
+from scipy.sparse import spmatrix
 
 # scikit-learn
 from sklearn.base import BaseEstimator
@@ -9,11 +11,16 @@ from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import Pipeline as SklearnPipeline
 
 # sklearn-porter
-from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Base import Base, _get_qualname, _parse_predictions
-from sklearn_porter.Estimator import Estimator, _integrity_score, _predictions
+from sklearn_porter.Estimator import (
+    Estimator,
+    _as_samples,
+    _integrity_score,
+    _is_single,
+    _predictions,
+)
 from sklearn_porter.pipeline.Pipeline import Pipeline as PortedPipeline
 from sklearn_porter.Transformer import Transformer
 
@@ -66,7 +73,6 @@ def _split_steps(
     return preprocessing, final_est
 
 
-@decorator.aliased
 class Pipeline(Base):
     """
     Main class which validates the passed pipeline of transformers (e.g. a
@@ -294,19 +300,15 @@ class Pipeline(Base):
             for _, step in preprocessing
         ) and Estimator.supports(final_est, language, template, method)
 
-    @decorator.alias('predict')
     def make(
         self,
-        x: list | np.ndarray,
+        x: ArrayLike | spmatrix,
         n_jobs: bool | int = True,
         directory: str | Path | None = None,
         delete_created_files: bool = True,
         check_dependencies: bool = True,
         **kwargs,
-    ) -> (
-        tuple[np.int64, np.ndarray | None]
-        | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
-    ):
+    ) -> tuple[Any, Any]:
         """
         Make predictions with the transpiled pipeline locally.
 
@@ -328,20 +330,23 @@ class Pipeline(Base):
 
         Returns
         -------
-        Return the predictions and probabilities of the final estimator.
+        Return the predictions and probabilities of the final estimator, of a single sample
+        of shape (n_features) without the dimension of the samples.
         """
-        y = self._run(
-            x,
-            n_jobs=n_jobs,
-            directory=directory,
-            delete_created_files=delete_created_files,
-            check_dependencies=check_dependencies,
-            parse=_parse_predictions,
-            **kwargs,
-        )
-        return _predictions(y, self._final._estimator)
+        with self._overrides(kwargs):
+            y = self._run(
+                x,
+                n_jobs=n_jobs,
+                directory=directory,
+                delete_created_files=delete_created_files,
+                check_dependencies=check_dependencies,
+                parse=_parse_predictions,
+            )
+        return _predictions(y, self._final._estimator, _is_single(x))
 
-    @decorator.alias('integrity_score')
+    # Make predictions like a pipeline of scikit-learn:
+    predict = make
+
     def test(
         self,
         x,
@@ -379,14 +384,15 @@ class Pipeline(Base):
             Return the relative (or with `normalize=False` the absolute)
             number of equal predictions.
         """
-        self._check_kwargs(kwargs)
+        x = _as_samples(x)
         y_true = self._pipeline.predict(x)
-        y_pred = self.make(
-            x,
-            n_jobs=n_jobs,
-            directory=directory,
-            delete_created_files=delete_created_files,
-        )[0]  # only predicts
+        with self._overrides(kwargs):
+            y_pred = self.make(
+                x,
+                n_jobs=n_jobs,
+                directory=directory,
+                delete_created_files=delete_created_files,
+            )[0]  # only predicts
         return _integrity_score(
             self._final.estimator, y_true, y_pred, normalize
         )
