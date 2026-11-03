@@ -53,9 +53,6 @@ from sklearn_porter import make, port, save, test
 X, y = load_iris(return_X_y=True)
 clf = DecisionTreeClassifier(max_depth=2, random_state=0).fit(X, y)
 
-# Port it to JavaScript and get the source code:
-code = port(clf, language='js', template='combined')
-
 # Save it to JavaScript files (the code and the model data):
 src_path, json_path = save(clf, language='js', template='exported', directory='/tmp')
 
@@ -68,37 +65,15 @@ print(test(clf, X, language='js'))  # 1.0
 ```
 <!-- fmt:on -->
 
-<details>
-<summary>The generated JavaScript code (excerpt)</summary>
-
-```js
-this._compute = function(features, post) {
-	var classes = new Array(3).fill(0);
-	if (features[3] <= 0.8000000417232512) {
-		classes[0] = 1.0;
-	} else {
-		if (features[3] <= 1.7500000596046448 || isNaN(features[3])) {
-			classes[1] = 0.9074074074074074;
-			classes[2] = 0.09259259259259259;
-		} else {
-			classes[1] = 0.021739130434782608;
-			classes[2] = 0.9782608695652174;
-		}
-	}
-	return post(classes);
-};
-```
-
-Save the code to `DecisionTreeClassifier.js` and run it with the features of a sample:
+Run the saved classifier with the model data and the features of a sample:
 
 ```console
-$ node DecisionTreeClassifier.js 6.3 3.3 6.0 2.5
+$ node /tmp/DecisionTreeClassifier.js /tmp/DecisionTreeClassifier.json 6.3 3.3 6.0 2.5
 Predicted class: 2
 Probability of class #0 : 0
 Probability of class #1 : 0.021739130434782608
 Probability of class #2 : 0.9782608695652174
 ```
-</details>
 
 `make()` and `test()` need the compiler or interpreter of the language (see [languages](#languages)).
 
