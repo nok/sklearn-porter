@@ -2,8 +2,6 @@ import re
 from collections.abc import Callable
 from copy import copy
 
-from loguru import logger as L
-
 # scikit-learn
 from sklearn.feature_extraction.text import (
     CountVectorizer as CountVectorizerClass,
@@ -51,7 +49,6 @@ class CountVectorizer(TransformerBase, EstimatorApiABC):
 
     def __init__(self, transformer: CountVectorizerClass):
         super().__init__(transformer)
-        L.info(f'Create specific transformer `{self.estimator_name}`.')
         est = transformer  # alias
         check_params(est, self.estimator_name)
 

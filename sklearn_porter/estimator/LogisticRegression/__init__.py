@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
+from logging import getLogger
 
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.linear_model import LogisticRegression as LogisticRegressionClass
@@ -18,6 +18,8 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_labels, is_multilabel
+
+L = getLogger(__name__)
 
 
 class LogisticRegression(EstimatorBase, EstimatorApiABC):
@@ -76,7 +78,6 @@ class LogisticRegression(EstimatorBase, EstimatorApiABC):
         | PerceptronClass,
     ):
         super().__init__(estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
 
         # Is the estimator fitted?
@@ -108,15 +109,13 @@ class LogisticRegression(EstimatorBase, EstimatorApiABC):
             labels=labels,
             label_kind=label_kind,
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
         self.model_data = dict(
             coeffs=coeffs.tolist(),
             inters=inters.tolist(),
         )
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
     def port(
         self,

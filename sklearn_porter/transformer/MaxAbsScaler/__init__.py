@@ -1,5 +1,3 @@
-from loguru import logger as L
-
 # scikit-learn
 from sklearn.preprocessing import MaxAbsScaler as MaxAbsScalerClass
 
@@ -29,7 +27,6 @@ class MaxAbsScaler(TransformerBase, EstimatorApiABC):
 
     def __init__(self, transformer: MaxAbsScalerClass):
         super().__init__(transformer)
-        L.info(f'Create specific transformer `{self.estimator_name}`.')
         est = transformer  # alias
         n_features = self._get_n_features(est)
         self._set_model_data(n_features, scale=est.scale_)

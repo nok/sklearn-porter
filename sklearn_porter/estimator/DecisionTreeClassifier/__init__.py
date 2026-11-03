@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from copy import deepcopy
+from logging import getLogger
 from textwrap import indent
 
 from jinja2 import Environment
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.tree import DecisionTreeClassifier as DecisionTreeClassifierClass
@@ -25,6 +25,8 @@ from sklearn_porter.utils import (
     missing_name,
     with_infinity,
 )
+
+L = getLogger(__name__)
 
 
 class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
@@ -79,7 +81,6 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
 
     def __init__(self, estimator: DecisionTreeClassifierClass):
         super().__init__(estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
 
         # Is the estimator fitted?
@@ -105,8 +106,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
             labels=labels,
             label_kind=label_kind,
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
         # Extract and save model data, the splits and the class fractions
         # of the leaves (see `get_tree_data()`). Samples with missing values
@@ -115,8 +115,7 @@ class DecisionTreeClassifier(EstimatorBase, EstimatorApiABC):
         self.model_data = get_tree_data(
             est.tree_, get_class_fractions(est.tree_), 'classes'
         )
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
     def port(
         self,

@@ -1,3 +1,4 @@
+import logging
 import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
 from textwrap import dedent
@@ -55,6 +56,16 @@ def main():
     if hasattr(args, 'func'):
         func = args.func
         delattr(args, 'func')
+        # Print the debug messages to the standard error, which keeps the
+        # ported source code on the standard output clean:
+        if getattr(args, 'debug', False):
+            handler = logging.StreamHandler(sys.stderr)
+            handler.setFormatter(
+                logging.Formatter('%(levelname)s %(name)s: %(message)s')
+            )
+            logger = logging.getLogger('sklearn_porter')
+            logger.addHandler(handler)
+            logger.setLevel(logging.DEBUG)
         try:
             func(vars(args))
         except Exception as e:

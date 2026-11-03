@@ -2,8 +2,6 @@ from collections.abc import Callable
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
-from loguru import logger as L
-
 # scikit-learn
 from sklearn.pipeline import Pipeline as SklearnPipeline
 
@@ -54,7 +52,6 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
         final_est: 'Estimator',
     ):
         super().__init__(pipeline)
-        L.info('Create specific pipeline.')
         self.transformers = transformers
         self.final_est = final_est
         self.meta_info = final_est._estimator.meta_info

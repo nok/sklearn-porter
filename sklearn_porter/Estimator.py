@@ -1,11 +1,11 @@
 import warnings
 from collections.abc import Callable
+from logging import getLogger
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 # Additional installed modules:
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -77,6 +77,8 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Base import Base, _get_qualname, _parse_predictions
 from sklearn_porter.Transformer import Transformer
+
+L = getLogger(__name__)
 
 if TYPE_CHECKING:
     from sklearn_porter.estimator.EstimatorBase import EstimatorBase
@@ -175,15 +177,12 @@ class Estimator(Base):
         est = estimator  # shorter <3
         qualname = _get_qualname(est)
 
-        L.debug(f'Start validation of the passed estimator: `{qualname}`.')
-
         # Check BaseEstimator:
         if not isinstance(est, BaseEstimator):
             msg = (
                 f'The passed estimator `{qualname}` is not a '
                 f'valid base estimator of scikit-learn v{sklearn_version} .'
             )
-            L.error(msg)
             raise ValueError(msg)
 
         # Check BaseEnsemble:
@@ -194,9 +193,7 @@ class Estimator(Base):
                 raise exception.NotFittedEstimatorError(qualname)
 
         # Check GridSearchCV and RandomizedSearchCV:
-        L.debug('Check whether the estimator is embedded in an optimizer.')
         if isinstance(est, BaseSearchCV):
-            L.debug('└> Yes, the estimator is embedded in an optimizer.')
             if not isinstance(est, (GridSearchCV, RandomizedSearchCV)):
                 msg = (
                     f'The used optimizer `{qualname}` is not supported '
@@ -204,29 +201,22 @@ class Estimator(Base):
                     'extract the internal estimator manually '
                     'and pass it.'
                 )
-                L.error(msg)
                 raise ValueError(msg)
             if getattr(est, 'best_estimator_', None) is None:
                 msg = 'The embedded estimator is not fitted.'
-                L.error(msg)
                 raise ValueError(msg)
             est = est.best_estimator_
             msg = (
                 f'Extract the embedded estimator of type `{_get_qualname(est)}` '
                 f'from optimizer `{qualname}`.'
             )
-            L.info(msg)
-        else:
-            L.debug('└> No, the estimator is not embedded in an optimizer.')
+            L.debug(msg)
 
         # Check Pipeline:
-        L.debug('Check whether the estimator is embedded in a pipeline.')
         if isinstance(est, Pipeline):
-            L.debug('└> Yes, the estimator is embedded in a pipeline.')
             final_est = est._final_estimator
             if final_est is None or final_est == 'passthrough':
                 msg = 'There is no final estimator in the pipeline.'
-                L.error(msg)
                 raise ValueError(msg)
             # The preprocessing steps (e.g. a `StandardScaler`) can't be
             # ported, so the predictions of the final estimator alone would
@@ -259,7 +249,6 @@ class Estimator(Base):
                         Transformer.supports_step(s) for _, s in preprocessing
                     ):
                         msg += ' Or port the whole pipeline with `Porter`.'
-                    L.error(msg)
                     raise exception.NotSupportedYetError(msg)
                 them = 'them' if plural else 'it'
                 warnings.warn(
@@ -274,39 +263,22 @@ class Estimator(Base):
                 'Extract the embedded estimator of type '
                 f'`{_get_qualname(est)}` from the pipeline.'
             )
-            L.info(msg)
-        else:
-            L.debug('└> No, the estimator is not embedded in a pipeline.')
+            L.debug(msg)
 
         # Check ClassifierMixin:
-        L.debug(
-            'Check whether the estimator is inherited from `ClassifierMixin`.'
-        )
         is_classifier = isinstance(est, ClassifierMixin)
         if is_classifier:
-            L.debug(
-                '└> Yes, the estimator is inherited from `ClassifierMixin`.'
-            )
             return est
-        L.debug('└> No, the estimator is not inherited from `ClassifierMixin`.')
 
         # Check RegressorMixin:
-        L.debug(
-            'Check whether the estimator is inherited from `RegressorMixin`.'
-        )
         is_regressor = isinstance(est, RegressorMixin)
         if is_regressor:
-            L.debug('└> Yes, the estimator is inherited from `RegressorMixin`.')
             return est
-        L.debug('└> No, the estimator is not inherited from `RegressorMixin`.')
 
         # Check OutlierMixin:
-        L.debug('Check whether the estimator is inherited from `OutlierMixin`.')
         is_outlier_detector = isinstance(est, OutlierMixin)
         if is_outlier_detector:
-            L.debug('└> Yes, the estimator is inherited from `OutlierMixin`.')
             return est
-        L.debug('└> No, the estimator is not inherited from `OutlierMixin`.')
 
         if not (is_classifier or is_regressor or is_outlier_detector):
             msg = (
@@ -315,7 +287,6 @@ class Estimator(Base):
             )
             if isinstance(est, TransformerMixin):
                 msg += ' Port a transformer with `Transformer` or `Porter`.'
-            L.error(msg)
             raise ValueError(msg)
 
         return None

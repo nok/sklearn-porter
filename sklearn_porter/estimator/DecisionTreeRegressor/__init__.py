@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from copy import deepcopy
+from logging import getLogger
 from textwrap import indent
 
 from jinja2 import Environment
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.tree import DecisionTreeRegressor as DecisionTreeRegressorClass
@@ -23,6 +23,8 @@ from sklearn_porter.utils import (
     missing_name,
     with_infinity,
 )
+
+L = getLogger(__name__)
 
 
 class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
@@ -77,7 +79,6 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
 
     def __init__(self, estimator: DecisionTreeRegressorClass):
         EstimatorBase.__init__(self, estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
 
         # Is the estimator fitted?
@@ -93,8 +94,7 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
             n_features=est.n_features_in_,
             n_outputs=est.n_outputs_,
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
         # Extract and save model data:
         # The prediction of a leaf is stored in `tree_.value` of shape
@@ -108,8 +108,7 @@ class DecisionTreeRegressor(DecisionTreeClassifier, EstimatorBase):
         self.model_data = get_tree_data(
             est.tree_, est.tree_.value[:, :, 0], 'values'
         )
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
     def port(
         self,

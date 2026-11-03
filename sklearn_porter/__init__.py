@@ -1,9 +1,10 @@
+from logging import NullHandler, getLogger
+
 from sklearn_porter import meta
 from sklearn_porter.Estimator import Estimator
 from sklearn_porter.Pipeline import Pipeline
 from sklearn_porter.Porter import Porter, can, make, port, save, show, test
 from sklearn_porter.Transformer import Transformer
-from sklearn_porter.utils import options
 
 __all__ = [
     'Estimator',
@@ -12,12 +13,14 @@ __all__ = [
     'Transformer',
     'can',
     'make',
-    'options',
     'port',
     'save',
     'show',
     'test',
 ]
+
+# The application decides whether and where the debug messages appear:
+getLogger(__name__).addHandler(NullHandler())
 
 __author__ = meta.__author__
 __email__ = meta.__email__

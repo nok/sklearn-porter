@@ -2,7 +2,6 @@ from collections.abc import Callable
 from typing import Any
 
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.base import BaseEstimator
@@ -47,7 +46,6 @@ class SelectorMixin(TransformerBase, EstimatorApiABC):
 
     def __init__(self, transformer: BaseEstimator):
         super().__init__(transformer)
-        L.info(f'Create specific transformer `{self.estimator_name}`.')
         est: Any = transformer  # alias (a selector of scikit-learn)
         n_features = self._get_n_features(est)
 

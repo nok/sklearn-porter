@@ -1,10 +1,9 @@
 from argparse import RawTextHelpFormatter
-from logging import DEBUG
 from pathlib import Path
 from textwrap import dedent
 
 # sklearn-porter
-from sklearn_porter import Porter, options
+from sklearn_porter import Porter
 from sklearn_porter.cli.common import (
     arg_class_name,
     arg_debug,
@@ -81,9 +80,6 @@ def config(sub_parser):
 
 
 def main(args: dict, silent: bool = False):
-    if args.get('debug'):
-        options['logging.level'] = DEBUG
-
     path = Path(args['model'])
     mdl = load_model(path, args.get('skip_warnings', False))
     est = Porter(

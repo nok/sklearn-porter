@@ -1,5 +1,4 @@
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.preprocessing import RobustScaler as RobustScalerClass
@@ -30,7 +29,6 @@ class RobustScaler(TransformerBase, EstimatorApiABC):
 
     def __init__(self, transformer: RobustScalerClass):
         super().__init__(transformer)
-        L.info(f'Create specific transformer `{self.estimator_name}`.')
         est = transformer  # alias
         n_features = self._get_n_features(est)
 

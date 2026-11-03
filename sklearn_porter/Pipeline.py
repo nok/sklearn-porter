@@ -2,7 +2,6 @@ from collections.abc import Callable
 from pathlib import Path
 
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.base import BaseEstimator
@@ -212,8 +211,6 @@ class Pipeline(Base):
         A valid pipeline.
         """
         qualname = _get_qualname(estimator)
-        L.debug(f'Start validation of the passed pipeline: `{qualname}`.')
-
         pipeline = _get_pipeline(estimator)
         if pipeline is None:
             msg = (
@@ -221,20 +218,17 @@ class Pipeline(Base):
                 '(or a fitted `GridSearchCV` or `RandomizedSearchCV` with a '
                 'pipeline as best estimator).'
             )
-            L.error(msg)
             raise ValueError(msg)
 
         preprocessing, final_est = _split_steps(pipeline)
         if final_est is None:
             msg = 'There is no final estimator in the pipeline.'
-            L.error(msg)
             raise ValueError(msg)
         if not preprocessing:
             msg = (
                 'The pipeline has no preprocessing steps. Port its final '
                 'estimator with `Estimator` or `Porter`.'
             )
-            L.error(msg)
             raise ValueError(msg)
 
         unsupported = [
@@ -248,7 +242,6 @@ class Pipeline(Base):
                 f'The pipeline contains the preprocessing {kind} '
                 f"{', '.join(unsupported)}, which can't be ported yet."
             )
-            L.error(msg)
             raise exception.NotSupportedYetError(msg)
 
         return pipeline

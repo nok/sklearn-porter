@@ -1,9 +1,8 @@
 from argparse import RawTextHelpFormatter
-from logging import DEBUG
 from textwrap import dedent
 
 # sklearn-porter
-from sklearn_porter import options, show
+from sklearn_porter import show
 from sklearn_porter.cli.common import arg_debug, arg_help
 from sklearn_porter.language import LANGUAGES
 
@@ -43,9 +42,6 @@ def config(sub_parser):
 
 
 def main(args: dict, silent: bool = False) -> str:
-    if args.get('debug'):
-        options['logging.level'] = DEBUG
-
     out = show(args.get('language'))
 
     if not silent:

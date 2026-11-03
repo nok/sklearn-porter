@@ -4,19 +4,19 @@ from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from importlib import import_module
 from json import loads
+from logging import getLogger
 from os import cpu_count, environ, pathsep, remove
 from pathlib import Path
 from shlex import join
 from shutil import rmtree, which
 from subprocess import STDOUT, CalledProcessError, check_output, run
-from sys import platform, stdout, version_info
+from sys import platform, version_info
 from tempfile import mkdtemp
 from textwrap import dedent
 from time import sleep
 
 # Additional installed modules:
 import numpy as np
-from loguru import logger as L
 from scipy.sparse import issparse
 
 # scikit-learn
@@ -28,7 +28,9 @@ from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter import meta
-from sklearn_porter.utils import densify, options, tabify
+from sklearn_porter.utils import densify, tabify
+
+L = getLogger(__name__)
 
 # The minimal number of samples which `make()` passes to one process of the
 # ported estimator, because starting a process takes much longer than a
@@ -88,17 +90,9 @@ class Base:
         self.converter = converter or str
 
     def _init_environment(self):
-        """Set up the logger and read the versions of the environment."""
-        L.remove()  # remove basic logger
-        L.add(stdout, level=options['logging.level'])
-
+        """Read the versions of the environment (see `__repr__`)."""
         self.python_version = '.'.join(map(str, version_info[:3]))
         self.porter_version = str(meta.__version__)
-
-        L.debug(f'Platform: {platform}')
-        L.debug(f'Python: v{self.python_version}')
-        L.debug(f'Package: scikit-learn: v{sklearn_version}')
-        L.debug(f'Package: sklearn-porter: v{self.porter_version}')
 
     @property
     def _name(self) -> str:
@@ -473,7 +467,7 @@ class Base:
                     break
 
         cmd = [arg.format(**cmd_args) for arg in language.value.CMD_EXECUTE]
-        L.info(f'Execution command: `{join(cmd)}`')
+        L.debug('Execution command: `%s`', join(cmd))
 
         # Model data:
         if data_path:
@@ -603,7 +597,7 @@ class Base:
             cmd_args['class_path'] = pathsep.join(class_paths)
 
         cmd = [arg.format(**cmd_args) for arg in language.value.CMD_COMPILE]
-        L.info(f'Compilation command: `{join(cmd)}`')
+        L.debug('Compilation command: `%s`', join(cmd))
 
         try:
             check_output(cmd, text=True, stderr=STDOUT)
@@ -679,9 +673,6 @@ def _load_ported(estimator: BaseEstimator, clazzes: tuple, package: str):
     includes the original base estimator.
     """
     est = estimator  # shorter <3
-    qualname = _get_qualname(est)
-    L.debug(f'Start loading the passed {package}: `{qualname}`.')
-
     name = est.__class__.__qualname__
     by_name = {clazz.__name__: clazz for clazz in clazzes}
     if name in by_name and isinstance(est, by_name[name]):

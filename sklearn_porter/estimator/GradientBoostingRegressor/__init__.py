@@ -1,7 +1,7 @@
 from collections.abc import Callable
+from logging import getLogger
 
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.dummy import DummyClassifier, DummyRegressor
@@ -20,6 +20,8 @@ from sklearn_porter.estimator.RandomForestRegressor import (
     RandomForestRegressor,
 )
 from sklearn_porter.utils import dump_model_data, get_tree_data
+
+L = getLogger(__name__)
 
 
 def get_stages_data(
@@ -89,7 +91,6 @@ class GradientBoostingRegressor(RandomForestRegressor, EstimatorBase):
 
     def __init__(self, estimator: GradientBoostingRegressorClass):
         EstimatorBase.__init__(self, estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
 
         # Is the estimator fitted?
@@ -108,12 +109,10 @@ class GradientBoostingRegressor(RandomForestRegressor, EstimatorBase):
             # The predictions are the raw predictions (identity link):
             is_log_link=False,
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
         self.model_data = dict(estimators=trees, inits=inits)
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
     def port(
         self,

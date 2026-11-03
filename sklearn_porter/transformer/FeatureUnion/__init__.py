@@ -1,7 +1,5 @@
 from typing import Any
 
-from loguru import logger as L
-
 # scikit-learn
 from sklearn.base import BaseEstimator
 
@@ -21,7 +19,6 @@ class FeatureUnion(ColumnTransformer):
     SKLEARN_URL = 'sklearn.pipeline.FeatureUnion.html'
 
     def _get_parts(self, transformer: BaseEstimator, n_features: int) -> list:
-        L.debug(f'Get the parts of `{self.estimator_name}`.')
         est: Any = transformer  # alias (with attributes of scikit-learn)
         weights = est.transformer_weights or {}
         columns = list(range(n_features))

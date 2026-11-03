@@ -2,15 +2,12 @@ import re
 from collections.abc import Callable
 from copy import copy
 from json import dumps
-from logging import ERROR
 from math import isinf
 
 import numpy as np
 from scipy.sparse import issparse
 
 from sklearn_porter import exceptions as exception
-
-options = {'logging.level': ERROR}
 
 
 def densify(estimator):

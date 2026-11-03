@@ -1,7 +1,6 @@
 from collections.abc import Callable
 
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.preprocessing import PolynomialFeatures as PolynomialFeaturesClass
@@ -33,7 +32,6 @@ class PolynomialFeatures(TransformerBase, EstimatorApiABC):
 
     def __init__(self, transformer: PolynomialFeaturesClass):
         super().__init__(transformer)
-        L.info(f'Create specific transformer `{self.estimator_name}`.')
         est = transformer  # alias
         n_features = self._get_n_features(est)
 

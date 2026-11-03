@@ -1,7 +1,5 @@
 from collections.abc import Callable
 
-from loguru import logger as L
-
 # scikit-learn
 from sklearn.feature_extraction.text import (
     HashingVectorizer as HashingVectorizerClass,
@@ -49,7 +47,6 @@ class HashingVectorizer(TransformerBase, EstimatorApiABC):
 
     def __init__(self, transformer: HashingVectorizerClass):
         super().__init__(transformer)
-        L.info(f'Create specific transformer `{self.estimator_name}`.')
         est = transformer  # alias
         # The vectorizer is stateless, scikit-learn only validates the
         # parameters in `fit`:
