@@ -63,6 +63,10 @@
           "type": "toml",
           "path": "uv.lock",
           "jsonpath": "$.package[?(@.name.value=='sklearn-porter')].version"
+        },
+        {
+          "type": "generic",
+          "path": "CITATION.cff"
         }
       ]
     }

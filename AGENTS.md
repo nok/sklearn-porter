@@ -174,12 +174,20 @@ original estimator and transform the features like the original transformer.
   (pipelines), `test_porter.py` (the central class), fixtures in
   `tests/conftest.py`.
 - `README.md` is the user documentation (also shown on PyPI, so use absolute
-  links there), `CONTRIBUTING.md` the developer documentation.
+  links and only HTML which PyPI renders, e.g. no Mermaid; check it with
+  `twine check`), `CONTRIBUTING.md` the developer documentation. The README
+  marks estimators without the template `combined` (¹) or without
+  `predict_proba` (²) and counts the entries of each list.
 - `docs/`: further user documentation linked from the README
   (`estimator-notes.md`, `limitations.md`).
+- `CITATION.cff`: the citation of the repository, release-please updates its
+  version.
 - `examples/*.pct.py`: example notebooks in jupytext format (getting
-  started, transformers, pipelines), linked from the README; `make examples`
-  generates and executes the `.ipynb` files (e.g. `getting_started.ipynb`).
+  started, transformers, pipelines, CLI with `!porter` shell commands),
+  linked from the README; `make examples`
+  generates and executes the `.ipynb` files (e.g. `getting_started.ipynb`)
+  and normalizes them (`examples/normalize.py`: stable cell IDs, no
+  execution times), so they only change with their content.
 
 ## Commands
 

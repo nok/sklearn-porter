@@ -16,8 +16,12 @@
 # Load the data and train a transformer:
 
 # %%
+from sklearn import set_config
 from sklearn.datasets import load_iris
 from sklearn.preprocessing import StandardScaler
+
+# Show the estimators as text (instead of HTML):
+set_config(display='text')
 
 X, y = load_iris(return_X_y=True)
 scaler = StandardScaler()

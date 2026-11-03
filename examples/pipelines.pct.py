@@ -18,10 +18,14 @@
 # Load the data and train a pipeline:
 
 # %%
+from sklearn import set_config
 from sklearn.datasets import load_iris
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
+
+# Show the estimators as text (instead of HTML):
+set_config(display='text')
 
 X, y = load_iris(return_X_y=True)
 pipe = make_pipeline(StandardScaler(), SVC())

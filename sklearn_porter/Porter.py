@@ -232,10 +232,10 @@ class Porter:
         return repr(self._ported)
 
 
-def show(language: str | enum.Language | None = None):
+def show(language: str | enum.Language | None = None) -> str:
     """
-    Show the supported estimators (also the transformers), programming
-    languages and templates in a compact table.
+    Show the supported estimators and transformers, programming languages
+    and templates in two compact tables.
 
     Parameters
     ----------
@@ -244,46 +244,70 @@ def show(language: str | enum.Language | None = None):
 
     Returns
     -------
-    Show the table.
+    The tables of the estimators and transformers and a legend.
     """
     languages = enum.LANGUAGES
     if language:
         language = enum.Language.convert(language)
         languages = {language.value.KEY: language.value}
-    headers = ['Estimator'] + [lang.LABEL for lang in languages.values()]
-    clazzes = Estimator.estimators() + Transformer.transformers()
-    # The classes (not instances, e.g. a `ColumnTransformer` needs arguments):
-    clazzes = {f'{c.__module__}.{c.__qualname__}': c for c in clazzes}
-    clazzes = dict(sorted(clazzes.items()))
-    table = []
     templates = dict(attached='ᴀ', combined='ᴄ', exported='ᴇ')
-    for name, est in clazzes.items():
-        tr = [name]
-        for lang in languages.keys():
-            td = []
-            for tpl in templates.keys():
-                if can(
-                    estimator=est,
-                    language=lang,
-                    template=tpl,
-                    method='predict_proba',
-                ):
-                    out = f'✓{templates.get(tpl)}ᴾ'
-                elif can(estimator=est, language=lang, template=tpl):
-                    out = f'✓{templates.get(tpl)} '
-                else:
-                    out = '···'
-                td.append(out)
-            td = ' | '.join(td)
-            tr.append(td)
-        table.append(tr)
-    return tabulate(
-        table,
-        headers=headers,
-        tablefmt='presto',
-        disable_numparse=True,
-        colalign=['left'] + ['center'] * len(languages),
+    tables = []
+    for title, clazzes in (
+        ('Estimator', Estimator.estimators()),
+        ('Transformer', Transformer.transformers()),
+    ):
+        # The classes (not instances, e.g. a `ColumnTransformer` needs
+        # arguments) by their public names:
+        clazzes = dict(sorted((_get_public_name(c), c) for c in clazzes))
+        table = []
+        for name, est in clazzes.items():
+            tr = [name]
+            for lang in languages.keys():
+                td = []
+                for tpl in templates.keys():
+                    if can(
+                        estimator=est,
+                        language=lang,
+                        template=tpl,
+                        method='predict_proba',
+                    ):
+                        out = f'✓{templates.get(tpl)}ᴾ'
+                    elif can(estimator=est, language=lang, template=tpl):
+                        out = f'✓{templates.get(tpl)} '
+                    else:
+                        out = '···'
+                    td.append(out)
+                tr.append(' | '.join(td))
+            table.append(tr)
+        headers = [title] + [lang.LABEL for lang in languages.values()]
+        tables.append(
+            tabulate(
+                table,
+                headers=headers,
+                tablefmt='presto',
+                disable_numparse=True,
+                colalign=['left'] + ['center'] * len(languages),
+            )
+        )
+    legend = (
+        'Templates: ᴀ attached, ᴄ combined, ᴇ exported, '
+        'ᴾ also predict_proba, ··· not supported'
     )
+    return '\n\n'.join([*tables, legend])
+
+
+def _get_public_name(clazz: type) -> str:
+    """
+    Get the public name of a class of scikit-learn without its private
+    modules, e.g. `tree.DecisionTreeClassifier` instead of
+    `sklearn.tree._classes.DecisionTreeClassifier`.
+    """
+    public = []
+    for part in clazz.__module__.split('.')[1:]:
+        if part.startswith('_'):
+            break
+        public.append(part)
+    return '.'.join([*public, clazz.__qualname__])
 
 
 def can(

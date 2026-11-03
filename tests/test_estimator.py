@@ -163,6 +163,12 @@ def test_repr_output(fitted_tree):
 
 def test_show_output():
     table = show()
+    # The public names of the classes in two tables with a legend:
+    assert 'tree.DecisionTreeClassifier' in table
+    assert 'preprocessing.StandardScaler' in table
+    assert '._' not in table and 'sklearn.' not in table
+    assert table.index(' Estimator ') < table.index(' Transformer ')
+    assert table.endswith('ᴾ also predict_proba, ··· not supported')
     assert 'DecisionTreeClassifier' in table
     assert 'IsolationForest' in table
     assert 'C#' in table
