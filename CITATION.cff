@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: If you use sklearn-porter in your work, please cite it as below.
+type: software
+title: sklearn-porter
+abstract: >-
+  Transpile trained scikit-learn estimators and transformers to C, C#, Go,
+  Java, JavaScript, PHP and Ruby.
+authors:
+  - family-names: Morawiec
+    given-names: Darius
+version: 1.0.0 # x-release-please-version
+license: BSD-3-Clause
+repository-code: https://github.com/nok/sklearn-porter
+url: https://github.com/nok/sklearn-porter
+keywords:
+  - scikit-learn
+  - machine learning
+  - transpiler
+  - code generation

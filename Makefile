@@ -42,6 +42,7 @@ examples:
 		uv run --group examples jupytext --to notebook --execute \
 			--set-kernel python3 --output "$${f%.pct.py}.ipynb" "$$f"; \
 	done
+	uv run --group examples python examples/normalize.py examples/*.ipynb
 
 clean:
 	rm -rf build dist tmp .pytest_cache .ruff_cache .coverage htmlcov

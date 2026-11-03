@@ -14,8 +14,12 @@
 # Load the data and train a classifier:
 
 # %%
+from sklearn import set_config
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
+
+# Show the estimators as text (instead of HTML):
+set_config(display='text')
 
 X, y = load_iris(return_X_y=True)
 clf = DecisionTreeClassifier(max_depth=3, random_state=0)
