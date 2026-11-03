@@ -43,6 +43,8 @@ make test-regression
 
 Run them after changing templates, the extraction of the model data or the execution of the ported estimators. New tests which call `make` or `test` must be marked with `@pytest.mark.regression`.
 
+The regression tests keep the generated source code and the compiled programs until the end of the run, so a full run needs about 16 GB of free disk space in Docker (e.g. in the virtual machine of Colima or Docker Desktop).
+
 The tests use the Python version from [`.python-version`](.python-version). Set `PYTHON_VERSION` to use another one:
 
 ```bash
