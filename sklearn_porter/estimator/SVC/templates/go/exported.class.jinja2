@@ -27,7 +27,7 @@ type {{ class_name }} struct {
 	Degree float64 `json:"degree"`
 }
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict {{ label_type }} `json:"predict"`
 }
@@ -200,7 +200,7 @@ func main() {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		// Get JSON:
 		prediction := clf.Predict(features)
 		res, _ := json.Marshal(&Response{Predict: prediction})

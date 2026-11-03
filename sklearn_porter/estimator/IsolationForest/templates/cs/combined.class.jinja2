@@ -25,7 +25,7 @@ public static class {{ class_name }} {
     public static int Predict(double[] features) {
         return ScoreSamples(features) - OFFSET < 0 ? -1 : 1;
     }
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 

@@ -24,7 +24,7 @@ public class {{ class_name }} {
 
     // Model data:
     {{ model | indent(4) }}
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 

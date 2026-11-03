@@ -120,7 +120,7 @@ public class {{ class_name }} {
         }
         return lastLayer;
     }
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 
@@ -148,7 +148,7 @@ public class {{ class_name }} {
             {% endif %}
             {{ 'int[]' if is_multilabel else label_type }} prediction = clf.Predict(features);
             double[] probabilities = clf.PredictProba(features);
-            {% if is_test or to_json %}
+            {% if to_json %}
             Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
             {% else %}
             {% if is_multilabel %}

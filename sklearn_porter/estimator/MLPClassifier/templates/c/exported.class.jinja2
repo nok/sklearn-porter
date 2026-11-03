@@ -206,7 +206,7 @@ int main(int argc, const char *argv[]) {
         {% if pipeline_transform %}
         {{ pipeline_transform | indent('        ') }}
         {% endif %}
-        {% if is_test or to_json %}
+        {% if to_json %}
         /* Get JSON: */
         double probabilities[n_classes()];
         predict_proba(probabilities, features);

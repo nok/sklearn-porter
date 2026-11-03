@@ -5,7 +5,7 @@ package main
 
 import (
 	"bufio"
-	{% if is_test or to_json %}
+	{% if to_json %}
 	"encoding/json"
 	{% endif %}
 	"fmt"
@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"strings"
 )
-{% if is_test or to_json %}
+{% if to_json %}
 type response struct {
 	Predict interface{} `json:"predict"`
 }
@@ -45,7 +45,7 @@ func main() {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		// Get JSON:
 		prediction := Predict(features)
 		var res []byte

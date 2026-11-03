@@ -13,7 +13,7 @@ public static class {{ class_name }} {
         {{ tree | indent(4, True) }}
         return values;
     }
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 
@@ -33,7 +33,7 @@ public static class {{ class_name }} {
             {{ pipeline_transform | indent('            ') }}
             {% endif %}
             double[] prediction = {{ class_name }}.Predict(features);
-            {% if is_test or to_json %}
+            {% if to_json %}
             Console.WriteLine("{\"predict\": " + ToJson(prediction.Length == 1 ? (object) prediction[0] : prediction) + "}");
             {% else %}
             for (int i = 0; i < prediction.Length; i++) {

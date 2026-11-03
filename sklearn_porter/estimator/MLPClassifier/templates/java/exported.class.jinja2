@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-{% if is_test or to_json or is_multilabel %}
+{% if to_json or is_multilabel %}
 import java.util.Arrays;
 
 
@@ -179,7 +179,7 @@ class {{ class_name }} {
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}
             {% endif %}
-            {% if is_test or to_json %}
+            {% if to_json %}
             // Get JSON:
             {{ 'int[]' if is_multilabel else label_type }} prediction = clf.predict(features);
             double[] probabilities = clf.predictProba(features);

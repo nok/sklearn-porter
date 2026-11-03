@@ -19,7 +19,7 @@ public static class {{ class_name }} {
         {% endfor %}
         return {{ 'Math.Exp(value)' if is_log_link else 'value' }};
     }
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 

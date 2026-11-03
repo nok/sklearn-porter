@@ -20,7 +20,7 @@ type {{ class_name }} struct {
 	Probs [][]float64 `json:"probs"`
 }
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict {{ label_type }} `json:"predict"`
 	PredictProba []float64 `json:"predict_proba"`
@@ -110,7 +110,7 @@ func main() {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		// Get JSON:
 		prediction := clf.Predict(features)
 		probabilities := clf.PredictProba(features)

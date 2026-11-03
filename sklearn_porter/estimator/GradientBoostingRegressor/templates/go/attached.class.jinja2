@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict float64 `json:"predict"`
 }

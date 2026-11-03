@@ -26,7 +26,7 @@ public class {{ class_name }} {
         this.denominator = data.Denominator;
         this.offset = data.Offset;
     }
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 

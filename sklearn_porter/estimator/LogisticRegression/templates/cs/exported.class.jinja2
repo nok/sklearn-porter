@@ -84,7 +84,7 @@ public class {{ class_name }} {
         {% endif %}
     }
 {% endif %}
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 
@@ -114,7 +114,7 @@ public class {{ class_name }} {
             {% if with_proba %}
             double[] probabilities = clf.PredictProba(features);
             {% endif %}
-            {% if is_test or to_json %}
+            {% if to_json %}
             Console.WriteLine("{\"predict\": " + ToJson(prediction){% if with_proba %} + ", \"predict_proba\": " + ToJson(probabilities){% endif %} + "}");
             {% else %}
             {% if is_multilabel %}

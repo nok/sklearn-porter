@@ -47,7 +47,7 @@ func (dtc *{{ class_name }}) UnmarshalJSON(data []byte) error {
 }
 {% endif %}
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict {{ '[]' if is_multi_output }}{{ label_type }} `json:"predict"`
 	PredictProba {{ '[][]float64' if is_multi_output else '[]float64' }} `json:"predict_proba"`
@@ -176,7 +176,7 @@ func main() {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		// Get JSON:
 		prediction := clf.Predict(features)
 		probabilities := clf.PredictProba(features)

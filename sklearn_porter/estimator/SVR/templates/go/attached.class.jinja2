@@ -5,7 +5,7 @@ package main
 
 import (
 	"bufio"
-	{% if is_test or to_json %}
+	{% if to_json %}
 	"encoding/json"
 	{% endif %}
 	"fmt"
@@ -25,7 +25,7 @@ type {{ class_name }} struct {
 	degree int
 }
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict {{ 'int' if is_outlier_detector else 'float64' }} `json:"predict"`
 }

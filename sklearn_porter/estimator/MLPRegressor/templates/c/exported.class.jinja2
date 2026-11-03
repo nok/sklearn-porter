@@ -158,7 +158,7 @@ int main(int argc, const char *argv[]) {
         int n_outputs = layers[n_layers - 1];
         double *prediction = predict(features);
 
-        {% if is_test or to_json %}
+        {% if to_json %}
         /* Get JSON: */
         if (n_outputs == 1) {
             printf("{\"predict\": %.17g}\n", prediction[0]);

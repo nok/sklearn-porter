@@ -6,7 +6,7 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-{% if is_test or to_json %}
+{% if to_json %}
 import java.util.Arrays;
 {% endif %}
 import java.util.List;
@@ -127,7 +127,7 @@ class {{ class_name }} {
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}
             {% endif %}
-            {% if is_test or to_json %}
+            {% if to_json %}
             // Get JSON:
             {{ label_type }} prediction = clf.predict(features);
             double[] probabilities = clf.predictProba(features);

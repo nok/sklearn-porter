@@ -1,5 +1,5 @@
 {% if is_outlier_detector %}
-{% if is_test or to_json %}
+{% if to_json %}
 /* Get JSON: */
 printf("{\"predict\": %d}\n", prediction);
 {% else %}
@@ -7,7 +7,7 @@ printf("{\"predict\": %d}\n", prediction);
 printf("Prediction: %d (%s)\n", prediction, prediction == 1 ? "inlier" : "outlier");
 {% endif %}
 {% else %}
-{% if is_test or to_json %}
+{% if to_json %}
 /* Get JSON: */
 printf("{\"predict\": %.17g}\n", prediction);
 {% else %}

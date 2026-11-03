@@ -513,7 +513,6 @@ def test_text_output(
         ],
     )
     est = Estimator(orig_est, language=language, template=template)
-    est._estimator.placeholders['is_test'] = False  # set by pytest
     out = est.save(directory=tmp_dir)
     if isinstance(out, tuple):  # the source code and the model data
         src_path, data_args = Path(out[0]), [str(out[1])]

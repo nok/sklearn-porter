@@ -58,7 +58,7 @@ class {{ class_name }} {
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}
             {% endif %}
-            {% if is_test or to_json %}
+            {% if to_json %}
             // Get JSON:
             double[] prediction = reg.predict(features);
             String result = prediction.length == 1 ? String.valueOf(prediction[0]) : Arrays.toString(prediction);

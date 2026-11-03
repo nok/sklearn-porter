@@ -19,7 +19,7 @@ public static class {{ class_name }} {
         {% endfor %}
         return values;
     }
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 
@@ -39,7 +39,7 @@ public static class {{ class_name }} {
             {{ pipeline_transform | indent('            ') }}
             {% endif %}
             double[] prediction = {{ class_name }}.Predict(features);
-            {% if is_test or to_json %}
+            {% if to_json %}
             Console.WriteLine("{\"predict\": " + ToJson({{ 'prediction' if is_multi_output else 'prediction[0]' }}) + "}");
             {% else %}
             for (int i = 0; i < prediction.Length; i++) {

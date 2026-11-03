@@ -92,7 +92,7 @@ public class {{ class_name }} {
         }
         return jll;
     }
-{% if is_test or to_json %}
+{% if to_json %}
 
 {% include 'json' %}
 
@@ -120,7 +120,7 @@ public class {{ class_name }} {
             {% endif %}
             {{ label_type }} prediction = clf.Predict(features);
             double[] probabilities = clf.PredictProba(features);
-            {% if is_test or to_json %}
+            {% if to_json %}
             Console.WriteLine("{\"predict\": " + ToJson(prediction) + ", \"predict_proba\": " + ToJson(probabilities) + "}");
             {% else %}
             Console.WriteLine("Predicted class: " + Convert.ToString(prediction, CultureInfo.InvariantCulture));

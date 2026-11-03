@@ -6,7 +6,7 @@ package main
 {% if is_binary %}
 import (
 	"bufio"
-	{% if is_test or to_json %}
+	{% if to_json %}
 	"encoding/json"
 	{% endif %}
 	"fmt"
@@ -22,7 +22,7 @@ type {{ class_name }} struct {
 {% else %}
 import (
 	"bufio"
-	{% if is_test or to_json %}
+	{% if to_json %}
 	"encoding/json"
 	{% endif %}
 	"fmt"
@@ -40,7 +40,7 @@ type {{ class_name }} struct {
 
 {% include 'labels' %}
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict {{ label_type }} `json:"predict"`
 }
@@ -103,7 +103,7 @@ func main() {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		// Get JSON:
 		prediction := clf.Predict(features)
 		res, _ := json.Marshal(&Response{Predict: prediction})

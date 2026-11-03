@@ -20,7 +20,7 @@ type {{ class_name }} struct {
 	HiddenActivation string `json:"hidden_activation"`
 }
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict interface{} `json:"predict"`
 }
@@ -110,7 +110,7 @@ func main() {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		// Get JSON:
 		prediction := reg.Predict(features)
 		var res []byte

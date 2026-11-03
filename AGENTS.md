@@ -93,7 +93,7 @@ original estimator and transform the features like the original transformer.
   line. `make()` passes the samples in batches of at least 100 samples to
   the standard input, because starting a process (e.g. the JVM) takes much
   longer than a prediction.
-- The estimators print JSON for `make()` (`is_test` or `to_json`) and text
+- The estimators print JSON for `make()` (`to_json`) and text
   otherwise. The transformers always print the transformed features of each
   sample in one line, separated by spaces (shared template `values` of each
   language, round-trip precision, `NaN`, `Infinity`, `-0`), which is also

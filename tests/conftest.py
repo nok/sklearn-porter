@@ -16,8 +16,6 @@ from sklearn_porter.language.java import Java
 np.random.seed(0)
 rd.seed(0)
 
-environ['SKLEARN_PORTER_PYTEST'] = 'True'
-
 
 @pytest.fixture(scope='session', autouse=True)
 def strict_php(tmp_path_factory: pytest.TempPathFactory):

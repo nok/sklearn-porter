@@ -1,4 +1,4 @@
-{% if is_test or to_json %}
+{% if to_json %}
 Console.WriteLine("{\"predict\": " + ToJson(prediction) + "}");
 {% else %}
 Console.WriteLine("Predicted value: " + prediction.ToString(CultureInfo.InvariantCulture));

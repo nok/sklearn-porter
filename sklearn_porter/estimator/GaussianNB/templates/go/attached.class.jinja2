@@ -5,7 +5,7 @@ package main
 
 import (
 	"bufio"
-	{% if is_test or to_json %}
+	{% if to_json %}
 	"encoding/json"
 	{% endif %}
 	"fmt"
@@ -24,7 +24,7 @@ type {{ class_name }} struct {
 	Thetas [][]float64 `json:"thetas"`
 }
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict {{ label_type }} `json:"predict"`
 	PredictProba []float64 `json:"predict_proba"`
@@ -105,7 +105,7 @@ func main() {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		// Get JSON:
 		prediction := clf.Predict(features)
 		probabilities := clf.PredictProba(features)

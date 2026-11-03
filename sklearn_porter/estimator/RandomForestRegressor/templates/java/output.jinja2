@@ -1,4 +1,4 @@
-{% if is_test or to_json %}
+{% if to_json %}
 // Get JSON:
 String result = prediction.length == 1 ? String.valueOf(prediction[0]) : Arrays.toString(prediction);
 System.out.println("{\"predict\": " + result + "}");

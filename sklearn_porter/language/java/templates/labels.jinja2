@@ -1,7 +1,7 @@
 {% if not is_multilabel %}
     // The labels of the classes{{ ' of all outputs' if is_multi_output }}:
     private static final {{ label_type }}[] LABELS = { {{ label_values }} };
-{% if is_test or to_json %}
+{% if to_json %}
 
     // Convert a label to JSON:
     private static String toJson({{ label_type }} label) {

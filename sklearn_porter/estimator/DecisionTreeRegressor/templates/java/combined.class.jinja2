@@ -1,7 +1,7 @@
 {% extends 'base.combined.class' %}
 
 {% block content %}
-{% if is_test or to_json %}
+{% if to_json %}
 import java.util.Arrays;
 
 {% endif %}
@@ -26,7 +26,7 @@ class {{ class_name }} {
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}
             {% endif %}
-            {% if is_test or to_json %}
+            {% if to_json %}
             // Get JSON:
             double[] prediction = {{ class_name }}.predict(features);
             String result = prediction.length == 1 ? String.valueOf(prediction[0]) : Arrays.toString(prediction);

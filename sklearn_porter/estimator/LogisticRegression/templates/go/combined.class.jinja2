@@ -5,7 +5,7 @@ package main
 
 import (
 	"bufio"
-	{% if is_test or to_json %}
+	{% if to_json %}
 	"encoding/json"
 	{% endif %}
 	"fmt"
@@ -19,7 +19,7 @@ import (
 
 {% include 'labels' %}
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict {{ '[]int' if is_multilabel else label_type }} `json:"predict"`
 	{% if with_proba %}
@@ -114,7 +114,7 @@ func main() {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		// Get JSON:
 		res, _ := json.Marshal(&Response{
 			Predict: Predict(features),

@@ -5,7 +5,7 @@ package main
 
 import (
 	"bufio"
-	{% if is_test or to_json %}
+	{% if to_json %}
 	"encoding/json"
 	{% endif %}
 	"fmt"
@@ -23,7 +23,7 @@ type {{ class_name }} struct {
 	Power float64
 }
 
-{% if is_test or to_json %}
+{% if to_json %}
 type Response struct {
 	Predict interface{} `json:"predict"`
 }
@@ -184,7 +184,7 @@ func main() {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}
 		{% endif %}
-		{% if is_test or to_json %}
+		{% if to_json %}
 		// Get JSON:
 		prediction := reg.Predict(features)
 		{% if is_multi_output %}

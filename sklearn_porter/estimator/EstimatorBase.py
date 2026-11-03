@@ -1,7 +1,6 @@
 import sys
 from collections.abc import Callable
 from logging import getLogger
-from os import environ
 from pathlib import Path
 from typing import Any, cast
 
@@ -86,11 +85,6 @@ class EstimatorBase(EstimatorApiABC):
                 sklearn_version=sklearn_version,
                 sklearn_porter_version=sklearn_porter_version,
             )
-        )
-
-        # Is it a test?
-        self.placeholders.update(
-            dict(is_test='SKLEARN_PORTER_PYTEST' in environ)
         )
 
     def port(

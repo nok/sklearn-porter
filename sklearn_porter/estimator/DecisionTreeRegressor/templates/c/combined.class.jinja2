@@ -34,7 +34,7 @@ int main(int argc, const char *argv[]) {
         double prediction[N_OUTPUTS];
         predict(prediction, features);
 
-        {% if is_test or to_json %}
+        {% if to_json %}
         /* Get JSON: */
         if (N_OUTPUTS == 1) {
             printf("{\"predict\": %.17g}\n", prediction[0]);
