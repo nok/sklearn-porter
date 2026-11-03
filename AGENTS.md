@@ -193,9 +193,11 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 - The regression tests need gcc, dotnet, go, java, node, php and ruby. They
   run only locally in Docker (`make test-regression`), never in GitHub
   Actions, because they would exceed the free minutes.
-- The Java templates `exported` need GSON: the Docker image contains the jar
-  and sets `SKLEARN_PORTER_PYTEST_GSON_PATH`, otherwise the fixture
-  `gson_path` (`tests/conftest.py`) downloads it once to `.pytest_cache`.
+- The Java templates `exported` need GSON: `make()` uses the jar of the
+  environment variable `SKLEARN_PORTER_GSON_PATH` or downloads it and
+  verifies its checksum (`Java.GSON_SHA256`). The Docker image contains the
+  jar and sets the variable, otherwise the fixture `gson_path`
+  (`tests/conftest.py`) downloads it once to `.pytest_cache`.
 - The tests are parametrized with the keys of all languages from
   `tests.commons.LANGUAGES`.
 - Run the regression tests in Docker after changing templates, the model data

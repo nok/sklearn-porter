@@ -3,7 +3,6 @@ from collections.abc import Callable
 from logging import getLogger
 from os import environ
 from pathlib import Path
-from time import sleep
 from typing import Any, cast
 
 from jinja2 import DictLoader, Environment, Template
@@ -157,21 +156,24 @@ class EstimatorBase(EstimatorApiABC):
             Change the default converter of all floating numbers from the model
             data. By default a simple string cast `str(value)` will be used.
         directory : str or Path
-            The destination directory.
+            The destination directory, which is created if it doesn't exist.
         to_json : bool (default: False)
             Return the result as JSON string.
 
         Returns
         -------
         The paths to the dumped files.
-        """
 
-        if not directory:
-            directory = Path.cwd()
-        if isinstance(directory, str):
-            directory = Path(directory)
-        if not directory.is_dir():
-            directory = directory.parent
+        Raises
+        ------
+        NotADirectoryError
+            If the destination exists, but isn't a directory.
+        """
+        directory = Path(directory) if directory else Path.cwd()
+        if directory.exists() and not directory.is_dir():
+            msg = f'The destination `{directory}` is not a directory.'
+            raise NotADirectoryError(msg)
+        directory.mkdir(parents=True, exist_ok=True)
 
         # Port/Transpile estimator:
         ported = self.port(
@@ -191,16 +193,12 @@ class EstimatorBase(EstimatorApiABC):
         filename = class_name + '.' + suffix
         filepath = directory / filename
         filepath.write_text(ported[0], encoding='utf-8')
-        while not filepath.exists():
-            sleep(0.01)
         paths = str(filepath)
 
         # Dump model data:
         if template == enum.Template.EXPORTED and len(ported) == 2:
             json_path = directory / (class_name + '.json')
             json_path.write_text(ported[1], encoding='utf-8')
-            while not json_path.exists():
-                sleep(0.01)
             paths = (paths, str(json_path))
 
         return paths

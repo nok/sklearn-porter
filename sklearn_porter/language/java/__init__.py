@@ -57,6 +57,9 @@ class Java(LanguageABC):
         'https://repo1.maven.org/maven2/'
         'com/google/code/gson/gson/2.9.1/gson-2.9.1.jar'
     )
+    GSON_SHA256 = (
+        '378534e339e6e6d50b1736fb3abb76f1c15d1be3f4c13cec6d536412e23da603'
+    )
 
     @staticmethod
     def str_literal(value: str) -> str:

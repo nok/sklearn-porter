@@ -1,6 +1,5 @@
 import random as rd
-import urllib.request
-from os import environ, getpid, pathsep
+from os import environ, pathsep
 from pathlib import Path
 
 import numpy as np
@@ -10,6 +9,7 @@ from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
 from threadpoolctl import threadpool_limits
 
+from sklearn_porter.Base import _download
 from sklearn_porter.language.java import Java
 
 # Force deterministic number generation:
@@ -86,19 +86,15 @@ def gson_path(request: pytest.FixtureRequest) -> Path:
     Fixture to get the path to GSON, the dependency of the Java templates
     `exported`.
 
-    The Docker image sets `SKLEARN_PORTER_PYTEST_GSON_PATH`, otherwise the
-    jar is downloaded once to the cache of pytest (`.pytest_cache`).
+    The Docker image sets `SKLEARN_PORTER_GSON_PATH`, otherwise the jar is
+    downloaded once to the cache of pytest (`.pytest_cache`).
     """
-    if environ.get('SKLEARN_PORTER_PYTEST_GSON_PATH'):
-        return Path(environ['SKLEARN_PORTER_PYTEST_GSON_PATH'])
+    if environ.get('SKLEARN_PORTER_GSON_PATH'):
+        return Path(environ['SKLEARN_PORTER_GSON_PATH'])
     path = request.config.cache.mkdir('gson') / 'gson.jar'
     if not path.exists():
-        # A temporary file per process, so that the parallel test processes
-        # of pytest-xdist don't read an incomplete jar:
-        tmp_path = path.with_name(f'gson.{getpid()}.tmp')
-        urllib.request.urlretrieve(Java.GSON_DOWNLOAD_URI, str(tmp_path))
-        tmp_path.replace(path)
-    environ['SKLEARN_PORTER_PYTEST_GSON_PATH'] = str(path)
+        _download(Java.GSON_DOWNLOAD_URI, Java.GSON_SHA256, path)
+    environ['SKLEARN_PORTER_GSON_PATH'] = str(path)
     return path
 
 

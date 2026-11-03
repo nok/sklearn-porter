@@ -1,3 +1,5 @@
+import hashlib
+import io
 import json
 import logging
 import os
@@ -293,7 +295,7 @@ def test_system_calls_on_windows(
     tmp_path = tmp_path.resolve()  # like the paths of `make()`
     monkeypatch.setattr(ESTIMATOR_MODULE, 'platform', 'win32')
     monkeypatch.setattr(ESTIMATOR_MODULE, 'pathsep', ';')
-    monkeypatch.setenv('SKLEARN_PORTER_PYTEST_GSON_PATH', 'gson.jar')
+    monkeypatch.setenv('SKLEARN_PORTER_GSON_PATH', 'gson.jar')
     sdk = (Path('csc.dll'), [Path('System.Runtime.dll')], 'net10.0', '10.0.0')
     monkeypatch.setattr(CSharp, 'get_sdk', staticmethod(lambda: sdk))
 
@@ -518,7 +520,7 @@ def test_text_output(
         src_path, data_args = Path(out), []
 
     lang = enum.Language[language.upper()].value
-    class_paths = [str(tmp_dir), os.environ['SKLEARN_PORTER_PYTEST_GSON_PATH']]
+    class_paths = [str(tmp_dir), os.environ['SKLEARN_PORTER_GSON_PATH']]
     cmd_args = dict(
         src_path=str(src_path),
         dest_path=str(tmp_dir / src_path.stem),
@@ -564,6 +566,84 @@ def test_missing_interpreter(fitted_tree, monkeypatch: pytest.MonkeyPatch):
     est = Estimator(fitted_tree, language='js')
     with pytest.raises(exception.ExecutionFailed, match='FileNotFoundError'):
         est.make(load_iris().data[:3], check_dependencies=False, n_jobs=False)
+
+
+@pytest.mark.parametrize('language', ['c', 'js'])
+def test_deletion_of_files_after_failure(
+    fitted_tree,
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    language: str,
+):
+    """The generated files are deleted after a failed compilation/execution."""
+    monkeypatch.setenv('PATH', '')
+    temp_dir = tmp_path / 'sklearn-porter-temp'
+
+    def mkdtemp(**kwargs) -> str:
+        temp_dir.mkdir()
+        return str(temp_dir)
+
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'mkdtemp', mkdtemp)
+    est = Estimator(fitted_tree, language=language)
+    with pytest.raises(
+        (exception.CompilationFailed, exception.ExecutionFailed)
+    ):
+        est.make(load_iris().data[:3], check_dependencies=False, n_jobs=False)
+    assert not temp_dir.exists()
+
+    # A passed directory remains, but the generated files are deleted:
+    directory = tmp_path / 'directory'
+    directory.mkdir()
+    with pytest.raises(
+        (exception.CompilationFailed, exception.ExecutionFailed)
+    ):
+        est.make(
+            load_iris().data[:3],
+            check_dependencies=False,
+            n_jobs=False,
+            directory=directory,
+        )
+    assert directory.exists() and not list(directory.iterdir())
+
+
+def test_save_to_new_directory(fitted_tree, tmp_path: Path):
+    """A missing directory is created (instead of using its parent)."""
+    directory = tmp_path / 'a' / 'b'
+    path = Estimator(fitted_tree, language='js').save(directory=directory)
+    assert Path(path) == directory / 'DecisionTreeClassifier.js'
+    assert Path(path).is_file()
+
+    # A file isn't a directory:
+    with pytest.raises(NotADirectoryError):
+        Estimator(fitted_tree, language='js').save(directory=path)
+
+
+def test_download(monkeypatch: pytest.MonkeyPatch, tmp_path: Path):
+    """The checksum of a download (e.g. of Gson) is verified."""
+    content = b'content of the jar'
+    sha256 = hashlib.sha256(content).hexdigest()
+    monkeypatch.setattr(
+        'urllib.request.urlopen', lambda url, **kwargs: io.BytesIO(content)
+    )
+    path = tmp_path / 'gson.jar'
+    with pytest.raises(exception.CompilationFailed, match='checksum'):
+        ESTIMATOR_MODULE._download(
+            'https://example.org/gson.jar', '0' * 64, path
+        )
+    assert not list(tmp_path.iterdir())
+    ESTIMATOR_MODULE._download('https://example.org/gson.jar', sha256, path)
+    assert path.read_bytes() == content
+    assert list(tmp_path.iterdir()) == [path]
+
+
+def test_exception_messages():
+    msg = str(exception.InvalidTemplateError('i_n_v_a_l_i_d'))
+    assert msg.startswith('The passed template `i_n_v_a_l_i_d` is invalid.')
+    assert 'Valid templates are: `attached`' in msg
+    for error in (exception.CodeTooLarge, exception.TooManyConstants):
+        msg = str(error('code too large'))
+        assert msg.startswith('Compilation failed:\n\ncode too large\n\n')
+        assert msg.count('Compilation failed') == 1
 
 
 def test_list_of_regressors():
