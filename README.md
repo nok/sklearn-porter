@@ -47,7 +47,7 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 ```python
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
-from sklearn_porter import make, port, save, test
+from sklearn_porter import make, save, test
 
 # Train a classifier:
 X, y = load_iris(return_X_y=True)
