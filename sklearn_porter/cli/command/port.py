@@ -6,6 +6,7 @@ from textwrap import dedent
 # sklearn-porter
 from sklearn_porter import Porter, options
 from sklearn_porter.cli.common import (
+    arg_class_name,
     arg_debug,
     arg_help,
     arg_ignore_preprocessing,
@@ -23,9 +24,9 @@ def config(sub_parser):
     footer = dedent(
         """
         Examples:
-          `porter port model.pkl --language js --template attached`
-          `porter port model.pkl --skip-warnings`
-          `porter port pipeline.pkl --ignore-preprocessing`
+          `porter port model.joblib --language js --template attached`
+          `porter port model.joblib --skip-warnings`
+          `porter port pipeline.joblib --ignore-preprocessing`
     """
     )
 
@@ -61,6 +62,7 @@ def config(sub_parser):
     )
 
     for fn in (
+        arg_class_name,
         arg_ignore_preprocessing,
         arg_skip_warnings,
         arg_debug,
@@ -78,7 +80,9 @@ def main(args: dict, silent: bool = False):
     path = Path(args['model'])
     mdl = load_model(path, args.get('skip_warnings', False))
     est = Porter(
-        mdl, ignore_preprocessing=args.get('ignore_preprocessing', False)
+        mdl,
+        class_name=args.get('class_name'),
+        ignore_preprocessing=args.get('ignore_preprocessing', False),
     )
 
     if language := args.get('language'):
@@ -86,6 +90,14 @@ def main(args: dict, silent: bool = False):
 
     if template := args.get('template'):
         est.template = template
+
+    # The standard output can only contain one file:
+    if est.template == 'exported':
+        msg = (
+            'The template `exported` creates two files (the source code and '
+            'the model data), save them with `porter save` instead.'
+        )
+        raise ValueError(msg)
 
     out = est.port()
 

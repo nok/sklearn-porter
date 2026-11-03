@@ -1,6 +1,5 @@
 import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
-from os import environ
 from textwrap import dedent
 
 from sklearn_porter import __version__ as porter_version
@@ -14,8 +13,8 @@ def parse_args(args):
         """
         Examples:
           `porter show`
-          `porter port model --language js --template attached`
-          `porter save model --directory /tmp --skip-warnings`
+          `porter port model.joblib --language js --template attached`
+          `porter save model.joblib --directory /tmp --skip-warnings`
 
         Manuals:
           https://github.com/nok/sklearn-porter
@@ -44,7 +43,7 @@ def parse_args(args):
     arg_version(parser)
     arg_help(parser)
 
-    if len(sys.argv) == 1 and 'SKLEARN_PORTER_PYTEST' not in environ:
+    if not args:
         parser.print_help(sys.stdout)
         sys.exit(1)
 
@@ -56,7 +55,13 @@ def main():
     if hasattr(args, 'func'):
         func = args.func
         delattr(args, 'func')
-        func(vars(args))
+        try:
+            func(vars(args))
+        except Exception as e:
+            # Show the traceback only with `--debug`:
+            if getattr(args, 'debug', False):
+                raise
+            sys.exit(f'Error: {e}')
 
 
 if __name__ == '__main__':
