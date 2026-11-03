@@ -52,7 +52,6 @@ from sklearn.linear_model import (
 )
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from sklearn.model_selection._search import BaseSearchCV
 from sklearn.naive_bayes import (
     BernoulliNB,
     ComplementNB,
@@ -193,15 +192,7 @@ class Estimator(Base):
             raise exception.NotFittedEstimatorError(qualname) from None
 
         # Check GridSearchCV and RandomizedSearchCV:
-        if isinstance(est, BaseSearchCV):
-            if not isinstance(est, (GridSearchCV, RandomizedSearchCV)):
-                msg = (
-                    f'The used optimizer `{qualname}` is not supported '
-                    'by this version of sklearn-porter. Try to '
-                    'extract the internal estimator manually '
-                    'and pass it.'
-                )
-                raise ValueError(msg)
+        if isinstance(est, (GridSearchCV, RandomizedSearchCV)):
             if getattr(est, 'best_estimator_', None) is None:
                 msg = 'The embedded estimator is not fitted.'
                 raise ValueError(msg)
@@ -214,7 +205,7 @@ class Estimator(Base):
 
         # Check Pipeline:
         if isinstance(est, Pipeline):
-            final_est = est._final_estimator
+            final_est = est.steps[-1][1]
             if final_est is None or final_est == 'passthrough':
                 msg = 'There is no final estimator in the pipeline.'
                 raise ValueError(msg)

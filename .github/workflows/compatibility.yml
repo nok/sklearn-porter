@@ -1,0 +1,24 @@
+name: Compatibility
+
+# The fast tests with the latest versions of all dependencies, also with
+# pre-releases (e.g. of scikit-learn), to find incompatibilities before a
+# release of a dependency.
+on:
+  schedule:
+    - cron: '0 6 * * 1'  # every Monday
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (latest versions)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v7
+        with:
+          python-version: '3.14'
+      - run: uv lock --upgrade --prerelease allow
+      - run: uv run --locked pytest --numprocesses=auto

@@ -716,6 +716,8 @@ def test_clip_of_function_transformer(
     kw_args: dict, bounds: tuple, language: str, template: str
 ):
     """The bounds of `np.clip` are numbers in the code."""
+    if 'min' in kw_args and np.lib.NumpyVersion(np.__version__) < '2.1.0':
+        pytest.skip('`np.clip` supports `min` and `max` since NumPy 2.1')
     orig_est = FunctionTransformer(np.clip, kw_args=kw_args)
     orig_est.fit(load_iris().data)
     est = Transformer(orig_est, language=language, template=template)
