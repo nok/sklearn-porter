@@ -228,6 +228,8 @@ Probability of class #2 : 0.9782608695652174
 - [preprocessing.TargetEncoder](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.TargetEncoder.html)
 </details>
 
+¹ without the template `combined`, ² without `predict_proba` (even if scikit-learn provides it, e.g. `SVC(probability=True)`). All other estimators support all languages and templates, the classifiers also `predict_proba` (if scikit-learn provides it). `porter show` lists all supported combinations.
+
 ### Languages
 
 | Language   | Key    | `make()` and `test()` need | Tested with           |
