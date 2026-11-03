@@ -89,7 +89,7 @@ this._compute = function(features, post) {
 };
 ```
 
-Run it with the features of a sample:
+Save the code to `DecisionTreeClassifier.js` and run it with the features of a sample:
 
 ```console
 $ node DecisionTreeClassifier.js 6.3 3.3 6.0 2.5
