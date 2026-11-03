@@ -132,7 +132,7 @@ def run_driver(
                 class_name=class_name, constructor=constructor, method=method
             )
         )
-        class_path = f'{tmp_dir}:{environ["SKLEARN_PORTER_PYTEST_GSON_PATH"]}'
+        class_path = f'{tmp_dir}:{environ["SKLEARN_PORTER_GSON_PATH"]}'
         check_output(
             ['javac', '-cp', class_path, '-d', tmp_dir, src_path, driver_path]
         )

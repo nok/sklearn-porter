@@ -39,8 +39,8 @@ class CodeTooLarge(CompilationFailed):
             'by changing the template type to `exported`: '
             "`template='exported'`."
         )
-        self.message = f'Compilation failed:\n\n{message}\n\n{hint}'
-        super().__init__(self.message)
+        # `CompilationFailed` adds the prefix of the message:
+        super().__init__(f'{message}\n\n{hint}')
 
 
 class TooManyConstants(CompilationFailed):
@@ -50,8 +50,8 @@ class TooManyConstants(CompilationFailed):
             'by changing the template type to `exported`: '
             "`template='exported'`."
         )
-        self.message = f'Compilation failed:\n\n{message}\n\n{hint}'
-        super().__init__(self.message)
+        # `CompilationFailed` adds the prefix of the message:
+        super().__init__(f'{message}\n\n{hint}')
 
 
 class InvalidMethodError(Exception):
@@ -83,3 +83,4 @@ class InvalidTemplateError(Exception):
             f'The passed template `{message}` is invalid. '
             f'Valid templates are: {opts}.'
         )
+        super().__init__(self.message)

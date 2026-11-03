@@ -1,3 +1,4 @@
+import hashlib
 import urllib.request
 import warnings
 from collections.abc import Callable
@@ -5,7 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 from importlib import import_module
 from json import loads
 from logging import getLogger
-from os import cpu_count, environ, pathsep, remove
+from os import cpu_count, environ, getpid, pathsep, remove
 from pathlib import Path
 from shlex import join
 from shutil import rmtree, which
@@ -408,118 +409,106 @@ class Base:
         if not directory:
             directory = temp_dir = mkdtemp(prefix='sklearn-porter-')
         created_files = []  # for final deletion
+        try:
+            # Transpile model:
+            out = self.save(directory=directory, to_json=True, **kwargs)
 
-        # Transpile model:
-        out = self.save(directory=directory, to_json=True, **kwargs)
+            if isinstance(out, tuple):  # indicator for Template.EXPORTED
+                src_path, data_path = out[0], out[1]
+                if not isinstance(data_path, Path):
+                    data_path = Path(data_path)
+                data_path = data_path.resolve()
+                created_files.append(data_path)
+            else:
+                src_path, data_path = out, None
+            if not isinstance(src_path, Path):
+                src_path = Path(src_path)
+            src_path = src_path.resolve()
 
-        if isinstance(out, tuple):  # indicator for Template.EXPORTED
-            src_path, data_path = out[0], out[1]
-            if not isinstance(data_path, Path):
-                data_path = Path(data_path)
-            data_path = data_path.resolve()
-            created_files.append(data_path)
-        else:
-            src_path, data_path = out, None
-        if not isinstance(src_path, Path):
-            src_path = Path(src_path)
-        src_path = src_path.resolve()
+            created_files.append(src_path)
+            class_paths = []
 
-        created_files.append(src_path)
-        class_paths = []
+            language = self._language
+            template = self._template
 
-        language = self._language
-        template = self._template
+            # Compilation:
+            self._compile(
+                src_path, class_paths, created_files, language, template
+            )
 
-        # Compilation:
-        self._compile(src_path, class_paths, created_files, language, template)
+            # Execution:
+            cmd_args = {}
 
-        # Execution:
-        cmd_args = {}
+            if language in (enum.Language.C, enum.Language.GO):
+                cmd_args['dest_path'] = str(_get_binary_path(src_path))
+            elif language is enum.Language.CS:
+                cmd_args['dest_path'] = str(src_path.with_suffix('.dll'))
+            elif language is enum.Language.JAVA:
+                cmd_args['class_path'] = pathsep.join(class_paths)
+                cmd_args['class_name'] = src_path.stem
+            elif language in (
+                enum.Language.JS,
+                enum.Language.PHP,
+                enum.Language.RUBY,
+            ):
+                cmd_args['src_path'] = str(src_path)
 
-        paths_to_check = []
-        if language in (enum.Language.C, enum.Language.GO):
-            dest_path = str(_get_binary_path(src_path))
-            cmd_args['dest_path'] = dest_path
-            paths_to_check.append(dest_path)
-        elif language is enum.Language.CS:
-            dest_path = str(src_path.with_suffix('.dll'))
-            cmd_args['dest_path'] = dest_path
-            paths_to_check.append(dest_path)
-        elif language is enum.Language.JAVA:
-            cmd_args['class_path'] = pathsep.join(class_paths)
-            cmd_args['class_name'] = src_path.stem
-        elif language in (
-            enum.Language.JS,
-            enum.Language.PHP,
-            enum.Language.RUBY,
-        ):
-            cmd_args['src_path'] = str(src_path)
-            paths_to_check.append(str(src_path))
+            cmd = [arg.format(**cmd_args) for arg in language.value.CMD_EXECUTE]
+            L.debug('Execution command: `%s`', join(cmd))
 
-        for path_to_check in paths_to_check:
-            for _ in range(10):
-                try:
-                    fp = open(path_to_check)
-                except OSError:
-                    sleep(0.1)
-                else:
-                    fp.close()
-                    break
+            # Model data:
+            if data_path:
+                cmd.append(str(data_path))
 
-        cmd = [arg.format(**cmd_args) for arg in language.value.CMD_EXECUTE]
-        L.debug('Execution command: `%s`', join(cmd))
+            # Features (or documents) of the samples, one sample per line:
+            if getattr(self._estimator, 'TEXT_INPUT', False):
+                lines = _get_document_lines(self._estimator.estimator, x)
+            else:
+                if issparse(x):
+                    x = x.toarray()
+                elif not isinstance(x, np.ndarray):
+                    x = np.array(x)
+                if x.ndim == 1:
+                    x = x[np.newaxis, :]
+                lines = [' '.join(map(str, e)) for e in x.tolist()]
 
-        # Model data:
-        if data_path:
-            cmd.append(str(data_path))
+            if isinstance(n_jobs, int) and n_jobs <= 1:
+                n_jobs = False
+            if not n_jobs:
+                n_jobs = 1
+            elif isinstance(n_jobs, bool) or not isinstance(n_jobs, int):
+                n_jobs = cpu_count() or 1
 
-        # Features (or documents) of the samples, one sample per line:
-        if getattr(self._estimator, 'TEXT_INPUT', False):
-            lines = _get_document_lines(self._estimator.estimator, x)
-        else:
-            if issparse(x):
-                x = x.toarray()
-            elif not isinstance(x, np.ndarray):
-                x = np.array(x)
-            if x.ndim == 1:
-                x = x[np.newaxis, :]
-            lines = [' '.join(map(str, e)) for e in x.tolist()]
+            # The ported estimator reads the samples (one per line) from the
+            # standard input. Starting a process (e.g. the JVM) takes much
+            # longer than a prediction, so each process gets a batch of
+            # samples:
+            n_batches = max(1, min(n_jobs, len(lines) // MIN_BATCH_SIZE))
+            batch_size = -(-len(lines) // n_batches)  # rounded up
+            batches = [
+                '\n'.join(lines[i : i + batch_size]) + '\n'
+                for i in range(0, len(lines), batch_size)
+            ]
 
-        if isinstance(n_jobs, int) and n_jobs <= 1:
-            n_jobs = False
-        if not n_jobs:
-            n_jobs = 1
-        elif isinstance(n_jobs, bool) or not isinstance(n_jobs, int):
-            n_jobs = cpu_count() or 1
+            def call(batch: str) -> list:
+                return _system_call(cmd, batch, parse)
 
-        # The ported estimator reads the samples (one per line) from the
-        # standard input. Starting a process (e.g. the JVM) takes much longer
-        # than a prediction, so each process gets a batch of samples:
-        n_batches = max(1, min(n_jobs, len(lines) // MIN_BATCH_SIZE))
-        batch_size = -(-len(lines) // n_batches)  # rounded up
-        batches = [
-            '\n'.join(lines[i : i + batch_size]) + '\n'
-            for i in range(0, len(lines), batch_size)
-        ]
-
-        def call(batch: str) -> list:
-            return _system_call(cmd, batch, parse)
-
-        if len(batches) == 1:
-            y = call(batches[0])
-        else:
-            # Threads are sufficient, because they only wait for the
-            # subprocesses which execute the ported estimator:
-            with ThreadPoolExecutor(len(batches)) as executor:
-                y = [e for ys in executor.map(call, batches) for e in ys]
-
-        # Delete generated files finally:
-        if delete_created_files:
-            for path in created_files:
-                if path and path.exists():
-                    remove(str(path))
-            if temp_dir:
-                rmtree(temp_dir, ignore_errors=True)
+            if len(batches) == 1:
+                y = call(batches[0])
+            else:
+                # Threads are sufficient, because they only wait for the
+                # subprocesses which execute the ported estimator:
+                with ThreadPoolExecutor(len(batches)) as executor:
+                    y = [e for ys in executor.map(call, batches) for e in ys]
+        finally:
+            # Delete the generated files, also after a failed compilation or
+            # execution:
+            if delete_created_files:
+                for path in created_files:
+                    if path and path.exists():
+                        remove(str(path))
+                if temp_dir:
+                    rmtree(temp_dir, ignore_errors=True)
 
         return y
 
@@ -576,23 +565,20 @@ class Base:
             class_paths.append(str(src_path.parent))
             created_files.append(src_path.parent / (src_path.stem + '.class'))
 
-            # Dependencies:
+            # Gson, the JSON library of the templates `exported`, from
+            # `SKLEARN_PORTER_GSON_PATH` (e.g. offline) or downloaded:
             if template is enum.Template.EXPORTED:
-                is_test = (
-                    'SKLEARN_PORTER_PYTEST' in environ
-                    and 'SKLEARN_PORTER_PYTEST_GSON_PATH' in environ
-                )
-                if is_test:
-                    class_paths.append(
-                        environ.get('SKLEARN_PORTER_PYTEST_GSON_PATH')
-                    )
-                else:
+                path = environ.get('SKLEARN_PORTER_GSON_PATH')
+                if not path:
                     path = src_path.parent / 'gson.jar'
                     if not path.exists():
-                        url = language.value.GSON_DOWNLOAD_URI
-                        urllib.request.urlretrieve(url, str(path))
+                        _download(
+                            language.value.GSON_DOWNLOAD_URI,
+                            language.value.GSON_SHA256,
+                            path,
+                        )
                         created_files.append(path)
-                    class_paths.append(str(path))
+                class_paths.append(str(path))
 
             cmd_args['class_path'] = pathsep.join(class_paths)
 
@@ -646,6 +632,41 @@ def _get_qualname(obj: object):
 
 def _is_windows() -> bool:
     return platform == 'win32'
+
+
+def _download(url: str, sha256: str, path: Path):
+    """
+    Download a file and verify its SHA-256 checksum.
+
+    The file is written to a temporary file first, so that parallel
+    processes never read an incomplete file.
+
+    Parameters
+    ----------
+    url : str
+        The URL of the file.
+    sha256 : str
+        The expected SHA-256 checksum (hexadecimal).
+    path : Path
+        The destination path.
+
+    Raises
+    ------
+    CompilationFailed
+        If the checksum of the downloaded file is different.
+    """
+    with urllib.request.urlopen(url, timeout=60) as response:
+        content = response.read()
+    checksum = hashlib.sha256(content).hexdigest()
+    if checksum != sha256:
+        msg = (
+            f'The SHA-256 checksum of `{url}` is `{checksum}`, '
+            f'but `{sha256}` was expected.'
+        )
+        raise exception.CompilationFailed(msg)
+    tmp_path = path.with_name(f'{path.name}.{getpid()}.tmp')
+    tmp_path.write_bytes(content)
+    tmp_path.replace(path)
 
 
 def _get_binary_path(src_path: Path) -> Path:

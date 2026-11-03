@@ -154,6 +154,8 @@ The template defines how the model data is stored in the generated code:
 - `exported`: the model data is saved in a separate JSON file.
 - `combined`: the model data is compiled into the logic of the code (e.g. nested if-else statements).
 
+In Java the template `exported` reads the JSON file with [Gson](https://github.com/google/gson). `make()` and `test()` download the jar and verify its checksum, or use the jar in the environment variable `SKLEARN_PORTER_GSON_PATH` (e.g. offline).
+
 
 ## Usage
 
