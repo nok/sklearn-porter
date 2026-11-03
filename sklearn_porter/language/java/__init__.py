@@ -8,6 +8,16 @@ class Java(LanguageABC):
     DEPENDENCIES = ['java', 'javac']
     SUFFIX = 'java'
 
+    # Gson, the JSON library of the templates `exported` (see also the usage
+    # in `base.exported.class` and the Dockerfile):
+    GSON_DOWNLOAD_URI = (
+        'https://repo1.maven.org/maven2/'
+        'com/google/code/gson/gson/2.15.0/gson-2.15.0.jar'
+    )
+    GSON_SHA256 = (
+        '96d3dd843dc2911de01cdabcd50064cb9e860353102a0a78c96fd833d396fc7d'
+    )
+
     # javac -cp tmp:gson.jar -d tmp tmp/Estimator.java
     CMD_COMPILE = [
         'javac',
@@ -49,17 +59,12 @@ class Java(LanguageABC):
         # Primitive data types:
         'int':          'int',
         'double':       'double',
-        'str':          'String'
+        'str':          'String',
+
+        # The URL of Gson (e.g. in the usage of the templates `exported`):
+        'gson_url':     GSON_DOWNLOAD_URI,
     }
     # fmt: on
-
-    GSON_DOWNLOAD_URI = (
-        'https://repo1.maven.org/maven2/'
-        'com/google/code/gson/gson/2.9.1/gson-2.9.1.jar'
-    )
-    GSON_SHA256 = (
-        '378534e339e6e6d50b1736fb3abb76f1c15d1be3f4c13cec6d536412e23da603'
-    )
 
     @staticmethod
     def str_literal(value: str) -> str:
