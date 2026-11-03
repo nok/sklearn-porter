@@ -2,10 +2,12 @@ import warnings
 from collections.abc import Callable
 from logging import getLogger
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 # Additional installed modules:
 import numpy as np
+from numpy.typing import ArrayLike
+from scipy.sparse import issparse, spmatrix
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -18,7 +20,6 @@ from sklearn.base import (
 )
 from sklearn.ensemble import (
     AdaBoostClassifier,
-    BaseEnsemble,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     GradientBoostingClassifier,
@@ -29,6 +30,7 @@ from sklearn.ensemble import (
     RandomForestClassifier,
     RandomForestRegressor,
 )
+from sklearn.exceptions import NotFittedError
 from sklearn.linear_model import (
     ARDRegression,
     BayesianRidge,
@@ -70,9 +72,9 @@ from sklearn.svm import (
     OneClassSVM,
 )
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.utils.validation import check_is_fitted
 
 # sklearn-porter
-from sklearn_porter import decorators as decorator
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.Base import Base, _get_qualname, _parse_predictions
@@ -84,7 +86,6 @@ if TYPE_CHECKING:
     from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 
 
-@decorator.aliased
 class Estimator(Base):
     """
     Main class which validates the passed estimator (a classifier, a
@@ -185,12 +186,11 @@ class Estimator(Base):
             )
             raise ValueError(msg)
 
-        # Check BaseEnsemble:
-        if isinstance(est, BaseEnsemble):
-            # A list or an array (e.g. of the stages of gradient boosting):
-            estimators = getattr(est, 'estimators_', None)
-            if estimators is None or len(estimators) == 0:
-                raise exception.NotFittedEstimatorError(qualname)
+        # Check whether the estimator (or the optimizer or pipeline) is fitted:
+        try:
+            check_is_fitted(est)
+        except NotFittedError:
+            raise exception.NotFittedEstimatorError(qualname) from None
 
         # Check GridSearchCV and RandomizedSearchCV:
         if isinstance(est, BaseSearchCV):
@@ -295,19 +295,15 @@ class Estimator(Base):
     def _registry() -> tuple:
         return Estimator.estimators()
 
-    @decorator.alias('predict')
     def make(
         self,
-        x: list | np.ndarray,
+        x: ArrayLike | spmatrix,
         n_jobs: bool | int = True,
         directory: str | Path | None = None,
         delete_created_files: bool = True,
         check_dependencies: bool = True,
         **kwargs,
-    ) -> (
-        tuple[np.int64, np.ndarray | None]
-        | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
-    ):
+    ) -> tuple[Any, Any]:
         """
         Make predictions with transpiled estimators locally.
 
@@ -329,7 +325,8 @@ class Estimator(Base):
 
         Returns
         -------
-        Return the predictions and probabilities.
+        Return the predictions and probabilities, of a single sample
+        of shape (n_features) without the dimension of the samples.
 
         Warns
         -----
@@ -337,18 +334,20 @@ class Estimator(Base):
             On Windows, because the compilation and execution of the ported
             estimators isn't tested on Windows.
         """
-        y = self._run(
-            x,
-            n_jobs=n_jobs,
-            directory=directory,
-            delete_created_files=delete_created_files,
-            check_dependencies=check_dependencies,
-            parse=_parse_predictions,
-            **kwargs,
-        )
-        return _predictions(y, self._estimator)
+        with self._overrides(kwargs):
+            y = self._run(
+                x,
+                n_jobs=n_jobs,
+                directory=directory,
+                delete_created_files=delete_created_files,
+                check_dependencies=check_dependencies,
+                parse=_parse_predictions,
+            )
+        return _predictions(y, self._estimator, _is_single(x))
 
-    @decorator.alias('integrity_score')
+    # Make predictions like an estimator of scikit-learn:
+    predict = make
+
     def test(
         self,
         x,
@@ -386,16 +385,15 @@ class Estimator(Base):
             Return the relative (or with `normalize=False` the absolute)
             number of equal predictions.
         """
-        self._check_kwargs(kwargs)
+        x = _as_samples(x)
         y_true = self._estimator.estimator.predict(x)
-        y_pred = self.make(
-            x,
-            language=self._language,
-            template=self._template,
-            n_jobs=n_jobs,
-            directory=directory,
-            delete_created_files=delete_created_files,
-        )
+        with self._overrides(kwargs):
+            y_pred = self.make(
+                x,
+                n_jobs=n_jobs,
+                directory=directory,
+                delete_created_files=delete_created_files,
+            )
         y_pred = y_pred[0]  # only predicts
         return _integrity_score(
             self._estimator.estimator, y_true, y_pred, normalize
@@ -537,12 +535,19 @@ def _integrity_score(
     return float(accuracy_score(y_true, y_pred, normalize=normalize))
 
 
+def _is_single(x) -> bool:
+    """Check whether the passed samples are a single sample."""
+    return not issparse(x) and np.ndim(x) == 1
+
+
+def _as_samples(x):
+    """Reshape a single sample to samples (like scikit-learn expects)."""
+    return np.reshape(x, (1, -1)) if _is_single(x) else x
+
+
 def _predictions(
-    y: list, ported_est: 'EstimatorBase'
-) -> (
-    tuple[np.int64, np.ndarray | None]
-    | tuple[np.ndarray, np.ndarray | list[np.ndarray] | None]
-):
+    y: list, ported_est: 'EstimatorBase', is_single: bool = False
+) -> tuple[Any, Any]:
     """
     Convert the results of a ported estimator to predictions.
 
@@ -552,6 +557,10 @@ def _predictions(
         The results (the prediction and the probabilities) of each sample.
     ported_est : EstimatorBase
         The ported estimator (e.g. the final estimator of a pipeline).
+    is_single : bool (default: False)
+        Whether the passed samples were a single sample of shape
+        (n_features), whose prediction and probabilities are returned
+        without the dimension of the samples (like a transformer does).
 
     Returns
     -------
@@ -570,16 +579,21 @@ def _predictions(
         y_pred = y_pred.astype(np.result_type(*classes))
     y_proba: np.ndarray | list[np.ndarray] | None = None
     if len(y) > 1:
+        # Floating point numbers, also if JSON contains only integers
+        # (e.g. `1` instead of `1.0` of JavaScript):
         if ported_est.meta_info.get('is_multi_output'):
             # Multi-output classifiers return the probabilities of each
             # output (with different numbers of classes), so create one
             # array per output like scikit-learn:
             n_outputs = len(y[1][0])
-            y_proba = [np.array([p[i] for p in y[1]]) for i in range(n_outputs)]
+            y_proba = [
+                np.array([p[i] for p in y[1]], dtype=np.float64)
+                for i in range(n_outputs)
+            ]
         else:
-            y_proba = np.array(y[1])
+            y_proba = np.array(y[1], dtype=np.float64)
 
-    if len(y_pred) == 1:  # a single sample
+    if is_single:
         if isinstance(y_proba, list):  # multiple outputs
             return y_pred[0], [p[0] for p in y_proba]
         return y_pred[0], None if y_proba is None else y_proba[0]

@@ -3,6 +3,7 @@ from functools import cache
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
 
+from sklearn_porter import exceptions as exception
 from sklearn_porter.language.LanguageABC import LanguageABC
 
 
@@ -98,14 +99,14 @@ class CSharp(LanguageABC):
 
         Raises
         ------
-        RuntimeError
+        MissingDependencyError
             If no .NET SDK with a compiler and reference assemblies is found.
         """
         try:
             out = check_output(['dotnet', '--list-sdks'], text=True)
         except (OSError, CalledProcessError) as e:
             msg = f'The .NET SDK is not available: {e}'
-            raise RuntimeError(msg) from None
+            raise exception.MissingDependencyError(msg) from None
         # Each line contains a version and a directory, e.g.
         # `10.0.402 [/usr/share/dotnet/sdk]`:
         sdks = []
@@ -135,7 +136,7 @@ class CSharp(LanguageABC):
                             f'{major}.{minor}.0',
                         )
         msg = 'No .NET SDK with a C# compiler and reference assemblies found.'
-        raise RuntimeError(msg)
+        raise exception.MissingDependencyError(msg)
 
     @classmethod
     def prepare_compilation(cls, src_path: Path) -> tuple[dict, list[Path]]:
