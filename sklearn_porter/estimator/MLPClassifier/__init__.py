@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
+from logging import getLogger
 
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.base import is_classifier
@@ -16,6 +16,8 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_labels, is_multilabel
+
+L = getLogger(__name__)
 
 
 class MLPClassifier(EstimatorBase, EstimatorApiABC):
@@ -60,7 +62,6 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
 
     def __init__(self, estimator: MLPClassifierClass | MLPRegressorClass):
         super().__init__(estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
 
         # Check output function:
@@ -87,8 +88,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
             # The labels of the classes, which the ported classifier returns:
             labels, label_kind = get_labels(est)
             self.meta_info.update(labels=labels, label_kind=label_kind)
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
         self.model_data = dict(
             layers=list(map(int, layers[1:])),
@@ -103,8 +103,7 @@ class MLPClassifier(EstimatorBase, EstimatorApiABC):
         # and regressors (`identity` or `exp` with `loss='poisson'`):
         self.output_activation = est.out_activation_
 
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
     def port(
         self,

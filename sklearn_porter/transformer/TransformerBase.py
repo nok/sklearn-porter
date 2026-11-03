@@ -1,10 +1,10 @@
 from collections.abc import Callable, Collection
 from copy import deepcopy
 from json import dumps
+from logging import getLogger
 from math import isinf, isnan
 
 import numpy as np
-from loguru import logger as L
 from sklearn.base import BaseEstimator
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
@@ -13,6 +13,8 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+
+L = getLogger(__name__)
 
 
 class TransformerBase(EstimatorBase):
@@ -115,8 +117,7 @@ class TransformerBase(EstimatorBase):
             if n_features_out is None
             else int(n_features_out),
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
         self.model_data = {}
         self.int_arrays = set(ints)
@@ -141,8 +142,7 @@ class TransformerBase(EstimatorBase):
                 )
                 raise exception.NotSupportedYetError(msg)
             self.model_data[name] = values.tolist()
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
     def literals(self, converter: Callable[[object], str]) -> dict:
         """

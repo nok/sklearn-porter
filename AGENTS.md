@@ -20,10 +20,15 @@ original estimator and transform the features like the original transformer.
   estimators, `transform` of the transformers.
 - **Public API** (exported in `sklearn_porter/__init__.py`): the classes
   `Porter`, `Estimator`, `Transformer` and `Pipeline` (incl. the method
-  `can`), the
-  functions `port`, `save`, `make`, `test`, `can`, `show` and the dict
-  `options`. The CLI `porter` (`show`, `port`, `save`) lives in
+  `can`) and the functions `port`, `save`, `make`, `test`, `can` and
+  `show`. The CLI `porter` (`show`, `port`, `save`) lives in
   `sklearn_porter/cli/`.
+- Logging: each module logs with `getLogger(__name__)` of the standard
+  `logging` module (only debug messages, lazily formatted with `%s`);
+  the package adds only a `NullHandler`, so the application decides about
+  the output. Errors are raised, not logged. The CLI option `--debug`
+  prints the debug messages to the standard error and shows the traceback
+  of errors.
 - `Porter` (`sklearn_porter/Porter.py`) is the central class (users always
   go through it): it creates a `Transformer` for a transformer
   (`is_transformer()`), a `Pipeline` for a pipeline whose preprocessing

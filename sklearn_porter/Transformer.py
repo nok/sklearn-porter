@@ -3,7 +3,6 @@ from importlib import import_module
 from pathlib import Path
 
 import numpy as np
-from loguru import logger as L
 from scipy.sparse import issparse
 
 # scikit-learn
@@ -161,14 +160,11 @@ class Transformer(Base):
         est = estimator  # shorter <3
         qualname = _get_qualname(est)
 
-        L.debug(f'Start validation of the passed transformer: `{qualname}`.')
-
         if not isinstance(est, BaseEstimator):
             msg = (
                 f'The passed transformer `{qualname}` is not a '
                 'valid base estimator of scikit-learn.'
             )
-            L.error(msg)
             raise ValueError(msg)
 
         if isinstance(est, Pipeline):
@@ -176,7 +172,6 @@ class Transformer(Base):
                 "A pipeline can't be ported as transformer. Port it with "
                 '`Porter` (or `Pipeline`).'
             )
-            L.error(msg)
             raise exception.NotSupportedYetError(msg)
 
         if not is_transformer(est):
@@ -185,7 +180,6 @@ class Transformer(Base):
                 'transformer. Port a classifier, a regressor or an outlier '
                 'detector with `Estimator` or `Porter`.'
             )
-            L.error(msg)
             raise ValueError(msg)
 
         return est

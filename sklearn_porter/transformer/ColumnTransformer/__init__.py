@@ -3,8 +3,6 @@ from copy import deepcopy
 from textwrap import dedent
 from typing import Any, cast
 
-from loguru import logger as L
-
 # scikit-learn
 from sklearn.base import BaseEstimator
 from sklearn.compose import ColumnTransformer as ColumnTransformerClass
@@ -94,7 +92,6 @@ class ColumnTransformer(TransformerBase, EstimatorApiABC):
 
     def __init__(self, transformer: BaseEstimator):
         super().__init__(transformer)
-        L.info(f'Create specific transformer `{self.estimator_name}`.')
         n_features = self._get_n_features(transformer)
         self.parts = self._get_parts(transformer, n_features)
         n_features_out = sum(part['n_out'] for part in self.parts)

@@ -1,4 +1,4 @@
-from loguru import logger as L
+from logging import getLogger
 
 # scikit-learn
 from sklearn.ensemble import (
@@ -17,6 +17,8 @@ from sklearn_porter.estimator.HistGradientBoostingRegressor import (
 )
 from sklearn_porter.utils import get_labels
 
+L = getLogger(__name__)
+
 
 class HistGradientBoostingClassifier(
     GradientBoostingClassifier, HistGradientBoostingRegressor, EstimatorBase
@@ -27,7 +29,6 @@ class HistGradientBoostingClassifier(
 
     def __init__(self, estimator: HistGradientBoostingClassifierClass):
         EstimatorBase.__init__(self, estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
 
         # Is the estimator fitted?
@@ -52,9 +53,7 @@ class HistGradientBoostingClassifier(
             labels=labels,
             label_kind=label_kind,
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
         self.model_data = dict(estimators=trees, inits=inits)
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)

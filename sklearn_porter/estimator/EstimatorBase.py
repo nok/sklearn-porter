@@ -1,12 +1,12 @@
 import sys
 from collections.abc import Callable
+from logging import getLogger
 from os import environ
 from pathlib import Path
 from time import sleep
 from typing import Any, cast
 
 from jinja2 import DictLoader, Environment, Template
-from loguru import logger as L
 
 # scikit-learn
 from sklearn import __version__ as sklearn_version
@@ -18,6 +18,8 @@ from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 # sklearn-porter
 from sklearn_porter.meta import __version__ as sklearn_porter_version
 from sklearn_porter.utils import tabify
+
+L = getLogger(__name__)
 
 
 class _Template(Template):
@@ -229,7 +231,7 @@ class EstimatorBase(EstimatorApiABC):
 
         # 1. Load basic language templates (e.g. `if`, `else`, ...):
         tpls.update(lang.TEMPLATES)
-        L.debug(f'Load template variables: {", ".join(lang.TEMPLATES)}')
+        L.debug('Load template variables: %s', ', '.join(lang.TEMPLATES))
 
         # 2. Load base language templates (e.g. `base.attached.class`):
         root_dir = Path(__file__).parent.parent
@@ -262,7 +264,7 @@ class EstimatorBase(EstimatorApiABC):
                     {path.stem: path.read_text() for path in tpls_paths}
                 )
 
-        L.debug(f'Load template files: {", ".join(tpls)}')
+        L.debug('Load template files: %s', ', '.join(tpls))
 
         environment = Environment(
             autoescape=False,

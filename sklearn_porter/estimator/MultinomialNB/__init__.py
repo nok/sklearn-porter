@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
+from logging import getLogger
 
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.naive_bayes import ComplementNB as ComplementNBClass
@@ -15,6 +15,8 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_labels
+
+L = getLogger(__name__)
 
 
 class MultinomialNB(EstimatorBase, EstimatorApiABC):
@@ -59,7 +61,6 @@ class MultinomialNB(EstimatorBase, EstimatorApiABC):
 
     def __init__(self, estimator: MultinomialNBClass | ComplementNBClass):
         super().__init__(estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
 
         # Is the estimator fitted?
@@ -98,15 +99,13 @@ class MultinomialNB(EstimatorBase, EstimatorApiABC):
             labels=labels,
             label_kind=label_kind,
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
         self.model_data = dict(
             priors=priors.tolist(),  # class_log_prior
             probs=est.feature_log_prob_.tolist(),  # feature_log_prob
         )
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
     @staticmethod
     def _get_priors(

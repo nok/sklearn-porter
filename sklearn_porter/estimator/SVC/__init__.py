@@ -1,8 +1,7 @@
 from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
-
-from loguru import logger as L
+from logging import getLogger
 
 # scikit-learn
 from sklearn.svm import SVC as SVCClass
@@ -14,6 +13,8 @@ from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
 from sklearn_porter.utils import get_labels
+
+L = getLogger(__name__)
 
 
 class SVC(EstimatorBase, EstimatorApiABC):
@@ -58,7 +59,6 @@ class SVC(EstimatorBase, EstimatorApiABC):
 
     def __init__(self, estimator: SVCClass | NuSVCClass):
         super().__init__(estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
         params = est.get_params()
 
@@ -99,8 +99,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
             coef0=params['coef0'],
             degree=params['degree'],
         )
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
         # The labels of the classes, which the ported classifier returns:
         labels, label_kind = get_labels(est)
@@ -114,8 +113,7 @@ class SVC(EstimatorBase, EstimatorApiABC):
             labels=labels,
             label_kind=label_kind,
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
     def port(
         self,

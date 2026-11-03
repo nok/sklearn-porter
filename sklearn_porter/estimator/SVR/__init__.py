@@ -1,9 +1,9 @@
 from collections.abc import Callable
 from copy import deepcopy
 from json import dumps
+from logging import getLogger
 
 import numpy as np
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.svm import SVR as SVRClass
@@ -15,6 +15,8 @@ from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.estimator.EstimatorApiABC import EstimatorApiABC
 from sklearn_porter.estimator.EstimatorBase import EstimatorBase
+
+L = getLogger(__name__)
 
 
 class SVR(EstimatorBase, EstimatorApiABC):
@@ -63,7 +65,6 @@ class SVR(EstimatorBase, EstimatorApiABC):
 
     def __init__(self, estimator: SVRClass | NuSVRClass | OneClassSVMClass):
         super().__init__(estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
         params = est.get_params()
 
@@ -107,16 +108,14 @@ class SVR(EstimatorBase, EstimatorApiABC):
             coef0=float(params['coef0']),
             degree=int(params['degree']),
         )
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
         self.meta_info = dict(
             n_features=vectors.shape[1],
             n_vectors=len(vectors),
             is_outlier_detector=self.IS_OUTLIER_DETECTOR,
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
     def port(
         self,

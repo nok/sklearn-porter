@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import warnings
 from collections.abc import Callable
@@ -80,7 +81,7 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.utils import get_tags
 
 # sklearn-porter
-from sklearn_porter import Estimator, can, options, port, show
+from sklearn_porter import Estimator, can, port, show
 from sklearn_porter import enums as enum
 from sklearn_porter import exceptions as exception
 from sklearn_porter.cli import utils as cli_utils
@@ -2277,9 +2278,51 @@ def test_cli_without_arguments(capsys: pytest.CaptureFixture):
     assert capsys.readouterr().out.startswith('usage:')
 
 
-def test_cli_error(monkeypatch: pytest.MonkeyPatch, joblib_model_path: Path):
-    # `--debug` changes the logging level, which is restored afterwards:
-    monkeypatch.setitem(options, 'logging.level', options['logging.level'])
+@pytest.fixture
+def porter_logger():
+    """The logger of sklearn-porter, restored after the test."""
+    logger = logging.getLogger('sklearn_porter')
+    handlers, level = list(logger.handlers), logger.level
+    yield logger
+    for handler in logger.handlers[len(handlers) :]:
+        logger.removeHandler(handler)
+    logger.setLevel(level)
+
+
+def test_logging(capsys: pytest.CaptureFixture, porter_logger: logging.Logger):
+    porter_logger.setLevel(logging.DEBUG)
+    clf = DecisionTreeClassifier(random_state=0)
+    clf.fit(*load_iris(return_X_y=True))
+    Estimator(clf).port()
+    # Without a handler of the application nothing is printed:
+    assert capsys.readouterr() == ('', '')
+    # The errors are only raised (and not printed in addition):
+    with pytest.raises(ValueError):
+        Estimator(preprocessing.StandardScaler())
+    assert capsys.readouterr() == ('', '')
+
+
+def test_cli_debug(
+    capsys: pytest.CaptureFixture,
+    monkeypatch: pytest.MonkeyPatch,
+    joblib_model_path: Path,
+    porter_logger: logging.Logger,
+):
+    args = ['porter', 'port', str(joblib_model_path), '-l', 'js']
+    monkeypatch.setattr('sys.argv', args + ['--skip-warnings', '--debug'])
+    cli_main()
+    out, err = capsys.readouterr()
+    # The debug messages are printed to the standard error only:
+    assert 'var DecisionTreeClassifier = function' in out
+    assert 'DEBUG sklearn_porter' not in out
+    assert 'DEBUG sklearn_porter.estimator.DecisionTreeClassifier: ' in err
+
+
+def test_cli_error(
+    monkeypatch: pytest.MonkeyPatch,
+    joblib_model_path: Path,
+    porter_logger: logging.Logger,
+):
     args = ['porter', 'port', str(joblib_model_path), '-t', 'exported']
     args.append('--skip-warnings')
     monkeypatch.setattr('sys.argv', args)

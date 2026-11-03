@@ -1,8 +1,8 @@
 from collections.abc import Callable
 from copy import deepcopy
+from logging import getLogger
 
 from jinja2 import Environment
-from loguru import logger as L
 
 # scikit-learn
 from sklearn.ensemble import (
@@ -32,6 +32,8 @@ from sklearn_porter.utils import (
     has_missing_go_to_left,
     with_infinity,
 )
+
+L = getLogger(__name__)
 
 
 class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
@@ -90,7 +92,6 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         estimator: RandomForestRegressorClass | ExtraTreesRegressorClass,
     ):
         super().__init__(estimator)
-        L.info(f'Create specific estimator `{self.estimator_name}`.')
         est = estimator  # alias
 
         # Is the estimator fitted?
@@ -113,8 +114,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
             n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
             n_outputs=est.n_outputs_,
         )
-        L.info(f'Meta info (keys): {self.meta_info.keys()}')
-        L.opt(lazy=True).debug(f'Meta info: {self.meta_info}')
+        L.debug('Meta info: %s', self.meta_info)
 
         # Extract and save model data:
         # scikit-learn sums up the predictions of all trees in their order
@@ -130,8 +130,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
                 for e in est.estimators_
             ]
         )
-        L.info(f'Model data (keys): {self.model_data.keys()}')
-        L.opt(lazy=True).debug(f'Model data: {self.model_data}')
+        L.debug('Model data: %s', self.model_data)
 
     def port(
         self,
