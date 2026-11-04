@@ -80,9 +80,9 @@ Probability of class #2 : 0.9782608695652174
 
 ## Examples
 
-- [Getting Started](https://github.com/nok/sklearn-porter/blob/main/examples/getting_started.ipynb) ✨: port a classifier, make predictions and check them with the functional and the object-oriented API.
-- [Transformers](https://github.com/nok/sklearn-porter/blob/main/examples/transformers.ipynb): port transformers (e.g. a `StandardScaler` or a `ColumnTransformer`) and use the ported transformers.
-- [Pipelines](https://github.com/nok/sklearn-porter/blob/main/examples/pipelines.ipynb): port a `Pipeline` of transformers and a final estimator (also of a `GridSearchCV`) to one source file.
+- ✨ [Getting Started](https://github.com/nok/sklearn-porter/blob/main/examples/getting_started.ipynb): port a classifier, make predictions and measure the accuracy.
+- [Transformers](https://github.com/nok/sklearn-porter/blob/main/examples/transformers.ipynb): port transformers (e.g. a `StandardScaler`) and use the ported transformers.
+- [Pipelines](https://github.com/nok/sklearn-porter/blob/main/examples/pipelines.ipynb): port a `Pipeline` of transformers and a final estimator to one source file.
 - [CLI](https://github.com/nok/sklearn-porter/blob/main/examples/cli.ipynb): port a saved classifier with the command `porter`, save the source code to files and run it.
 
 
