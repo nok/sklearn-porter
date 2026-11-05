@@ -1397,6 +1397,17 @@ def test_port_of_composite_transformers(
         assert type(orig_est).__name__ + 'StandardScaler' in out
 
 
+@pytest.mark.parametrize('template', ['combined', 'exported'])
+def test_js_module_usage(template: str):
+    """The header of a ported transformer of JavaScript shows its usage."""
+    out = port(TfidfVectorizer().fit(CORPUS), language='js', template=template)
+    if isinstance(out, tuple):  # the source code and the model data
+        out = out[0]
+    assert "require('./TfidfVectorizer.js');  // Node" in out
+    assert "transformer.transform('document');" in out
+    assert 'module.exports = TfidfVectorizer;' in out
+
+
 @pytest.mark.regression
 @pytest.mark.parametrize('mode', JS_MODES)
 @pytest.mark.parametrize('template', TEMPLATES)
@@ -1470,6 +1481,7 @@ def test_js_module_of_composite_transformers(
     src_path = Path(out[0] if isinstance(out, tuple) else out)
     out = run_js_module('browser', src_path, est.class_name)
     assert out == 'undefined\n'
+    assert 'Use the class in Node' not in src_path.read_text()
 
 
 def test_unsupported_part_of_column_transformer():

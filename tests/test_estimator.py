@@ -578,6 +578,12 @@ def test_js_module_exports(fitted_tree, template: str):
     # The model data is passed to the constructor (e.g. in a browser) or
     # read from the file of the passed path (e.g. in Node):
     assert ('var readModelData' in out) == (template == 'exported')
+    # The usage as module (the class of the template `attached` needs the
+    # model data, which is only in `main` yet):
+    usage = "require('./DecisionTreeClassifier.js');  // Node"
+    assert (usage in out) == (template != 'attached')
+    if template != 'attached':
+        assert 'estimator.predict([feature_1, ..., feature_4]);' in out
 
 
 def test_js_module_exports_of_pipeline():
@@ -588,8 +594,9 @@ def test_js_module_exports_of_pipeline():
             ('tree', DecisionTreeClassifier(random_state=0)),
         ]
     ).fit(*load_iris(return_X_y=True))
-    out = Porter(pipeline, language='js').port()
+    out = Porter(pipeline, language='js', template='combined').port()
     assert 'module.exports' not in out
+    assert 'Use the class in Node' not in out
     assert 'require.main === module' in out
 
 
