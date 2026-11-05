@@ -50,17 +50,22 @@ var {{ class_name }} = function(coeffs, inters) {
 {{ pipeline_classes }}
 
 {% endif %}
+// Create the estimator with the model data of this file:
+var createEstimator = function () {
+    // Model data:
+    {{ coeffs }}
+    {{ inters }}
+
+    return new {{ class_name }}(coeffs, inters);
+};
+
 var main = function () {
     {% if pipeline_create %}
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    {{ coeffs }}
-    {{ inters }}
-
     // Estimator:
-    var clf = new {{ class_name }}(coeffs, inters);
+    var clf = createEstimator();
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {

@@ -65,8 +65,10 @@ original estimator and transform the features like the original transformer.
   renamed shared function `pipeline_read_features` and passes them through
   the steps in separate arrays; in C# (the loop variable of `foreach` can't
   be assigned) the glue template `chain` assigns the transformations of all
-  steps to `PipelineTransform`, which `ReadSamples` applies; the other
-  languages assign the result of each step to `features` (glue template
+  steps to `PipelineTransform`, which `ReadSamples` applies; in JavaScript
+  the function `createSteps` (glue template `steps`) creates the
+  transformers, whose `transform` the loop applies; the other languages
+  assign the result of each step to `features` (glue template
   `transform`).
 - Pipeline placeholders: every class template of an estimator contains the
   placeholders `pipeline_classes` (before `main`, in Java and C# after the
@@ -336,8 +338,16 @@ table.
   wrap each file in a function with `'use strict'`, export the class
   (`module.exports` in Node, otherwise `globalThis`, e.g. in a browser) and
   run `main` only if Node executes the file (shared template `module`).
-  Pipelines and composite transformers export nothing yet, because their
-  steps are created in `main`. The classes must not use the APIs of Node
+  Where the class needs the model data or other instances, a function
+  creates the instance, which `main` calls and the module exports under the
+  name of the class (`new X()` returns its result): `createEstimator` and
+  `createTransformer` of the templates `attached` (with the block `create`
+  of the transformers), `createTransformer` of the composite transformers
+  (template `program`) and `createPipeline` of the pipelines (glue template
+  `steps`, whose function `createSteps` creates the transformers, also for
+  `main`). The pipeline as module forwards `predict`, `predictIndex` and
+  `predictProba` of the final estimator with the transformed features. The
+  classes must not use the APIs of Node
   (`require`, `process`, `Buffer`); only `main` and the shared templates
   `samples`, `documents` and `values` may use them. The constructors of the
   templates `exported` take the parsed model data or the path of the JSON

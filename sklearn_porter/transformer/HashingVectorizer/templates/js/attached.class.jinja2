@@ -90,7 +90,8 @@ var {{ class_name }} = function({% if n_stop_words %}stopWords{% endif %}) {
 
 {% include 'values' %}
 
-var main = function () {
+// Create the transformer with the model data of this file:
+var createTransformer = function () {
     {% block create %}
     {% if n_stop_words %}
     // Model data:
@@ -100,6 +101,13 @@ var main = function () {
     // Transformer:
     var {{ instance|default('transformer') }} = new {{ class_name }}({% if n_stop_words %}{{ prefix }}stop_words{% endif %});
     {% endblock %}
+
+    return transformer;
+};
+
+var main = function () {
+    // Transformer:
+    var transformer = createTransformer();
 
     // One document (arguments) or several documents (standard input):
     readDocuments(process.argv.slice(2)).forEach(function (document) {

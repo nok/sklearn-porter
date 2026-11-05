@@ -16,18 +16,23 @@ var {{ class_name }} = function(estimators, denominator, offset) {
 {{ pipeline_classes }}
 
 {% endif %}
-var main = function () {
-    {% if pipeline_create %}
-    {{ pipeline_create | indent('    ') }}
-
-    {% endif %}
+// Create the estimator with the model data of this file:
+var createEstimator = function () {
     // Model data:
     {{ model }}
     var denominator = {{ denominator }};
     var offset = {{ offset }};
 
+    return new {{ class_name }}(model, denominator, offset);
+};
+
+var main = function () {
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     // Estimator:
-    var clf = new {{ class_name }}(model, denominator, offset);
+    var clf = createEstimator();
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {

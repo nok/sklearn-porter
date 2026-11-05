@@ -571,23 +571,27 @@ def test_js_module_exports(fitted_tree, template: str):
     if isinstance(out, tuple):  # the source code and the model data
         out = out[0]
     assert out.count("'use strict';") == 1
-    assert 'module.exports = DecisionTreeClassifier;' in out
-    assert 'globalThis.DecisionTreeClassifier = DecisionTreeClassifier;' in out
+    # The class of the template `attached` is created by a function with the
+    # model data of the file:
+    exported = (
+        'createEstimator'
+        if template == 'attached'
+        else 'DecisionTreeClassifier'
+    )
+    assert f'module.exports = {exported};' in out
+    assert f'globalThis.DecisionTreeClassifier = {exported};' in out
     assert 'require.main === module' in out
     assert out.rstrip().endswith('}());')
     # The model data is passed to the constructor (e.g. in a browser) or
     # read from the file of the passed path (e.g. in Node):
     assert ('var readModelData' in out) == (template == 'exported')
-    # The usage as module (the class of the template `attached` needs the
-    # model data, which is only in `main` yet):
-    usage = "require('./DecisionTreeClassifier.js');  // Node"
-    assert (usage in out) == (template != 'attached')
-    if template != 'attached':
-        assert 'estimator.predict([feature_1, ..., feature_4]);' in out
+    # The usage as module:
+    assert "require('./DecisionTreeClassifier.js');  // Node" in out
+    assert 'estimator.predict([feature_1, ..., feature_4]);' in out
 
 
 def test_js_module_exports_of_pipeline():
-    """A ported pipeline exports nothing yet (its steps are in `main`)."""
+    """A ported pipeline exports a function, which creates its steps."""
     pipeline = Pipeline(
         [
             ('scaler', preprocessing.StandardScaler()),
@@ -595,8 +599,8 @@ def test_js_module_exports_of_pipeline():
         ]
     ).fit(*load_iris(return_X_y=True))
     out = Porter(pipeline, language='js', template='combined').port()
-    assert 'module.exports' not in out
-    assert 'Use the class in Node' not in out
+    assert 'module.exports = createPipeline;' in out
+    assert 'var estimator = new Pipeline();' in out
     assert 'require.main === module' in out
 
 
@@ -643,13 +647,6 @@ def test_js_module(
         src_path, data_path = Path(out[0]), Path(out[1])
     else:
         src_path, data_path = Path(out), None
-    if template == 'attached':
-        # The model data is only in the program yet, so the class is only
-        # exported:
-        out = run_js_module(mode, src_path, est.class_name)
-        assert out == 'function\n'
-        return
-
     samples = ''.join(' '.join(map(str, e)) + '\n' for e in x[::10].tolist())
     cmd = ['node', str(src_path)] + ([str(data_path)] if data_path else [])
     proc = run(cmd, input=samples, capture_output=True, encoding='utf-8')

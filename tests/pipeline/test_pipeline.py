@@ -52,7 +52,13 @@ from tests.commons import (
     REGRESSORS,
     Candidate,
 )
-from tests.utils import dataset_generate_x, dataset_uniform_x, fs_mkdir
+from tests.utils import (
+    JS_MODES,
+    dataset_generate_x,
+    dataset_uniform_x,
+    fs_mkdir,
+    run_js_module,
+)
 
 # Long running regression tests, see `make test-regression`:
 pytestmark = pytest.mark.regression
@@ -215,6 +221,56 @@ def test_pipeline_of_classifier(
             y_proba, pipeline.predict_proba(test_x), rtol=1e-12, atol=1e-15
         )
     assert est.test(test_x) == 1.0
+
+
+@pytest.mark.parametrize('mode', JS_MODES)
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('classifier', CLASSIFIERS.keys())
+@pytest.mark.parametrize('preprocessing', PREPROCESSING.keys())
+def test_js_module_of_pipeline(
+    tmp_root_dir: Path,
+    preprocessing: str,
+    classifier: str,
+    template: str,
+    mode: str,
+):
+    """
+    A ported pipeline of JavaScript can be loaded as module (e.g. in a
+    browser) and predicts like its program (with all transformers).
+    """
+    x, y = load_iris(return_X_y=True)
+    if preprocessing == 'imputer_with_indicator':
+        x[::5, 1] = np.nan
+    steps = PREPROCESSING[preprocessing]() + [
+        ('clf', CLASSIFIERS[classifier]())
+    ]
+    pipeline = SklearnPipeline(steps).fit(x, y)
+    if not Pipeline.supports(pipeline, 'js', template):
+        pytest.skip(f'The template `{template}` is not supported.')
+
+    est = Porter(pipeline, language='js', template=template)
+    tmp_dir = _tmp_dir(
+        tmp_root_dir,
+        'js_module_of_pipeline',
+        ('preprocessing', preprocessing),
+        ('classifier', classifier),
+        ('template', template),
+        ('mode', mode),
+    )
+    out = est.save(directory=tmp_dir, to_json=True)
+    if isinstance(out, tuple):  # the source code and the model data
+        src_path, data_path = Path(out[0]), Path(out[1])
+    else:
+        src_path, data_path = Path(out), None
+    samples = ''.join(' '.join(map(str, e)) + '\n' for e in x[::10].tolist())
+    cmd = ['node', str(src_path)] + ([str(data_path)] if data_path else [])
+    proc = run(cmd, input=samples, capture_output=True, encoding='utf-8')
+    assert proc.returncode == 0, proc.stderr
+    methods = list(json.loads(proc.stdout.splitlines()[0]))
+    out = run_js_module(
+        mode, src_path, est.class_name, data_path, methods, samples=samples
+    )
+    assert out == proc.stdout
 
 
 @pytest.mark.parametrize('template', TEMPLATES)

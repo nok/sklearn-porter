@@ -2,6 +2,8 @@ from collections.abc import Callable
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
+from jinja2 import Environment
+
 # scikit-learn
 from sklearn.pipeline import Pipeline as SklearnPipeline
 
@@ -32,6 +34,10 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
     The exported model data is the model data of the final estimator with
     the additional key `transformers`, which contains the model data of each
     transformer.
+
+    In JavaScript a function creates the transformers (`createSteps`), which
+    the program and the pipeline as module (`createPipeline`, e.g. in a
+    browser) use.
     """
 
     SKLEARN_URL = 'sklearn.pipeline.Pipeline.html'
@@ -135,29 +141,26 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
         glue = set(tpls.list_templates())
         classes = [s[k] for s in steps for k in ('class', 'data') if s.get(k)]
         create = [s['create'] for s in steps if s.get('create')]
-        if is_exported:
-            # Read the model data of the transformers (and free it, e.g. in C):
-            create.insert(0, tpls.get_template('load_data').render())
-            if 'free_data' in glue:
-                create.append(tpls.get_template('free_data').render())
-        # The transformation of the features of each sample: in the loop over
-        # the samples (`transform`, the number of features of the sample can
-        # change), in the function which reads the samples (`read`, e.g. in C
-        # with arrays of fixed size) or in a function which the function
-        # which reads the samples calls (`chain`, e.g. in C#):
-        transform = []
-        if 'transform' in glue:
-            transform = [
-                tpls.get_template('transform').render(**step) for step in steps
-            ]
-        if 'read' in glue:
+        if 'steps' in glue:
+            # A function creates the transformers (`steps`, e.g. in
+            # JavaScript), which the program and the pipeline as module
+            # (e.g. in a browser) use:
             classes.append(
-                tpls.get_template('read').render(
-                    steps=steps, n_features=n_features
+                tpls.get_template('steps').render(
+                    steps=steps,
+                    is_exported=is_exported,
+                    template=template.value,
+                    class_name=class_name,
                 )
             )
-        if 'chain' in glue:
-            create.append(tpls.get_template('chain').render(steps=steps))
+            create = [
+                tpls.get_template('create').render(is_exported=is_exported)
+            ]
+            transform = [tpls.get_template('transform').render()]
+        else:
+            create, transform = self._create_and_transform(
+                tpls, steps, create, classes, is_exported, n_features
+            )
 
         # The ported final estimator with the parts of the transformers:
         ported = self.final_est._estimator
@@ -193,3 +196,63 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
             )
             return out, model
         return out
+
+    @staticmethod
+    def _create_and_transform(
+        tpls: Environment,
+        steps: list[dict],
+        create: list[str],
+        classes: list[str],
+        is_exported: bool,
+        n_features: int,
+    ) -> tuple[list[str], list[str]]:
+        """
+        Get the creation of the transformers in `main` and the
+        transformation of the features of each sample (in the program).
+
+        Parameters
+        ----------
+        tpls : Environment
+            The templates of the glue code of the language.
+        steps : list of dict
+            The blocks of the ported transformers.
+        create : list of str
+            The creation of each transformer.
+        classes : list of str
+            The classes (and the model data) of the transformers, to which
+            a function to read the samples can be added (`read`).
+        is_exported : bool
+            Whether the model data is exported.
+        n_features : int
+            The number of features of the pipeline.
+
+        Returns
+        -------
+        The creation of the transformers and the transformation of the
+        features.
+        """
+        glue = set(tpls.list_templates())
+        if is_exported:
+            # Read the model data of the transformers (and free it, e.g. in C):
+            create.insert(0, tpls.get_template('load_data').render())
+            if 'free_data' in glue:
+                create.append(tpls.get_template('free_data').render())
+        # The transformation of the features of each sample: in the loop over
+        # the samples (`transform`, the number of features of the sample can
+        # change), in the function which reads the samples (`read`, e.g. in C
+        # with arrays of fixed size) or in a function which the function
+        # which reads the samples calls (`chain`, e.g. in C#):
+        transform = []
+        if 'transform' in glue:
+            transform = [
+                tpls.get_template('transform').render(**step) for step in steps
+            ]
+        if 'read' in glue:
+            classes.append(
+                tpls.get_template('read').render(
+                    steps=steps, n_features=n_features
+                )
+            )
+        if 'chain' in glue:
+            create.append(tpls.get_template('chain').render(steps=steps))
+        return create, transform

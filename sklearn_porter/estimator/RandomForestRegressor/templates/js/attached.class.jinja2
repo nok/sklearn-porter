@@ -63,16 +63,21 @@ var {{ class_name }} = function(modelData) {
 {{ pipeline_classes }}
 
 {% endif %}
+// Create the estimator with the model data of this file:
+var createEstimator = function () {
+    // Model data:
+    {{ model }}
+
+    return new {{ class_name }}(model);
+};
+
 var main = function () {
     {% if pipeline_create %}
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    {{ model }}
-
     // Estimator:
-    var reg = new {{ class_name }}(model);
+    var reg = createEstimator();
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {

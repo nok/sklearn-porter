@@ -1,12 +1,22 @@
-{% if not pipeline and not composite %}
+{% if pipeline %}
+{% set factory = 'createPipeline' %}
+{% elif composite or (attached and kind == 'Transformer') %}
+{% set factory = 'createTransformer' %}
+{% elif attached %}
+{% set factory = 'createEstimator' %}
+{% endif %}
+{% if factory %}
+// Export the class, whose instances `{{ factory }}` creates (also with
+// `new {{ class_name }}()`), e.g. for `require` of Node or for a browser:
+{% else %}
 // Export the class, e.g. for `require` of Node or for a browser:
+{% endif %}
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = {{ class_name }};
+    module.exports = {{ factory or class_name }};
 } else {
-    globalThis.{{ class_name }} = {{ class_name }};
+    globalThis.{{ class_name }} = {{ factory or class_name }};
 }
 
-{% endif %}
 // Execute the program, if Node runs this file:
 if (typeof require !== 'undefined' && require.main === module) {
     main();
