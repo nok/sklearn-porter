@@ -1,0 +1,13 @@
+{% if not pipeline and not composite %}
+// Export the class, e.g. for `require` of Node or for a browser:
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {{ class_name }};
+} else {
+    globalThis.{{ class_name }} = {{ class_name }};
+}
+
+{% endif %}
+// Execute the program, if Node runs this file:
+if (typeof require !== 'undefined' && require.main === module) {
+    main();
+}

@@ -14,5 +14,19 @@ Usage:
         $ node {{ class_name }}.js {{ '"document"' if text_input else 'feature_1 ... feature_' ~ n_features }}
     2. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
         $ node {{ class_name }}.js < {{ 'documents' if text_input else 'samples' }}.txt
+{% if not pipeline and not composite %}
+{% set usage_name = 'transformer' if kind == 'Transformer' else 'estimator' %}
+    3. Use the class in Node or in a browser:
+        var {{ class_name }} = require('./{{ class_name }}.js');  // Node
+        // or <script src="{{ class_name }}.js"></script> in a browser
+        var {{ usage_name }} = new {{ class_name }}();
+        {{ usage_name }}.{{ 'transform' if kind == 'Transformer' else 'predict' }}({{ "'document'" if text_input else '[feature_1, ..., feature_' ~ n_features ~ ']' }});
+{% endif %}
 */
+(function () {
+'use strict';
+
 {% block content %}{% endblock %}
+
+{% include 'module' +%}
+}());

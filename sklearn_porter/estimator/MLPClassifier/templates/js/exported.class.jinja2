@@ -1,10 +1,7 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
-var fs = require('fs');
-
-
-var {{ class_name }} = function(jsonFile) {
+var {{ class_name }} = function(data) {
     this.data = function(data) {
         data.hidden_activation = data.hidden_activation.toUpperCase();
         data.output_activation = data.output_activation.toUpperCase();
@@ -13,7 +10,7 @@ var {{ class_name }} = function(jsonFile) {
             data.network[i + 1] = new Array(data.layers[i]).fill(0.);
         }
         return data;
-    }(JSON.parse(fs.readFileSync(jsonFile)));
+    }(readModelData(data));
 
     this._resetNetwork = function() {
         for (var i = 1, l = this.data.network.length - 1; i < l; i++) {
@@ -176,9 +173,5 @@ var main = function () {
         }
         {% endif %}
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

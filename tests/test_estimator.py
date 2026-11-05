@@ -108,10 +108,12 @@ from tests.commons import (
     Dataset,
 )
 from tests.utils import (
+    JS_MODES,
     dataset_generate_x,
     dataset_uniform_x,
     drop_neighbor_ties,
     fs_mkdir,
+    run_js_module,
 )
 
 # The module of the shared code (e.g. `run` and `platform`), which is patched:
@@ -560,6 +562,103 @@ def test_text_output(
     proc = run(cmd, input=batch, capture_output=True, encoding='utf-8')
     assert proc.returncode == 0, proc.stderr
     assert proc.stdout == ''.join(outputs)
+
+
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+def test_js_module_exports(fitted_tree, template: str):
+    """The ported JavaScript exports the class and runs `main` in Node."""
+    out = Estimator(fitted_tree, language='js', template=template).port()
+    if isinstance(out, tuple):  # the source code and the model data
+        out = out[0]
+    assert out.count("'use strict';") == 1
+    assert 'module.exports = DecisionTreeClassifier;' in out
+    assert 'globalThis.DecisionTreeClassifier = DecisionTreeClassifier;' in out
+    assert 'require.main === module' in out
+    assert out.rstrip().endswith('}());')
+    # The model data is passed to the constructor (e.g. in a browser) or
+    # read from the file of the passed path (e.g. in Node):
+    assert ('var readModelData' in out) == (template == 'exported')
+    # The usage as module (the class of the template `attached` needs the
+    # model data, which is only in `main` yet):
+    usage = "require('./DecisionTreeClassifier.js');  // Node"
+    assert (usage in out) == (template != 'attached')
+    if template != 'attached':
+        assert 'estimator.predict([feature_1, ..., feature_4]);' in out
+
+
+def test_js_module_exports_of_pipeline():
+    """A ported pipeline exports nothing yet (its steps are in `main`)."""
+    pipeline = Pipeline(
+        [
+            ('scaler', preprocessing.StandardScaler()),
+            ('tree', DecisionTreeClassifier(random_state=0)),
+        ]
+    ).fit(*load_iris(return_X_y=True))
+    out = Porter(pipeline, language='js', template='combined').port()
+    assert 'module.exports' not in out
+    assert 'Use the class in Node' not in out
+    assert 'require.main === module' in out
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('mode', JS_MODES)
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+@pytest.mark.parametrize('candidate', CANDIDATES, ids=lambda x: x.name)
+@pytest.mark.filterwarnings('ignore::sklearn.exceptions.ConvergenceWarning')
+def test_js_module(
+    tmp_root_dir: Path, candidate: Candidate, template: str, mode: str
+):
+    """
+    The ported estimators of JavaScript can be loaded as modules (e.g. in a
+    browser) and predict like their programs.
+    """
+    orig_est = candidate.create()
+    if not can(orig_est, 'js', template, 'predict'):
+        pytest.skip('Skip unsupported estimator/template combination')
+    params = orig_est.get_params()
+    params = {
+        k: v
+        for k, v in dict(n_estimators=3, max_depth=3, max_iter=20).items()
+        if k in params
+    }
+    orig_est.set_params(**params)
+    if candidate in CLASSIFIERS:
+        x, y = load_iris(return_X_y=True)
+    else:
+        x, y = load_diabetes(return_X_y=True)
+    orig_est.fit(X=x, y=y)
+
+    tmp_dir = fs_mkdir(
+        tmp_root_dir,
+        [
+            ('test', 'js_module'),
+            ('candidate', candidate.name),
+            ('template', template),
+            ('mode', mode),
+        ],
+    )
+    est = Estimator(orig_est, language='js', template=template)
+    out = est.save(directory=tmp_dir, to_json=True)
+    if isinstance(out, tuple):  # the source code and the model data
+        src_path, data_path = Path(out[0]), Path(out[1])
+    else:
+        src_path, data_path = Path(out), None
+    if template == 'attached':
+        # The model data is only in the program yet, so the class is only
+        # exported:
+        out = run_js_module(mode, src_path, est.class_name)
+        assert out == 'function\n'
+        return
+
+    samples = ''.join(' '.join(map(str, e)) + '\n' for e in x[::10].tolist())
+    cmd = ['node', str(src_path)] + ([str(data_path)] if data_path else [])
+    proc = run(cmd, input=samples, capture_output=True, encoding='utf-8')
+    assert proc.returncode == 0, proc.stderr
+    methods = list(json.loads(proc.stdout.splitlines()[0]))
+    out = run_js_module(
+        mode, src_path, est.class_name, data_path, methods, samples=samples
+    )
+    assert out == proc.stdout
 
 
 def test_missing_compiler(fitted_tree, monkeypatch: pytest.MonkeyPatch):

@@ -62,6 +62,7 @@ from sklearn_porter.cli.command.port import main as port_main
 from sklearn_porter.cli.command.save import main as save_main
 from sklearn_porter.transformer.Normalizer import _get_sum_tree
 from tests.commons import LANGUAGES
+from tests.utils import JS_MODES, run_js_module
 
 ESTIMATOR_MODULE = import_module('sklearn_porter.Base')
 TEMPLATES = ['attached', 'combined', 'exported']
@@ -1394,6 +1395,93 @@ def test_port_of_composite_transformers(
         assert 'void t1_1_transform(' in out
     else:
         assert type(orig_est).__name__ + 'StandardScaler' in out
+
+
+@pytest.mark.parametrize('template', ['combined', 'exported'])
+def test_js_module_usage(template: str):
+    """The header of a ported transformer of JavaScript shows its usage."""
+    out = port(TfidfVectorizer().fit(CORPUS), language='js', template=template)
+    if isinstance(out, tuple):  # the source code and the model data
+        out = out[0]
+    assert "require('./TfidfVectorizer.js');  // Node" in out
+    assert "transformer.transform('document');" in out
+    assert 'module.exports = TfidfVectorizer;' in out
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('mode', JS_MODES)
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('name', TRANSFORMERS.keys())
+def test_js_module_of_all_transformers(
+    tmp_root_dir: Path, name: str, template: str, mode: str
+):
+    """
+    The ported transformers of JavaScript can be loaded as modules (e.g. in
+    a browser) and transform like their programs.
+    """
+    orig_est = TRANSFORMERS[name][0]()
+    est = Transformer(orig_est, language='js', template=template)
+    tmp_dir = tmp_root_dir / f'js_module-{name}-{template}-{mode}'
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    out = est.save(directory=tmp_dir)
+    if isinstance(out, tuple):  # the source code and the model data
+        src_path, data_path = Path(out[0]), Path(out[1])
+    else:
+        src_path, data_path = Path(out), None
+    if template == 'attached':
+        # The model data is only in the program yet, so the class is only
+        # exported:
+        out = run_js_module(mode, src_path, est.class_name)
+        assert out == 'function\n'
+        return
+
+    documents = getattr(est._estimator, 'TEXT_INPUT', False)
+    if documents:
+        # Also empty documents and characters outside of ASCII (UTF-8):
+        x = [*CORPUS, '', 'Ünïcödé — the naïve café ✓', 'a\x00b c']
+        lines = _get_document_lines(orig_est, x)
+    else:
+        # Known categories (e.g. of the encoders) without missing values
+        # (e.g. of the feature selectors):
+        x = np.round(_iris_with_missing_values())
+        n_features = est._estimator.meta_info['n_features']
+        x = x[~np.isnan(x).any(axis=1)][::5, :n_features]
+        lines = [' '.join(map(str, e)) for e in x.tolist()]
+    samples = ''.join(line + '\n' for line in lines)
+    cmd = ['node', str(src_path)] + ([str(data_path)] if data_path else [])
+    proc = run(cmd, input=samples, capture_output=True, encoding='utf-8')
+    assert proc.returncode == 0, proc.stderr
+    out = run_js_module(
+        mode,
+        src_path,
+        est.class_name,
+        data_path,
+        ['transform'],
+        documents=documents,
+        samples=samples,
+    )
+    assert out == proc.stdout
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('template', TEMPLATES)
+@pytest.mark.parametrize('name', ['column_transformer', 'feature_union'])
+def test_js_module_of_composite_transformers(
+    tmp_root_dir: Path, name: str, template: str
+):
+    """
+    A ported composite transformer of JavaScript can be loaded in a browser,
+    but exports nothing yet (its parts are created in `main`).
+    """
+    orig_est = _composite_transformers()[name]
+    est = Transformer(orig_est, language='js', template=template)
+    tmp_dir = tmp_root_dir / f'js_module-{name}-{template}'
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    out = est.save(directory=tmp_dir)
+    src_path = Path(out[0] if isinstance(out, tuple) else out)
+    out = run_js_module('browser', src_path, est.class_name)
+    assert out == 'undefined\n'
+    assert 'Use the class in Node' not in src_path.read_text()
 
 
 def test_unsupported_part_of_column_transformer():

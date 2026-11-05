@@ -1,11 +1,8 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
-var fs = require('fs');
-
-
-var {{ class_name }} = function(jsonFile) {
-    var modelData = JSON.parse(fs.readFileSync(jsonFile)){{ '.estimators' if pipeline }};
+var {{ class_name }} = function(data) {
+    var modelData = readModelData(data){{ '.estimators' if pipeline }};
 
     var Tree = function(lefts, rights, thresholds, indices, missingGoToLeft, values) {
         this.lefts = lefts;
@@ -104,9 +101,5 @@ var main = function () {
         }
         {% endif %}
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

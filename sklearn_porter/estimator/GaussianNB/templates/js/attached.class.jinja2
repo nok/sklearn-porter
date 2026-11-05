@@ -53,7 +53,7 @@ var {{ class_name }} = function(priors, norms, sigmas, thetas) {
     this.predictProba = function(features) {
         var jll = _compute(features, this.priors, this.norms, this.sigmas, this.thetas);
         var sum = _logSumExp(jll);
-        for (i = 0; i < jll.length; i++) {
+        for (var i = 0; i < jll.length; i++) {
             jll[i] = Math.exp(jll[i] - sum);
         }
         return jll;
@@ -104,9 +104,5 @@ var main = function () {
         }
         {% endif %}
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

@@ -1,0 +1,8 @@
+// Read the model data from the JSON file (e.g. in Node) or take the already
+// parsed model data (e.g. in a browser):
+var readModelData = function (data) {
+    if (typeof data === 'string') {
+        return JSON.parse(require('fs').readFileSync(data, 'utf8'));
+    }
+    return data;
+};

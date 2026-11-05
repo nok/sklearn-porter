@@ -1,9 +1,6 @@
 {% extends 'base.attached.class' %}
 
 {% block content %}
-var fs = require('fs');
-
-
 var {{ class_name }} = function(modelData) {
     var that = this;
 
@@ -129,9 +126,5 @@ var main = function () {
         }
         {% endif %}
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}
