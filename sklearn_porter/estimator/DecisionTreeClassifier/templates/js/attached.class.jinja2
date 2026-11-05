@@ -101,11 +101,8 @@ var {{ class_name }} = function(lefts, rights, thresholds, indices, missingGoToL
 {{ pipeline_classes }}
 
 {% endif %}
-var main = function () {
-    {% if pipeline_create %}
-    {{ pipeline_create | indent('    ') }}
-
-    {% endif %}
+// Create the estimator with the model data of this file:
+var createEstimator = function () {
     // Model data:
     {{ lefts }}
     {{ rights }}
@@ -114,8 +111,16 @@ var main = function () {
     {{ missing_go_to_left }}
     {{ classes }}
 
+    return new {{ class_name }}(lefts, rights, thresholds, indices, missingGoToLeft, classes);
+};
+
+var main = function () {
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     // Estimator:
-    var clf = new {{ class_name }}(lefts, rights, thresholds, indices, missingGoToLeft, classes);
+    var clf = createEstimator();
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {

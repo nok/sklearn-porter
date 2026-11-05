@@ -112,18 +112,23 @@ var {{ class_name }} = function(hidden, layers, weights, bias) {
 {{ pipeline_classes }}
 
 {% endif %}
-var main = function () {
-    {% if pipeline_create %}
-    {{ pipeline_create | indent('    ') }}
-
-    {% endif %}
+// Create the estimator with the model data of this file:
+var createEstimator = function () {
     // Model data:
     {{ layers }}
     {{ weights }}
     {{ bias }}
 
+    return new {{ class_name }}('{{ hidden_activation }}', layers, weights, bias);
+};
+
+var main = function () {
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     // Estimator:
-    var reg = new {{ class_name }}('{{ hidden_activation }}', layers, weights, bias);
+    var reg = createEstimator();
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {

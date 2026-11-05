@@ -41,7 +41,8 @@ var {{ class_name }} = function(lambdas, mean, scale) {
 
 {% include 'values' %}
 
-var main = function () {
+// Create the transformer with the model data of this file:
+var createTransformer = function () {
     {% block create %}
     // Model data:
     {{ lambdas }}
@@ -51,6 +52,13 @@ var main = function () {
     // Transformer:
     var {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}lambdas, {{ prefix }}mean, {{ prefix }}scale);
     {% endblock %}
+
+    return transformer;
+};
+
+var main = function () {
+    // Transformer:
+    var transformer = createTransformer();
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {

@@ -105,11 +105,11 @@ def run_driver(
     x_path.write_text(json.dumps(x.tolist()))
 
     if language == 'js':
-        new = 'new Estimator'
+        # The template `attached` creates the estimator with its model data:
         constructor = (
-            f'{new}(process.argv[3])'
+            'new Estimator(process.argv[3])'
             if template == 'exported'
-            else CONSTRUCTORS[(class_name, template)].format(new=new)
+            else 'new Estimator()'
         )
         # The ported estimator exports its class (`module.exports`):
         driver_path = tmp_dir / 'driver.js'

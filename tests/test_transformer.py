@@ -1428,13 +1428,6 @@ def test_js_module_of_all_transformers(
         src_path, data_path = Path(out[0]), Path(out[1])
     else:
         src_path, data_path = Path(out), None
-    if template == 'attached':
-        # The model data is only in the program yet, so the class is only
-        # exported:
-        out = run_js_module(mode, src_path, est.class_name)
-        assert out == 'function\n'
-        return
-
     documents = getattr(est._estimator, 'TEXT_INPUT', False)
     if documents:
         # Also empty documents and characters outside of ASCII (UTF-8):
@@ -1464,24 +1457,39 @@ def test_js_module_of_all_transformers(
 
 
 @pytest.mark.regression
+@pytest.mark.parametrize('mode', JS_MODES)
 @pytest.mark.parametrize('template', TEMPLATES)
 @pytest.mark.parametrize('name', ['column_transformer', 'feature_union'])
 def test_js_module_of_composite_transformers(
-    tmp_root_dir: Path, name: str, template: str
+    tmp_root_dir: Path, name: str, template: str, mode: str
 ):
     """
-    A ported composite transformer of JavaScript can be loaded in a browser,
-    but exports nothing yet (its parts are created in `main`).
+    A ported composite transformer of JavaScript can be loaded as module
+    (e.g. in a browser) and transforms like its program.
     """
     orig_est = _composite_transformers()[name]
     est = Transformer(orig_est, language='js', template=template)
-    tmp_dir = tmp_root_dir / f'js_module-{name}-{template}'
+    tmp_dir = tmp_root_dir / f'js_module-{name}-{template}-{mode}'
     tmp_dir.mkdir(parents=True, exist_ok=True)
     out = est.save(directory=tmp_dir)
-    src_path = Path(out[0] if isinstance(out, tuple) else out)
-    out = run_js_module('browser', src_path, est.class_name)
-    assert out == 'undefined\n'
-    assert 'Use the class in Node' not in src_path.read_text()
+    if isinstance(out, tuple):  # the source code and the model data
+        src_path, data_path = Path(out[0]), Path(out[1])
+    else:
+        src_path, data_path = Path(out), None
+    x = load_iris().data[::10]
+    samples = ''.join(' '.join(map(str, e)) + '\n' for e in x.tolist())
+    cmd = ['node', str(src_path)] + ([str(data_path)] if data_path else [])
+    proc = run(cmd, input=samples, capture_output=True, encoding='utf-8')
+    assert proc.returncode == 0, proc.stderr
+    out = run_js_module(
+        mode,
+        src_path,
+        est.class_name,
+        data_path,
+        ['transform'],
+        samples=samples,
+    )
+    assert out == proc.stdout
 
 
 def test_unsupported_part_of_column_transformer():

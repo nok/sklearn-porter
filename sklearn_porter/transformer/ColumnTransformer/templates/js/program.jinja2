@@ -8,6 +8,14 @@
 
 {% include 'values' %}
 
+// Create the transformer with the transformers of its parts{% if is_exported +%}
+// (the model data is the path of the JSON file or the parsed JSON file){% endif %}:
+var createTransformer = function ({{ 'data' if is_exported }}) {
+    {{ create|indent('    ') }}
+
+    return {{ instance }};
+};
+
 var main = function () {
 {% if is_exported %}
     if (process.argv.length < 3) {
@@ -15,7 +23,8 @@ var main = function () {
     }
 
 {% endif %}
-    {{ create|indent('    ') }}
+    // Transformer:
+    var {{ instance }} = createTransformer({{ 'process.argv[2]' if is_exported }});
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice({{ 3 if is_exported else 2 }})).forEach(function (features) {

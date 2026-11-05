@@ -13,7 +13,7 @@ Environment:
 
 Usage:
     1. Execute {{ action|default('a prediction') }}:
-        $ php -f {{ class_name }}.php {{ class_name }}.json {{ '"document"' if text_input else 'feature_1 ... feature_' ~ n_features }}
+        $ php -f {{ class_name }}.php {{ class_name }}.json {{ '"document"' if text_input else 'feature_1 ... feature_' ~ (pipeline_n_features or n_features) }}
     2. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
         $ php -f {{ class_name }}.php {{ class_name }}.json < {{ 'documents' if text_input else 'samples' }}.txt
 */

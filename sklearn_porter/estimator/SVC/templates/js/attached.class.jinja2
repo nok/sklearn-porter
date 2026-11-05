@@ -152,19 +152,24 @@ var {{ class_name }} = function(vectors, coeffs, inters, weights, kernel, gamma,
 {{ pipeline_classes }}
 
 {% endif %}
-var main = function () {
-    {% if pipeline_create %}
-    {{ pipeline_create | indent('    ') }}
-
-    {% endif %}
+// Create the estimator with the model data of this file:
+var createEstimator = function () {
     // Model data:
     {{ vectors }}
     {{ coeffs }}
     {{ inters }}
     {{ weights }}
 
+    return new {{ class_name }}(vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+};
+
+var main = function () {
+    {% if pipeline_create %}
+    {{ pipeline_create | indent('    ') }}
+
+    {% endif %}
     // Estimator:
-    var clf = new {{ class_name }}(vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+    var clf = createEstimator();
 
     // Features of one sample (arguments) or several samples (standard input):
     readSamples(process.argv.slice(2)).forEach(function (features) {

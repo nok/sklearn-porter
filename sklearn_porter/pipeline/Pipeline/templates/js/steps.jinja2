@@ -1,0 +1,43 @@
+// Create the transformers of the pipeline{% if is_exported +%}
+// (the model data is the path of the JSON file or the parsed JSON file){% endif %}:
+var createSteps = function ({{ 'data' if is_exported }}) {
+    {% if is_exported %}
+    var pipelineData = readModelData(data);
+
+    {% endif %}
+    {% for step in steps if step.create %}
+    {{ step.create|indent('    ') }}
+
+    {% endfor %}
+    return {
+        // Transform the features with all transformers:
+        transform: function (features) {
+            {% for step in steps %}
+            features = {{ step.instance }}.transform(features);
+            {% endfor %}
+            return features;
+        }
+    };
+};
+
+// Create the pipeline: the transformers and the final estimator{% if is_exported +%}
+// (the model data is the path of the JSON file or the parsed JSON file){% endif %}:
+var createPipeline = function ({{ 'data' if is_exported }}) {
+    {% if is_exported %}
+    data = readModelData(data);
+    {% endif %}
+    var steps = createSteps({{ 'data' if is_exported }});
+    // The final estimator (the class `{{ class_name }}`):
+    var estimator = {{ 'createEstimator()' if template == 'attached' else 'new ' ~ class_name ~ '(' ~ ('data' if is_exported else '') ~ ')' }};
+
+    // The predictions of the final estimator with the transformed features:
+    var pipeline = {};
+    ['predict', 'predictIndex', 'predictProba'].forEach(function (name) {
+        if (typeof estimator[name] === 'function') {
+            pipeline[name] = function (features) {
+                return estimator[name](steps.transform(features));
+            };
+        }
+    });
+    return pipeline;
+};
