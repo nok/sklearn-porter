@@ -1,6 +1,6 @@
 // The printed lines, which are written in chunks, because writing each line
 // separately takes much longer (see `printValues`):
-var valuesLines = [];
+var valuesLines = null;
 var valuesLength = 0;
 var writeValuesLines = function () {
     var data = Buffer.from(valuesLines.join(''));
@@ -16,11 +16,13 @@ var writeValuesLines = function () {
     valuesLines = [];
     valuesLength = 0;
 };
-process.on('exit', writeValuesLines);
-
 // Print the values of a sample (e.g. the transformed features) in one line,
 // separated by spaces, so the output can be passed to a ported estimator:
 var printValues = function (values) {
+    if (valuesLines === null) {  // the first line
+        valuesLines = [];
+        process.on('exit', writeValuesLines);
+    }
     var line = values.map(function (value) {
         return Object.is(value, -0) ? '-0' : String(value);
     }).join(' ') + '\n';

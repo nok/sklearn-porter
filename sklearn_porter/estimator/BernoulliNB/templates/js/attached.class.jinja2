@@ -76,7 +76,7 @@ var {{ class_name }} = function(priors, probs) {
     this.predictProba = function(features) {
         var jll = _compute(features, this.priors, this.probs);
         var sum = _logSumExp(jll);
-        for (i = 0; i < jll.length; i++) {
+        for (var i = 0; i < jll.length; i++) {
             jll[i] = Math.exp(jll[i] - sum);
         }
         return jll;
@@ -125,9 +125,5 @@ var main = function () {
         }
         {% endif %}
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

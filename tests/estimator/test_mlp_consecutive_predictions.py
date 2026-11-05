@@ -111,15 +111,12 @@ def run_driver(
             if template == 'exported'
             else CONSTRUCTORS[(class_name, template)].format(new=new)
         )
-        module_path = tmp_dir / 'estimator.module.js'
-        module_path.write_text(
-            src_path.read_text() + f'\nmodule.exports = {class_name};\n'
-        )
+        # The ported estimator exports its class (`module.exports`):
         driver_path = tmp_dir / 'driver.js'
         driver_path.write_text(
             JS_DRIVER.format(constructor=constructor, method=method)
         )
-        cmd = ['node', driver_path, module_path, data_path, x_path]
+        cmd = ['node', driver_path, src_path.resolve(), data_path, x_path]
     else:
         new = f'new {class_name}'
         constructor = (

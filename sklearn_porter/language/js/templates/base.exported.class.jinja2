@@ -15,4 +15,12 @@ Usage:
     2. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
         $ node {{ class_name }}.js {{ class_name }}.json < {{ 'documents' if text_input else 'samples' }}.txt
 */
+(function () {
+'use strict';
+
+{% include 'model_data' +%}
+
 {% block content %}{% endblock %}
+
+{% include 'module' +%}
+}());

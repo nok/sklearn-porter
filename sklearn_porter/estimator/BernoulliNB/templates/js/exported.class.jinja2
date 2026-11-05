@@ -1,11 +1,8 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
-var fs = require('fs');
-
-
-var {{ class_name }} = function(jsonFile) {
-    this.data = JSON.parse(fs.readFileSync(jsonFile));
+var {{ class_name }} = function(data) {
+    this.data = readModelData(data);
 
     var _findMax = function(nums) {
         var i, l = nums.length, idx = 0;
@@ -77,7 +74,7 @@ var {{ class_name }} = function(jsonFile) {
     this.predictProba = function(features) {
         var jll = _compute(features, this.data.priors, this.data.probs, this.data.binarize, this.data.threshold);
         var sum = _logSumExp(jll);
-        for (i = 0; i < jll.length; i++) {
+        for (var i = 0; i < jll.length; i++) {
             jll[i] = Math.exp(jll[i] - sum);
         }
         return jll;
@@ -128,9 +125,5 @@ var main = function () {
         }
         {% endif %}
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

@@ -1,17 +1,9 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
-var fs = require('fs');
-
-
 {% block class %}
-{% if _blocks %}
 var {{ class_name }} = function(data) {
-    this.data = data;
-{% else %}
-var {{ class_name }} = function(jsonFile) {
-    this.data = JSON.parse(fs.readFileSync(jsonFile));
-{% endif %}
+    this.data = readModelData(data);
 
     this.transform = function(features) {
         var values = new Array(features.length);
@@ -120,9 +112,5 @@ var main = function () {
     readSamples(process.argv.slice(3)).forEach(function (features) {
         printValues(transformer.transform(features));
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

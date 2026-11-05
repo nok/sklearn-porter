@@ -223,6 +223,10 @@ make test-regression   # regression tests in Docker (slow, ~20+ min)
 - Run the regression tests in Docker after changing templates, the model data
   extraction or the execution of ported estimators.
 - New tests which call `make()` or `test()` must be marked with `regression`.
+- The tests `test_js_module*` load the ported JavaScript as module
+  (`tests/utils/js_module.js`): in a context with only the globals of a
+  browser, with `require` and as ES module, and compare the results with
+  the program.
 - Don't compare floating point results with NumPy bit-exactly (e.g.
   `assert_array_equal` of scores or probabilities): NumPy computes functions
   like `np.power`, `np.exp` or `np.log` with SIMD instructions depending on
@@ -328,6 +332,16 @@ table.
   comma as decimal separator. `Array.Sort` isn't stable, so sort by an
   additional index where the order of equal values matters (e.g. the
   neighbors of the KNeighborsClassifier).
+- JavaScript (key `js`) runs in Node and in browsers: the base templates
+  wrap each file in a function with `'use strict'`, export the class
+  (`module.exports` in Node, otherwise `globalThis`, e.g. in a browser) and
+  run `main` only if Node executes the file (shared template `module`).
+  Pipelines and composite transformers export nothing yet, because their
+  steps are created in `main`. The classes must not use the APIs of Node
+  (`require`, `process`, `Buffer`); only `main` and the shared templates
+  `samples`, `documents` and `values` may use them. The constructors of the
+  templates `exported` take the parsed model data or the path of the JSON
+  file (`readModelData()`, shared template `model_data`).
 - Commit messages and PR titles follow Conventional Commits
   (`feat:`, `fix:`, `docs:`, `ci:`, `build:`, `style:`, `refactor:`,
   `test:`, `chore:`; `!` or `BREAKING CHANGE:` for breaking changes).

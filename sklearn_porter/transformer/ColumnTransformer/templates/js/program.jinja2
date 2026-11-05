@@ -1,4 +1,5 @@
 {% extends 'base.' ~ template ~ '.class' %}
+{% set composite = True %}
 
 {% block content %}
 {{ classes }}
@@ -20,9 +21,5 @@ var main = function () {
     readSamples(process.argv.slice({{ 3 if is_exported else 2 }})).forEach(function (features) {
         printValues({{ instance }}.transform(features));
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

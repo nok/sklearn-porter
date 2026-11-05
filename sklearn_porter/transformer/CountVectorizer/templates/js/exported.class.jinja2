@@ -1,16 +1,9 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
-var fs = require('fs');
-
-
 {% block class %}
-{% if _blocks %}
 var {{ class_name }} = function(data) {
-{% else %}
-var {{ class_name }} = function(jsonFile) {
-    var data = JSON.parse(fs.readFileSync(jsonFile));
-{% endif %}
+    data = readModelData(data);
     var vocabulary = data.vocabulary;
     {% if n_stop_words %}
     var stopWords = data.stop_words;
@@ -93,9 +86,5 @@ var main = function () {
     readDocuments(process.argv.slice(3)).forEach(function (document) {
         printValues(transformer.transform(document));
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

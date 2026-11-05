@@ -1,5 +1,7 @@
+import json
 from os import sep
 from pathlib import Path
+from subprocess import run
 
 import numpy as np
 
@@ -72,3 +74,42 @@ def drop_class_ties(est, x: np.ndarray) -> np.ndarray:
         return x
     jll = np.sort(jll, axis=1)
     return x[~np.isclose(jll[:, -1], jll[:, -2])]
+
+
+# The ways to load a ported estimator of JavaScript as a module (see
+# `js_module.js`): in a context with only the globals of a browser, with
+# `require` of Node and as ES module:
+JS_MODES = ['browser', 'require', 'import']
+JS_MODULE = Path(__file__).parent / 'js_module.js'
+
+
+def run_js_module(
+    mode: str,
+    src_path: Path,
+    class_name: str,
+    data_path: Path | None = None,
+    methods: list[str] | None = None,
+    documents: bool = False,
+    samples: str = '',
+) -> str:
+    """
+    Load a ported estimator of JavaScript as a module and return the results
+    of its methods for the samples (one per line) in the format of its
+    program, or the type of its export without methods.
+    """
+    config = dict(
+        mode=mode,
+        src=str(src_path),
+        className=class_name,
+        data=str(data_path) if data_path else None,
+        methods=methods or [],
+        documents=documents,
+    )
+    proc = run(
+        ['node', str(JS_MODULE), json.dumps(config)],
+        input=samples,
+        capture_output=True,
+        encoding='utf-8',
+    )
+    assert proc.returncode == 0, proc.stderr
+    return proc.stdout

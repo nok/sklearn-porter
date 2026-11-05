@@ -1,11 +1,8 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
-var fs = require('fs');
-
-
-var {{ class_name }} = function(jsonFile) {
-    var data = JSON.parse(fs.readFileSync(jsonFile));
+var {{ class_name }} = function(data) {
+    data = readModelData(data);
 
     this.vectors = data.vectors;
     this.coeffs = data.coeffs;
@@ -50,9 +47,5 @@ var main = function () {
         {% include 'output' %}
         {% endfilter %}
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

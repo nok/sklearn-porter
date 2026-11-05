@@ -8,9 +8,11 @@ var {{ class_name }} = function({% if n_stop_words %}stopWords{% endif %}) {
     this.stopWords = new Set(stopWords);
 
     {% endif %}
+    var encoder = new TextEncoder();
+
     // The signed 32-bit MurmurHash3 (x86_32, seed 0) of the bytes of a term (UTF-8):
     var murmurhash3 = function (term) {
-        var data = Buffer.from(term, 'utf8');
+        var data = encoder.encode(term);
         var h = 0, k, i;
         var nBlocks = Math.floor(data.length / 4);
         for (i = 0; i < nBlocks; i++) {
@@ -103,9 +105,5 @@ var main = function () {
     readDocuments(process.argv.slice(2)).forEach(function (document) {
         printValues(transformer.transform(document));
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}

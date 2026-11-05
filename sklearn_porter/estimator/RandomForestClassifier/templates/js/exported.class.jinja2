@@ -1,10 +1,7 @@
 {% extends 'base.exported.class' %}
 
 {% block content %}
-var fs = require('fs');
-
-
-var {{ class_name }} = function(jsonFile) {
+var {{ class_name }} = function(data) {
     var that = this;
 
     var Tree = function(lefts, rights, thresholds, indices, missingGoToLeft, classes) {
@@ -34,7 +31,7 @@ var {{ class_name }} = function(jsonFile) {
 
     that.forest = [];
 
-    var modelData = JSON.parse(fs.readFileSync(jsonFile)){{ '.estimators' if pipeline }};
+    var modelData = readModelData(data){{ '.estimators' if pipeline }};
     for (var i = 0, il = modelData.length; i < il; i++) {
         that.forest.push(new Tree(
             modelData[i]['lefts'], modelData[i]['rights'],
@@ -168,9 +165,5 @@ var main = function () {
         }
         {% endif %}
     });
-}
-
-if (require.main === module) {
-    main();
 }
 {% endblock %}
