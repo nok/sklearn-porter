@@ -15,10 +15,14 @@ jobs:
   test:
     name: Test (latest versions)
     runs-on: ubuntu-latest
+    # For all steps, because `uv run --locked` fails if the pre-release mode
+    # differs from the one of the lockfile:
+    env:
+      UV_PRERELEASE: allow
     steps:
       - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v7
         with:
           python-version: '3.14'
-      - run: uv lock --upgrade --prerelease allow
+      - run: uv lock --upgrade
       - run: uv run --locked pytest --numprocesses=auto
