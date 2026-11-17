@@ -111,7 +111,7 @@ class RandomForestRegressor(EstimatorBase, EstimatorApiABC):
         # Extract and save meta information:
         self.meta_info = dict(
             n_estimators=len(est.estimators_),
-            n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
+            n_features=est.n_features_in_,  # ty: ignore[missing-attribute]
             n_outputs=est.n_outputs_,
         )
         L.debug('Meta info: %s', self.meta_info)

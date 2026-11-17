@@ -39,7 +39,7 @@ class TfidfVectorizer(CountVectorizer):
         # (`_tfidf`) with its parameters, not the current parameters of the
         # vectorizer. It weights the counts with `idf_`, if the fit created
         # it (`use_idf=True`); multiplying by one doesn't change the counts:
-        tfidf = est._tfidf  # ty: ignore[unresolved-attribute]
+        tfidf = est._tfidf  # ty: ignore[missing-attribute]
         self.norm = tfidf.norm
         self.sublinear_tf = bool(tfidf.sublinear_tf)
         idf = getattr(tfidf, 'idf_', None)

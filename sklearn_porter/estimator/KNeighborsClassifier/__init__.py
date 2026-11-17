@@ -153,7 +153,7 @@ class KNeighborsClassifier(EstimatorBase, EstimatorApiABC):
 
         # The classes of multiple outputs are concatenated, so the indices of
         # the classes of all outputs of a sample are stored one after another:
-        y = est._y.astype(int)  # ty: ignore[unresolved-attribute]
+        y = est._y.astype(int)  # ty: ignore[missing-union-attribute]
         if y.ndim > 1:
             offsets = np.cumsum([0] + output_classes[:-1])
             y = (y + offsets).ravel()

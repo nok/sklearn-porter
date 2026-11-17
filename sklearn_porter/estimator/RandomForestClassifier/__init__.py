@@ -110,7 +110,7 @@ class RandomForestClassifier(EstimatorBase, EstimatorApiABC):
             # The number of fitted trees, because `n_estimators` can be
             # changed after the fit (e.g. with `set_params`):
             n_estimators=len(est.estimators_),
-            n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
+            n_features=est.n_features_in_,  # ty: ignore[missing-attribute]
             # The class fractions (or probabilities) of all outputs are
             # concatenated, `output_classes` defines their segments:
             n_classes=sum(output_classes),

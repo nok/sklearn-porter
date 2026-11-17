@@ -25,8 +25,7 @@ jobs:
       - run: uv run --locked ruff check .
       - run: uv run --locked ruff format --check .
       # ty resolves the imports of the examples (e.g. `nbformat`) too:
-      - run: uv sync --locked --group examples
-      - run: uvx ty check
+      - run: uv run --locked --group examples ty check
 
   test:
     name: Test (Python ${{ matrix.python-version }}${{ matrix.resolution == 'lowest-direct' && ', lowest versions' || '' }})

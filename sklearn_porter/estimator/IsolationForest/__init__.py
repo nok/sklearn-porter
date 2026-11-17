@@ -62,7 +62,7 @@ class IsolationForest(RandomForestRegressor, EstimatorBase):
                 self.estimator_name
             ) from None
 
-        n_features = est.n_features_in_  # ty: ignore[unresolved-attribute]
+        n_features = est.n_features_in_  # ty: ignore[missing-attribute]
         self.meta_info = dict(
             n_estimators=len(est.estimators_),
             n_features=n_features,

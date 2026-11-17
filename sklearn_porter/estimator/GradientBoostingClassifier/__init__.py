@@ -79,7 +79,7 @@ class GradientBoostingClassifier(GradientBoostingRegressor, EstimatorBase):
         labels, label_kind = get_labels(est)
         self.meta_info = dict(
             n_estimators=len(trees),
-            n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
+            n_features=est.n_features_in_,  # ty: ignore[missing-attribute]
             n_outputs=1,  # the number of values of each leaf
             n_classes=len(est.classes_),
             n_trees_per_stage=len(inits),

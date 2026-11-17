@@ -564,7 +564,7 @@ def _predictions(
         # The ported classifiers return the labels of the classes, so
         # convert them (e.g. `1` of JSON to `1.0`) to the type of the
         # labels of scikit-learn:
-        classes = ported_est.estimator.classes_  # ty: ignore[unresolved-attribute]
+        classes = ported_est.estimator.classes_  # ty: ignore[missing-attribute]
         if not isinstance(classes, list):
             classes = [classes]
         y_pred = y_pred.astype(np.result_type(*classes))

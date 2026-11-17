@@ -68,7 +68,7 @@ class SimpleImputer(TransformerBase, EstimatorApiABC):
         kept = np.flatnonzero(~np.isnan(statistics))
         indicated = []
         if est.add_indicator:
-            features = est.indicator_.features_  # ty: ignore[unresolved-attribute]
+            features = est.indicator_.features_  # ty: ignore[missing-union-attribute]
             indicated = np.asarray(features, dtype=int)
         inputs = [*kept.tolist(), *list(map(int, indicated))]
         if not inputs:

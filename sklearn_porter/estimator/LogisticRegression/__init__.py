@@ -100,7 +100,7 @@ class LogisticRegression(EstimatorBase, EstimatorApiABC):
         labels, label_kind = get_labels(est)
         self.meta_info = dict(
             n_features=coeffs.shape[1],
-            n_classes=len(est.classes_),  # ty: ignore[unresolved-attribute]
+            n_classes=len(est.classes_),  # ty: ignore[missing-union-attribute]
             n_decisions=len(coeffs),
             is_binary=len(coeffs) == 1,
             # Multilabel classifiers (e.g. a RidgeClassifier fitted on a label
