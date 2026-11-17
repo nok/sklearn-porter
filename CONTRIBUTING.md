@@ -35,7 +35,7 @@ The fast tests check the Python code without running the ported estimators. GitH
 uv run pytest
 ```
 
-The regression tests compile and run the ported estimators and compare their predictions with the original estimators. They take a long time (20+ minutes) and need all compilers and interpreters. Therefore they are marked with `regression`, skipped by default and only run locally in [Docker](Dockerfile):
+The regression tests compile and run the ported estimators and compare their predictions with the original estimators. They take a long time (about an hour with 6 CPUs) and need all compilers and interpreters. Therefore they are marked with `regression`, skipped by default and only run locally in [Docker](Dockerfile):
 
 ```bash
 make test-regression
