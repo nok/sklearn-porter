@@ -95,7 +95,7 @@ class SVR(EstimatorBase, EstimatorApiABC):
             # A regressor without support vectors (e.g. with a large
             # `epsilon`) predicts the intercept. A zero vector with the
             # coefficient 0 keeps the arrays of the ported code non-empty:
-            n_features = est.n_features_in_  # ty: ignore[unresolved-attribute]
+            n_features = est.n_features_in_  # ty: ignore[missing-attribute]
             vectors = np.zeros((1, n_features))
             coeffs = np.zeros(1)
 

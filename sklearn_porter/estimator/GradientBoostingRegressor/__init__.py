@@ -79,7 +79,7 @@ def get_stages_data(
         for i in range(n_stages)
         for k in range(n_trees)
     ]
-    n_features = est.n_features_in_  # ty: ignore[unresolved-attribute]
+    n_features = est.n_features_in_  # ty: ignore[missing-attribute]
     inits = est._raw_predict_init(np.zeros((1, n_features)))[0]
     return trees, inits.tolist()
 
@@ -104,7 +104,7 @@ class GradientBoostingRegressor(RandomForestRegressor, EstimatorBase):
         trees, inits = get_stages_data(est)
         self.meta_info = dict(
             n_estimators=len(trees),
-            n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
+            n_features=est.n_features_in_,  # ty: ignore[missing-attribute]
             n_outputs=1,  # the number of values of each leaf
             # The predictions are the raw predictions (identity link):
             is_log_link=False,

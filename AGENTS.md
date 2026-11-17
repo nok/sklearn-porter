@@ -315,8 +315,10 @@ table.
 ## Conventions
 
 - Format and lint with ruff (line length 80, single quotes).
-- Type check with ty (`uvx ty check`); use `# ty: ignore[<rule>]` only for
-  attributes which scikit-learn sets dynamically.
+- Type check with ty (`uv run ty check`, the version of the lockfile, which
+  Dependabot updates, because new versions of ty can add diagnostics or
+  rename rules); use `# ty: ignore[<rule>]` only for attributes which
+  scikit-learn sets dynamically.
 - NumPy style docstrings and type hints.
 - PHP templates declare all properties of their classes explicitly, because
   dynamic properties are deprecated since PHP 8.2. The regression tests run

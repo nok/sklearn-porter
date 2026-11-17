@@ -64,6 +64,7 @@ dev = [
     "pytest-cov>=6",
     "pytest-xdist>=3",
     "ruff>=0.17.3",
+    "ty>=0.0.105",
 ]
 examples = [
     "jupytext>=1.17",

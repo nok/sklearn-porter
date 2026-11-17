@@ -89,7 +89,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
         labels, label_kind = get_labels(est)
         self.meta_info = dict(
             n_classes=est.n_classes_,
-            n_features=est.n_features_in_,  # ty: ignore[unresolved-attribute]
+            n_features=est.n_features_in_,  # ty: ignore[missing-attribute]
             n_estimators=n_estimators,
             labels=labels,
             label_kind=label_kind,
