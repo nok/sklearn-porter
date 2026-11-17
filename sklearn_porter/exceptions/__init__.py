@@ -10,9 +10,7 @@ class PorterError(Exception):
 
 class NotFittedEstimatorError(PorterError, NotFittedError):
     def __init__(self, message: str):
-        self.message = (
-            f'The passed estimator of kind `{message}` is not fitted.'
-        )
+        self.message = f'The passed estimator `{message}` is not fitted.'
         super().__init__(self.message)
 
 

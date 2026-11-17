@@ -420,7 +420,7 @@ class Base:
         x : list or np.ndarray of shape (n_samples, n_features) or (n_features)
             Input data.
         n_jobs : bool or int
-            The maximal number of processes.
+            The maximal number of processes (see `_get_n_processes`).
         directory : str or Path, optional (default: a temporary directory)
             Set the directory where all generated files should be saved.
         delete_created_files : bool
@@ -448,6 +448,10 @@ class Base:
                 UserWarning,
                 stacklevel=3,
             )
+        # Check the samples before the (slow) compilation:
+        lines = self._get_lines(x)
+        n_processes = _get_n_processes(n_jobs)
+
         if check_dependencies:
             self._check_dependencies(self._language)
 
@@ -506,30 +510,11 @@ class Base:
             if data_path:
                 cmd.append(str(data_path))
 
-            # Features (or documents) of the samples, one sample per line:
-            if getattr(self._estimator, 'TEXT_INPUT', False):
-                lines = _get_document_lines(self._estimator.estimator, x)
-            else:
-                if issparse(x):
-                    x = x.toarray()
-                elif not isinstance(x, np.ndarray):
-                    x = np.array(x)
-                if x.ndim == 1:
-                    x = x[np.newaxis, :]
-                lines = [' '.join(map(str, e)) for e in x.tolist()]
-
-            if isinstance(n_jobs, int) and n_jobs <= 1:
-                n_jobs = False
-            if not n_jobs:
-                n_jobs = 1
-            elif isinstance(n_jobs, bool) or not isinstance(n_jobs, int):
-                n_jobs = cpu_count() or 1
-
             # The ported estimator reads the samples (one per line) from the
             # standard input. Starting a process (e.g. the JVM) takes much
             # longer than a prediction, so each process gets a batch of
             # samples:
-            n_batches = max(1, min(n_jobs, len(lines) // MIN_BATCH_SIZE))
+            n_batches = max(1, min(n_processes, len(lines) // MIN_BATCH_SIZE))
             batch_size = -(-len(lines) // n_batches)  # rounded up
             batches = [
                 '\n'.join(lines[i : i + batch_size]) + '\n'
@@ -557,6 +542,49 @@ class Base:
                     rmtree(temp_dir, ignore_errors=True)
 
         return y
+
+    def _get_lines(self, x) -> list[str]:
+        """
+        Get the lines of the samples for the standard input of the ported
+        estimator: the features (or the document) of one sample per line.
+
+        Parameters
+        ----------
+        x : list or np.ndarray of shape (n_samples, n_features) or (n_features)
+            Input data. A text transformer (e.g. a `CountVectorizer`) takes
+            an iterable of documents or a single document (`str`).
+
+        Returns
+        -------
+        The lines of the samples.
+
+        Raises
+        ------
+        ValueError
+            If there are no samples or the features aren't numbers.
+        """
+        if getattr(self._estimator, 'TEXT_INPUT', False):
+            lines = _get_document_lines(self._estimator.estimator, x)
+        else:
+            if issparse(x):
+                x = x.toarray()
+            # Numbers of the languages, e.g. `1.0` instead of `True` of
+            # booleans, which the ported estimators can't read:
+            try:
+                x = np.asarray(x, dtype=np.float64)
+            except (TypeError, ValueError) as e:
+                msg = f'The features of the samples must be numbers ({e}).'
+                raise ValueError(msg) from None
+            if x.ndim == 1:
+                x = x[np.newaxis, :]
+            lines = [' '.join(map(str, e)) for e in x.tolist()]
+            # Without samples or features, e.g. `[]` (one empty sample):
+            if x.size == 0:
+                lines = []
+        if not lines:
+            msg = 'There are no samples to pass to the ported estimator.'
+            raise ValueError(msg)
+        return lines
 
     @staticmethod
     def _check_dependencies(language: enum.Language):
@@ -669,7 +697,7 @@ class Base:
             scikit-learn   v{sklearn_version}
             sklearn-porter v{self.porter_version}\
         """
-        return dedent(report)
+        return dedent(report).rstrip()
 
 
 def _get_qualname(obj: object):
@@ -713,6 +741,32 @@ def _download(url: str, sha256: str, path: Path):
     tmp_path = path.with_name(f'{path.name}.{getpid()}.tmp')
     tmp_path.write_bytes(content)
     tmp_path.replace(path)
+
+
+def _get_n_processes(n_jobs: bool | int | None) -> int:
+    """
+    Get the maximal number of processes of `make()`.
+
+    Parameters
+    ----------
+    n_jobs : bool or int
+        True for all CPUs, False, None, 0 or 1 for one process, a negative
+        number like scikit-learn (e.g. -1 for all CPUs, -2 for all CPUs but
+        one) or the number of processes.
+
+    Returns
+    -------
+    The number of processes (at least 1).
+    """
+    n_cpus = cpu_count() or 1
+    # `True` is an `int` (1) too, so check it first:
+    if n_jobs is True:
+        return n_cpus
+    if not n_jobs:
+        return 1
+    if n_jobs < 0:
+        return max(1, n_cpus + 1 + n_jobs)
+    return int(n_jobs)
 
 
 def _get_binary_path(src_path: Path) -> Path:

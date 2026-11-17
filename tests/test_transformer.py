@@ -1156,6 +1156,15 @@ def test_lines_of_documents():
     assert _get_document_lines(orig_est, documents) == lines
 
 
+def test_make_without_documents(tmp_path: Path):
+    """Missing documents raise an error before the compilation."""
+    orig_est = CountVectorizer().fit(['one two'])
+    est = Transformer(orig_est, language='js')
+    with pytest.raises(ValueError, match='There are no samples'):
+        est.make([], check_dependencies=False, directory=tmp_path)
+    assert not list(tmp_path.iterdir())
+
+
 def test_unsupported_quantile_transformer():
     orig_est = QuantileTransformer(n_quantiles=5, output_distribution='normal')
     orig_est.fit(load_iris().data)
