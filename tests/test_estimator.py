@@ -364,7 +364,19 @@ def test_system_calls_on_windows(
 
 @pytest.mark.parametrize(
     'n_samples, n_jobs, n_batches',
-    [(3, 4, 1), (250, False, 1), (250, 1, 1), (250, 4, 2), (1000, 4, 4)],
+    [
+        (3, 4, 1),
+        (250, False, 1),
+        (250, 0, 1),
+        (250, 1, 1),
+        (250, 4, 2),
+        (1000, 4, 4),
+        # All CPUs (4, see `cpu_count` below):
+        (1000, True, 4),
+        (1000, -1, 4),
+        (1000, -3, 2),
+        (1000, -8, 1),
+    ],
 )
 def test_make_in_batches(
     fitted_tree,
@@ -389,6 +401,7 @@ def test_make_in_batches(
         return CompletedProcess(cmd, 0, stdout=stdout, stderr='')
 
     monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run)
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'cpu_count', lambda: 4)
 
     x = np.arange(n_samples * 4, dtype=float).reshape(n_samples, 4)
     est = Estimator(fitted_tree, language='js')
@@ -404,6 +417,59 @@ def test_make_in_batches(
     # The predictions keep the order of the samples:
     np.testing.assert_array_equal(y_pred, np.arange(n_samples))
     assert y_proba.shape == (n_samples, 3)
+
+
+def test_make_with_samples_of_booleans(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    """Booleans are passed as numbers, which all languages can read."""
+    inputs = []
+
+    def run(cmd: list[str], **kwargs) -> CompletedProcess:
+        inputs.append(kwargs['input'])
+        stdout = '{"predict": 0}\n' * kwargs['input'].count('\n')
+        return CompletedProcess(cmd, 0, stdout=stdout, stderr='')
+
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'run', run)
+    x = np.array([[True, False], [False, True]])
+    clf = DecisionTreeClassifier().fit(x, [0, 1])
+    Estimator(clf, language='js').make(
+        x, check_dependencies=False, directory=tmp_path
+    )
+    assert inputs == ['1.0 0.0\n0.0 1.0\n']
+
+
+@pytest.mark.parametrize('x', [[], np.empty((0, 4))], ids=['list', 'array'])
+def test_make_without_samples(
+    fitted_tree, tmp_path: Path, monkeypatch: pytest.MonkeyPatch, x
+):
+    """Missing samples raise an error before the compilation."""
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'run', pytest.fail)
+    est = Estimator(fitted_tree, language='java')
+    with pytest.raises(ValueError, match='There are no samples'):
+        est.make(x, check_dependencies=False, directory=tmp_path)
+    assert not list(tmp_path.iterdir())
+
+
+def test_make_with_samples_of_strings(
+    fitted_tree, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+):
+    """Features which aren't numbers raise an error."""
+    monkeypatch.setattr(ESTIMATOR_MODULE, 'run', pytest.fail)
+    est = Estimator(fitted_tree, language='js')
+    with pytest.raises(ValueError, match='must be numbers'):
+        est.make(
+            [['a', 'b', 'c', 'd']], check_dependencies=False, directory=tmp_path
+        )
+
+
+@pytest.mark.regression
+@pytest.mark.parametrize('language', LANGUAGES)
+def test_samples_of_booleans(language: str):
+    """The ported estimators predict samples of booleans like scikit-learn."""
+    x = load_iris().data > 3
+    clf = DecisionTreeClassifier(random_state=0).fit(x, load_iris().target)
+    assert Estimator(clf, language=language).test(x) == 1.0
 
 
 def test_make_with_missing_results(
@@ -836,6 +902,15 @@ def test_unfitted_estimator(candidate: Candidate):
 def test_unfitted_estimator_is_not_fitted_error():
     """The error is also the error of scikit-learn (e.g. for `except`)."""
     with pytest.raises(NotFittedError):
+        Estimator(DecisionTreeClassifier())
+
+
+def test_unfitted_estimator_message():
+    """The message contains the public name of the estimator."""
+    with pytest.raises(
+        exception.NotFittedEstimatorError,
+        match='^The passed estimator `DecisionTreeClassifier` is not fitted',
+    ):
         Estimator(DecisionTreeClassifier())
 
 

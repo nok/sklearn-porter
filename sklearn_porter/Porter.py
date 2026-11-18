@@ -221,7 +221,7 @@ class Porter:
             raise AttributeError(msg)
         return self._ported.make(x, **kwargs)
 
-    def test(self, x, **kwargs) -> float:
+    def test(self, x: ArrayLike | spmatrix, **kwargs) -> float:
         """
         Compute the integrity score of the ported estimator (see
         `Estimator.test`, `Transformer.test` and `Pipeline.test`).
@@ -412,7 +412,7 @@ def make(
 
 def test(
     estimator: BaseEstimator,
-    x: list | np.ndarray,
+    x: ArrayLike | spmatrix,
     language: str | enum.Language | None = None,
     template: str | enum.Template | None = None,
     class_name: str | None = None,

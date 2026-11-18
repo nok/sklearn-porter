@@ -198,7 +198,7 @@ uv sync --all-groups   # install all dependencies
 make lint              # ruff check + ruff format --check + ty check
 make format            # fix and format with ruff
 make test              # fast tests on the host (uv run pytest)
-make test-regression   # regression tests in Docker (slow, ~20+ min)
+make test-regression   # regression tests in Docker (slow, ~1 h)
 ```
 
 ## Testing
@@ -357,6 +357,8 @@ table.
 - Commit messages and PR titles follow Conventional Commits
   (`feat:`, `fix:`, `docs:`, `ci:`, `build:`, `style:`, `refactor:`,
   `test:`, `chore:`; `!` or `BREAKING CHANGE:` for breaking changes).
+  Don't name an AI assistant (e.g. Claude) as co-author, i.e. no
+  `Co-Authored-By:` trailer for it in commit messages.
 - `main` is protected: all changes go through pull requests which are squash
   merged, so the PR title becomes the commit message.
 

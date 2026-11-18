@@ -189,7 +189,9 @@ class Estimator(Base):
         try:
             check_is_fitted(est)
         except NotFittedError:
-            raise exception.NotFittedEstimatorError(qualname) from None
+            raise exception.NotFittedEstimatorError(
+                est.__class__.__name__
+            ) from None
 
         # Check GridSearchCV and RandomizedSearchCV:
         if isinstance(est, (GridSearchCV, RandomizedSearchCV)):
@@ -305,7 +307,8 @@ class Estimator(Base):
         n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
             The maximal number of processes to make the predictions. Each
             process predicts a batch of at least 100 samples (or all
-            samples, if there are fewer).
+            samples, if there are fewer). Negative numbers count like
+            in scikit-learn, e.g. -1 uses all CPUs.
         directory : str or Path, optional (default: a temporary directory)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)
@@ -362,7 +365,8 @@ class Estimator(Base):
         n_jobs : bool or int (default: True, which uses `os.cpu_count()`)
             The maximal number of processes to make the predictions. Each
             process predicts a batch of at least 100 samples (or all
-            samples, if there are fewer).
+            samples, if there are fewer). Negative numbers count like
+            in scikit-learn, e.g. -1 uses all CPUs.
         directory : str or Path, optional (default: a temporary directory)
             Set the directory where all generated files should be saved.
         delete_created_files : bool (default: True)
