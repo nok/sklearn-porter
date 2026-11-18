@@ -438,7 +438,7 @@ class AdaBoostClassifier(EstimatorBase, EstimatorApiABC):
             tpl = indent(tpl, depth * out_indent)
             for i, rate in enumerate(value[-node - 1]):
                 if rate > 0:
-                    clazz = tpl.format(i, rate)
+                    clazz = tpl.format(i, converter(rate))
                     clazz = '\n' + clazz
                     clazzes.append(clazz)
             out_join = tpls.get_template('join').render()

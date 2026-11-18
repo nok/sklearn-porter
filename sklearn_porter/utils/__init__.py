@@ -128,15 +128,18 @@ def dump_model_data(model_data: object) -> str:
 
 
 _LEADING_SPACES = re.compile(r'^(?:    )+', re.MULTILINE)
+_TRAILING_WHITESPACE = re.compile(r'[ \t]+$', re.MULTILINE)
 
 
 def tabify(code: str) -> str:
     """
-    Indent code with tabs instead of spaces.
+    Indent code with tabs instead of spaces and remove trailing whitespace.
 
     Each group of four leading spaces of a line becomes a tab. The source
     code of the `combined` templates is deeply nested, so the indentation
-    with spaces would make up about half of it.
+    with spaces would make up about half of it. The inserted branches of the
+    trees (e.g. after an indented placeholder) can leave lines which consist
+    only of whitespace, which are emptied.
 
     Parameters
     ----------
@@ -145,8 +148,9 @@ def tabify(code: str) -> str:
 
     Returns
     -------
-    The code indented with tabs.
+    The code indented with tabs and without trailing whitespace.
     """
+    code = _TRAILING_WHITESPACE.sub('', code)
     return _LEADING_SPACES.sub(lambda m: '\t' * (len(m.group()) // 4), code)
 
 

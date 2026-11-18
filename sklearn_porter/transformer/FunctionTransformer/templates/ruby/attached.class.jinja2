@@ -66,7 +66,7 @@ if __FILE__ == $0
 
 	{% block create %}
 	# Transformer:
-	{{ instance|default('transformer') }} = {{ class_name }}.new 
+	{{ instance|default('transformer') }} = {{ class_name }}.new
 	{% endblock %}
 
 	# Features of one sample (arguments) or several samples (standard input):

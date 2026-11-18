@@ -31,7 +31,7 @@ class JavaScript(LanguageABC):
 
         # Basics:
         'indent':       '    ',
-        'join':         '; ',
+        'join':         ';',
         'type':         '{{ value }}',
 
         # Arrays:
