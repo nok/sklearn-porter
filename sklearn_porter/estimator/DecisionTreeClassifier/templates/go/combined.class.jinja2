@@ -135,7 +135,7 @@ func main() {
 		// Get class probabilities:
 		probabilities := PredictProba(features)
 		for i := 0; i < len(probabilities); i++ {
-			fmt.Printf("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}%d : %.f\n", i, probabilities[i])
+			fmt.Printf("{{ 'Probabilities of output #' if is_multi_output else 'Probability of class #' }}%d : %f\n", i, probabilities[i])
 		}
 		{% endif %}
 	})
