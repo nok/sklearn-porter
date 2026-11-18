@@ -41,7 +41,7 @@ class C(LanguageABC):
 
         # Basics:
         'indent':       '    ',
-        'join':         '; ',
+        'join':         ';',
         'type':         '{{ value }}',
 
         # Arrays:

@@ -29,7 +29,7 @@ class Ruby(LanguageABC):
 
         # Basics:
         'indent':       '\t',
-        'join':         ' ',
+        'join':         '',
         'type':         '{{ value }}',
 
         # Arrays:

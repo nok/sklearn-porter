@@ -47,7 +47,7 @@ class Java(LanguageABC):
 
         # Basics:
         'indent':       '    ',
-        'join':         '; ',
+        'join':         ';',
         'type':         '{{ value }}',
 
         # Arrays:

@@ -53,7 +53,7 @@ class CSharp(LanguageABC):
 
         # Basics:
         'indent':       '    ',
-        'join':         '; ',
+        'join':         ';',
         'type':         '{{ value }}',
 
         # Arrays (the nested arrays of jagged arrays need their own

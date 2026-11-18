@@ -1,3 +1,4 @@
+import re
 import warnings
 from pathlib import Path
 
@@ -23,6 +24,7 @@ from sklearn_porter import (
 )
 from sklearn_porter import Pipeline as PortedPipeline
 from sklearn_porter import exceptions as exception
+from tests.commons import LANGUAGES
 
 
 @pytest.fixture(scope='module')
@@ -169,3 +171,72 @@ def test_can_and_show():
     table = show()
     assert 'DecisionTreeClassifier' in table
     assert 'StandardScaler' in table
+
+
+def _fitted_models() -> dict:
+    """All supported estimators and transformers and a pipeline, fitted."""
+    from sklearn.datasets import load_diabetes
+    from sklearn.pipeline import make_pipeline
+
+    from tests.commons import CLASSIFIERS, OUTLIER_DETECTORS, REGRESSORS
+    from tests.test_transformer import TRANSFORMERS
+
+    x, y = load_iris(return_X_y=True)
+    x_reg, y_reg = load_diabetes(return_X_y=True)
+    models = {}
+    with warnings.catch_warnings():
+        warnings.simplefilter('ignore')  # e.g. of the convergence
+        for candidate in CLASSIFIERS + REGRESSORS + OUTLIER_DETECTORS:
+            est = candidate.create()
+            # Few trees are enough for the generated code:
+            for param in ('n_estimators', 'max_iter'):
+                if param in est.get_params() and 'MLP' not in candidate.name:
+                    est.set_params(**{param: 2})
+            if candidate in CLASSIFIERS:
+                est.fit(x, y)
+            elif candidate in REGRESSORS:
+                est.fit(x_reg[:, :4], y_reg)
+            else:
+                est.fit(x)
+            models[candidate.name] = est
+    for name, (create, _) in TRANSFORMERS.items():
+        models[name] = create()
+    models['pipeline'] = make_pipeline(StandardScaler(), SVC()).fit(x, y)
+    return models
+
+
+@pytest.mark.parametrize('template', ['attached', 'combined', 'exported'])
+def test_no_trailing_whitespace(template: str):
+    """The ported code has no lines which end with whitespace."""
+    trailing = []
+    for name, model in _fitted_models().items():
+        for language in LANGUAGES:
+            if not can(model, language, template):
+                continue
+            out = port(model, language=language, template=template)
+            code = out[0] if isinstance(out, tuple) else out
+            for line in code.splitlines():
+                if line != line.rstrip():
+                    trailing.append(f'{name} ({language}): {line!r}')
+                    break
+    assert not trailing
+
+
+def test_converter_of_combined_leaves():
+    """The values of the leaves of the `combined` trees use the converter."""
+    leaf = re.compile(r'(?:classes|values)\[\d+\] = ([^;\s]+)')
+    unconverted = []
+    for name, model in _fitted_models().items():
+        if not can(model, 'js', 'combined') or 'pipeline' in name:
+            continue
+        code = port(
+            model,
+            language='js',
+            template='combined',
+            converter=lambda value: f'{value:.4f}',
+        )
+        assert isinstance(code, str)
+        values = leaf.findall(code)
+        if not all(re.fullmatch(r'-?\d+\.\d{4}', v) for v in values):
+            unconverted.append(name)
+    assert not unconverted

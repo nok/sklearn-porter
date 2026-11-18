@@ -28,7 +28,7 @@ class PHP(LanguageABC):
 
         # Basics:
         'indent':       '    ',
-        'join':         '; ',
+        'join':         ';',
         'type':         '{{ value }}',
 
         # Arrays:
