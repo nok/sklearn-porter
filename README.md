@@ -1,8 +1,10 @@
 <h1 align="center">sklearn-porter</h1>
 
 <p align="center">
-  Transpile trained <a href="https://github.com/scikit-learn/scikit-learn">scikit-learn</a> estimators and transformers<br>
-  to C, C#, Go, Java, JavaScript, PHP and Ruby.
+  <strong>
+    Transpile trained <a href="https://github.com/scikit-learn/scikit-learn">scikit-learn</a> estimators and transformers<br>
+    to C, C#, Go, Java, JavaScript, PHP and Ruby.
+  </strong>
 </p>
 
 <p align="center">
@@ -47,35 +49,34 @@ Python 3.11 or newer and scikit-learn 1.8 or newer are required.
 ```python
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
-from sklearn_porter import make, save, test
+from sklearn_porter import port, save, test
 
 # Train a classifier:
 X, y = load_iris(return_X_y=True)
 clf = DecisionTreeClassifier(max_depth=2, random_state=0).fit(X, y)
 
-# Save it to JavaScript files (the code and the model data):
-src_path, json_path = save(clf, language='js', template='exported', directory='/tmp')
+# Get the source code as string:
+# source = port(clf, language='js')
 
-# Make predictions with the ported classifier (with Node.js):
-y_pred, y_proba = make(clf, X[:3], language='js')
-print(y_pred)  # [0 0 0]
+# Save it as JavaScript file:
+save(clf, language='js', directory='/tmp')
 
-# Check that all predictions match those of scikit-learn:
+# Check that it predicts the same classes as scikit-learn (with Node.js):
 print(test(clf, X, language='js'))  # 1.0
 ```
 <!-- fmt:on -->
 
-Run the saved classifier with the model data and the features of a sample:
+Run the saved classifier with the features of a sample:
 
 ```console
-$ node /tmp/DecisionTreeClassifier.js /tmp/DecisionTreeClassifier.json 6.3 3.3 6.0 2.5
+$ node /tmp/DecisionTreeClassifier.js 6.3 3.3 6.0 2.5
 Predicted class: 2
 Probability of class #0 : 0
 Probability of class #1 : 0.021739130434782608
 Probability of class #2 : 0.9782608695652174
 ```
 
-`make()` and `test()` need the compiler or interpreter of the language (see [languages](#languages)).
+`make()` returns the predictions of the ported estimator. `make()` and `test()` need the compiler or interpreter of the language (see [languages](#languages)).
 
 
 ## Examples
@@ -221,13 +222,11 @@ The key selects the language, e.g. `port(clf, language='cs')`.
 
 ### Templates
 
-The template defines how the model data is stored in the generated code:
+The template defines how the model data is stored in the generated code, e.g. `port(clf, template='exported')`:
 
 - `attached`: The model data is embedded in the source code, e.g. as arrays.
 - `exported`: The model data is saved in a separate JSON file, which the source code reads at runtime.
 - `combined`: The model data is compiled into the logic of the source code, e.g. as nested if-else statements.
-
-The template is selected like the language, e.g. `port(clf, template='exported')`.
 
 
 ## Documentation
@@ -246,16 +245,7 @@ Contributions are welcome! See [CONTRIBUTING.md](https://github.com/nok/sklearn-
 
 ## Citation
 
-If you use sklearn-porter in your work, please cite it. GitHub shows the citation of the [citation file](https://github.com/nok/sklearn-porter/blob/main/CITATION.cff) (with the version) under "Cite this repository", or use this BibTeX entry:
-
-```bibtex
-@software{sklearn_porter,
-  author = {Darius Morawiec},
-  title = {sklearn-porter},
-  note = {Transpile trained scikit-learn estimators and transformers to C, C#, Go, Java, JavaScript, PHP and Ruby},
-  url = {https://github.com/nok/sklearn-porter}
-}
-```
+If you use sklearn-porter in your work, please cite it: GitHub shows the citation of the [citation file](https://github.com/nok/sklearn-porter/blob/main/CITATION.cff) under "Cite this repository" (APA and BibTeX).
 
 
 ## License
