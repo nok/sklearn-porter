@@ -1,102 +1,79 @@
 # %% [markdown]
 # # Transformers
 #
-# This example ports trained transformers of scikit-learn (e.g. for the
-# preprocessing) with [sklearn-porter](https://github.com/nok/sklearn-porter).
-# A ported transformer has the method `transform`, which returns the
-# transformed features of a sample, analogous to `predict` of a ported
-# estimator. The functions `port`, `save`, `make` and `test` accept
-# transformers too.
+# Many models need preprocessed features, e.g. scaled features. Then the
+# preprocessing has to run in the target language too. This example ports a
+# `StandardScaler` to JavaScript with
+# [sklearn-porter](https://github.com/nok/sklearn-porter) and runs it with
+# Node.js.
 #
-# Transforming features with the ported transformer requires a compiler or
-# interpreter of the target language, here `node` for JavaScript.
+# Running the ported transformer requires `node`.
 #
 # ## Train a transformer
 #
-# Load the data and train a transformer:
+# The features of the wine dataset have very different scales, e.g. the
+# alcohol (about 13) and the proline (about 1000):
 
 # %%
-from sklearn import set_config
-from sklearn.datasets import load_iris
+import numpy as np
+from sklearn.datasets import load_wine
 from sklearn.preprocessing import StandardScaler
 
-# Show the estimators as text (instead of HTML):
-set_config(display='text')
+np.set_printoptions(precision=3, suppress=True)
 
-X, y = load_iris(return_X_y=True)
+X, y = load_wine(return_X_y=True)
 scaler = StandardScaler()
 scaler.fit(X)
+
+print(X[:2])
 
 # %% [markdown]
 # ## Port the transformer
 #
-# **Step 1**: Port (transpile) the transformer and get the source code:
+# The class `Porter` (and the functions `port`, `save`, `make` and `test`)
+# accepts transformers like classifiers. Save the ported scaler:
 
 # %%
-from sklearn_porter import Transformer
+from sklearn_porter import Porter
 
-transformer = Transformer(scaler, language='js', template='attached')
-output = transformer.port()
-
-print(output)
-
-# %% [markdown]
-# **Step 2**: Save the ported transformer:
-
-# %%
-src_path = transformer.save(directory='/tmp')
+porter = Porter(scaler, language='js')
+src_path = porter.save(directory='/tmp')
 
 print(src_path)
 
 # %% [markdown]
-# **Step 3**: Transform the features with the ported transformer:
-
-# %%
-X_tr = transformer.make(X[::30])
-
-print(X_tr)
-
-# %% [markdown]
-# **Step 4**: Always check the ported transformer: the score is the fraction
-# of samples whose transformed features match those of the original
-# transformer:
-
-# %%
-score = transformer.test(X[::15])
-
-print(score)
-
-# %% [markdown]
-# The class `Porter` and the functions `make` and `test` accept transformers
-# too:
-
-# %%
-from sklearn_porter import Porter, make, test
-
-X_tr = Porter(scaler, language='js').transform(X[::30])
-X_tr = make(scaler, X[::30], language='js')
-score = test(scaler, X[::15], language='js')
-
-print(score)
-
-# %% [markdown]
-# ## Use the ported transformer
+# ## Run the ported transformer
 #
-# The ported transformer reads the features of one sample from its arguments
-# or of several samples (one per line) from the standard input. It prints the
-# transformed features of each sample in one line (separated by spaces),
-# which is also the input format of the ported estimators:
+# The ported transformer prints the transformed features of each sample in
+# one line, separated by spaces:
 
 # %%
-# !node /tmp/StandardScaler.js 5.1 3.5 1.4 0.2
+# !node /tmp/StandardScaler.js 14.23 1.71 2.43 15.6 127 2.8 3.06 0.28 2.29 5.64 1.04 3.92 1065
 
 # %% [markdown]
-# ## Change the number of features
+# `transform` runs the ported transformer from Python, like `transform` of
+# scikit-learn:
+
+# %%
+print(porter.transform(X[:2]))
+print(scaler.transform(X[:2]))
+
+# %% [markdown]
+# ## Check the ported transformer
 #
-# Transformers can change the number of features, e.g. a `KBinsDiscretizer`
-# with a one-hot encoding of the bins. A `ColumnTransformer` (or a
-# `FeatureUnion`) combines the transformed features of several transformers,
-# if the transformers of all its parts are supported:
+# The score is the fraction of samples whose transformed features match
+# those of scikit-learn:
+
+# %%
+print(porter.test(X))
+
+# %% [markdown]
+# ## Combine transformers
+#
+# A `ColumnTransformer` (or a `FeatureUnion`) combines several transformers,
+# also transformers which change the number of features. Here the first 12
+# features are scaled and the proline is split into 3 bins (one-hot encoded),
+# so a sample has 15 transformed features:
 
 # %%
 from sklearn.compose import ColumnTransformer
@@ -104,25 +81,22 @@ from sklearn.preprocessing import KBinsDiscretizer
 
 columns = ColumnTransformer(
     [
-        ('scale', StandardScaler(), [0, 1]),
-        ('bins', KBinsDiscretizer(n_bins=3, encode='onehot-dense'), [2, 3]),
+        ('scale', StandardScaler(), slice(0, 12)),
+        ('bins', KBinsDiscretizer(n_bins=3, encode='onehot-dense'), [12]),
     ]
 )
 columns.fit(X)
 
-transformer = Transformer(columns, language='js')
-X_tr = transformer.make(X[::30])
+porter = Porter(columns, language='js')
 
-print(X_tr)
-print(transformer.test(X[::15]))
+print(porter.transform(X[:2]))
+print(porter.test(X))
 
 # %% [markdown]
 # The [README](https://github.com/nok/sklearn-porter#transformers) lists all
-# supported transformers, the
-# [estimator notes](https://github.com/nok/sklearn-porter/blob/main/docs/estimator-notes.md)
-# describe the parameters of single transformers which can't be ported.
+# supported transformers.
 #
 # ## Next steps
 #
-# - [Pipelines](pipelines.ipynb): port the preprocessing and the prediction
+# - [Pipelines](pipelines.ipynb): port the preprocessing and the classifier
 #   of a pipeline to one source file.

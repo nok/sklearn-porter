@@ -1,141 +1,104 @@
 # %% [markdown]
 # # Getting Started
 #
-# This example ports a trained classifier of scikit-learn to JavaScript and
-# Java with [sklearn-porter](https://github.com/nok/sklearn-porter), makes
-# predictions with the ported classifier and checks them.
+# This example trains a small decision tree, ports it to JavaScript with
+# [sklearn-porter](https://github.com/nok/sklearn-porter), runs it with
+# Node.js and checks that it predicts the same classes as scikit-learn.
 #
-# Making predictions with the ported classifier requires a compiler or
-# interpreter of the target language, here `node` for JavaScript and the JDK
-# for Java.
+# Running the ported classifier requires `node`.
 #
 # ## Train a classifier
-#
-# Load the data and train a classifier:
 
 # %%
-from sklearn import set_config
 from sklearn.datasets import load_iris
 from sklearn.tree import DecisionTreeClassifier
 
-# Show the estimators as text (instead of HTML):
-set_config(display='text')
-
 X, y = load_iris(return_X_y=True)
-clf = DecisionTreeClassifier(max_depth=3, random_state=0)
-clf.fit(X, y)
+clf = DecisionTreeClassifier(max_depth=2, random_state=0).fit(X, y)
 
 # %% [markdown]
-# ## Functional API
+# ## Port the classifier
 #
-# **Step 1**: Check whether the classifier can be ported to a language with a
-# template. The template defines how the model data is stored in the
-# generated code: `attached` (embedded in the code), `exported` (in a
-# separate JSON file) or `combined` (compiled into the logic of the code):
+# `port` returns the source code. With the template `combined` the splits of
+# the tree become nested if-else statements:
 
 # %%
-from sklearn_porter import can, make, port, save, test
+from sklearn_porter import port
 
-print(can(clf, language='js', template='attached'))
+print(port(clf, language='js', template='combined'))
 
 # %% [markdown]
-# **Step 2**: Port (transpile) the classifier and get the source code:
+# ## Run the ported classifier
+#
+# Save the source code to a file and pass the features of a sample:
 
 # %%
-output = port(clf, language='js', template='attached')
+from sklearn_porter import save
 
-print(output)
+save(clf, language='js', template='combined', directory='/tmp')
+
+# %%
+# !node /tmp/DecisionTreeClassifier.js 6.3 3.3 6.0 2.5
 
 # %% [markdown]
-# With the template `combined` the model data is compiled into nested
-# if-else statements:
+# Or use the class in your own code, e.g. with `require` in Node.js or with
+# a `<script>` tag in a browser:
 
 # %%
-output = port(clf, language='js', template='combined')
-
-print(output)
+# !node -e "const Tree = require('/tmp/DecisionTreeClassifier.js'); console.log('Class: ' + new Tree().predict([6.3, 3.3, 6.0, 2.5]))"
 
 # %% [markdown]
-# **Step 3**: Save the ported classifier to files. With the template
-# `exported` the model data is saved in a separate JSON file:
+# ## Make predictions from Python
+#
+# `make` runs the ported classifier with several samples and returns the
+# predicted classes and the probabilities:
 
 # %%
-src_path, json_path = save(
-    clf, language='js', template='exported', directory='/tmp'
-)
+from sklearn_porter import make
 
-print(src_path, json_path)
+y_pred, y_proba = make(clf, X[[0, 50, 100]], language='js')
+
+print(y_pred)
+print(y_proba)
+
+# %% [markdown]
+# ## Check the ported classifier
+#
+# `test` compares the predictions of the ported classifier with those of
+# scikit-learn. The score is the fraction of equal predictions, so `1.0`
+# means that all predictions match. Always check the ported classifier with
+# representative samples:
+
+# %%
+from sklearn_porter import test
+
+print(test(clf, X, language='js'))
+
+# %% [markdown]
+# ## Templates and the class `Porter`
+#
+# The template defines how the model data is stored: `attached` (as arrays in
+# the code), `combined` (in the logic of the code) or `exported` (in a
+# separate JSON file, so you can update the model without changing the
+# code). The class `Porter` keeps the language and the template for several
+# calls:
 
 # %%
 from pathlib import Path
 
-print(Path(json_path).read_text())
-
-# %% [markdown]
-# **Step 4**: Make predictions with the ported classifier. `make` returns the
-# predicted classes and the probabilities of the classes:
-
-# %%
-y_classes, y_probas = make(clf, X[::15], language='js', template='exported')
-
-print(y_classes)
-print(y_probas)
-
-# %% [markdown]
-# **Step 5**: Always check the ported classifier: the score is the fraction
-# of predictions that match those of the original classifier:
-
-# %%
-score = test(clf, X[::15], language='js', template='exported')
-
-print(score)
-
-# %% [markdown]
-# ## Object-oriented API
-#
-# The central class `Porter` accepts an estimator, a transformer or a
-# pipeline and keeps the language and the template.
-#
-# **Step 1**: Port (transpile) the classifier:
-
-# %%
 from sklearn_porter import Porter
 
-porter = Porter(clf, language='java', template='attached')
-output = porter.port()
-
-print(output)
-
-# %% [markdown]
-# **Step 2**: Change the template and save the ported classifier:
-
-# %%
-porter.template = 'exported'
+porter = Porter(clf, language='js', template='exported')
 src_path, json_path = porter.save(directory='/tmp')
 
-print(src_path, json_path)
-
-# %% [markdown]
-# **Step 3**: Make predictions with the ported classifier:
-
-# %%
-y_classes, y_probas = porter.predict(X[::15])
-
-print(y_classes)
-print(y_probas)
-
-# %% [markdown]
-# **Step 4**: Always check the ported classifier:
-
-# %%
-score = porter.test(X[::15])
-
-print(score)
+print(Path(json_path).read_text())
+print(porter.test(X))
 
 # %% [markdown]
 # ## Next steps
 #
-# - [Transformers](transformers.ipynb): port transformers, e.g. for the
-#   preprocessing.
-# - [Pipelines](pipelines.ipynb): port the preprocessing and the prediction
+# - [Transformers](transformers.ipynb): port the preprocessing, e.g. a
+#   `StandardScaler`.
+# - [Pipelines](pipelines.ipynb): port the preprocessing and the classifier
 #   of a pipeline to one source file.
+# - [CLI](cli.ipynb): port a saved classifier with the command `porter`.
