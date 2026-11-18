@@ -1,85 +1,70 @@
 # %% [markdown]
 # # Pipelines
 #
-# This example ports a trained `Pipeline` of scikit-learn with
-# [sklearn-porter](https://github.com/nok/sklearn-porter). A pipeline of
-# supported transformers (the preprocessing) and a supported final estimator
-# (the prediction) is ported to one source file: the ported final estimator,
-# which transforms the features of each sample with the ported transformers
-# before its prediction. The functions `port`, `save`, `make` and `test`
-# accept pipelines too.
+# This example ports a `Pipeline` of scikit-learn to JavaScript with
+# [sklearn-porter](https://github.com/nok/sklearn-porter): the preprocessing
+# and the classifier in one source file, which predicts the classes of the
+# raw features like the pipeline.
 #
-# Making predictions with the ported pipeline requires a compiler or
-# interpreter of the target language, here `node` for JavaScript and the JDK
-# for Java.
+# Running the ported pipeline requires `node`.
 #
-# ## Train a pipeline
+# ## Why the preprocessing matters
 #
-# Load the data and train a pipeline:
+# The features of the wine dataset have very different scales. A support
+# vector machine without scaling predicts much worse than with a
+# `StandardScaler` before it:
 
 # %%
-from sklearn import set_config
-from sklearn.datasets import load_iris
+from sklearn.datasets import load_wine
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 
-# Show the estimators as text (instead of HTML):
-set_config(display='text')
+X, y = load_wine(return_X_y=True)
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, random_state=0, stratify=y
+)
 
-X, y = load_iris(return_X_y=True)
-pipe = make_pipeline(StandardScaler(), SVC())
-pipe.fit(X, y)
+svc = SVC().fit(X_train, y_train)
+pipe = make_pipeline(StandardScaler(), SVC()).fit(X_train, y_train)
+
+print(f'SVC alone:          {svc.score(X_test, y_test):.2f}')
+print(f'StandardScaler+SVC: {pipe.score(X_test, y_test):.2f}')
 
 # %% [markdown]
+# So porting only the classifier isn't enough. sklearn-porter ports the
+# whole pipeline (a pipeline with a transformer which can't be ported raises
+# an error).
+#
 # ## Port the pipeline
 #
-# **Step 1**: Port (transpile) the pipeline and get the source code:
+# The functions `port`, `save`, `make` and `test` (and the class `Porter`)
+# accept pipelines like classifiers. Save the ported pipeline:
 
 # %%
-from sklearn_porter import make, port, save, test
+from sklearn_porter import save
 
-output = port(pipe, language='js', template='attached')
-
-print(output)
-
-# %% [markdown]
-# **Step 2**: Save the ported pipeline:
-
-# %%
 src_path = save(pipe, language='js', directory='/tmp')
 
 print(src_path)
 
 # %% [markdown]
-# **Step 3**: Make predictions with the ported pipeline, like
-# `pipe.predict(X[::15])`:
-
-# %%
-y_classes, _ = make(pipe, X[::15], language='js')
-
-print(y_classes)
-
-# %% [markdown]
-# **Step 4**: Always check the ported pipeline: the score is the fraction of
-# predictions that match those of the original pipeline:
-
-# %%
-score = test(pipe, X[::15], language='js')
-
-print(score)
-
-# %% [markdown]
-# ## Use the ported pipeline
+# ## Run the ported pipeline
 #
-# The generated file is used like a ported estimator: it reads the features
-# of one sample from its arguments or of several samples (one per line, the
-# features separated by spaces) from the standard input:
+# The ported pipeline reads the raw features and scales them before the
+# prediction:
+
+# %%
+# !node /tmp/Pipeline.js 14.23 1.71 2.43 15.6 127 2.8 3.06 0.28 2.29 5.64 1.04 3.92 1065
+
+# %% [markdown]
+# It also reads several samples (one per line) from the standard input:
 
 # %%
 from pathlib import Path
 
-lines = [' '.join(map(str, sample)) for sample in X[::30].tolist()]
+lines = [' '.join(map(str, sample)) for sample in X_test[:3].tolist()]
 Path('/tmp/samples.txt').write_text('\n'.join(lines) + '\n')
 
 print(Path('/tmp/samples.txt').read_text())
@@ -88,40 +73,47 @@ print(Path('/tmp/samples.txt').read_text())
 # !node /tmp/Pipeline.js < /tmp/samples.txt
 
 # %% [markdown]
+# ## Check the ported pipeline
+#
+# `make` returns the predictions of the ported pipeline, `test` compares
+# them with those of the pipeline:
+
+# %%
+from sklearn_porter import make, test
+
+y_pred, _ = make(pipe, X_test[:5], language='js')
+
+print(y_pred)
+print(pipe.predict(X_test[:5]))
+print(test(pipe, X_test, language='js'))
+
+# %% [markdown]
 # ## Change the number of features
 #
-# The transformers can change the number of features (e.g. a
-# `PolynomialFeatures` or a feature selector like `SelectKBest`); the ported
-# pipeline reads the features of the pipeline. The class `Porter` creates a
-# `Pipeline` for a pipeline:
+# The transformers can change the number of features, e.g. a
+# `PolynomialFeatures` (more features) and a feature selector like
+# `SelectKBest` (fewer features):
 
 # %%
 from sklearn.feature_selection import SelectKBest
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import PolynomialFeatures
 
-from sklearn_porter import Porter
-
 pipe = make_pipeline(
     PolynomialFeatures(degree=2, include_bias=False),
     StandardScaler(),
-    SelectKBest(k=5),
+    SelectKBest(k=10),
     LogisticRegression(max_iter=1000),
 )
-pipe.fit(X, y)
+pipe.fit(X_train, y_train)
 
-porter = Porter(pipe, language='java')  # creates a `Pipeline`
-y_classes, y_probas = porter.predict(X[::30])
-
-print(y_classes)
-print(y_probas)
-print(porter.test(X[::15]))
+print(test(pipe, X_test, language='js'))
 
 # %% [markdown]
 # ## Searches
 #
-# A pipeline as the best estimator of a `GridSearchCV` or a
-# `RandomizedSearchCV` is ported too:
+# The best pipeline of a `GridSearchCV` or a `RandomizedSearchCV` is ported
+# too:
 
 # %%
 from sklearn.model_selection import GridSearchCV
@@ -129,16 +121,13 @@ from sklearn.model_selection import GridSearchCV
 search = GridSearchCV(
     make_pipeline(StandardScaler(), SVC()), {'svc__C': [0.1, 1.0, 10.0]}
 )
-search.fit(X, y)
+search.fit(X_train, y_train)
 
-print(test(search, X[::15], language='js'))
+print(test(search, X_test, language='js'))
 
 # %% [markdown]
-# ## Unsupported preprocessing steps
-#
-# A pipeline with an unsupported transformer raises a `NotSupportedYetError`,
-# because the predictions of the ported final estimator alone would differ
-# from those of the pipeline. To port the final estimator anyway, pass
-# `ignore_preprocessing=True` and apply the preprocessing steps to the input
-# data of the ported estimator yourself, see the
-# [limitations](https://github.com/nok/sklearn-porter/blob/main/docs/limitations.md).
+# A pipeline with a transformer which can't be ported raises a
+# `NotSupportedYetError`, because the ported classifier alone would predict
+# other classes. See the
+# [limitations](https://github.com/nok/sklearn-porter/blob/main/docs/limitations.md)
+# for the workaround with `ignore_preprocessing=True`.
