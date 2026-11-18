@@ -3,6 +3,7 @@ import io
 import json
 import logging
 import os
+import re
 import warnings
 from collections.abc import Callable
 from importlib import import_module
@@ -624,6 +625,15 @@ def test_text_output(
         # e.g. the warnings and deprecations of PHP (see `strict_php`):
         assert not any(w in proc.stdout for w in ('Warning:', 'Deprecated:'))
         outputs.append(proc.stdout)
+
+    # The printed probabilities (e.g. not rounded to integers):
+    pattern = re.compile(r'Probability of class #\d+\s*[:=]\s*(\S+)')
+    for features, output in zip(x[::50], outputs, strict=True):
+        values = [float(value) for value in pattern.findall(output)]
+        if values:
+            proba = orig_est.predict_proba([features])[0]
+            np.testing.assert_allclose(values, proba, atol=1e-5)
+
     batch = ''.join(' '.join(args) + '\n' for args in samples)
     proc = run(cmd, input=batch, capture_output=True, encoding='utf-8')
     assert proc.returncode == 0, proc.stderr
