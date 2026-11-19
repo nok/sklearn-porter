@@ -27,6 +27,21 @@ class {{ class_name }}
 		{% endif %}
 	end
 
+{% if not _blocks %}
+	# Create the transformer with the model data of this file:
+	def self.create
+		{% block create %}
+		# Model data:
+		{{ edges }}
+		{{ offsets }}
+
+		# Transformer:
+		{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}edges, {{ prefix }}offsets
+		{% endblock %}
+
+		transformer
+	end
+{% endif %}
 end
 {% endblock %}
 
@@ -37,14 +52,8 @@ if __FILE__ == $0
 	{% include 'values' %}
 	{% endfilter %}
 
-	{% block create %}
-	# Model data:
-	{{ edges }}
-	{{ offsets }}
-
 	# Transformer:
-	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}edges, {{ prefix }}offsets
-	{% endblock %}
+	transformer = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

@@ -17,6 +17,13 @@ class {{ class_name }} {
         return {{ 'exp($value)' if is_log_link else '$value' }};
     }
 
+    // Load the estimator with the model data of a JSON file:
+    public static function load($path) {
+        // Model data:
+        $model = json_decode(file_get_contents($path), true);
+
+        return new {{ class_name }}($model['estimators'], $model['inits']);
+    }
 }
 
 {% if pipeline_classes %}
@@ -40,12 +47,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    $path = array_shift($argv);
-    $model = json_decode(file_get_contents($path), true);
-
     // Estimator:
-    $reg = new {{ class_name }}($model['estimators'], $model['inits']);
+    $reg = {{ class_name }}::load(array_shift($argv));
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

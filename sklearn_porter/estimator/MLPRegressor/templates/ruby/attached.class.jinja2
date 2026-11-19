@@ -54,6 +54,15 @@ class {{ class_name }}
 		outputs
 	end
 
+	# Create the estimator with the model data of this file:
+	def self.create
+		# Model data:
+		{{ layers }}
+		{{ weights }}
+		{{ bias }}
+
+		{{ class_name }}.new '{{ hidden_activation }}', layers, weights, bias
+	end
 end
 
 {% if pipeline_classes %}
@@ -69,13 +78,8 @@ if __FILE__ == $0
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	# Model data:
-	{{ layers }}
-	{{ weights }}
-	{{ bias }}
-
 	# Estimator:
-	reg = {{ class_name }}.new '{{ hidden_activation }}', layers, weights, bias
+	reg = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

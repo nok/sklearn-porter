@@ -84,7 +84,8 @@ public class {{ class_name }} {
 {% include 'values' %}
 
 
-    public static void Main(string[] args) {
+    // Create the transformer with the model data of this file:
+    public static {{ class_name }} Create() {
         {% block create %}
         // Model data:
         {{ vocabulary }}
@@ -99,11 +100,20 @@ public class {{ class_name }} {
         {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}vocabulary{% if n_stop_words %}, {{ prefix }}stop_words{% endif %}{% if tfidf %}, {{ prefix }}idf{% endif %});
         {% endblock %}
 
+        return transformer;
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
+    public static void Main(string[] args) {
+        // Transformer:
+        {{ class_name }} transformer = {{ class_name }}.Create();
+
         // One document (arguments) or several documents (standard input):
         foreach (string document in ReadDocuments(args, 0)) {
             PrintValues(transformer.Transform(document));
         }
     }
+#endif
 {% endif %}
 }
 {% endblock %}

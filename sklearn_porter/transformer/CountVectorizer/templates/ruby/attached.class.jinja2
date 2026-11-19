@@ -48,6 +48,26 @@ class {{ class_name }}
 		values
 	end
 
+{% if not _blocks %}
+	# Create the transformer with the model data of this file:
+	def self.create
+		{% block create %}
+		# Model data:
+		{{ vocabulary }}
+		{% if n_stop_words %}
+		{{ stop_words }}
+		{% endif %}
+		{% if tfidf %}
+		{{ idf }}
+		{% endif %}
+
+		# Transformer:
+		{{ instance|default('transformer') }} = {{ class_name }}.new({{ prefix }}vocabulary{% if n_stop_words %}, {{ prefix }}stop_words{% endif %}{% if tfidf %}, {{ prefix }}idf{% endif %})
+		{% endblock %}
+
+		transformer
+	end
+{% endif %}
 end
 {% endblock %}
 
@@ -58,19 +78,8 @@ if __FILE__ == $0
 	{% include 'values' %}
 	{% endfilter %}
 
-	{% block create %}
-	# Model data:
-	{{ vocabulary }}
-	{% if n_stop_words %}
-	{{ stop_words }}
-	{% endif %}
-	{% if tfidf %}
-	{{ idf }}
-	{% endif %}
-
 	# Transformer:
-	{{ instance|default('transformer') }} = {{ class_name }}.new({{ prefix }}vocabulary{% if n_stop_words %}, {{ prefix }}stop_words{% endif %}{% if tfidf %}, {{ prefix }}idf{% endif %})
-	{% endblock %}
+	transformer = {{ class_name }}.create
 
 	# One document (arguments) or several documents (standard input):
 	read_documents(ARGV) do |document|

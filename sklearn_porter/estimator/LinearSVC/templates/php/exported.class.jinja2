@@ -48,6 +48,10 @@ class {{ class_name }} {
         return self::LABELS[$this->predictIndex($features)];
     }
 
+    // Load the estimator with the model data of a JSON file:
+    public static function load($path) {
+        return new {{ class_name }}($path);
+    }
 }
 
 {% if pipeline_classes %}
@@ -70,11 +74,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    $path = array_shift($argv);
-
     // Estimator:
-    $clf = new {{ class_name }}($path);
+    $clf = {{ class_name }}::load(array_shift($argv));
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

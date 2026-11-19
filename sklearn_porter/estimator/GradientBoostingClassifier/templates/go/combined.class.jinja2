@@ -1,4 +1,5 @@
 {% extends 'base.combined.class' %}
+{% set combined_instance = True %}
 
 {% block content %}
 package main
@@ -49,9 +50,14 @@ func (clf {{ class_name }}) decisionFunction(features []float64) []float64 {
 {{ pipeline_classes }}
 
 {% endif %}
+// Create the estimator with the initial raw predictions of this file:
+func New{{ class_name }}() {{ class_name }} {
+	return {{ class_name }}{Inits: []float64{ {{- inits -}} }}
+}
+
 func main() {
 	// Estimator:
-	clf := {{ class_name }}{Inits: []float64{ {{- inits -}} }}
+	clf := New{{ class_name }}()
 
 	// Features of one sample (arguments) or several samples (standard input):
 	{% if pipeline_create %}

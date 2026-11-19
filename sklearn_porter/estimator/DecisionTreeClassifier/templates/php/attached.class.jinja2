@@ -105,6 +105,18 @@ class {{ class_name }} {
         return $this->copyVals($this->compute($features));
     }
 
+    // Create the estimator with the model data of this file:
+    public static function create() {
+        // Model data:
+        {{ lefts }}
+        {{ rights }}
+        {{ thresholds }}
+        {{ indices }}
+        {{ missing_go_to_left }}
+        {{ classes }}
+
+        return new {{ class_name }}($lefts, $rights, $thresholds, $indices, $missing_go_to_left, $classes);
+    }
 }
 
 {% if pipeline_classes %}
@@ -122,16 +134,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    {{ lefts }}
-    {{ rights }}
-    {{ thresholds }}
-    {{ indices }}
-    {{ missing_go_to_left }}
-    {{ classes }}
-
     // Estimator:
-    $clf = new {{ class_name }}($lefts, $rights, $thresholds, $indices, $missing_go_to_left, $classes);
+    $clf = {{ class_name }}::create();
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

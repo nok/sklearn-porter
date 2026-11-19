@@ -20,6 +20,13 @@ class {{ class_name }}
 		{{ 'Math.exp(value)' if is_log_link else 'value' }}
 	end
 
+	# Load the estimator with the model data of a JSON file:
+	def self.load(path)
+		# Model data:
+		model = JSON.parse(File.read(path))
+
+		{{ class_name }}.new model['estimators'], model['inits']
+	end
 end
 
 {% if pipeline_classes %}
@@ -38,11 +45,8 @@ if __FILE__ == $0
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	# Model data:
-	model = JSON.parse(File.read(ARGV.shift))
-
 	# Estimator:
-	reg = {{ class_name }}.new model['estimators'], model['inits']
+	reg = {{ class_name }}.load(ARGV.shift)
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

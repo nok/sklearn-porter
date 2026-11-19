@@ -129,20 +129,16 @@ func (transformer {{ class_name }}) Transform(document string) []float64 {
 
 {% include 'values' %}
 
-func main() {
-	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
-		os.Exit(1)
-	}
-
+// Load the transformer with the model data of a JSON file:
+func Load{{ class_name }}(path string) ({{ class_name }}, error) {
 	// Model data:
-	byteValue, err := os.ReadFile(os.Args[1])
+	byteValue, err := os.ReadFile(path)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		return {{ class_name }}{}, err
 	}
 
-	{% block create %}
+	{% with on_error = 'return ' ~ class_name ~ '{}, err' %}
+	{% block create scoped %}
 	// Transformer:
 	var {{ prefix }}data struct {
 		{% if n_stop_words %}
@@ -150,11 +146,32 @@ func main() {
 		{% endif %}
 	}
 	if err := json.Unmarshal({{ data|default('byteValue') }}, &{{ prefix }}data); err != nil {
+		{% if on_error %}
+		{{ on_error }}
+		{% else %}
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
+		{% endif %}
 	}
 	{{ instance|default('transformer') }} := new{{ class_name }}({% if n_stop_words %}{{ prefix }}data.StopWords{% endif %})
 	{% endblock %}
+	{% endwith %}
+
+	return transformer, nil
+}
+
+func main() {
+	if len(os.Args) < 2 {
+		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
+		os.Exit(1)
+	}
+
+	// Transformer:
+	transformer, err := Load{{ class_name }}(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	// One document (arguments) or several documents (standard input):
 	readDocuments(os.Args[2:], func(document string) {

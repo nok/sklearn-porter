@@ -57,6 +57,12 @@ public class {{ class_name }} {
 {% include 'values' %}
 
 
+    // Load the transformer with the model data of a JSON file:
+    public static {{ class_name }} Load(string path) {
+        return new {{ class_name }}(path);
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         if (args.Length < 1 || !args[0].EndsWith(".json")) {
             throw new ArgumentException("You have to pass the path to the exported model data.");
@@ -72,6 +78,7 @@ public class {{ class_name }} {
             PrintValues(transformer.Transform(features));
         }
     }
+#endif
 {% endif %}
 }
 {% endblock %}

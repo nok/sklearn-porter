@@ -37,17 +37,23 @@ public class {{ class_name }} {
 {% include 'samples' %}
 
 
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} Create() {
+        // Model data:
+        {{ vectors }}
+        {{ coeffs }}
+
+        return new {{ class_name }}(vectors, coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         {% if pipeline_create %}
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
-        // Model data:
-        {{ vectors }}
-        {{ coeffs }}
-
         // Estimator:
-        {{ class_name }} est = new {{ class_name }}(vectors, coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+        {{ class_name }} est = {{ class_name }}.Create();
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
@@ -60,6 +66,7 @@ public class {{ class_name }} {
             {% endfilter %}
         }
     }
+#endif
 }
 {% if pipeline_classes %}
 

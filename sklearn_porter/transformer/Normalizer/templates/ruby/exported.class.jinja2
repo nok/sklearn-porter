@@ -27,6 +27,12 @@ class {{ class_name }}
 		Array.new(features.length) { |i| features[i] / norm }
 	end
 
+{% if not _blocks %}
+	# Load the transformer with the model data of a JSON file:
+	def self.load(path)
+		new path
+	end
+{% endif %}
 end
 {% endblock %}
 

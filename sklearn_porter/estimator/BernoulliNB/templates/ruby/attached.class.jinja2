@@ -64,6 +64,14 @@ class {{ class_name }}
 		likelihoods.map { |likelihood| Math.exp(likelihood - sum) }
 	end
 
+	# Create the estimator with the model data of this file:
+	def self.create
+		# Model data:
+		{{ priors }}
+		{{ probs }}
+
+		{{ class_name }}.new priors, probs
+	end
 end
 
 {% if pipeline_classes %}
@@ -79,12 +87,8 @@ if __FILE__ == $0
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	# Model data:
-	{{ priors }}
-	{{ probs }}
-
 	# Estimator:
-	clf = {{ class_name }}.new priors, probs
+	clf = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

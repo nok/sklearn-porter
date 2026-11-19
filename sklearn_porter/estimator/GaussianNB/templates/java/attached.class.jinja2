@@ -71,19 +71,24 @@ class {{ class_name }} {
 
 {% include 'samples' %}
 
-    public static void main(String[] args) {
-        {% if pipeline_create %}
-        {{ pipeline_create | indent('        ') }}
-
-        {% endif %}
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} create() {
         // Model data:
         {{ priors }}
         {{ norms }}
         {{ sigmas }}
         {{ thetas }}
 
+        return new {{ class_name }}(priors, norms, sigmas, thetas);
+    }
+
+    public static void main(String[] args) {
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}(priors, norms, sigmas, thetas);
+        {{ class_name }} clf = {{ class_name }}.create();
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 0)) {

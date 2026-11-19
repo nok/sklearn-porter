@@ -48,13 +48,19 @@ public class {{ class_name }} {
 {% include 'samples' %}
 
 
+    // Load the estimator with the model data of a JSON file:
+    public static {{ class_name }} Load(string path) {
+        return new {{ class_name }}(path);
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         if (args.Length < 1 || !args[0].EndsWith(".json")) {
             throw new ArgumentException("You have to pass the path to the exported model data.");
         }
 
         // Estimator:
-        {{ class_name }} reg = new {{ class_name }}(args[0]);
+        {{ class_name }} reg = {{ class_name }}.Load(args[0]);
 
         // Features of one sample (arguments) or several samples (standard input):
         {% if pipeline_create %}
@@ -75,6 +81,7 @@ public class {{ class_name }} {
             {% endif %}
         }
     }
+#endif
 }
 {% if pipeline_classes %}
 

@@ -14,6 +14,22 @@ class {{ class_name }}
 		Array.new(@inputs.length) { |i| {% if missing_values_nan %}features[@inputs[i]].nan?{% else %}features[@inputs[i]] == {{ missing_values }}{% endif %} ? (@indicators[i] == 1 ? 1.0 : @statistics[i]) : (@indicators[i] == 1 ? 0.0 : features[@inputs[i]]) }
 	end
 
+{% if not _blocks %}
+	# Create the transformer with the model data of this file:
+	def self.create
+		{% block create %}
+		# Model data:
+		{{ inputs }}
+		{{ statistics }}
+		{{ indicators }}
+
+		# Transformer:
+		{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}inputs, {{ prefix }}statistics, {{ prefix }}indicators
+		{% endblock %}
+
+		transformer
+	end
+{% endif %}
 end
 {% endblock %}
 
@@ -24,15 +40,8 @@ if __FILE__ == $0
 	{% include 'values' %}
 	{% endfilter %}
 
-	{% block create %}
-	# Model data:
-	{{ inputs }}
-	{{ statistics }}
-	{{ indicators }}
-
 	# Transformer:
-	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}inputs, {{ prefix }}statistics, {{ prefix }}indicators
-	{% endblock %}
+	transformer = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

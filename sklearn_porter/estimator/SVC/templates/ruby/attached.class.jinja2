@@ -160,6 +160,16 @@ class {{ class_name }}
 		LABELS[predict_index features]
 	end
 
+	# Create the estimator with the model data of this file:
+	def self.create
+		# Model data:
+		{{ vectors }}
+		{{ coeffs }}
+		{{ inters }}
+		{{ weights }}
+
+		{{ class_name }}.new vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}
+	end
 end
 
 {% if pipeline_classes %}
@@ -175,14 +185,8 @@ if __FILE__ == $0
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	# Model data:
-	{{ vectors }}
-	{{ coeffs }}
-	{{ inters }}
-	{{ weights }}
-
 	# Estimator:
-	clf = {{ class_name }}.new vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}
+	clf = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

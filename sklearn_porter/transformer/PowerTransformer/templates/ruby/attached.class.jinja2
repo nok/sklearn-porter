@@ -50,6 +50,22 @@ class {{ class_name }}
 		(u - 1.0) * x / Math.log(u)
 	end
 
+{% if not _blocks %}
+	# Create the transformer with the model data of this file:
+	def self.create
+		{% block create %}
+		# Model data:
+		{{ lambdas }}
+		{{ mean }}
+		{{ scale }}
+
+		# Transformer:
+		{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}lambdas, {{ prefix }}mean, {{ prefix }}scale
+		{% endblock %}
+
+		transformer
+	end
+{% endif %}
 end
 {% endblock %}
 
@@ -60,15 +76,8 @@ if __FILE__ == $0
 	{% include 'values' %}
 	{% endfilter %}
 
-	{% block create %}
-	# Model data:
-	{{ lambdas }}
-	{{ mean }}
-	{{ scale }}
-
 	# Transformer:
-	{{ instance|default('transformer') }} = {{ class_name }}.new {{ prefix }}lambdas, {{ prefix }}mean, {{ prefix }}scale
-	{% endblock %}
+	transformer = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

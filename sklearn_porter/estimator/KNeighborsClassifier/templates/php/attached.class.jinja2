@@ -231,6 +231,14 @@ class {{ class_name }} {
     }
 {% endif %}
 
+    // Create the estimator with the model data of this file:
+    public static function create() {
+        // Model data:
+        {{ X }}
+        {{ y }}
+
+        return new {{ class_name }}($X, $y, {{ k }}, {{ n }}, "{{ metric }}", {{ power }});
+    }
 }
 
 {% if pipeline_classes %}
@@ -248,12 +256,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    {{ X }}
-    {{ y }}
-
     // Estimator:
-    $clf = new {{ class_name }}($X, $y, {{ k }}, {{ n }}, "{{ metric }}", {{ power }});
+    $clf = {{ class_name }}::create();
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

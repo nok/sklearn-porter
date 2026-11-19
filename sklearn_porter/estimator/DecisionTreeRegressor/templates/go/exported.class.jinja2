@@ -69,6 +69,23 @@ func (reg {{ class_name }}) Predict(features []float64) []float64 {
 {{ pipeline_classes }}
 
 {% endif %}
+// Load the estimator with the model data of a JSON file:
+func Load{{ class_name }}(path string) ({{ class_name }}, error) {
+	// Model data:
+	modelData, err := os.ReadFile(path)
+	if err != nil {
+		return {{ class_name }}{}, err
+	}
+
+	// Estimator:
+	var reg {{ class_name }}
+	if err := json.Unmarshal(modelData, &reg); err != nil {
+		return {{ class_name }}{}, err
+	}
+
+	return reg, nil
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
@@ -79,16 +96,9 @@ func main() {
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	// Model data:
-	modelData, err := os.ReadFile(os.Args[1])
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
 	// Estimator:
-	var reg {{ class_name }}
-	if err := json.Unmarshal(modelData, &reg); err != nil {
+	reg, err := Load{{ class_name }}(os.Args[1])
+	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

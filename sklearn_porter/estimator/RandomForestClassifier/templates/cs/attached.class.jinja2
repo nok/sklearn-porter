@@ -133,9 +133,15 @@ public class {{ class_name }} {
 {% include 'samples' %}
 
 
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} Create() {
+        return new {{ class_name }}();
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}();
+        {{ class_name }} clf = {{ class_name }}.Create();
 
         // Features of one sample (arguments) or several samples (standard input):
         {% if pipeline_create %}
@@ -165,6 +171,7 @@ public class {{ class_name }} {
             {% endif %}
         }
     }
+#endif
 }
 {% if pipeline_classes %}
 

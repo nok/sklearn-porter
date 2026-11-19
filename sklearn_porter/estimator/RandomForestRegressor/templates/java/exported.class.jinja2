@@ -28,8 +28,8 @@ class {{ class_name }} {
         private double[] values;
     }
 
-    // Load the model data:
-    private static Tree[] load(String file) throws IOException {
+    // Load the trees of the model data:
+    private static Tree[] loadForest(String file) throws IOException {
         TreeData[] data;
         try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
             data = new Gson().fromJson({{ 'com.google.gson.JsonParser.parseReader(reader).getAsJsonObject().get("estimators")' if pipeline else 'reader' }}, TreeData[].class);
@@ -41,6 +41,11 @@ class {{ class_name }} {
         return forest;
     }
 
+    // Load the estimator with the model data of a JSON file:
+    public static {{ class_name }} load(String path) throws IOException {
+        return new {{ class_name }}(loadForest(path));
+    }
+
 {% include 'samples' %}
 
     public static void main(String[] args) throws IOException {
@@ -49,7 +54,7 @@ class {{ class_name }} {
         }
 
         // Estimator:
-        {{ class_name }} reg = new {{ class_name }}(load(args[0]));
+        {{ class_name }} reg = {{ class_name }}.load(args[0]);
 
         // Features of one sample (arguments) or several samples (standard input):
         {% if pipeline_create %}

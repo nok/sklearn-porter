@@ -66,11 +66,19 @@ func (transformer {{ class_name }}) Transform(features []float64) []float64 {
 {{ scale }}
 {% endblock %}
 
-func main() {
+// Create the transformer with the model data of this file:
+func New{{ class_name }}() {{ class_name }} {
 	{% block create %}
 	// Transformer:
 	{{ instance|default('transformer') }} := {{ class_name ~ '{' }}{{ prefix }}lambdas, {{ prefix }}mean, {{ prefix }}scale}
 	{% endblock %}
+
+	return transformer
+}
+
+func main() {
+	// Transformer:
+	transformer := New{{ class_name }}()
 
 	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[1:], func(features []float64) {

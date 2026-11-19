@@ -45,9 +45,14 @@ type Response struct {
 {{ pipeline_classes }}
 
 {% endif %}
+// Create the estimator with the model data of this file:
+func New{{ class_name }}() {{ class_name }} {
+	return {{ class_name }}{vectors, coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}}
+}
+
 func main() {
 	// Estimator:
-	est := {{ class_name }}{vectors, coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}}
+	est := New{{ class_name }}()
 
 	// Features of one sample (arguments) or several samples (standard input):
 	{% if pipeline_create %}

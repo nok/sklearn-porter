@@ -87,17 +87,23 @@ public class {{ class_name }} {
 {% include 'samples' %}
 
 
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} Create() {
+        // Model data:
+        {{ coeffs }}
+        {{ inters }}
+
+        return new {{ class_name }}(coeffs, inters);
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         {% if pipeline_create %}
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
-        // Model data:
-        {{ coeffs }}
-        {{ inters }}
-
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}(coeffs, inters);
+        {{ class_name }} clf = {{ class_name }}.Create();
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
@@ -124,6 +130,7 @@ public class {{ class_name }} {
             {% endif %}
         }
     }
+#endif
 }
 {% if pipeline_classes %}
 

@@ -1,0 +1,17 @@
+{% if not pipeline and not composite %}
+{% set var = 'transformer' if kind == 'Transformer' else 'estimator' %}
+{% set call = ('Transform' if kind == 'Transformer' else 'Predict') ~ '(' ~ ('"document"' if text_input else 'new double[] { feature_1, ..., feature_' ~ n_features ~ ' }') ~ ')' %}
+ *     {{ step }}. Use the class in your code (define `SKLEARN_PORTER_NO_MAIN` to remove `Main`):
+{% if tpl == 'combined' and kind != 'Transformer' and not combined_instance %}
+ *         {{ class_name }}.{{ call }};
+{% else %}
+{% if tpl == 'attached' %}
+ *         {{ class_name }} {{ var }} = {{ class_name }}.Create();
+{% elif tpl == 'exported' %}
+ *         {{ class_name }} {{ var }} = {{ class_name }}.Load("{{ class_name }}.json");
+{% else %}
+ *         {{ class_name }} {{ var }} = new {{ class_name }}();
+{% endif %}
+ *         {{ var }}.{{ call }};
+{% endif %}
+{% endif %}

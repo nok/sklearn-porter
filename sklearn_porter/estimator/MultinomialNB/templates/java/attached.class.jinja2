@@ -68,17 +68,22 @@ class {{ class_name }} {
 
 {% include 'samples' %}
 
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} create() {
+        // Model data:
+        {{ priors }}
+        {{ probs }}
+
+        return new {{ class_name }}(priors, probs);
+    }
+
     public static void main(String[] args) {
         {% if pipeline_create %}
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
-        // Model data:
-        {{ priors }}
-        {{ probs }}
-
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}(priors, probs);
+        {{ class_name }} clf = {{ class_name }}.create();
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 0)) {

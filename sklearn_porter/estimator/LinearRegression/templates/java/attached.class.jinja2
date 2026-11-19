@@ -29,17 +29,22 @@ class {{ class_name }} {
 
 {% include 'samples' %}
 
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} create() {
+        // Model data:
+        {{ coeffs }}
+        {{ inters }}
+
+        return new {{ class_name }}(coeffs, inters);
+    }
+
     public static void main(String[] args) {
         {% if pipeline_create %}
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
-        // Model data:
-        {{ coeffs }}
-        {{ inters }}
-
         // Estimator:
-        {{ class_name }} reg = new {{ class_name }}(coeffs, inters);
+        {{ class_name }} reg = {{ class_name }}.create();
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 0)) {

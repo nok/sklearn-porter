@@ -101,17 +101,23 @@ public class {{ class_name }} {
 {% include 'samples' %}
 
 
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} Create() {
+        // Model data:
+        {{ priors }}
+        {{ probs }}
+
+        return new {{ class_name }}(priors, probs);
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         {% if pipeline_create %}
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
-        // Model data:
-        {{ priors }}
-        {{ probs }}
-
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}(priors, probs);
+        {{ class_name }} clf = {{ class_name }}.Create();
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
@@ -130,6 +136,7 @@ public class {{ class_name }} {
             {% endif %}
         }
     }
+#endif
 }
 {% if pipeline_classes %}
 

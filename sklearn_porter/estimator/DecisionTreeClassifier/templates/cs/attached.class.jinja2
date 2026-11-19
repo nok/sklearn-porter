@@ -125,11 +125,8 @@ public class {{ class_name }} {
 {% include 'samples' %}
 
 
-    public static void Main(string[] args) {
-        {% if pipeline_create %}
-        {{ pipeline_create | indent('        ') }}
-
-        {% endif %}
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} Create() {
         // Model data:
         {{ lefts }}
         {{ rights }}
@@ -138,8 +135,17 @@ public class {{ class_name }} {
         {{ missing_go_to_left }}
         {{ classes }}
 
+        return new {{ class_name }}(lefts, rights, thresholds, indices, missingGoToLeft, classes);
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
+    public static void Main(string[] args) {
+        {% if pipeline_create %}
+        {{ pipeline_create | indent('        ') }}
+
+        {% endif %}
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}(lefts, rights, thresholds, indices, missingGoToLeft, classes);
+        {{ class_name }} clf = {{ class_name }}.Create();
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
@@ -165,6 +171,7 @@ public class {{ class_name }} {
             {% endif %}
         }
     }
+#endif
 }
 {% if pipeline_classes %}
 

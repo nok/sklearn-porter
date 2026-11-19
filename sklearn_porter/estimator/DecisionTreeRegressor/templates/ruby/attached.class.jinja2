@@ -34,6 +34,18 @@ class {{ class_name }}
 		values
 	end
 
+	# Create the estimator with the model data of this file:
+	def self.create
+		# Model data:
+		{{ lefts }}
+		{{ rights }}
+		{{ thresholds }}
+		{{ indices }}
+		{{ missing_go_to_left }}
+		{{ values }}
+
+		{{ class_name }}.new lefts, rights, thresholds, indices, missing_go_to_left, values
+	end
 end
 
 {% if pipeline_classes %}
@@ -49,16 +61,8 @@ if __FILE__ == $0
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	# Model data:
-	{{ lefts }}
-	{{ rights }}
-	{{ thresholds }}
-	{{ indices }}
-	{{ missing_go_to_left }}
-	{{ values }}
-
 	# Estimator:
-	reg = {{ class_name }}.new lefts, rights, thresholds, indices, missing_go_to_left, values
+	reg = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

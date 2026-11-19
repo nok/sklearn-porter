@@ -32,6 +32,7 @@ void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURE
 
 {% include 'values' %}
 
+#ifndef SKLEARN_PORTER_NO_MAIN
 int main(int argc, const char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "You have to pass the path to the model data.\n");
@@ -53,4 +54,5 @@ int main(int argc, const char *argv[]) {
 
     return 0;
 }
+#endif
 {% endblock %}

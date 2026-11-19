@@ -46,6 +46,14 @@ class {{ class_name }} {
         return self::LABELS[$this->predictIndex($features)];
     }
 
+    // Create the estimator with the model data of this file:
+    public static function create() {
+        // Model data:
+        {{ coeffs }}
+        {{ inters }}
+
+        return new {{ class_name }}($coeffs, $inters);
+    }
 }
 
 {% if pipeline_classes %}
@@ -63,12 +71,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    {{ coeffs }}
-    {{ inters }}
-
     // Estimator:
-    $clf = new {{ class_name }}($coeffs, $inters);
+    $clf = {{ class_name }}::create();
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

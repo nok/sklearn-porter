@@ -95,6 +95,22 @@ original estimator and transform the features like the original transformer.
   line. `make()` passes the samples in batches of at least 100 samples to
   the standard input, because starting a process (e.g. the JVM) takes much
   longer than a prediction.
+- Besides the program, the ported class is a library for own code. The
+  templates `attached` have a factory with the model data, which `main`
+  calls: `create()` (Java, PHP, Ruby), `Create()` (C#), `NewX()` (Go) and
+  `createEstimator`/`createTransformer` (JS, see below); the templates
+  `exported` a factory with the path of the JSON file: `load(path)`,
+  `Load(path)` (C#) and `LoadX(path)` (Go, returns an error instead of
+  exiting; the block `create` of the Go transformers switches with the
+  variable `on_error`). C and C# wrap `main` in
+  `#ifndef SKLEARN_PORTER_NO_MAIN` and `#if !SKLEARN_PORTER_NO_MAIN`, Go
+  code goes into an own package without `main`. The base templates include
+  the shared template `library` of each language (the usage in the header),
+  except for pipelines and composite transformers (`composite`). The
+  estimators of the template `combined` are static unless the template sets
+  `combined_instance`; the C regressors which write the values of all
+  outputs into an array set `predict_values`. `tests/test_library.py`
+  compiles and runs the usage of the header of all estimators.
 - The estimators print JSON for `make()` (`to_json`) and text
   otherwise. The transformers always print the transformed features of each
   sample in one line, separated by spaces (shared template `values` of each
@@ -173,8 +189,8 @@ original estimator and transform the features like the original transformer.
   `tests/estimator/test_*.py` (parameter sweeps per estimator),
   `test_transformer.py` and `tests/transformer/test_*.py` (the same for
   transformers), `test_pipeline.py` and `tests/pipeline/test_pipeline.py`
-  (pipelines), `test_porter.py` (the central class), fixtures in
-  `tests/conftest.py`.
+  (pipelines), `test_porter.py` (the central class), `test_library.py`
+  (the ported classes in own programs), fixtures in `tests/conftest.py`.
 - `README.md` is the user documentation (also shown on PyPI, so use absolute
   links and only HTML which PyPI renders, e.g. no Mermaid; check it with
   `twine check`), `CONTRIBUTING.md` the developer documentation. The README
