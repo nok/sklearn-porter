@@ -63,7 +63,7 @@ The Docker image (Debian 13 "trixie") contains these compilers and interpreters:
 | PHP        | PHP 8.4                |
 | Ruby       | Ruby 3.3               |
 
-In general, the generated source code works with older compilers and interpreters too. For instance, you can use Java 8 to compile and run the models. The .NET SDK isn't available as Debian package for all architectures and the Debian packages of Go and Node.js reached their end of life, so the [`Dockerfile`](Dockerfile) copies them from the official images (`mcr.microsoft.com/dotnet/sdk`, `golang` and `node`). Update the versions (e.g. `GO_VERSION` and `NODE_VERSION` in the `Dockerfile`) before they reach their end of life.
+In general, the generated source code works with older compilers and interpreters too. For instance, you can use Java 8 to compile and run the models. The .NET SDK isn't available as Debian package for all architectures and the Debian packages of Go and Node.js reached their end of life, so the [`Dockerfile`](Dockerfile) copies them from the official images (`mcr.microsoft.com/dotnet/sdk`, `golang` and `node`). Update the versions (e.g. `GO_VERSION` and `NODE_VERSION` in the `Dockerfile`) before they reach their end of life. The base image contains uv in the minor version of the build backend `uv_build` (`UV_VERSION` in the `Dockerfile`), update both together.
 
 
 ## Adding or changing an estimator
