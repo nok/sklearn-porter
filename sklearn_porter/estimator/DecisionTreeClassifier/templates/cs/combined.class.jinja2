@@ -100,6 +100,7 @@ public static class {{ class_name }} {
 {% include 'samples' %}
 
 
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         // Features of one sample (arguments) or several samples (standard input):
         {% if pipeline_create %}
@@ -129,6 +130,7 @@ public static class {{ class_name }} {
             {% endif %}
         }
     }
+#endif
 }
 {% if pipeline_classes %}
 

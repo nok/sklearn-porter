@@ -101,7 +101,8 @@ class {{ class_name }} {
 
 {% include 'values' %}
 
-    public static void main(String[] args) {
+    // Create the transformer with the model data of this file:
+    public static {{ class_name }} create() {
         {% block create %}
         {% if n_stop_words %}
         // Model data:
@@ -111,6 +112,13 @@ class {{ class_name }} {
         // Transformer:
         {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({% if n_stop_words %}{{ prefix }}stop_words{% endif %});
         {% endblock %}
+
+        return transformer;
+    }
+
+    public static void main(String[] args) {
+        // Transformer:
+        {{ class_name }} transformer = {{ class_name }}.create();
 
         // One document (arguments) or several documents (standard input):
         for (String document : readDocuments(args, 0)) {

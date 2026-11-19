@@ -1,4 +1,5 @@
 {% extends 'base.combined.class' %}
+{% set combined_instance = True %}
 
 {% block content %}
 using System;
@@ -36,6 +37,7 @@ public class {{ class_name }} {
 {% include 'samples' %}
 
 
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         // Estimator:
         {{ class_name }} clf = new {{ class_name }}();
@@ -54,6 +56,7 @@ public class {{ class_name }} {
             {% endfilter %}
         }
     }
+#endif
 }
 {% if pipeline_classes %}
 

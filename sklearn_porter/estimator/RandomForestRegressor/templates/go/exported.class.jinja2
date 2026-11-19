@@ -28,6 +28,32 @@ type Response struct {
 {{ pipeline_classes }}
 
 {% endif %}
+// Load the estimator with the model data of a JSON file:
+func Load{{ class_name }}(path string) ({{ class_name }}, error) {
+	// Model data:
+	modelData, err := os.ReadFile(path)
+	if err != nil {
+		return {{ class_name }}{}, err
+	}
+
+	// Estimator:
+	var reg {{ class_name }}
+{% if pipeline %}
+	var pipelineModel struct {
+		Estimators json.RawMessage `json:"estimators"`
+	}
+	if err := json.Unmarshal(modelData, &pipelineModel); err != nil {
+		return {{ class_name }}{}, err
+	}
+	modelData = pipelineModel.Estimators
+{% endif %}
+	if err := json.Unmarshal(modelData, &reg.Trees); err != nil {
+		return {{ class_name }}{}, err
+	}
+
+	return reg, nil
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
@@ -38,23 +64,9 @@ func main() {
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	// Model data:
-	modelData, err := os.ReadFile(os.Args[1])
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-
 	// Estimator:
-	var reg {{ class_name }}
-{% if pipeline %}
-	var pipelineModel struct {
-		Estimators json.RawMessage `json:"estimators"`
-	}
-	json.Unmarshal(modelData, &pipelineModel)
-	modelData = pipelineModel.Estimators
-{% endif %}
-	if err := json.Unmarshal(modelData, &reg.Trees); err != nil {
+	reg, err := Load{{ class_name }}(os.Args[1])
+	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

@@ -102,6 +102,13 @@ namespace {
         }
 {% endif %}
 
+        // Create the estimator with the model data of this file:
+        public static function create() {
+            // Model data:
+            {{ model }}
+
+            return new {{ class_name }}($model);
+        }
     }
 }
 
@@ -158,11 +165,8 @@ namespace {
       {{ pipeline_create | indent('      ') }}
 
       {% endif %}
-      // Model data:
-      {{ model }}
-
       // Estimator:
-      $clf = new {{ class_name }}($model);
+      $clf = {{ class_name }}::create();
 
       // Features of one sample (arguments) or several samples (standard input):
       foreach (readSamples($argv) as $features) {

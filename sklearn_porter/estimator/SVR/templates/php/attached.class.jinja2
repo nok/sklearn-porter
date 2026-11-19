@@ -23,6 +23,14 @@ class {{ class_name }} {
 
 {% include 'kernel' %}
 
+    // Create the estimator with the model data of this file:
+    public static function create() {
+        // Model data:
+        {{ vectors }}
+        {{ coeffs }}
+
+        return new {{ class_name }}($vectors, $coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+    }
 }
 
 {% if pipeline_classes %}
@@ -40,12 +48,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    {{ vectors }}
-    {{ coeffs }}
-
     // Estimator:
-    $est = new {{ class_name }}($vectors, $coeffs, {{ inter }}, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }});
+    $est = {{ class_name }}::create();
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

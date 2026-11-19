@@ -93,19 +93,24 @@ class {{ class_name }} {
 
 {% include 'labels' %}
 
-    private int predictIndex(double[] features) {
+    public int predictIndex(double[] features) {
         return findMax(this.predictProba(features));
     }
 
-    private {{ label_type }} predict(double[] features) {
+    public {{ label_type }} predict(double[] features) {
         return LABELS[this.predictIndex(features)];
     }
 
-    private double[] predictProba(double[] features) {
+    public double[] predictProba(double[] features) {
         return this.compute(features);
     }
 
 {% include 'samples' %}
+
+    // Load the estimator with the model data of a JSON file:
+    public static {{ class_name }} load(String path) throws IOException {
+        return new {{ class_name }}(path);
+    }
 
     public static void main(String[] args) throws IOException {
         if (args.length < 1 || !args[0].endsWith(".json")) {
@@ -116,11 +121,8 @@ class {{ class_name }} {
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
-        // Model data:
-        String modelData = args[0];
-
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}(modelData);
+        {{ class_name }} clf = {{ class_name }}.load(args[0]);
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 1)) {

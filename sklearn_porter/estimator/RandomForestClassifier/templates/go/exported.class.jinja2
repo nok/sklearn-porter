@@ -7,7 +7,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
 	"os"
 	"strconv"
@@ -168,6 +167,34 @@ func (forest {{ class_name }}) PredictProba(features []float64) []float64 {
 {{ pipeline_classes }}
 
 {% endif %}
+// Load the estimator with the model data of a JSON file:
+func Load{{ class_name }}(path string) ({{ class_name }}, error) {
+	// Model data:
+	byteValue, err := os.ReadFile(path)
+	if err != nil {
+		return {{ class_name }}{}, err
+	}
+
+	// Estimator:
+	var trees []{{ class_name }}Tree
+{% if pipeline %}
+	var pipelineModel struct {
+		Estimators json.RawMessage `json:"estimators"`
+	}
+	if err := json.Unmarshal(byteValue, &pipelineModel); err != nil {
+		return {{ class_name }}{}, err
+	}
+	byteValue = pipelineModel.Estimators
+{% endif %}
+	if err := json.Unmarshal(byteValue, &trees); err != nil {
+		return {{ class_name }}{}, err
+	}
+	var clf {{ class_name }}
+	clf.Trees = trees
+
+	return clf, nil
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
@@ -178,26 +205,12 @@ func main() {
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	// Model data:
-	jsonFile, err := os.Open(os.Args[1])
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer jsonFile.Close()
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-
 	// Estimator:
-	var trees []{{ class_name }}Tree
-{% if pipeline %}
-	var pipelineModel struct {
-		Estimators json.RawMessage `json:"estimators"`
+	clf, err := Load{{ class_name }}(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
 	}
-	json.Unmarshal(byteValue, &pipelineModel)
-	byteValue = pipelineModel.Estimators
-{% endif %}
-	json.Unmarshal(byteValue, &trees)
-	var clf {{ class_name }}
-	clf.Trees = trees
 
 	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[2:], func(features []float64) {

@@ -99,6 +99,21 @@ class {{ class_name }} {
         return 0.5 * ($a - $b);
     }
 
+{% if not _blocks %}
+    // Create the transformer with the model data of this file:
+    public static function create() {
+        {% block create %}
+        // Model data:
+        {{ quantiles }}
+        {{ references }}
+
+        // Transformer:
+        ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}quantiles, ${{ prefix }}references);
+        {% endblock %}
+
+        return $transformer;
+    }
+{% endif %}
 }
 {% endblock %}
 
@@ -111,14 +126,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
 
     array_shift($argv);
 
-    {% block create %}
-    // Model data:
-    {{ quantiles }}
-    {{ references }}
-
     // Transformer:
-    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}quantiles, ${{ prefix }}references);
-    {% endblock %}
+    $transformer = {{ class_name }}::create();
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

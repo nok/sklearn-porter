@@ -86,6 +86,12 @@ class {{ class_name }}
 		0.5 * (a - b)
 	end
 
+{% if not _blocks %}
+	# Load the transformer with the model data of a JSON file:
+	def self.load(path)
+		new path
+	end
+{% endif %}
 end
 {% endblock %}
 

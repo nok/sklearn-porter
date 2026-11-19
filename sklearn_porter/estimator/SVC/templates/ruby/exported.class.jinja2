@@ -161,6 +161,10 @@ class {{ class_name }}
 		LABELS[predict_index features]
 	end
 
+	# Load the estimator with the model data of a JSON file:
+	def self.load(path)
+		{{ class_name }}.new path
+	end
 end
 
 {% if pipeline_classes %}
@@ -178,11 +182,8 @@ if __FILE__ == $0
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	# Model data:
-	modelData = ARGV.shift
-
 	# Estimator:
-	clf = {{ class_name }}.new modelData
+	clf = {{ class_name }}.load(ARGV.shift)
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

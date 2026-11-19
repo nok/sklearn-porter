@@ -1,0 +1,18 @@
+{% if not pipeline and not composite %}
+{% set var = '$transformer' if kind == 'Transformer' else '$estimator' %}
+{% set call = ('transform' if kind == 'Transformer' else 'predict') ~ '(' ~ ("'document'" if text_input else '[feature_1, ..., feature_' ~ n_features ~ ']') ~ ')' %}
+    {{ step }}. Use the class in your code:
+        require_once '{{ class_name }}.php';
+{% if tpl == 'combined' and kind != 'Transformer' and not combined_instance %}
+        {{ class_name }}::{{ call }};
+{% else %}
+{% if tpl == 'attached' %}
+        {{ var }} = {{ class_name }}::create();
+{% elif tpl == 'exported' %}
+        {{ var }} = {{ class_name }}::load('{{ class_name }}.json');
+{% else %}
+        {{ var }} = new {{ class_name }}();
+{% endif %}
+        {{ var }}->{{ call }};
+{% endif %}
+{% endif %}

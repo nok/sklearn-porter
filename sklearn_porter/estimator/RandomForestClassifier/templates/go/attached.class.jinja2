@@ -170,15 +170,21 @@ func (forest {{ class_name }}) PredictProba(features []float64) []float64 {
 {{ pipeline_classes }}
 
 {% endif %}
-func main() {
-	// Estimator:
+// Create the estimator with the model data of this file:
+func New{{ class_name }}() {{ class_name }} {
 	var trees []{{ class_name }}Tree
 	if err := json.Unmarshal([]byte(model), &trees); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		panic(err)
 	}
 	var clf {{ class_name }}
 	clf.Trees = trees
+
+	return clf
+}
+
+func main() {
+	// Estimator:
+	clf := New{{ class_name }}()
 
 	// Features of one sample (arguments) or several samples (standard input):
 	{% if pipeline_create %}

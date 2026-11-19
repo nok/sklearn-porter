@@ -80,17 +80,23 @@ public class {{ class_name }} {
 {% include 'samples' %}
 
 
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} Create() {
+        // Model data:
+        {{ weights }}
+        {{ bias }}
+
+        return new {{ class_name }}("{{ hidden_activation }}", weights, bias);
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         {% if pipeline_create %}
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
-        // Model data:
-        {{ weights }}
-        {{ bias }}
-
         // Estimator:
-        {{ class_name }} reg = new {{ class_name }}("{{ hidden_activation }}", weights, bias);
+        {{ class_name }} reg = {{ class_name }}.Create();
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
@@ -107,6 +113,7 @@ public class {{ class_name }} {
             {% endif %}
         }
     }
+#endif
 }
 {% if pipeline_classes %}
 

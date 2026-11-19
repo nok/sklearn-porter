@@ -105,6 +105,11 @@ class {{ class_name }} {
 
 {% include 'samples' %}
 
+    // Load the estimator with the model data of a JSON file:
+    public static {{ class_name }} load(String path) throws IOException {
+        return new {{ class_name }}(path);
+    }
+
     public static void main(String[] args) throws IOException {
         if (args.length < 1 || !args[0].endsWith(".json")) {
             throw new IllegalArgumentException("You have to pass the path to the exported model data.");
@@ -114,11 +119,8 @@ class {{ class_name }} {
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
-        // Model data:
-        String modelData = args[0];
-
         // Estimator:
-        {{ class_name }} clf = new {{ class_name }}(modelData);
+        {{ class_name }} clf = {{ class_name }}.load(args[0]);
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 1)) {

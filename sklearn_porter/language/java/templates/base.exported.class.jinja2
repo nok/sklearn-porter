@@ -18,5 +18,6 @@
  *         $ java -cp .:gson.jar {{ class_name }} {{ class_name }}.json {{ '"document"' if text_input else 'feature_1 ... feature_' ~ (pipeline_n_features or n_features) }}
  *     4. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
  *         $ java -cp .:gson.jar {{ class_name }} {{ class_name }}.json < {{ 'documents' if text_input else 'samples' }}.txt
+{% with step=5, tpl='exported' %}{% include 'library' %}{% endwith %}
  */
 {% block content %}{% endblock %}

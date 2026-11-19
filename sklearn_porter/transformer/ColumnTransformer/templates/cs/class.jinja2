@@ -30,6 +30,7 @@ public class {{ class_name }} {
 
 {% include 'values' %}
 
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
 {% if is_exported %}
         if (args.Length < 1 || !args[0].EndsWith(".json")) {
@@ -44,5 +45,6 @@ public class {{ class_name }} {
             PrintValues({{ instance }}.Transform(features));
         }
     }
+#endif
 {% endif %}
 }

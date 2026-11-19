@@ -20,6 +20,12 @@ class {{ class_name }}
 		Array.new(@threshold.length) { |i| features[i] > @threshold[i] ? 1.0 : 0.0 }
 	end
 
+{% if not _blocks %}
+	# Load the transformer with the model data of a JSON file:
+	def self.load(path)
+		new path
+	end
+{% endif %}
 end
 {% endblock %}
 

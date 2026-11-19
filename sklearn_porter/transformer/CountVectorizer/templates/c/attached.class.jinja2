@@ -24,6 +24,7 @@
 
 /* The positions of the terms of the vocabulary in the order of `strcmp`: */
 int {{ prefix }}order[{{ prefix }}N_FEATURES];
+int {{ prefix }}is_sorted = 0;
 
 static int {{ prefix }}compare_terms(const void *a, const void *b) {
     return strcmp({{ prefix }}vocabulary[*(const int *) a], {{ prefix }}vocabulary[*(const int *) b]);
@@ -35,6 +36,7 @@ void {{ prefix }}sort_vocabulary(void) {
         {{ prefix }}order[i] = i;
     }
     qsort({{ prefix }}order, {{ prefix }}N_FEATURES, sizeof(int), {{ prefix }}compare_terms);
+    {{ prefix }}is_sorted = 1;
 }
 
 /* Get the index of a term in the vocabulary (or -1): */
@@ -83,6 +85,9 @@ int {{ prefix }}is_word_char(char c) {
 
 /* Write the counts of the terms of the document to `values`: */
 void {{ prefix }}transform(double *values, const char *document) {
+    if (!{{ prefix }}is_sorted) {
+        {{ prefix }}sort_vocabulary();
+    }
     for (int i = 0; i < {{ prefix }}N_FEATURES; i++) {
         values[i] = 0.0;
     }
@@ -176,6 +181,7 @@ void {{ prefix }}transform(double *values, const char *document) {
 
 {% include 'values' %}
 
+#ifndef SKLEARN_PORTER_NO_MAIN
 int main(int argc, const char *argv[]) {
     {% block create %}
     /* Model data: */
@@ -193,4 +199,5 @@ int main(int argc, const char *argv[]) {
     free(values);
     return 0;
 }
+#endif
 {% endblock %}

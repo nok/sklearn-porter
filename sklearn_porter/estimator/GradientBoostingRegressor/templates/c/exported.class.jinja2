@@ -48,6 +48,7 @@ double predict(double features[N_FEATURES]) {
 {{ pipeline_classes }}
 
 {% endif %}
+#ifndef SKLEARN_PORTER_NO_MAIN
 int main(int argc, const char *argv[]) {
     if (argc < 2) {
         fprintf(stderr, "You have to pass the path to the model data.\n");
@@ -76,4 +77,5 @@ int main(int argc, const char *argv[]) {
 
     return 0;
 }
+#endif
 {% endblock %}

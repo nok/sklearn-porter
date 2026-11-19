@@ -105,6 +105,7 @@ public class {{ class_name }} {
 {% include 'values' %}
 
 
+#if !SKLEARN_PORTER_NO_MAIN
     public static void Main(string[] args) {
         {% block create %}
         // Transformer:
@@ -116,6 +117,7 @@ public class {{ class_name }} {
             PrintValues(transformer.Transform(features));
         }
     }
+#endif
 {% endif %}
 }
 {% endblock %}

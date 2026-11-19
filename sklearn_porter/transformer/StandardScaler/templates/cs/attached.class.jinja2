@@ -26,7 +26,8 @@ public class {{ class_name }} {
 {% include 'values' %}
 
 
-    public static void Main(string[] args) {
+    // Create the transformer with the model data of this file:
+    public static {{ class_name }} Create() {
         {% block create %}
         // Model data:
         {{ mean }}
@@ -36,11 +37,20 @@ public class {{ class_name }} {
         {{ class_name }} {{ instance|default('transformer') }} = new {{ class_name }}({{ prefix }}mean, {{ prefix }}scale);
         {% endblock %}
 
+        return transformer;
+    }
+
+#if !SKLEARN_PORTER_NO_MAIN
+    public static void Main(string[] args) {
+        // Transformer:
+        {{ class_name }} transformer = {{ class_name }}.Create();
+
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {
             PrintValues(transformer.Transform(features));
         }
     }
+#endif
 {% endif %}
 }
 {% endblock %}

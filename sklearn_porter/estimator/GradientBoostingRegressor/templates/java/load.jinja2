@@ -13,8 +13,8 @@ private static class ModelData {
     private double[] inits;
 }
 
-// Load the model data:
-private static {{ class_name }} load(String file) throws IOException {
+// Load the estimator with the model data of a JSON file:
+public static {{ class_name }} load(String file) throws IOException {
     ModelData data;
     try (Reader reader = Files.newBufferedReader(Paths.get(file))) {
         data = new Gson().fromJson(reader, ModelData.class);

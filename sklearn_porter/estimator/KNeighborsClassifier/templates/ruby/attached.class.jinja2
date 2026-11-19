@@ -190,6 +190,14 @@ class {{ class_name }}
 	end
 {% endif %}
 
+	# Create the estimator with the model data of this file:
+	def self.create
+		# Model data:
+		{{ X }}
+		{{ y }}
+
+		{{ class_name }}.new x, y, {{ k }}, {{ n }}, '{{ metric }}', {{ power }}
+	end
 end
 
 {% if pipeline_classes %}
@@ -205,12 +213,8 @@ if __FILE__ == $0
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	# Model data:
-	{{ X }}
-	{{ y }}
-
 	# Estimator:
-	clf = {{ class_name }}.new X, y, {{ k }}, {{ n }}, '{{ metric }}', {{ power }}
+	clf = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

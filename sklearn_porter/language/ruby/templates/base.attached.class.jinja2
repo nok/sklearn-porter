@@ -13,4 +13,5 @@
 #         $ ruby {{ class_name }}.rb {{ '"document"' if text_input else 'feature_1 ... feature_' ~ (pipeline_n_features or n_features) }}
 #     2. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
 #         $ ruby {{ class_name }}.rb < {{ 'documents' if text_input else 'samples' }}.txt
+{% with step=3, tpl='attached' %}{% include 'library' %}{% endwith %}
 {% block content %}{% endblock %}

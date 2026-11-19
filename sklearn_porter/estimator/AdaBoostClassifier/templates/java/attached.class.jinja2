@@ -92,15 +92,21 @@ class {{ class_name }} {
 
 {% include 'samples' %}
 
-    public static void main(String[] args) {
-        // Estimator:
+    // Create the estimator with the model data of this file:
+    public static {{ class_name }} create() {
         Tree[] forest = {
             {% for i in range(n_estimators) %}
             tree{{ i }}(){% if not loop.last %},{% endif %}
 
             {% endfor %}
         };
-        {{ class_name }} clf = new {{ class_name }}(forest);
+
+        return new {{ class_name }}(forest);
+    }
+
+    public static void main(String[] args) {
+        // Estimator:
+        {{ class_name }} clf = {{ class_name }}.create();
 
         // Features of one sample (arguments) or several samples (standard input):
         {% if pipeline_create %}

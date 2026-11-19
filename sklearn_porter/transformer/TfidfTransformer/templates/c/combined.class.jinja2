@@ -38,6 +38,7 @@ void {{ prefix }}transform(double *values, double features[{{ prefix }}N_FEATURE
 
 {% include 'values' %}
 
+#ifndef SKLEARN_PORTER_NO_MAIN
 int main(int argc, const char *argv[]) {
     /* Features of one sample (arguments) or several samples (standard input): */
     double features[N_FEATURES];
@@ -49,4 +50,5 @@ int main(int argc, const char *argv[]) {
 
     return 0;
 }
+#endif
 {% endblock %}

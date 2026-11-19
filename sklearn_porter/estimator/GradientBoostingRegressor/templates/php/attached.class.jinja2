@@ -17,6 +17,13 @@ class {{ class_name }} {
         return {{ 'exp($value)' if is_log_link else '$value' }};
     }
 
+    // Create the estimator with the model data of this file:
+    public static function create() {
+        // Model data:
+        {{ model }}
+
+        return new {{ class_name }}($model, array({{ inits }}));
+    }
 }
 
 {% if pipeline_classes %}
@@ -35,11 +42,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    {{ model }}
-
     // Estimator:
-    $reg = new {{ class_name }}($model, array({{ inits }}));
+    $reg = {{ class_name }}::create();
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

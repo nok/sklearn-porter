@@ -40,7 +40,7 @@ class {{ class_name }} {
         }
 
         // Estimator:
-        {{ class_name }} clf = load(args[0]);
+        {{ class_name }} clf = {{ class_name }}.load(args[0]);
 
         // Features of one sample (arguments) or several samples (standard input):
         {% if pipeline_create %}

@@ -31,13 +31,19 @@ type Response struct {
 {{ pipeline_classes }}
 
 {% endif %}
-func main() {
-	// Estimator:
+// Create the estimator with the model data of this file:
+func New{{ class_name }}() {{ class_name }} {
 	var reg {{ class_name }}
 	if err := json.Unmarshal([]byte(model), &reg.Trees); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		panic(err)
 	}
+
+	return reg
+}
+
+func main() {
+	// Estimator:
+	reg := New{{ class_name }}()
 
 	// Features of one sample (arguments) or several samples (standard input):
 	{% if pipeline_create %}

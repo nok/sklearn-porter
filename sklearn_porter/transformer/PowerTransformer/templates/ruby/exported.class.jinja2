@@ -58,6 +58,12 @@ class {{ class_name }}
 		(u - 1.0) * x / Math.log(u)
 	end
 
+{% if not _blocks %}
+	# Load the transformer with the model data of a JSON file:
+	def self.load(path)
+		new path
+	end
+{% endif %}
 end
 {% endblock %}
 

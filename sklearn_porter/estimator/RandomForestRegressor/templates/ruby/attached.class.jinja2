@@ -10,6 +10,13 @@ class {{ class_name }}
 	{% include 'forest' %}
 	{% endfilter %}
 
+	# Create the estimator with the model data of this file:
+	def self.create
+		# Model data:
+		{{ model }}
+
+		{{ class_name }}.new model
+	end
 end
 
 {% if pipeline_classes %}
@@ -25,11 +32,8 @@ if __FILE__ == $0
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	# Model data:
-	{{ model }}
-
 	# Estimator:
-	reg = {{ class_name }}.new model
+	reg = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

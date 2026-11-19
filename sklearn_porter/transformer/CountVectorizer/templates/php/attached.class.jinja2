@@ -78,6 +78,26 @@ class {{ class_name }} {
         return $values;
     }
 
+{% if not _blocks %}
+    // Create the transformer with the model data of this file:
+    public static function create() {
+        {% block create %}
+        // Model data:
+        {{ vocabulary }}
+        {% if n_stop_words %}
+        {{ stop_words }}
+        {% endif %}
+        {% if tfidf %}
+        {{ idf }}
+        {% endif %}
+
+        // Transformer:
+        ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}vocabulary{% if n_stop_words %}, ${{ prefix }}stop_words{% endif %}{% if tfidf %}, ${{ prefix }}idf{% endif %});
+        {% endblock %}
+
+        return $transformer;
+    }
+{% endif %}
 }
 {% endblock %}
 
@@ -90,19 +110,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
 
     array_shift($argv);
 
-    {% block create %}
-    // Model data:
-    {{ vocabulary }}
-    {% if n_stop_words %}
-    {{ stop_words }}
-    {% endif %}
-    {% if tfidf %}
-    {{ idf }}
-    {% endif %}
-
     // Transformer:
-    ${{ instance|default('transformer') }} = new {{ class_name }}(${{ prefix }}vocabulary{% if n_stop_words %}, ${{ prefix }}stop_words{% endif %}{% if tfidf %}, ${{ prefix }}idf{% endif %});
-    {% endblock %}
+    $transformer = {{ class_name }}::create();
 
     // One document (arguments) or several documents (standard input):
     foreach (readDocuments($argv) as $document) {

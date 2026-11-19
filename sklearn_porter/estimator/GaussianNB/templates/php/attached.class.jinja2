@@ -64,6 +64,16 @@ class {{ class_name }} {
         return $likelihoods;
     }
 
+    // Create the estimator with the model data of this file:
+    public static function create() {
+        // Model data:
+        {{ priors }}
+        {{ norms }}
+        {{ sigmas }}
+        {{ thetas }}
+
+        return new {{ class_name }}($priors, $norms, $sigmas, $thetas);
+    }
 }
 
 {% if pipeline_classes %}
@@ -81,14 +91,8 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
     {{ pipeline_create | indent('    ') }}
 
     {% endif %}
-    // Model data:
-    {{ priors }}
-    {{ norms }}
-    {{ sigmas }}
-    {{ thetas }}
-
     // Estimator:
-    $clf = new {{ class_name }}($priors, $norms, $sigmas, $thetas);
+    $clf = {{ class_name }}::create();
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

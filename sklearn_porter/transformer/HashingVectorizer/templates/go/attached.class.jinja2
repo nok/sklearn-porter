@@ -135,11 +135,19 @@ func (transformer {{ class_name }}) Transform(document string) []float64 {
 {% endif %}
 {% endblock %}
 
-func main() {
+// Create the transformer with the model data of this file:
+func New{{ class_name }}() {{ class_name }} {
 	{% block create %}
 	// Transformer:
 	{{ instance|default('transformer') }} := new{{ class_name }}({% if n_stop_words %}{{ prefix }}stop_words{% endif %})
 	{% endblock %}
+
+	return transformer
+}
+
+func main() {
+	// Transformer:
+	transformer := New{{ class_name }}()
 
 	// One document (arguments) or several documents (standard input):
 	readDocuments(os.Args[1:], func(document string) {

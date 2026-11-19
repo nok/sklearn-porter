@@ -157,7 +157,8 @@ class KNeighborsRegressor(EstimatorBase, EstimatorApiABC):
         x_val = self.model_data['X']
         x_str = tpl_arr_2.render(
             type=tpl_double,
-            name='X',
+            # A capitalized name is a constant in Ruby (not in a method):
+            name='x' if language == enum.Language.RUBY else 'X',
             values=', '.join(
                 tpl_in_brackets.render(value=', '.join(map(converter, v)))
                 for v in x_val

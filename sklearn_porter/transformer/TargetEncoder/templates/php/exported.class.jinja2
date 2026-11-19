@@ -54,6 +54,12 @@ class {{ class_name }} {
         return $values;
     }
 
+{% if not _blocks %}
+    // Load the transformer with the model data of a JSON file:
+    public static function load($path) {
+        return new {{ class_name }}($path);
+    }
+{% endif %}
 }
 {% endblock %}
 

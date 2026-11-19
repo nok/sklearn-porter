@@ -16,5 +16,6 @@
  *         $ java {{ class_name }} {{ '"document"' if text_input else 'feature_1 ... feature_' ~ (pipeline_n_features or n_features) }}
  *     3. Execute {{ actions|default('the predictions') }} of several {{ 'documents' if text_input else 'samples' }} (one per line):
  *         $ java {{ class_name }} < {{ 'documents' if text_input else 'samples' }}.txt
+{% with step=4, tpl='attached' %}{% include 'library' %}{% endwith %}
  */
 {% block content %}{% endblock %}

@@ -107,27 +107,44 @@ func (transformer {{ class_name }}) interp(x float64, q []float64, r []float64) 
 
 {% include 'values' %}
 
+// Load the transformer with the model data of a JSON file:
+func Load{{ class_name }}(path string) ({{ class_name }}, error) {
+	// Model data:
+	byteValue, err := os.ReadFile(path)
+	if err != nil {
+		return {{ class_name }}{}, err
+	}
+
+	{% with on_error = 'return ' ~ class_name ~ '{}, err' %}
+	{% block create scoped %}
+	// Transformer:
+	var {{ instance|default('transformer') }} {{ class_name }}
+	if err := json.Unmarshal({{ data|default('byteValue') }}, &{{ instance|default('transformer') }}); err != nil {
+		{% if on_error %}
+		{{ on_error }}
+		{% else %}
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+		{% endif %}
+	}
+	{% endblock %}
+	{% endwith %}
+
+	return transformer, nil
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Fprintln(os.Stderr, "You have to pass the path to the model data.")
 		os.Exit(1)
 	}
 
-	// Model data:
-	byteValue, err := os.ReadFile(os.Args[1])
+	// Transformer:
+	transformer, err := Load{{ class_name }}(os.Args[1])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
-
-	{% block create %}
-	// Transformer:
-	var {{ instance|default('transformer') }} {{ class_name }}
-	if err := json.Unmarshal({{ data|default('byteValue') }}, &{{ instance|default('transformer') }}); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
-	}
-	{% endblock %}
 
 	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[2:], func(features []float64) {

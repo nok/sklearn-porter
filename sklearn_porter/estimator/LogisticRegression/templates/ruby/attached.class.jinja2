@@ -61,6 +61,14 @@ decisions.map { |decision| decision > 0 ? 1 : 0 }
 	end
 	{% endif %}
 
+	# Create the estimator with the model data of this file:
+	def self.create
+		# Model data:
+		{{ coeffs }}
+		{{ inters }}
+
+		{{ class_name }}.new coeffs, inters
+	end
 end
 
 {% if pipeline_classes %}
@@ -76,12 +84,8 @@ if __FILE__ == $0
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
-	# Model data:
-	{{ coeffs }}
-	{{ inters }}
-
 	# Estimator:
-	clf = {{ class_name }}.new coeffs, inters
+	clf = {{ class_name }}.create
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

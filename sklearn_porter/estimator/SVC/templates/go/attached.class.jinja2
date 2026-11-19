@@ -180,9 +180,14 @@ func (svc {{ class_name }}) Predict(features []float64) {{ label_type }} {
 {{ pipeline_classes }}
 
 {% endif %}
+// Create the estimator with the model data of this file:
+func New{{ class_name }}() {{ class_name }} {
+	return {{ class_name }}{vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}}
+}
+
 func main() {
 	// Estimator:
-	clf := {{ class_name }}{vectors, coeffs, inters, weights, "{{ kernel }}", {{ gamma }}, {{ coef0 }}, {{ degree }}}
+	clf := New{{ class_name }}()
 
 	// Features of one sample (arguments) or several samples (standard input):
 	{% if pipeline_create %}
