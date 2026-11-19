@@ -1,10 +1,11 @@
 import json
+import re
 from functools import cache
 from pathlib import Path
 from subprocess import CalledProcessError, check_output
 
 from sklearn_porter import exceptions as exception
-from sklearn_porter.language.LanguageABC import LanguageABC
+from sklearn_porter.language.LanguageABC import LanguageABC, class_members
 
 
 def _parse_version(version: str) -> tuple[int, ...]:
@@ -180,3 +181,16 @@ class CSharp(LanguageABC):
             dest_path=str(dest_path),
         )
         return cmd_args, [dest_path, references_path, config_path]
+
+    @classmethod
+    def methods(cls, source: str, class_name: str) -> list[dict]:
+        start = re.compile(rf'\s*(public )?(static )?class {class_name}\b')
+        method = re.compile(
+            r'\s*public (static )?([\w\[\]]+) '
+            r'(Predict(?:Index|Proba)?)\s*\(double\[\] \w+\)'
+        )
+        return [
+            dict(name=m.group(3), type=m.group(2), static=bool(m.group(1)))
+            for m in map(method.match, class_members(source, start))
+            if m
+        ]

@@ -18,7 +18,8 @@ if __FILE__ == $0
 {% if is_exported %}
 	raise "You have to pass the path to the model data." if ARGV.empty?
 {% endif %}
-	{{ create|indent('\t') }}
+	# Transformer:
+	{{ instance }} = {{ class_name }}.{{ 'load(ARGV.shift)' if is_exported else 'create' }}
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

@@ -1,1 +1,1 @@
-JsonValue *pipeline_data = json_read(argv[1]);
+JsonValue *pipeline_data = json_read({{ path | default('argv[1]') }});

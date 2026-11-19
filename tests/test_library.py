@@ -4,7 +4,9 @@ Test the ported estimators and transformers as library in own programs.
 The program of each language is the usage in the header of the ported source
 code (e.g. the factory `create` of the template `attached` and `load` of the
 template `exported`), so the test checks the documented usage. The ported
-JavaScript as module is tested by `test_js_module*`.
+JavaScript as module is tested by `test_js_module*`. The pipelines (the class
+of the pipeline, in C the functions with the prefix `pipeline_`) apply their
+transformers before the predictions of the final estimator.
 """
 
 import json
@@ -17,10 +19,13 @@ from typing import Any
 
 import numpy as np
 import pytest
+from sklearn.compose import ColumnTransformer
 from sklearn.datasets import load_diabetes, load_iris
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_selection import SelectKBest
-from sklearn.preprocessing import OneHotEncoder, StandardScaler
+from sklearn.pipeline import FeatureUnion, make_pipeline
+from sklearn.preprocessing import MinMaxScaler, OneHotEncoder, StandardScaler
+from sklearn.tree import DecisionTreeClassifier
 
 from sklearn_porter import Porter, can
 from sklearn_porter.language.cs import CSharp
@@ -40,8 +45,24 @@ def _iris() -> tuple[np.ndarray, np.ndarray]:
     return load_iris(return_X_y=True)
 
 
+def _column_transformer() -> ColumnTransformer:
+    return ColumnTransformer(
+        [
+            ('scaler', StandardScaler(), [0, 1]),
+            ('steps', make_pipeline(StandardScaler(), MinMaxScaler()), [2, 3]),
+        ]
+    )
+
+
 TRANSFORMERS = {
     'StandardScaler': lambda: (StandardScaler().fit(_iris()[0]), None),
+    'ColumnTransformer': lambda: (_column_transformer().fit(_iris()[0]), None),
+    'FeatureUnion': lambda: (
+        FeatureUnion([('a', StandardScaler()), ('b', MinMaxScaler())]).fit(
+            _iris()[0]
+        ),
+        None,
+    ),
     'SelectKBest': lambda: (SelectKBest(k=2).fit(*_iris()), None),
     'OneHotEncoder': lambda: (
         OneHotEncoder(handle_unknown='ignore').fit(np.round(_iris()[0])),
@@ -55,7 +76,14 @@ TRANSFORMERS = {
 
 ESTIMATORS = {c.name: c for c in CLASSIFIERS + REGRESSORS + OUTLIER_DETECTORS}
 
-CANDIDATES = list(ESTIMATORS) + list(TRANSFORMERS)
+# Pipelines of two transformers and each estimator:
+PIPELINES = [f'Pipeline({name})' for name in ESTIMATORS]
+# A pipeline with a composite transformer:
+COMPOSITE_PIPELINE = 'Pipeline(ColumnTransformer, DecisionTreeClassifier)'
+
+CANDIDATES = (
+    list(ESTIMATORS) + list(TRANSFORMERS) + PIPELINES + [COMPOSITE_PIPELINE]
+)
 
 
 def _create(name: str) -> tuple[Any, list, bool]:
@@ -66,12 +94,19 @@ def _create(name: str) -> tuple[Any, list, bool]:
         if samples is None:
             samples = _iris()[0][::25].tolist()
         return est, samples, True
-    candidate = ESTIMATORS[name]
+    if name == COMPOSITE_PIPELINE:
+        x, y = _iris()
+        est = make_pipeline(_column_transformer(), DecisionTreeClassifier())
+        return est.fit(x, y), x[::25].tolist(), False
+    final_name = name.removeprefix('Pipeline(').removesuffix(')')
+    candidate = ESTIMATORS[final_name]
     est = candidate.create()
     # Few trees are enough for the generated code:
     for param in ('n_estimators', 'max_iter'):
         if param in est.get_params() and 'MLP' not in name:
             est.set_params(**{param: 2})
+    if name in PIPELINES:
+        est = make_pipeline(StandardScaler(), MinMaxScaler(), est)
     x, y = _iris()
     with warnings.catch_warnings():
         warnings.simplefilter('ignore')  # e.g. of the convergence
@@ -386,7 +421,9 @@ def test_library_usage(
     if hasattr(expected, 'toarray'):
         expected = expected.toarray()
     expected = np.asarray(expected, dtype=float).ravel()
-    if ESTIMATORS.get(name) in CLASSIFIERS + OUTLIER_DETECTORS:
+    final_name = name.removeprefix('Pipeline(').removesuffix(')')
+    final_name = final_name.split(', ')[-1]
+    if ESTIMATORS.get(final_name) in CLASSIFIERS + OUTLIER_DETECTORS:
         np.testing.assert_array_equal(values, expected)
     else:
         np.testing.assert_allclose(values, expected, rtol=1e-9)

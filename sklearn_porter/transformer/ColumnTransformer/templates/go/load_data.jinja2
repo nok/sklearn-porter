@@ -1,6 +1,5 @@
 // Model data:
-transformerData, err := os.ReadFile(os.Args[1])
+transformerData, err := os.ReadFile(path)
 if err != nil {
-	fmt.Fprintln(os.Stderr, err)
-	os.Exit(1)
+	return {{ class_name }}{}, err
 }

@@ -2,8 +2,6 @@ from collections.abc import Callable
 from textwrap import dedent
 from typing import TYPE_CHECKING
 
-from jinja2 import Environment
-
 # scikit-learn
 from sklearn.pipeline import Pipeline as SklearnPipeline
 
@@ -21,23 +19,33 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
     """
     Port a pipeline of transformers and a final estimator to one source file.
 
-    The source file is the ported final estimator, into which the
-    placeholders `pipeline_classes`, `pipeline_create` and
-    `pipeline_transform` of its template insert the classes of the ported
-    transformers, their creation and the transformation of the features of
-    each sample. The templates of the transformers provide these parts as
-    the blocks `class` (and `data`, the model data outside of `main`) and
-    `create`, their names get the prefix of the step (e.g. `step1_`). The
-    number of features can change in each step, the ported final estimator
-    reads the number of features of the pipeline (`pipeline_n_features`).
+    The source file contains the ported final estimator (with its own class
+    name, e.g. `DecisionTreeClassifier`), the ported transformers and the
+    class of the pipeline (glue template `class`, with the class name of the
+    pipeline), which holds the transformers and the final estimator: its
+    factories create them (`create()` or `load(path)`), `transform` applies
+    the transformers and the methods of the final estimator (e.g. `predict`)
+    predict the transformed features. The placeholders `pipeline_classes`,
+    `pipeline_create` and `pipeline_transform` of the template of the final
+    estimator insert the classes, the creation of the pipeline and the
+    transformation of the features of each sample into the program (`main`
+    of the final estimator). The templates of the transformers provide their
+    parts as the blocks `class` (and `data`, the model data outside of
+    `main`) and `create`, their names get the prefix of the step (e.g.
+    `step1_`). The number of features can change in each step, the ported
+    final estimator reads the number of features of the pipeline
+    (`pipeline_n_features`).
+
+    In C (without classes) functions with the prefix `pipeline_` transform
+    the features (`pipeline_transform`) and predict the transformed features
+    (e.g. `pipeline_predict`). In JavaScript the class of the final estimator
+    has the class name of the pipeline and a function creates the
+    transformers (`createSteps`), which the program and the pipeline as
+    module (`createPipeline`, e.g. in a browser) use.
 
     The exported model data is the model data of the final estimator with
     the additional key `transformers`, which contains the model data of each
     transformer.
-
-    In JavaScript a function creates the transformers (`createSteps`), which
-    the program and the pipeline as module (`createPipeline`, e.g. in a
-    browser) use.
     """
 
     SKLEARN_URL = 'sklearn.pipeline.Pipeline.html'
@@ -95,12 +103,29 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
         The ported pipeline (and the model data of the template `exported`).
         """
         tpls = self._load_templates(language.value.KEY)
+        glue = set(tpls.list_templates())
+
+        def render(name: str, **kwargs) -> str:
+            """Render a glue template without surrounding blank lines."""
+            return tpls.get_template(name).render(**kwargs).strip('\n')
+
         is_exported = template == enum.Template.EXPORTED
+
+        # The class name of the ported final estimator, which differs from
+        # the class names of the pipeline and of the transformers (only
+        # with a class of the pipeline, see the glue template `class`):
+        names = {t.class_name for t in self.transformers} | {class_name}
+        est_class_name = class_name
+        if 'class' in glue:
+            est_class_name, i = self.final_est.class_name, 1
+            while est_class_name in names:
+                i += 1
+                est_class_name = f'{self.final_est.class_name}{i}'
+            names.add(est_class_name)
 
         # The parts of the ported transformers (with class names which
         # differ from the class name of the final estimator):
         steps, models = [], []
-        names = {t.class_name for t in self.transformers} | {class_name}
         for index, transformer in enumerate(self.transformers):
             instance = f'step{index + 1}'
             tr_class_name = transformer.class_name
@@ -114,8 +139,12 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
                 _blocks=('class', 'data', 'create'),
                 prefix=f'{instance}_',
                 instance=instance,
-                data=tpls.get_template('step_data').render(index=index),
+                data=render('step_data', index=index),
             )
+            if 'on_error' in glue:  # e.g. Go: return errors in the factory
+                ported.template_globals['on_error'] = render(
+                    'on_error', class_name=class_name
+                )
             try:
                 out = ported.port(
                     language=language,
@@ -131,14 +160,18 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
                 models.append(model)
             blocks = {k: dedent(v).strip('\n') for k, v in dict(out).items()}
             steps.append(
-                dict(instance=instance, prefix=f'{instance}_', **blocks)
+                dict(
+                    instance=instance,
+                    prefix=f'{instance}_',
+                    class_name=tr_class_name,
+                    **blocks,
+                )
             )
 
         # The number of features of the pipeline (of its first step), which
         # the ported final estimator reads:
         n_features = self.transformers[0]._estimator.meta_info['n_features']
 
-        glue = set(tpls.list_templates())
         classes = [s[k] for s in steps for k in ('class', 'data') if s.get(k)]
         create = [s['create'] for s in steps if s.get('create')]
         if 'steps' in glue:
@@ -146,36 +179,90 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
             # JavaScript), which the program and the pipeline as module
             # (e.g. in a browser) use:
             classes.append(
-                tpls.get_template('steps').render(
+                render(
+                    'steps',
                     steps=steps,
                     is_exported=is_exported,
                     template=template.value,
                     class_name=class_name,
                 )
             )
+            create = [render('create', is_exported=is_exported)]
+            transform = [render('transform')]
+        elif 'class' in glue:
+            # The class of the pipeline creates the transformers, which the
+            # program uses:
             create = [
-                tpls.get_template('create').render(is_exported=is_exported)
+                render('create', class_name=class_name, is_exported=is_exported)
             ]
-            transform = [tpls.get_template('transform').render()]
+            transform = []
+            if 'transform' in glue:
+                transform = [render('transform')]
         else:
-            create, transform = self._create_and_transform(
-                tpls, steps, create, classes, is_exported, n_features
-            )
+            # Without classes (e.g. in C) `main` creates the transformers
+            # (and reads their model data), the functions of the pipeline
+            # (`functions`) transform the features of each sample, which
+            # they read:
+            if is_exported:
+                create = [
+                    render('load_data'),
+                    *create,
+                    render('free_data'),
+                ]
+            transform = []
 
         # The ported final estimator with the parts of the transformers:
         ported = self.final_est._estimator
-        ported.template_globals = dict(
+        template_globals = dict(
             pipeline=True,
+            pipeline_class_name=class_name,
             pipeline_n_features=n_features,
-            pipeline_classes='\n\n'.join(classes),
             pipeline_create='\n\n'.join(create),
             pipeline_transform='\n'.join(transform),
+        )
+        if 'class' in glue or 'functions' in glue:
+            # The methods of the final estimator, which the class of the
+            # pipeline (or the functions in C) forward:
+            ported.template_globals = dict(
+                template_globals, pipeline_classes=''
+            )
+            try:
+                out = ported.port(
+                    language=language,
+                    template=template,
+                    class_name=est_class_name,
+                    converter=converter,
+                )
+            finally:
+                ported.template_globals = {}
+            source = out[0] if isinstance(out, tuple) else out
+            methods = language.value.methods(source, est_class_name)
+            name = 'class' if 'class' in glue else 'functions'
+            classes.append(
+                render(
+                    name,
+                    steps=steps,
+                    methods=methods,
+                    class_name=class_name,
+                    estimator_class_name=est_class_name,
+                    is_exported=is_exported,
+                    template=template.value,
+                    n_features=n_features,
+                    load_data=render(
+                        'load_data', class_name=class_name, path='path'
+                    )
+                    if is_exported
+                    else '',
+                )
+            )
+        ported.template_globals = dict(
+            template_globals, pipeline_classes='\n\n'.join(classes)
         )
         try:
             out = ported.port(
                 language=language,
                 template=template,
-                class_name=class_name,
+                class_name=est_class_name,
                 converter=converter,
                 to_json=to_json,
             )
@@ -196,63 +283,3 @@ class Pipeline(EstimatorBase, EstimatorApiABC):
             )
             return out, model
         return out
-
-    @staticmethod
-    def _create_and_transform(
-        tpls: Environment,
-        steps: list[dict],
-        create: list[str],
-        classes: list[str],
-        is_exported: bool,
-        n_features: int,
-    ) -> tuple[list[str], list[str]]:
-        """
-        Get the creation of the transformers in `main` and the
-        transformation of the features of each sample (in the program).
-
-        Parameters
-        ----------
-        tpls : Environment
-            The templates of the glue code of the language.
-        steps : list of dict
-            The blocks of the ported transformers.
-        create : list of str
-            The creation of each transformer.
-        classes : list of str
-            The classes (and the model data) of the transformers, to which
-            a function to read the samples can be added (`read`).
-        is_exported : bool
-            Whether the model data is exported.
-        n_features : int
-            The number of features of the pipeline.
-
-        Returns
-        -------
-        The creation of the transformers and the transformation of the
-        features.
-        """
-        glue = set(tpls.list_templates())
-        if is_exported:
-            # Read the model data of the transformers (and free it, e.g. in C):
-            create.insert(0, tpls.get_template('load_data').render())
-            if 'free_data' in glue:
-                create.append(tpls.get_template('free_data').render())
-        # The transformation of the features of each sample: in the loop over
-        # the samples (`transform`, the number of features of the sample can
-        # change), in the function which reads the samples (`read`, e.g. in C
-        # with arrays of fixed size) or in a function which the function
-        # which reads the samples calls (`chain`, e.g. in C#):
-        transform = []
-        if 'transform' in glue:
-            transform = [
-                tpls.get_template('transform').render(**step) for step in steps
-            ]
-        if 'read' in glue:
-            classes.append(
-                tpls.get_template('read').render(
-                    steps=steps, n_features=n_features
-                )
-            )
-        if 'chain' in glue:
-            create.append(tpls.get_template('chain').render(steps=steps))
-        return create, transform

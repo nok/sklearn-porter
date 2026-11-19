@@ -17,5 +17,19 @@ class {{ class_name }}
 {% endfor %}
 		values
 	end
+{% if not is_step %}
+
+{% if is_exported %}
+	# Load the transformer with the model data of a JSON file:
+	def self.load(path)
+{% else %}
+	# Create the transformer with the model data of this file:
+	def self.create
+{% endif %}
+		{{ create|indent('\t\t') }}
+
+		{{ instance }}
+	end
+{% endif %}
 
 end

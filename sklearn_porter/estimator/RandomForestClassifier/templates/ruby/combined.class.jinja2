@@ -72,14 +72,18 @@ if __FILE__ == $0
 	{% include 'samples' %}
 	{% endfilter %}
 
-	# Estimator:
-	clf = {{ class_name }}.new
-
-	# Features of one sample (arguments) or several samples (standard input):
 	{% if pipeline_create %}
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
+	# Estimator:
+	{% if pipeline %}
+	clf = pipeline.estimator
+	{% else %}
+	clf = {{ class_name }}.new
+	{% endif %}
+
+	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}

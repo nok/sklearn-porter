@@ -53,7 +53,11 @@ public class {{ class_name }} {
 
         {% endif %}
         // Estimator:
+        {% if pipeline %}
+        {{ class_name }} est = pipeline.Estimator;
+        {% else %}
         {{ class_name }} est = {{ class_name }}.Create();
+        {% endif %}
 
         // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 0)) {

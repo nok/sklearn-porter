@@ -8,6 +8,13 @@
 
 {{ classes }}
 
+{% if is_exported %}
+/* Load the model data of the transformers from a JSON file: */
+void load(const char *path) {
+    {{ create|indent('    ') }}
+}
+
+{% endif %}
 {% include 'samples' %}
 
 {% include 'values' %}
@@ -21,7 +28,10 @@ int main(int argc, const char *argv[]) {
     }
 
 {% endif %}
-{% if create %}
+{% if is_exported %}
+    load(argv[1]);
+
+{% elif create %}
     {{ create|indent('    ') }}
 
 {% endif %}

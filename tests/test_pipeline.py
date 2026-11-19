@@ -127,8 +127,25 @@ def test_port(fitted_pipeline: SklearnPipeline, language: str, template: str):
     # The steps are created and transform the features of each sample:
     assert re.search(r'step1\W*?\w*?transform', out, re.IGNORECASE)
     assert re.search(r'step2\W*?\w*?transform', out, re.IGNORECASE)
-    for name in ('pipeline_classes', 'pipeline_create', 'pipeline_transform'):
+    for name in ('pipeline_classes', 'pipeline_create'):
         assert name not in out
+    # The class of the pipeline holds the steps and the final estimator
+    # (with its own class name), in C functions with the prefix `pipeline_`:
+    if language == 'c':
+        assert (
+            'void pipeline_transform(double *values, double *features)' in out
+        )
+        assert 'Label pipeline_predict(double *features)' in out
+    elif language != 'js':
+        assert re.search(r'\bclass Pipeline\b|type Pipeline struct', out)
+        # In Go the final estimator of the template `combined` consists of
+        # functions:
+        if language != 'go' or template != 'combined':
+            assert re.search(
+                r'\bclass DecisionTreeClassifier\b'
+                r'|type DecisionTreeClassifier struct',
+                out,
+            )
 
 
 @pytest.mark.parametrize('template', TEMPLATES)
@@ -207,13 +224,12 @@ def test_port_with_changing_number_of_features(language: str, template: str):
     )
     if language == 'c':
         assert 'double pipeline_values0[4];' in out
+        assert 'pipeline_transform(features, pipeline_values0);' in out
         assert 'double pipeline_values2[step2_N_FEATURES_OUT];' in out
-        assert 'step3_transform(features, pipeline_values2);' in out
+        assert 'step3_transform(values, pipeline_values2);' in out
     elif language == 'cs':
-        assert (
-            'PipelineTransform = pipelineFeatures => step3.Transform('
-            'step2.Transform(step1.Transform(pipelineFeatures)));'
-        ) in out
+        assert 'PipelineTransform = pipeline.Transform;' in out
+        assert 'features = this.step3.Transform(features);' in out
 
 
 def test_port_without_blocks_in_output(fitted_pipeline: SklearnPipeline):
@@ -229,13 +245,27 @@ def test_class_name_of_transformer_and_pipeline(
     fitted_pipeline: SklearnPipeline,
 ):
     """The class names of the transformers differ from the class name of
-    the pipeline (the ported final estimator)."""
+    the pipeline."""
     out = Pipeline(
         fitted_pipeline, language='java', class_name='StandardScaler'
     ).port()
     assert 'class StandardScaler {' in out
     assert 'class StandardScaler1 {' in out
     assert 'class StandardScaler2 {' in out
+    assert 'class DecisionTreeClassifier {' in out
+
+
+def test_class_name_of_final_estimator_and_pipeline(
+    fitted_pipeline: SklearnPipeline,
+):
+    """The class name of the final estimator differs from the class name of
+    the pipeline."""
+    out = Pipeline(
+        fitted_pipeline, language='java', class_name='DecisionTreeClassifier'
+    ).port()
+    assert 'class DecisionTreeClassifier {' in out
+    assert 'class DecisionTreeClassifier2 {' in out
+    assert 'public final DecisionTreeClassifier2 estimator;' in out
 
 
 def test_save(fitted_pipeline: SklearnPipeline, tmp_path: Path):

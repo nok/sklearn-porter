@@ -1,4 +1,6 @@
-from sklearn_porter.language.LanguageABC import LanguageABC
+import re
+
+from sklearn_porter.language.LanguageABC import LanguageABC, class_members
 
 
 class Java(LanguageABC):
@@ -83,3 +85,16 @@ class Java(LanguageABC):
                     unit = int.from_bytes(units[i : i + 2], 'big')
                     chars.append(f'\\u{unit:04x}')
         return '"' + ''.join(chars) + '"'
+
+    @classmethod
+    def methods(cls, source: str, class_name: str) -> list[dict]:
+        start = re.compile(rf'\s*(public )?class {class_name}\b')
+        method = re.compile(
+            r'\s*public (static )?([\w\[\]]+) '
+            r'(predict(?:Index|Proba)?)\s*\(double\[\] \w+\)'
+        )
+        return [
+            dict(name=m.group(3), type=m.group(2), static=bool(m.group(1)))
+            for m in map(method.match, class_members(source, start))
+            if m
+        ]

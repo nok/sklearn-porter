@@ -207,6 +207,12 @@ class ColumnTransformer(TransformerBase, EstimatorApiABC):
         else:
             parent = tpls.get_template('root_data').render()
 
+        # The handling of errors in the factory of the model data (in Go
+        # the factory returns the error, also of the factory of a pipeline):
+        on_error = self.template_globals.get('on_error')
+        if is_exported and not is_step and language == enum.Language.GO:
+            on_error = f'return {class_name}{{}}, err'
+
         # The parts of the ported transformers of all parts:
         classes, data, create, models, parts = [], [], [], [], []
         names = set()
@@ -227,6 +233,8 @@ class ColumnTransformer(TransformerBase, EstimatorApiABC):
                         parent=parent, index=index, prefix=prefix
                     ),
                 )
+                if on_error:
+                    ported.template_globals['on_error'] = on_error
                 try:
                     out = ported.port(
                         language=language,
@@ -293,7 +301,9 @@ class ColumnTransformer(TransformerBase, EstimatorApiABC):
         else:
             load = free = ''
             if is_exported:
-                load = tpls.get_template('load_data').render()
+                load = tpls.get_template('load_data').render(
+                    class_name=class_name
+                )
                 if 'free_data' in tpls.list_templates():
                     free = tpls.get_template('free_data').render()
             plas['create'] = _join(load, *create, free, own_create)

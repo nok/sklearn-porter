@@ -85,7 +85,11 @@ if (PHP_SAPI === 'cli' && realpath($argv[0]) === __FILE__) {
 
     {% endif %}
     // Estimator:
+    {% if pipeline %}
+    $clf = $pipeline->estimator;
+    {% else %}
     $clf = {{ class_name }}::create();
+    {% endif %}
 
     // Features of one sample (arguments) or several samples (standard input):
     foreach (readSamples($argv) as $features) {

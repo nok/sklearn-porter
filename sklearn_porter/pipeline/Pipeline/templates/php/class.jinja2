@@ -1,0 +1,56 @@
+{% set static = methods and methods[0].static %}
+{% if is_exported %}
+{% set estimator = estimator_class_name ~ '::load($path)' %}
+{% elif template == 'attached' %}
+{% set estimator = estimator_class_name ~ '::create()' %}
+{% else %}
+{% set estimator = 'new ' ~ estimator_class_name ~ '()' %}
+{% endif %}
+// The pipeline: the preprocessing steps and the final estimator, which
+// predicts the transformed features:
+class {{ class_name }} {
+{% for step in steps %}
+    private ${{ step.instance }};
+{% endfor %}
+{% if not static %}
+    public $estimator;
+{% endif %}
+
+    public function __construct({% for step in steps %}${{ step.instance }}{{ ', ' if not loop.last or not static }}{% endfor %}{{ '$estimator' if not static }}) {
+{% for step in steps %}
+        $this->{{ step.instance }} = ${{ step.instance }};
+{% endfor %}
+{% if not static %}
+        $this->estimator = $estimator;
+{% endif %}
+    }
+
+{% if is_exported %}
+    // Load the pipeline with the model data of a JSON file:
+    public static function load($path) {
+        {{ load_data | indent(8) }}
+
+{% else %}
+    // Create the pipeline with the model data of this file:
+    public static function create() {
+{% endif %}
+{% for step in steps if step.create %}
+        {{ step.create | indent(8) }}
+{% endfor %}
+        return new {{ class_name }}({% for step in steps %}${{ step.instance }}{{ ', ' if not loop.last }}{% endfor %}{{ ', ' ~ estimator if not static }});
+    }
+
+    // Transform the features with the preprocessing steps:
+    public function transform($features) {
+{% for step in steps %}
+        $features = $this->{{ step.instance }}->transform($features);
+{% endfor %}
+        return $features;
+    }
+{% for method in methods %}
+
+    public function {{ method.name }}($features) {
+        return {{ estimator_class_name ~ '::' if method.static else '$this->estimator->' }}{{ method.name }}($this->transform($features));
+    }
+{% endfor %}
+}

@@ -106,14 +106,18 @@ func New{{ class_name }}() {{ class_name }} {
 }
 
 func main() {
-	// Estimator:
-	clf := New{{ class_name }}()
-
-	// Features of one sample (arguments) or several samples (standard input):
 	{% if pipeline_create %}
 	{{ pipeline_create | indent('\t') }}
 
 	{% endif %}
+	// Estimator:
+	{% if pipeline %}
+	clf := pipeline.Estimator
+	{% else %}
+	clf := New{{ class_name }}()
+	{% endif %}
+
+	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[1:], func(features []float64) {
 		{% if pipeline_transform %}
 		{{ pipeline_transform | indent('\t\t') }}

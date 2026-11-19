@@ -26,6 +26,18 @@ class {{ class_name }} {
     }
 {% if not is_step %}
 
+{% if is_exported %}
+    // Load the transformer with the model data of a JSON file:
+    public static {{ class_name }} load(String path) throws java.io.IOException {
+{% else %}
+    // Create the transformer with the model data of this file:
+    public static {{ class_name }} create() {
+{% endif %}
+        {{ create|indent('        ') }}
+
+        return {{ instance }};
+    }
+
 {% include 'samples' %}
 
 {% include 'values' %}
@@ -37,7 +49,8 @@ class {{ class_name }} {
         }
 
 {% endif %}
-        {{ create|indent('        ') }}
+        // Transformer:
+        {{ class_name }} {{ instance }} = {{ class_name }}.{{ 'load(args[0])' if is_exported else 'create()' }};
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, {{ 1 if is_exported else 0 }})) {

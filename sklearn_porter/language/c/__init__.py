@@ -1,3 +1,5 @@
+import re
+
 from sklearn_porter.language.LanguageABC import LanguageABC
 
 
@@ -69,3 +71,31 @@ class C(LanguageABC):
             for byte in value.encode('utf-8')
         ]
         return '"' + ''.join(chars) + '"'
+
+    @classmethod
+    def methods(cls, source: str, class_name: str) -> list[dict]:
+        method = re.compile(
+            r'^(\w[\w ]*?\s*\**)\s*\b(predict(?:_index|_proba)?)'
+            r'\(([^)]*)\)\s*\{$',
+            re.M,
+        )
+        methods = []
+        for m in method.finditer(source):
+            params = [p.strip() for p in m.group(3).split(',')]
+            names = [re.split(r'[\s*]+', p.split('[')[0])[-1] for p in params]
+            # The function of the pipeline passes the transformed features:
+            methods.append(
+                dict(
+                    name=m.group(2),
+                    type=m.group(1).strip(),
+                    pipeline_params=[
+                        p if n != 'features' else 'double *features'
+                        for p, n in zip(params, names, strict=True)
+                    ],
+                    pipeline_args=[
+                        n if n != 'features' else 'pipeline_values'
+                        for n in names
+                    ],
+                )
+            )
+        return methods

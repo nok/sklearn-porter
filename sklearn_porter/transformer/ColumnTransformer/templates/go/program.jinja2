@@ -18,6 +18,18 @@ import (
 
 {{ classes }}
 
+{% if is_exported %}
+// Load the transformer with the model data of a JSON file:
+func Load{{ class_name }}(path string) ({{ class_name }}, error) {
+{% else %}
+// Create the transformer with the model data of this file:
+func New{{ class_name }}() {{ class_name }} {
+{% endif %}
+	{{ create|indent('\t') }}
+
+	return {{ instance }}{{ ', nil' if is_exported }}
+}
+
 {% include 'samples' %}
 
 {% include 'values' %}
@@ -30,7 +42,16 @@ func main() {
 	}
 
 {% endif %}
-	{{ create|indent('\t') }}
+	// Transformer:
+{% if is_exported %}
+	{{ instance }}, err := Load{{ class_name }}(os.Args[1])
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+{% else %}
+	{{ instance }} := New{{ class_name }}()
+{% endif %}
 
 	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[{{ 2 if is_exported else 1 }}:], func(features []float64) {

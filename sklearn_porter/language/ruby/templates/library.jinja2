@@ -1,12 +1,11 @@
-{% if not pipeline and not composite %}
-{% set var = 'transformer' if kind == 'Transformer' else 'estimator' %}
-{% set call = ('transform' if kind == 'Transformer' else 'predict') ~ '(' ~ ("'document'" if text_input else '[feature_1, ..., feature_' ~ n_features ~ ']') ~ ')' %}
+{% set var = 'pipeline' if pipeline else 'transformer' if kind == 'Transformer' else 'estimator' %}
+{% set call = ('transform' if kind == 'Transformer' else 'predict') ~ '(' ~ ("'document'" if text_input else '[feature_1, ..., feature_' ~ (pipeline_n_features or n_features) ~ ']') ~ ')' %}
 #     {{ step }}. Use the class in your code:
 #         require_relative '{{ class_name }}'
-{% if tpl == 'combined' and kind != 'Transformer' and not combined_instance %}
+{% if tpl == 'combined' and kind != 'Transformer' and not combined_instance and not pipeline %}
 #         {{ class_name }}.{{ call }}
 {% else %}
-{% if tpl == 'attached' %}
+{% if tpl == 'attached' or ((pipeline or composite) and tpl == 'combined') %}
 #         {{ var }} = {{ class_name }}.create
 {% elif tpl == 'exported' %}
 #         {{ var }} = {{ class_name }}.load('{{ class_name }}.json')
@@ -14,5 +13,4 @@
 #         {{ var }} = {{ class_name }}.new
 {% endif %}
 #         {{ var }}.{{ call }}
-{% endif %}
 {% endif %}

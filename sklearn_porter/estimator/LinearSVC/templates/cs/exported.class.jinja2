@@ -81,14 +81,18 @@ public class {{ class_name }} {
             throw new ArgumentException("You have to pass the path to the exported model data.");
         }
 
-        // Estimator:
-        {{ class_name }} clf = {{ class_name }}.Load(args[0]);
-
-        // Features of one sample (arguments) or several samples (standard input):
         {% if pipeline_create %}
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
+        // Estimator:
+        {% if pipeline %}
+        {{ class_name }} clf = pipeline.Estimator;
+        {% else %}
+        {{ class_name }} clf = {{ class_name }}.Load(args[0]);
+        {% endif %}
+
+        // Features of one sample (arguments) or several samples (standard input):
         foreach (double[] features in ReadSamples(args, 1)) {
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}

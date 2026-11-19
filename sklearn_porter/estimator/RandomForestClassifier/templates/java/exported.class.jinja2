@@ -160,7 +160,11 @@ class {{ class_name }} {
 
         {% endif %}
         // Estimator:
+        {% if pipeline %}
+        {{ class_name }} clf = pipeline.estimator;
+        {% else %}
         {{ class_name }} clf = {{ class_name }}.load(args[0]);
+        {% endif %}
 
         // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 1)) {

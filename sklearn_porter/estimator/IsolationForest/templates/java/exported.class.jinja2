@@ -52,14 +52,18 @@ class {{ class_name }} {
             throw new IllegalArgumentException("You have to pass the path to the exported model data.");
         }
 
-        // Estimator:
-        {{ class_name }} clf = {{ class_name }}.load(args[0]);
-
-        // Features of one sample (arguments) or several samples (standard input):
         {% if pipeline_create %}
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
+        // Estimator:
+        {% if pipeline %}
+        {{ class_name }} clf = pipeline.estimator;
+        {% else %}
+        {{ class_name }} clf = {{ class_name }}.load(args[0]);
+        {% endif %}
+
+        // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 1)) {
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}
