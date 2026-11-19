@@ -233,6 +233,7 @@ The template defines how the model data is stored in the generated code, e.g. `p
 
 Read these pages before you use a ported estimator in production:
 
+- [Usage](https://github.com/nok/sklearn-porter/blob/main/docs/usage.md): How to use the generated classes in your own code, e.g. in a Java or Go program or in a browser.
 - [Estimator notes](https://github.com/nok/sklearn-porter/blob/main/docs/estimator-notes.md): How each estimator and transformer is ported and which parameters can lead to different predictions.
 - [Limitations](https://github.com/nok/sklearn-porter/blob/main/docs/limitations.md): The known limitations, e.g. of pipelines, large Java methods, C#, sparse data and Windows.
 - [Changelog](https://github.com/nok/sklearn-porter/blob/main/CHANGELOG.md): All changes of each version.
