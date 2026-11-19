@@ -1,4 +1,7 @@
 ARG PYTHON_VERSION=3.11
+# The minor version of uv, the same as of the build backend `uv_build` in
+# pyproject.toml (an older uv can't build the package with a newer backend):
+ARG UV_VERSION=0.13
 ARG DOTNET_VERSION=10.0
 ARG GO_VERSION=1.27
 ARG NODE_VERSION=24
@@ -12,7 +15,7 @@ FROM mcr.microsoft.com/dotnet/sdk:${DOTNET_VERSION} AS dotnet
 FROM golang:${GO_VERSION}-trixie AS go
 FROM node:${NODE_VERSION}-trixie-slim AS node
 
-FROM ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-trixie-slim
+FROM ghcr.io/astral-sh/uv:${UV_VERSION}-python${PYTHON_VERSION}-trixie-slim
 
 # Compilers and interpreters to run the transpiled estimators:
 RUN apt-get update && \
