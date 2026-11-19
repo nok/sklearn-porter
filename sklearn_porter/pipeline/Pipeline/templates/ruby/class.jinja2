@@ -1,0 +1,53 @@
+{% set static = methods and methods[0].static %}
+{% if is_exported %}
+{% set estimator = estimator_class_name ~ '.load(path)' %}
+{% elif template == 'attached' %}
+{% set estimator = estimator_class_name ~ '.create' %}
+{% else %}
+{% set estimator = estimator_class_name ~ '.new' %}
+{% endif %}
+# The pipeline: the preprocessing steps and the final estimator, which
+# predicts the transformed features:
+class {{ class_name }}
+{% if not static %}
+	attr_reader :estimator
+
+{% endif %}
+	def initialize({{ steps | map(attribute='instance') | join(', ') }}{{ ', estimator' if not static }})
+{% for step in steps %}
+		@{{ step.instance }} = {{ step.instance }}
+{% endfor %}
+{% if not static %}
+		@estimator = estimator
+{% endif %}
+	end
+
+{% if is_exported %}
+	# Load the pipeline with the model data of a JSON file:
+	def self.load(path)
+		{{ load_data | indent('\t\t') }}
+
+{% else %}
+	# Create the pipeline with the model data of this file:
+	def self.create
+{% endif %}
+{% for step in steps if step.create %}
+		{{ step.create | indent('\t\t') }}
+{% endfor %}
+		{{ class_name }}.new {{ steps | map(attribute='instance') | join(', ') }}{{ ', ' ~ estimator if not static }}
+	end
+
+	# Transform the features with the preprocessing steps:
+	def transform(features)
+{% for step in steps %}
+		features = @{{ step.instance }}.transform(features)
+{% endfor %}
+		features
+	end
+{% for method in methods %}
+
+	def {{ method.name }}(features)
+		{{ estimator_class_name ~ '.' if method.static else '@estimator.' }}{{ method.name }}(transform(features))
+	end
+{% endfor %}
+end

@@ -23,5 +23,19 @@ class {{ class_name }} {
 {% endfor %}
         return $values;
     }
+{% if not is_step %}
+
+{% if is_exported %}
+    // Load the transformer with the model data of a JSON file:
+    public static function load($path) {
+{% else %}
+    // Create the transformer with the model data of this file:
+    public static function create() {
+{% endif %}
+        {{ create|indent('        ') }}
+
+        return ${{ instance }};
+    }
+{% endif %}
 
 }

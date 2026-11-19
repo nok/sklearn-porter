@@ -1,15 +1,14 @@
-{% if not pipeline and not composite %}
+{% set prefix = 'pipeline_' if pipeline else '' %}
     {{ step }}. Use it in your code (define `SKLEARN_PORTER_NO_MAIN` to remove `main`):
         #define SKLEARN_PORTER_NO_MAIN
         #include "{{ class_name }}.c"
 {% if tpl == 'exported' %}
-        load("{{ class_name }}.json");
+        {{ prefix }}load("{{ class_name }}.json");
 {% endif %}
 {% if kind == 'Transformer' %}
         transform(values, {{ 'document' if text_input else 'features' }});
 {% elif predict_values %}
-        predict(values, features);
+        {{ prefix }}predict(values, features);
 {% else %}
-        predict(features);
-{% endif %}
+        {{ prefix }}predict(features);
 {% endif %}

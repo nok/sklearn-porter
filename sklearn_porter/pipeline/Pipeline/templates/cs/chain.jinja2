@@ -1,1 +1,0 @@
-PipelineTransform = pipelineFeatures => {% for step in steps|reverse %}{{ step.instance }}.Transform({% endfor %}pipelineFeatures{% for step in steps %}){% endfor %};

@@ -1,11 +1,10 @@
-{% if not pipeline and not composite %}
-{% set var = 'transformer' if kind == 'Transformer' else 'estimator' %}
-{% set call = ('Transform' if kind == 'Transformer' else 'Predict') ~ '(' ~ ('"document"' if text_input else '[]float64{feature_1, ..., feature_' ~ n_features ~ '}') ~ ')' %}
+{% set var = 'pipeline' if pipeline else 'transformer' if kind == 'Transformer' else 'estimator' %}
+{% set call = ('Transform' if kind == 'Transformer' else 'Predict') ~ '(' ~ ('"document"' if text_input else '[]float64{feature_1, ..., feature_' ~ (pipeline_n_features or n_features) ~ '}') ~ ')' %}
     {{ step }}. Use it in your code (replace `package main` by the name of your package and remove `main`):
-{% if tpl == 'combined' and kind != 'Transformer' and not combined_instance %}
+{% if tpl == 'combined' and kind != 'Transformer' and not combined_instance and not pipeline %}
         {{ call }}
 {% else %}
-{% if tpl == 'attached' or combined_instance %}
+{% if tpl == 'attached' or combined_instance or (pipeline or composite) and tpl == 'combined' %}
         {{ var }} := New{{ class_name }}()
 {% elif tpl == 'exported' %}
         {{ var }}, err := Load{{ class_name }}("{{ class_name }}.json")
@@ -13,5 +12,4 @@
         {{ var }} := {{ class_name }}{}
 {% endif %}
         {{ var }}.{{ call }}
-{% endif %}
 {% endif %}

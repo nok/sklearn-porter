@@ -1,0 +1,53 @@
+{% set static = methods and methods[0].static %}
+// The pipeline: the preprocessing steps and the final estimator, which
+// predicts the transformed features:
+type {{ class_name }} struct {
+{% for step in steps %}
+	{{ step.instance }} {{ step.class_name }}
+{% endfor %}
+{% if not static %}
+	Estimator {{ estimator_class_name }}
+{% endif %}
+}
+
+{% if is_exported %}
+// Load the pipeline with the model data of a JSON file:
+func Load{{ class_name }}(path string) ({{ class_name }}, error) {
+	{{ load_data | indent('\t') }}
+
+{% else %}
+// Create the pipeline with the model data of this file:
+func New{{ class_name }}() {{ class_name }} {
+{% endif %}
+{% for step in steps if step.create %}
+	{{ step.create | indent('\t') }}
+{% endfor %}
+{% if is_exported and not static %}
+	estimator, err := Load{{ estimator_class_name }}(path)
+	if err != nil {
+		return {{ class_name }}{}, err
+	}
+{% endif %}
+	return {{ class_name }}{
+{% for step in steps %}
+		{{ step.instance }}: {{ step.instance }},
+{% endfor %}
+{% if not static %}
+		Estimator: {{ 'estimator' if is_exported else 'New' ~ estimator_class_name ~ '()' }},
+{% endif %}
+	}{{ ', nil' if is_exported }}
+}
+
+// Transform the features with the preprocessing steps:
+func (pipeline {{ class_name }}) Transform(features []float64) []float64 {
+{% for step in steps %}
+	features = pipeline.{{ step.instance }}.Transform(features)
+{% endfor %}
+	return features
+}
+{% for method in methods %}
+
+func (pipeline {{ class_name }}) {{ method.name }}(features []float64) {{ method.type }} {
+	return {{ '' if method.static else 'pipeline.Estimator.' }}{{ method.name }}(pipeline.Transform(features))
+}
+{% endfor %}

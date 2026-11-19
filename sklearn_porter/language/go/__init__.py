@@ -1,3 +1,5 @@
+import re
+
 from sklearn_porter.language.LanguageABC import LanguageABC
 
 
@@ -68,3 +70,15 @@ class Go(LanguageABC):
             for char in value
         ]
         return '"' + ''.join(chars) + '"'
+
+    @classmethod
+    def methods(cls, source: str, class_name: str) -> list[dict]:
+        method = re.compile(
+            rf'^func (\(\w+ \*?{class_name}\) )?'
+            r'(Predict(?:Index|Proba)?)\(\w+ \[\]float64\) (.+?) \{$',
+            re.M,
+        )
+        return [
+            dict(name=m.group(2), type=m.group(3), static=not m.group(1))
+            for m in method.finditer(source)
+        ]

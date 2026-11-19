@@ -88,7 +88,11 @@ if __FILE__ == $0
 
 	{% endif %}
 	# Estimator:
+	{% if pipeline %}
+	clf = pipeline.estimator
+	{% else %}
 	clf = {{ class_name }}.create
+	{% endif %}
 
 	# Features of one sample (arguments) or several samples (standard input):
 	read_samples(ARGV) do |features|

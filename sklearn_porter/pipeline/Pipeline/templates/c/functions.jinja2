@@ -1,0 +1,55 @@
+/* Transform the features with the preprocessing steps (the number of
+   features can change in each step) to the features of the final
+   estimator (`values` of length N_FEATURES): */
+void pipeline_transform(double *values, double *features) {
+{% for step in steps %}
+{% if loop.first and loop.last %}
+    {{ step.prefix }}transform(values, features);
+{% elif loop.first %}
+    double pipeline_values1[{{ step.prefix }}N_FEATURES_OUT];
+    {{ step.prefix }}transform(pipeline_values1, features);
+{% elif loop.last %}
+    {{ step.prefix }}transform(values, pipeline_values{{ loop.index0 }});
+{% else %}
+    double pipeline_values{{ loop.index }}[{{ step.prefix }}N_FEATURES_OUT];
+    {{ step.prefix }}transform(pipeline_values{{ loop.index }}, pipeline_values{{ loop.index0 }});
+{% endif %}
+{% endfor %}
+}
+{% for method in methods %}
+
+/* `{{ method.name }}` of the final estimator with the transformed features: */
+{{ method.type }} pipeline_{{ method.name }}({{ method.pipeline_params | join(', ') }}) {
+    double pipeline_values[N_FEATURES];
+    pipeline_transform(pipeline_values, features);
+    {{ 'return ' if method.type != 'void' }}{{ method.name }}({{ method.pipeline_args | join(', ') }});
+}
+{% endfor %}
+{% if is_exported %}
+
+/* Load the model data of the pipeline (of the preprocessing steps and of
+   the final estimator) from a JSON file: */
+void pipeline_load(const char *path) {
+    {{ load_data }}
+
+{% for step in steps if step.create %}
+    {{ step.create | indent(4) }}
+{% endfor %}
+    json_free(pipeline_data);
+
+    load(path);
+}
+{% endif %}
+
+/* Read the features of the next sample and transform them with the
+   preprocessing steps: */
+int pipeline_read_features(double features[], int argc, const char *argv[], int offset);
+
+int read_features(double features[], int argc, const char *argv[], int offset) {
+    double pipeline_values0[{{ n_features }}];
+    if (!pipeline_read_features(pipeline_values0, argc, argv, offset)) {
+        return 0;
+    }
+    pipeline_transform(features, pipeline_values0);
+    return 1;
+}

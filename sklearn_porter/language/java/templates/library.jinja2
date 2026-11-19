@@ -1,11 +1,10 @@
-{% if not pipeline and not composite %}
-{% set var = 'transformer' if kind == 'Transformer' else 'estimator' %}
-{% set call = ('transform' if kind == 'Transformer' else 'predict') ~ '(' ~ ('"document"' if text_input else 'new double[] { feature_1, ..., feature_' ~ n_features ~ ' }') ~ ')' %}
+{% set var = 'pipeline' if pipeline else 'transformer' if kind == 'Transformer' else 'estimator' %}
+{% set call = ('transform' if kind == 'Transformer' else 'predict') ~ '(' ~ ('"document"' if text_input else 'new double[] { feature_1, ..., feature_' ~ (pipeline_n_features or n_features) ~ ' }') ~ ')' %}
  *     {{ step }}. Use the class in your code:
-{% if tpl == 'combined' and kind != 'Transformer' and not combined_instance %}
+{% if tpl == 'combined' and kind != 'Transformer' and not combined_instance and not pipeline %}
  *         {{ class_name }}.{{ call }};
 {% else %}
-{% if tpl == 'attached' %}
+{% if tpl == 'attached' or ((pipeline or composite) and tpl == 'combined') %}
  *         {{ class_name }} {{ var }} = {{ class_name }}.create();
 {% elif tpl == 'exported' %}
  *         {{ class_name }} {{ var }} = {{ class_name }}.load("{{ class_name }}.json");
@@ -13,5 +12,4 @@
  *         {{ class_name }} {{ var }} = new {{ class_name }}();
 {% endif %}
  *         {{ var }}.{{ call }};
-{% endif %}
 {% endif %}

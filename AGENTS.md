@@ -54,38 +54,52 @@ original estimator and transform the features like the original transformer.
   imports scikit-learn's class as `SklearnPipeline`) validates the steps of
   a pipeline (also of a search) with `Transformer` and `Estimator` and ports
   it to one source file with `sklearn_porter/pipeline/Pipeline/` (glue
-  templates per language): the ported final estimator (with the class name
-  of the pipeline, by default `Pipeline`) into which the ported transformers
-  are inserted. Repeated class names get a number (`StandardScaler2`).
-  The transformers can change the number of features (`n_features_out` of
-  `_set_model_data()`): the shared template `samples` of each language
-  checks the number of features of the pipeline (template global
-  `pipeline_n_features`). In C (arrays of fixed size) the glue template
-  `read` defines `read_features`, which reads the features with the
-  renamed shared function `pipeline_read_features` and passes them through
-  the steps in separate arrays; in C# (the loop variable of `foreach` can't
-  be assigned) the glue template `chain` assigns the transformations of all
-  steps to `PipelineTransform`, which `ReadSamples` applies; in JavaScript
-  the function `createSteps` (glue template `steps`) creates the
-  transformers, whose `transform` the loop applies; the other languages
-  assign the result of each step to `features` (glue template
-  `transform`).
+  templates per language): the ported final estimator (with its own class
+  name, e.g. `DecisionTreeClassifier`), the ported transformers and the
+  class of the pipeline (glue template `class`, with the class name of the
+  pipeline, by default `Pipeline`), which holds the transformers and the
+  final estimator (`estimator`, `Estimator` in C# and Go, unless it's
+  static): its factories (`create()`, `load(path)` etc.) create them,
+  `transform` applies the transformers and the prediction methods of the
+  final estimator (`predict`, `predictIndex`, `predictProba`) predict the
+  transformed features. The class of the pipeline gets the signatures of
+  these methods from the source code of the final estimator
+  (`methods()` of each language). Repeated class names get a number
+  (`StandardScaler2`). `main` of the final estimator creates the pipeline
+  (glue template `create`), takes its `estimator` and transforms the
+  features of each sample with it (glue template `transform`, in C# the
+  function `PipelineTransform`, which `ReadSamples` applies, because the
+  loop variable of `foreach` can't be assigned); in Java the class of the
+  pipeline calls `main` of the final estimator. The transformers can change
+  the number of features (`n_features_out` of `_set_model_data()`): the
+  shared template `samples` of each language checks the number of features
+  of the pipeline (template global `pipeline_n_features`). In C (without
+  classes) the glue template `functions` defines `pipeline_transform`
+  (through the steps in separate arrays), the prediction functions with the
+  prefix `pipeline_` (e.g. `pipeline_predict`), `pipeline_load` (exported)
+  and `read_features`, which reads the features with the renamed shared
+  function `pipeline_read_features` and transforms them. In JavaScript the
+  class of the final estimator has the class name of the pipeline and the
+  function `createSteps` (glue template `steps`) creates the transformers,
+  whose `transform` the loop applies.
 - Pipeline placeholders: every class template of an estimator contains the
   placeholders `pipeline_classes` (before `main`, in Java and C# after the
-  class), `pipeline_create` (in `main` before the model data or the loop
+  class), `pipeline_create` (in `main` before the estimator or the loop
   over the samples) and `pipeline_transform` (first statement in the loop),
-  each wrapped in `{% if ... %}`, so the code of a single estimator doesn't
-  change. The templates of a transformer provide the blocks `class` (and
-  `data`, the model data outside of `main`) and `create`, which
-  `EstimatorBase` renders separately if the template global `_blocks` is set
-  (`template_globals`). In this mode the names get the prefix `{{ prefix }}`
-  (e.g. `step1_mean`, in C also the functions and defines), the instance is
-  `{{ instance }}` and the exported model data is the expression
-  `{{ data }}`; parts which only a pipeline needs are wrapped in
-  `{% if _blocks %}`. The exported JSON is the object of the final estimator
-  with the key `transformers` (a list like the trees of a forest is under
-  `estimators`, which the final estimator reads if the global `pipeline` is
-  set).
+  each wrapped in `{% if ... %}`, and takes the estimator of the pipeline
+  in `main` (`{% if pipeline %}`), so the code of a single estimator doesn't
+  change. The base templates show the class name of the pipeline in the
+  header (template global `pipeline_class_name`). The templates of a
+  transformer provide the blocks `class` (and `data`, the model data
+  outside of `main`) and `create`, which `EstimatorBase` renders separately
+  if the template global `_blocks` is set (`template_globals`). In this
+  mode the names get the prefix `{{ prefix }}` (e.g. `step1_mean`, in C
+  also the functions and defines), the instance is `{{ instance }}` and the
+  exported model data is the expression `{{ data }}`; parts which only a
+  pipeline needs are wrapped in `{% if _blocks %}`. The exported JSON is the
+  object of the final estimator with the key `transformers` (a list like
+  the trees of a forest is under `estimators`, which the final estimator
+  reads if the global `pipeline` is set).
 - `make()` compiles and executes the ported estimator via subprocess calls,
   `test()` compares its predictions (or transformed features) with
   scikit-learn (integrity score).
@@ -105,12 +119,13 @@ original estimator and transform the features like the original transformer.
   variable `on_error`). C and C# wrap `main` in
   `#ifndef SKLEARN_PORTER_NO_MAIN` and `#if !SKLEARN_PORTER_NO_MAIN`, Go
   code goes into an own package without `main`. The base templates include
-  the shared template `library` of each language (the usage in the header),
-  except for pipelines and composite transformers (`composite`). The
-  estimators of the template `combined` are static unless the template sets
-  `combined_instance`; the C regressors which write the values of all
-  outputs into an array set `predict_values`. `tests/test_library.py`
-  compiles and runs the usage of the header of all estimators.
+  the shared template `library` of each language (the usage in the header).
+  The estimators of the template `combined` are static unless the template
+  sets `combined_instance`, the pipelines and composite transformers
+  (`composite`) always have a factory; the C regressors which write the
+  values of all outputs into an array set `predict_values`.
+  `tests/test_library.py` compiles and runs the usage of the header of all
+  estimators, of pipelines with each estimator and of some transformers.
 - The estimators print JSON for `make()` (`to_json`) and text
   otherwise. The transformers always print the transformed features of each
   sample in one line, separated by spaces (shared template `values` of each
@@ -176,7 +191,10 @@ original estimator and transform the features like the original transformer.
   and renders its own templates (`class`, `create`, `program` for a single
   composite transformer, `load_data`, `root_data`, `child_data`). Its class
   holds the instances of the transformers (in C a function with arrays per
-  part). `Transformer.supports()` checks the transformers of all parts.
+  part); a single composite transformer has the factories like the other
+  transformers (in C `load(path)` of the template `exported`), which create
+  the transformers of the parts. `Transformer.supports()` checks the
+  transformers of all parts.
 - Feature selectors: `sklearn_porter/transformer/SelectorMixin/` (not
   registered) extracts the indices of the selected features
   (`get_support()`) and holds the templates; each selector (e.g.

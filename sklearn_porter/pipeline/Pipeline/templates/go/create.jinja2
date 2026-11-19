@@ -1,0 +1,10 @@
+// Pipeline:
+{% if is_exported %}
+pipeline, err := Load{{ class_name }}(os.Args[1])
+if err != nil {
+	fmt.Fprintln(os.Stderr, err)
+	os.Exit(1)
+}
+{% else %}
+pipeline := New{{ class_name }}()
+{% endif %}

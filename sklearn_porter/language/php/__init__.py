@@ -1,4 +1,6 @@
-from sklearn_porter.language.LanguageABC import LanguageABC
+import re
+
+from sklearn_porter.language.LanguageABC import LanguageABC, class_members
 
 
 class PHP(LanguageABC):
@@ -48,3 +50,15 @@ class PHP(LanguageABC):
     def str_literal(value: str) -> str:
         # Strings in single quotes contain only the escapes `\\` and `\'`:
         return "'" + value.replace('\\', '\\\\').replace("'", "\\'") + "'"
+
+    @classmethod
+    def methods(cls, source: str, class_name: str) -> list[dict]:
+        start = re.compile(rf'\s*class {class_name}\b')
+        method = re.compile(
+            r'\s*public (static )?function (predict(?:Index|Proba)?)\('
+        )
+        return [
+            dict(name=m.group(2), static=bool(m.group(1)))
+            for m in map(method.match, class_members(source, start))
+            if m
+        ]

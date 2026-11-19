@@ -1,0 +1,60 @@
+{% set static = methods and methods[0].static %}
+{% if is_exported %}
+{% set estimator = estimator_class_name ~ '.load(path)' %}
+{% elif template == 'attached' %}
+{% set estimator = estimator_class_name ~ '.create()' %}
+{% else %}
+{% set estimator = 'new ' ~ estimator_class_name ~ '()' %}
+{% endif %}
+// The pipeline: the preprocessing steps and the final estimator, which
+// predicts the transformed features:
+class {{ class_name }} {
+{% for step in steps %}
+    private final {{ step.class_name }} {{ step.instance }};
+{% endfor %}
+{% if not static %}
+    public final {{ estimator_class_name }} estimator;
+{% endif %}
+
+    public {{ class_name }}({% for step in steps %}{{ step.class_name }} {{ step.instance }}{{ ', ' if not loop.last or not static }}{% endfor %}{{ estimator_class_name ~ ' estimator' if not static }}) {
+{% for step in steps %}
+        this.{{ step.instance }} = {{ step.instance }};
+{% endfor %}
+{% if not static %}
+        this.estimator = estimator;
+{% endif %}
+    }
+
+{% if is_exported %}
+    // Load the pipeline with the model data of a JSON file:
+    public static {{ class_name }} load(String path) throws java.io.IOException {
+        {{ load_data | indent(8) }}
+
+{% else %}
+    // Create the pipeline with the model data of this file:
+    public static {{ class_name }} create() {
+{% endif %}
+{% for step in steps if step.create %}
+        {{ step.create | indent(8) }}
+{% endfor %}
+        return new {{ class_name }}({{ steps | map(attribute='instance') | join(', ') }}{{ ', ' ~ estimator if not static }});
+    }
+
+    // Transform the features with the preprocessing steps:
+    public double[] transform(double[] features) {
+{% for step in steps %}
+        features = this.{{ step.instance }}.transform(features);
+{% endfor %}
+        return features;
+    }
+{% for method in methods %}
+
+    public {{ method.type }} {{ method.name }}(double[] features) {
+        return {{ estimator_class_name if method.static else 'this.estimator' }}.{{ method.name }}(this.transform(features));
+    }
+{% endfor %}
+
+    public static void main(String[] args) throws Exception {
+        {{ estimator_class_name }}.main(args);
+    }
+}

@@ -26,8 +26,7 @@ func {{ prefix }}subData(data []byte) []json.RawMessage {
 		Transformers []json.RawMessage `json:"transformers"`
 	}
 	if err := json.Unmarshal(data, &parsed); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		panic(err)
 	}
 	return parsed.Transformers
 }

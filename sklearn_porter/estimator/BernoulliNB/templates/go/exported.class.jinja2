@@ -119,11 +119,15 @@ func main() {
 
 	{% endif %}
 	// Estimator:
+	{% if pipeline %}
+	clf := pipeline.Estimator
+	{% else %}
 	clf, err := Load{{ class_name }}(os.Args[1])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
+	{% endif %}
 
 	// Features of one sample (arguments) or several samples (standard input):
 	readSamples(os.Args[2:], func(features []float64) {

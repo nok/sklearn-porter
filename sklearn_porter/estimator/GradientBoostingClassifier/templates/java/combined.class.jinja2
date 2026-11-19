@@ -31,14 +31,18 @@ class {{ class_name }} {
 {% include 'samples' %}
 
     public static void main(String[] args) {
-        // Estimator:
-        {{ class_name }} clf = new {{ class_name }}();
-
-        // Features of one sample (arguments) or several samples (standard input):
         {% if pipeline_create %}
         {{ pipeline_create | indent('        ') }}
 
         {% endif %}
+        // Estimator:
+        {% if pipeline %}
+        {{ class_name }} clf = pipeline.estimator;
+        {% else %}
+        {{ class_name }} clf = new {{ class_name }}();
+        {% endif %}
+
+        // Features of one sample (arguments) or several samples (standard input):
         for (double[] features : readSamples(args, 0)) {
             {% if pipeline_transform %}
             {{ pipeline_transform | indent('            ') }}
