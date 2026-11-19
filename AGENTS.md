@@ -215,7 +215,9 @@ original estimator and transform the features like the original transformer.
   marks estimators without the template `combined` (¹) or without
   `predict_proba` (²) and counts the entries of each list.
 - `docs/`: further user documentation linked from the README
-  (`estimator-notes.md`, `limitations.md`).
+  (`estimator-notes.md`, `limitations.md` and `usage.md`, the usage of the
+  generated classes in own code per language, whose examples must match the
+  header of the generated code).
 - `CITATION.cff`: the citation of the repository, release-please updates its
   version.
 - `examples/*.pct.py`: example notebooks in jupytext format (getting

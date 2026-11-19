@@ -73,6 +73,17 @@ print(Path('/tmp/samples.txt').read_text())
 # !node /tmp/Pipeline.js < /tmp/samples.txt
 
 # %% [markdown]
+# ## Use the pipeline in your own code
+#
+# The ported pipeline is also a class for your own code. Its `predict`
+# scales the raw features before the prediction like the pipeline (see the
+# [usage](https://github.com/nok/sklearn-porter/blob/main/docs/usage.md) of
+# the other languages):
+
+# %%
+# !node -e "const Pipeline = require('/tmp/Pipeline.js'); console.log('Class: ' + new Pipeline().predict([14.23, 1.71, 2.43, 15.6, 127, 2.8, 3.06, 0.28, 2.29, 5.64, 1.04, 3.92, 1065]))"
+
+# %% [markdown]
 # ## Check the ported pipeline
 #
 # `make` returns the predictions of the ported pipeline, `test` compares
